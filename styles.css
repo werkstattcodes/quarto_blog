@@ -273,3 +273,15 @@ padding: 0rem;
 border: 0px;
 
 }
+
+/* .quarto-grid-item:hover {
+    background-color: orange !important;
+} */
+
+.card:hover {
+    border-left: 10px solid;
+    /* border-color: #9cd321; */
+    border-left-color: #9cd321;
+    /* background-color: gold; */
+    color: black;
+}

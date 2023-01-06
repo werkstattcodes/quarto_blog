@@ -8,7 +8,8 @@ listing:
   categories: false
   sort-ui: false
   filter-ui: false
-  fields: [image, date, title, description, categories]
+  # fields: [image, date, title, description, categories]
+  fields: [title, description, date, categories]
   feed: true
   image-height: 150px
   page-size: 20
