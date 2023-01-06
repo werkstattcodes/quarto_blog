@@ -1,0 +1,77 @@
+project:
+  type: website
+
+website:
+  title: "werk.statt.codes"
+  site-url: https://werk.statt.codes
+  cookie-consent:
+      palette: dark
+
+  reader-mode: false
+  
+  page-footer: 
+    right: 
+      - text: "{{< fa brands orcid >}}" #text!
+        href: https://orcid.org/0000-0002-6897-1693
+      - icon: github
+        href: https://github.com/werkstattcodes
+      - icon: mastodon  
+        aria-label: mastodon
+        href: https://mastodon.social/@zoowalk
+      - icon: twitter 
+        href: https://twitter.com/zoowalk 
+      - icon: rss
+        href: index.xml
+      - icon: envelope-plus
+        href: subscribe.html
+
+  search:
+    type: overlay
+    location: navbar
+
+  navbar:
+    right:
+      - text: more
+        menu: 
+          - about.qmd
+
+    collapse: true
+    pinned: true
+
+# Default author
+author:
+  - name: Roland Schmidt
+    url: https://werk.statt.codes
+
+format:
+  html:
+    theme: 
+      light: litera
+      # dark: slate
+    css: styles.css
+    code-copy: true
+    highlight-style: github
+    fontsize: 16px
+    # fontcolor: red
+    toc: true
+    toc-depth: 3
+    toc-title: Contents
+    toc-location: left
+    code-fold: true
+    fig-cap-location: top
+    number-sections: true
+    smooth-scroll: true
+
+editor: visual
+
+date-format: D MMM YYYY
+
+filters:
+  - lightbox
+lightbox: auto  
+
+# Default knitr options
+execute:
+  echo: true
+  message: false
+  warning: false

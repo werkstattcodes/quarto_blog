@@ -1,0 +1,1837 @@
+---
+title: "Vienna Elections 2020: Parties' ads on facebook"
+description: "Analysis of the facebook ads placed in the run-up to the 2020 Vienna city elections."
+date: 12-19-2020
+author: "Roland Schmidt"
+
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-title: Contents
+    toc-location: left
+    code-fold: true
+    fig-cap-location: top
+    number-sections: true
+    smooth-scroll: true
+    highlight-style: ally-dark
+    
+categories: [Austria, social media, elections]
+
+image: preview.png
+
+execute:
+  echo: true
+  warning: false
+---
+
+# Context
+
+```{r}
+#| code-summary: "Packages"
+
+library(tidyverse)
+library(tictoc)
+library(lubridate)
+library(scales)
+library(ggiraph)
+library(tidytext)
+library(ragg)
+library(extrafont)
+library(reactablefmtr)
+loadfonts(device = "win", quiet = T)
+library(hrbrthemes)
+hrbrthemes::update_geom_font_defaults(
+  family = "Roboto Condensed",
+  size = 3.5,
+  color = "grey50"
+)
+library(ggtext)
+library(gt)
+library(reactable)
+library(readxl)
+library(htmltools)
+library(paletteer)
+library(lemon)
+library(plotly)
+options(scipen = 999)
+library(kableExtra)
+```
+
+```{r}
+#| include: false
+
+# DEFINITIONS -------------------------------------------------------------
+
+# blog theme --------------------------------------------------------------
+
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() +
+    theme(
+      plot.background = element_rect(fill = plot_bg_color, color=NA),
+      panel.background = element_rect(fill = plot_bg_color, color=NA),
+      #panel.border = element_rect(colour = plot_bg_color, fill=NA),
+      #plot.border = element_rect(colour = plot_bg_color, fill=NA),
+      plot.margin = ggplot2::margin(l = 0, 
+                           t = 0.25,
+                           unit = "cm"),
+      plot.title = element_markdown(
+        color = "grey20",
+        face = "bold",
+        margin = ggplot2::margin(l = 0, unit = "cm"),
+        size = 11
+      ),
+      plot.title.position = "plot",
+      plot.subtitle = element_text(
+        color = "grey50",
+        margin = ggplot2::margin(t = 0.2, b = 0.3, unit = "cm"),
+        size = 10
+      ),
+      plot.caption = element_text(
+        color = "grey50",
+        size = 8,
+        hjust = c(0)
+      ),
+      plot.caption.position = "panel",
+      axis.title.x = element_text(
+        angle = 0,
+        color = "grey50",
+        hjust = 1
+      ),
+      axis.text.x = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.spacing = unit(0.25, "cm"),
+      panel.spacing.y = unit(0.25, "cm"),
+      strip.text = element_text(
+        angle = 0,
+        size = 9,
+        vjust = 1,
+        face = "bold"
+      ),
+      legend.title = element_text(
+        color = "grey30",
+        face = "bold",
+        vjust = 1,
+        size = 7
+      ),
+      legend.text = element_text(
+        size = 7,
+        color = "grey30"
+      ),
+      legend.justification = "left",
+      legend.box = "horizontal", # arrangement of multiple legends
+      legend.direction = "vertical",
+      legend.margin = ggplot2::margin(l = 0, t = 0, unit = "cm"),
+      legend.spacing.y = unit(0.07, units = "cm"),
+      legend.text.align = 0,
+      legend.box.just = "top",
+      legend.key.height = unit(0.2, "line"),
+      legend.key.width = unit(0.5, "line"),
+      text = element_text(size = 5)
+    )
+}
+
+
+# plot_bg_color <- readr::read_file(file=here::here("styles.css")) %>% 
+#   str_extract(., regex("(?<=blog-bg-color:).*?(?=;)")) %>%
+#   str_trim() %>% 
+#   str_extract(., regex("^#\\S+"))
+plot_bg_color <- "white"
+
+# reactable heading -------------------------------------------------------
+
+fn_reactable_headings <- function(title, subtitle, body, caption) {
+  div(class="reactable-table",
+      div(
+        class="reactable-title",
+        title
+      ),
+      div(
+        class="reactable-subtitle",
+        subtitle
+      ),
+      # div(
+        #class="reactable-body",
+        body
+        # )
+      ,
+      div(
+        class="reactable-caption",
+        caption
+      )
+  )
+}
+
+
+rt_theme <- reactableTheme(backgroundColor = plot_bg_color,
+                           style=list(fontFamily="Karla",
+                                      fontSize="12px"),
+                           filterInputStyle = list(
+                             color="green",
+                             backgroundColor = plot_bg_color))
+
+# caption -----------------------------------------------------------------
+
+my_caption <- c("data: Facebook Ad Library API\nanalysis: Roland Schmidt | @zoowalk | http://werk.statt.codes")
+
+labeller_page <- function(x) {str_extract(x, regex("\\w+$"))}# 
+
+# Party colors -----------------------------------------------------
+
+fpoe <- "#005DA8"
+neos <- "#EA5290"
+oevp <- "#5DC2CC"
+spoe <- "#FC0204"
+greens <- "#A3C630"
+strache <- "grey50"
+bier <- "yellow"
+
+df_party_colors <- tibble(fpö=fpoe, neos=neos, övp=oevp, spö=spoe, greens=greens, strache=strache, bier=bier) %>% 
+  pivot_longer(everything(), values_to = "party_colors", names_to = "party") %>% 
+  mutate(party=str_to_upper(party))
+
+vec_party_colors <- df_party_colors$party_colors
+names(vec_party_colors) <- df_party_colors$party
+
+```
+
+```{r}
+#| code-summary: "Main candidates"
+
+main_candidates <- c("Blümel", "Michael Ludwig", "Strache", "Hebein", "Nepp","Wiederkehr")
+vec_main_candiates <- str_c(main_candidates, collapse="|")
+
+main_parties <- c("SPÖ", "ÖVP", "GREENS", "NEOS", "FPÖ", "STRACHE", "BIER")
+vec_main_parties <- str_c(main_parties, collapse="|")
+
+levels_party <- c("SPÖ", "ÖVP", "GREENS", "NEOS", "FPÖ", "STRACHE", 
+                  "LINKS",
+                  "BIER", 
+                  "SÖZ", 
+                  "VOLT", 
+                  "PDA", 
+                  "WANDEL",
+                  "all others"
+                  )
+```
+
+```{r}
+#| include: false
+
+date_observation_start <- lubridate::ymd("2020-07-11")
+date_observation_end <- lubridate::ymd("2020-10-11")
+date_observation_start_format <- format.Date(date_observation_start, "%d %b %Y")
+date_observation_end_format <- format.Date(date_observation_end, "%d %b %Y")
+
+```
+
+
+
+
+Here's a post which I probably should have written right before Vienna's local elections, and not after. But better late than never: a descriptive go at candidates' ads on Facebook in the run-up to the elections of 11 Oct 2020. For a previous blog post dealing with Facebook ads in the run-up to the European Parliamentary Elections 2019 see [here](https://werk.statt.codes/post/european-parliament-elections-2019-facebook-ads-of-austrian-candidates/){target="_blank"}.
+
+To provide some general context, for a while now, Facebook has been offering access to details on electoral ads placed on the company's social networking site. The service was introduced as some kind of response to the allegations of manipulative and illegitimate interference in the 2016 US presidential elections or the Brexit referendum via its platform. By Facebook's own account, the library seeks to 'provide advertising transparency by offering a comprehensive, searchable collection of all ads currently running from across Facebook apps and services, including Instagram.' In addition to aggregated reports, the pertaining API allows to conduct 'customized keyword searches of active and inactive ads about social issues, elections or politics.'[^1] Hence, and notwithstanding some limitations, the library provides a critical peep-hole into electoral campaigning. In this case, it's the elections to the Vienna city council and its lower-level district councils.
+
+[^1]: For details see [here](https://www.facebook.com/ads/library/api){target="_blank"}
+
+# Scope conditions
+
+A basic yet critical step in the analysis of Facebook ads is to delineate which Facebook pages and ads to include. How to identify those pages and ads which actually relate to the Vienna 2020 elections? Since Facebook's ad library does not group ads according to a specific campaign or cause this task is part of every analysis.
+
+Here, I came up with the following main criteria which all have to be fulfilled.
+
+-   *political parties*: I'll include only those ads which were placed by parties which eventually won a mandate to the city council. An exception is the party of HC Strache. The latter I include simply because Strache is the former Vice-Chancellor of Austria and former leader of the FPÖ.
+
+-   *time*: ads have to be placed within the three months prior to the election date (11 July to 11 Oct).
+
+-   *ads' content*: the text of the ad has to contain the word 'Wien' (Vienna). Admittedly, this is a somewhat crude condition, but it's simply the most reasonable indicator I came up with for my time available for this post. The condition is particularly important when considering the ads placed by the ÖVP's main candidate, Gernot Blümel. Blümel is also Austria's finance minister and hence his ads may not only relate to the Vienna electoral campaign, but also to issues related to his federal position. The latter category of ads has to be excluded.
+
+-   *regional link*: the Facebook page should have a clear link to Vienna. E.g. ads placed by a party's branch from another state were not included.
+
+-   *minimum number of ads*: to keep the number of pages somehow manageable, I included only pages which placed at least three ads within the period under consideration.
+
+The above scope conditions might not be 100 % water tight, and there might be edge cases which erroneously fall out or into the set of ads eventually included. Overall though I would think to get with these criteria a sufficiently robust base to come to valid findings (and keep the effort for a blog post at a reasonable level). In any case it's important to highlight that all subsequent results of the analysis will be contingent on these scoping decisions. That's something to bear in mind.
+
+If you're primarily interested in the results of the analysis and can't be bothered by all the R fuzz, just go directly [here](#number-and-value-of-ads).
+
+# Getting the data
+
+Note that there is by now also an R package which seeks to make data retrieval from Facebook's API easier ([Rfacebook](https://github.com/pablobarbera/Rfacebook){target="_blank"}). Since I had accessed Facebook's API already [previously](https://werk.statt.codes/post/european-parliament-elections-2019-facebook-ads-of-austrian-candidates/){target="_blank"} via the `httr` package, I stuck to this approach.
+
+
+```{r}
+#| eval: false
+#| code-summary: "Get data from Facebook API"
+
+#token from Facebook api app
+your_fb_api_token <- "#########"
+
+#define fields of interest
+search_fields=c("ad_creation_time", "ad_delivery_start_time", "ad_delivery_stop_time",
+                "ad_creative_body", 
+                "page_id",
+                "page_name",
+                "currency",
+                "spend",
+                "demographic_distribution",
+                "funding_entity",
+                "impressions",
+                "potential_reach",
+                "publisher_platforms",
+                "region_distribution") %>% 
+  stringr::str_c(., collapse=", ")
+
+
+my_link<- "https://graph.facebook.com"
+
+#define GET request
+page_one_response <- GET(my_link,
+                         path = "/ads_archive",
+                         query = list(access_token = my_token,
+                                      limit=100,
+                                      ad_active_status="ALL",
+                                      search_terms="''",
+                                      fields=search_fields,
+                                      ad_reached_countries="AT"))
+
+#get first page of results
+page_one_content<- content(page_one_response)
+
+
+df_ads_all <- tibble(data=page_one_content$data)
+
+df_ads_all <- x %>% 
+  unnest_wider(data) 
+
+#extract link for next results page
+next_link <- page_one_content$paging$`next`
+
+#initiate loop until there is no link to a next page
+page_i=2
+while(length(next_link)>0) {
+  
+  next_response <- GET(next_link)
+  next_content<- content(next_response)
+  
+  y <- tibble(data=next_content$data)
+  
+  df_next <- y %>% 
+    unnest_wider(data) 
+  
+  df_ads_all <- bind_rows(df_ads_all, df_next)  
+  
+  next_link <- next_content$paging$`next`
+  
+  page_i <- page_i+1
+  print(page_i)
+  
+  print(df_next %>% 
+    nrow())
+  
+}
+
+#save results
+df_ads_all$time_api_download <- Sys.time()
+time_stamp <- format(Sys.time(), "%Y%m%d-%H%M")
+
+#write_rds(df_ads_all, path=paste0(wdr,"/data/scraped_ads",time_stamp,".rds"))
+```
+
+
+```{r include=FALSE}
+df_ads <- readr::read_rds(file=here::here("posts", 
+                                          "2020-12-19-vienna-elections-2020-analysis-of-parties-ads-on-facebook",
+                                          "df_ads.rds")) 
+```
+
+The code above provides us with all (!) ads placed in Austria. Overall, the result had more than 1 gig, and retrieving the data took a while. There are certainly ways to limit the search from the outset, but I thought it can't harm to have the entire set, also for possible future analysis.
+
+## Apply scope conditions
+
+Now let's apply the scope conditions from above. Applying the filter for ads' *time of creation* and whether ads *include the word 'Wien'* is straight forward:
+
+```{r eval=T, include=T}
+#| code-summary: "Temporal scope"
+
+date_observation_start <- lubridate::ymd("2020-07-11")
+date_observation_end <- lubridate::ymd("2020-10-11")
+
+df_ads <- df_ads %>% 
+  filter(ad_creation_time>=date_observation_start & 
+         ad_creation_time<=date_observation_end)
+
+```
+
+
+```{r include=FALSE}
+# define time range -------------------------------------------------------
+
+date_observation_start_format <- format.Date(date_observation_start, "%d %b %Y")
+date_observation_end_format <- format.Date(date_observation_end, "%d %b %Y")
+```
+
+```{r}
+#| code-summary: "Exclude ads refering to Wiener Neustadt"
+
+df_ads <- df_ads %>% 
+  filter(str_detect(ad_creative_body, "Wien(?!.*Neustadt)"))
+
+```
+
+Based on this result I 'manually' checked every remaining facebook page whether a party affiliation and a regional link with Vienna exists. If interested in these 'coding decisions' you can see the table by unfolding the section below.
+
+```{r include=FALSE}
+pages_of_interest <- readxl::read_xlsx(path=here::here("posts", "2020-12-19-vienna-elections-2020-analysis-of-parties-ads-on-facebook", "df_pages_of_interest.xlsx")) %>% 
+  # filter(include=="yes") %>% 
+  distinct(page_name, party, page_type, include) %>% 
+  mutate(party=stringr::str_to_upper(party, locale="de"))
+```
+
+<details closed>
+
+<summary> Coding of pages of interest </summary>
+
+```{r echo=FALSE}
+rt_pages <- reactable(pages_of_interest,
+          columns=list(
+            page_name=colDef(name="page")
+          ),
+          filterable = T,
+          pagination = F,
+          height = 250,
+          outlined = T,
+          bordered = F,
+          compact=T,
+          theme = rt_theme) %>%
+          add_title(title="WIEN-WAHL 2020: Facebook pages within scope and affiliated party") %>%
+          add_source(source=my_caption)
+rt_pages
+
+```
+
+
+Let's consider only ads which were posted by those pages, add the party affiliations, limit the selection to those parties in which we are interested, and keep only those pages with at least three ads posted.
+
+```{r message=FALSE, warning=FALSE}
+
+df_ads <- df_ads %>%
+  filter(page_name %in% pages_of_interest$page_name[pages_of_interest$include=="yes"]) %>% 
+  left_join(., pages_of_interest %>% 
+              select(page_name, party, page_type), 
+            by=c("page_name"="page_name")) %>% 
+  mutate(name_party=map_chr(page_name, labeller_page) %>% 
+           paste0(., " (", party, ")")) %>% 
+  mutate(name_party=case_when(page_type=="institutional" ~ page_name,
+                              TRUE ~ as.character(name_party)))
+
+
+### only main parties
+main_parties <- c("SPÖ", "ÖVP", "GREENS", "NEOS", "FPÖ", "STRACHE")
+vec_main_parties <- str_c(main_parties, collapse="|")
+
+df_ads <- df_ads %>% 
+  filter(str_detect(party, vec_main_parties))
+
+### remove pages with less than 3 ads
+df_pages_small_n <- df_ads %>% 
+  group_by(page_name) %>% 
+  summarise(n_ads=n()) %>% 
+  filter(n_ads<3)
+
+df_ads <- df_ads %>% 
+  anti_join(., df_pages_small_n,
+            by="page_name")
+```
+
+With our dataset now put into scope we have details on `r nrow(df_ads) %>% scales::comma()` ads by `r length(unique(df_ads$page_name))` distinct Facebook pages.
+
+```{r message=FALSE, warning=FALSE}
+### rearrange columns for better overview
+df_ads <- df_ads %>% 
+  select(starts_with("ad"), contains("page"), contains("party"),  contains("spend"), currency, funding_entity, contains("impression"), contains("demographic"), potential_reach, publisher_platforms)
+
+
+```
+
+## Arrange data
+
+Now with our dataset eventually put into scope, let's bring it into a format with which we can actually work.
+
+Note that the data on ads' prices (`spend`), the audience's `demographic distribution` (gender and age) as well as ads' `impressions` are contained as lists. We will have to bring them into an other format for our subsequent analysis.
+
+Let's first un-nest the data on spending. Note that Facebook's API does not provide a specific price of an ad, but instead a price category (interval) in which each ad falls. Hence when calculating i.e. the total amount spent by a candidate, we are bound to operate within possible minimum and maximum totals. As a means of simplification, I also use each price segment's mid point for further comparison.
+
+```{r}
+#| code-summary: "Code: Data mugging, unnest lists"
+
+# unnest spending --------------------------------------------------------
+
+df_ads_wide <- df_ads %>% 
+  unnest_wider(spend, names_sep = "_") %>% #adds "spend prefix"
+  mutate(across(.cols=contains("spend"), .fns=as.numeric)) %>% 
+  mutate(funding_entity=forcats::fct_infreq(funding_entity)) %>% 
+  # mutate(spend_lower_bound_rev=case_when(spend_lower_bound==0 ~ 1, #otherwise aggregation distorting
+  #                                  TRUE ~ spend_lower_bound)) %>% 
+  mutate(spend_lower_bound_rev=spend_lower_bound) %>% 
+  mutate(spend_mid=(spend_upper_bound-spend_lower_bound_rev)/2+spend_lower_bound) %>% 
+  mutate(across(.cols=contains("bound"), .fns=list(char=~map_chr(.x, comma)))) %>% 
+  unite("spend_interval", c(spend_lower_bound_rev_char, spend_upper_bound_char), sep="-", remove=F) %>% 
+  mutate(spend_interval=forcats::fct_reorder(spend_interval, spend_lower_bound))
+
+
+# # _nested df demographic distribution (age & gender)-----------------------------------
+df_ads_wide <- df_ads_wide %>% 
+  mutate(demographic_distribution_df=map(demographic_distribution, bind_rows)) 
+
+
+# #_unnest impressions, create category, and mid-value --------------------
+df_ads_wide <- df_ads_wide %>% 
+  unnest_wider(impressions, names_sep="_") %>% 
+  unite("impressions_category", c("impressions_lower_bound","impressions_upper_bound"), 
+        sep="-",
+        remove=F) %>% 
+  mutate_at(vars("impressions_lower_bound", 
+                 "impressions_upper_bound"),
+            as.numeric) %>% 
+  mutate(impressions_mid=(impressions_upper_bound-impressions_lower_bound)/2+impressions_lower_bound) %>% 
+  mutate(impressions_category=as.factor(impressions_category) %>% 
+           forcats::fct_reorder(., impressions_mid))
+
+# _variable types ----------------------------------------------------------
+
+df_ads_wide<- df_ads_wide %>% 
+  mutate(across(.cols=contains("_time"), .fns=~ymd(.x))) %>% 
+  mutate_at(vars(contains("time_api_download")), lubridate::ymd_hms)   
+
+# _create ad_id ----------------------------------------------------------
+df_ads_wide <- df_ads_wide %>% 
+  group_by(page_name) %>% 
+  mutate(ad_id=paste(stringr::str_remove_all(page_name, "[:space:]"), 
+                     lubridate::date(ad_creation_time),
+                     row_number(), sep="-")) %>% 
+  ungroup()
+
+
+# _funding entity missing -------------------------------------------------
+
+df_ads_wide <- df_ads_wide %>% 
+  mutate(funding_entity=case_when(is.na(funding_entity) ~ "missing",
+                                  TRUE ~ as.character(funding_entity)))
+
+# rearranging
+df_ads_wide <- df_ads_wide %>% 
+  select(contains("page"), contains("party"), starts_with("ad"), contains("spend"), currency, funding_entity, contains("impression"), contains("demographic"), potential_reach, publisher_platforms)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+# tb_all <- reactable(df_ads_wide,
+#           filterable = T,
+#           compact = T,
+#           outlined = T,
+#           bordered = F,
+#           wrap=F,
+#           theme=rt_theme) %>%
+#           reactablefmtr::add_title(title="WIEN-WAHL 2020: All Facebook ads") %>%
+#           sub_title(subtitle="Ads posted between {date_observation_start_format} and {date_observation_end_format}")
+
+#table.start
+# fn_reactable_headings(title="WIEN-WAHL 2020: All Facebook ads",
+#                       subtitle=glue::glue("Ads posted between {date_observation_start_format} and {date_observation_end_format}"),
+#                       body = tb_all,
+#                       caption=my_caption)
+#table.end
+```
+
+We now have a dataframe with all ads of interest and most of the data rearrangement already implemented.
+
+```{r eval=FALSE, include=FALSE}
+df_impression_check <- df_ads_wide %>% 
+  select(contains("page"), party, contains("impression"))
+
+#readr::write_csv2(df_impression_check,file=here::here("blog_data","2020-12-19-vienna-elections-2020-analysis-of-parties-ads-on-facebook","df_impression_check.csv"))
+```
+
+
+# Number and value of ads {#number-and-value-of-ads}
+
+Let's first look at the number and value of ads. The table below provides the aggregate number and amount spent on ads per party. These numbers comprise the expenditures by all Facebook pages included in the analysis. To drill further down and see the pertaining contribution of each page, click on the little arrow sign.
+
+## Overview Table
+
+
+The imho neat thing about this `reactable` table is that it comprises three tables with nested information: The aggregate values on the party level, the individual values for each Facebook page; and the funding entities for each page. To make this work, one has to subset the data of interest with the corresponding `[index]` value. See the code below:
+
+```{r}
+#| code-summary: "Code: Table on parties' number of ads and total spending"
+#| message: false
+#| warning: false
+
+# Number and values of ads
+
+df_party<- df_ads_wide %>% 
+  group_by(party) %>% 
+  summarise(ads_n=n(),
+            across(.cols=contains("spend_") & where(is.numeric),
+                   .fns=sum)) %>% 
+  select(party, ads_n, spend_lower_bound_rev, spend_mid, spend_upper_bound) %>% 
+  ungroup() %>% 
+  arrange(-ads_n)
+
+#nested pages df
+df_pages <- df_ads_wide %>% 
+  group_by(party, page_name) %>% 
+  summarise(ads_n=n(),
+            across(.cols=contains("spend_") & where(is.numeric),
+                   .fns=sum)) %>% 
+  select(party, page_name, ads_n, spend_lower_bound_rev, spend_mid, spend_upper_bound) %>% 
+  ungroup() %>% 
+  arrange(-ads_n)
+
+#nested funding entities
+df_funding <- df_ads_wide %>% 
+  group_by(party, page_name, funding_entity) %>% 
+  summarise(ads_n=n(),
+            across(.cols=contains("spend_") & where(is.numeric),
+                   .fns=sum)) %>% 
+  select(party, page_name, funding_entity, ads_n, spend_lower_bound_rev, spend_mid, spend_upper_bound) %>% 
+  ungroup() %>% 
+  arrange(-ads_n)
+
+
+#funding table
+rt_page_funding <- reactable(df_pages,
+          details=function(index) {
+            funding_data <- df_funding[df_funding$page_name==df_pages$page_name[index],]
+            htmltools::div(style = "padding: 16px",
+                           reactable(funding_data, 
+                                     columns=list(
+                                       party=colDef(show=F),
+                                       page_name=colDef(show=F)),
+                                     sortable = T,
+                                     filterable = T,
+                                     outlined = TRUE))})
+
+orange_pal <- function(x) rgb(colorRamp(c(plot_bg_color, "#ff9500"))(x), maxColorValue = 255)
+blue_pal <- function(x) rgb(colorRamp(c(plot_bg_color, "#0C6D82"))(x), maxColorValue = 255)
+
+#assemble table
+rt_party_pages <- reactable(df_party,
+                            columnGroups = list(
+                              colGroup(name="spending", 
+                                        columns=c("spend_lower_bound_rev", 
+                                                  "spend_mid",
+                                                  "spend_upper_bound"))
+                            ),
+                            columns=list(
+                              party=colDef(name="party"),
+                              ads_n=colDef(name="number of ads",
+                                           format=colFormat(separators = T),
+                                           style=function(value){ 
+                                             normalized <- (value-min(df_party$ads_n))/(max(df_party$ads_n)-min(df_party$ads_n))
+                                             color <- orange_pal(normalized)
+                                             list(background=color)
+                                             }),
+                              spend_lower_bound_rev=colDef(name="min",
+                                                           format=colFormat(separators = T,
+                                                                            digits=0)),
+                              spend_mid=colDef(name="mid",
+                                               format=colFormat(separators = T,
+                                                                digits=0),
+                                               style=function(value){ 
+                                             normalized <- (value-min(df_party$spend_mid))/(max(df_party$spend_mid)-min(df_party$spend_mid))
+                                             color <-blue_pal(normalized)
+                                             list(background=color)
+                                             }),
+                              spend_upper_bound=colDef(name="max",
+                                                       format=colFormat(separators = T,
+                                                                        digits=0))),
+                            sortable = T,
+                            filterable = F,
+                            outlined = TRUE,
+                            theme=reactableTheme(
+                              backgroundColor = plot_bg_color,
+                              filterInputStyle = list(
+                                color="green",
+                                backgroundColor = plot_bg_color)
+                            ),
+                            
+                            details = function(index) {
+            page_data <- df_pages[df_pages$party == df_party$party[index], ]
+            htmltools::div(style = "padding: 16px;",
+                 reactable(page_data,
+                           columns=list(
+                             party=colDef(show=F),
+                             page_name=colDef(name="fb page"),
+                             ads_n=colDef(name="number of ads",
+                                          format=colFormat(separators = T)),
+                             spend_lower_bound_rev=colDef(name="min",
+                                                          format=colFormat(separators = T)),
+                             spend_mid=colDef(name="mid",
+                                              format=colFormat(separators = T)),
+                             spend_upper_bound=colDef(name="max", 
+                                                      format=colFormat(separators = T))),
+                           theme=reactableTheme(backgroundColor = plot_bg_color,
+                                                filterInputStyle = list(
+                                                  color="green",
+                                                  backgroundColor = plot_bg_color) ),
+                           sortable = T,
+                           style="margin-left:60px;",
+                           fullWidth = T,
+                           filterable = T,
+                           borderless = T,
+                           outlined = TRUE,
+                           details = function(index) {
+                             funding_data <- df_funding[df_funding$page_name==page_data$page_name[index]&
+                                                          df_funding$party == page_data$party[index],]
+                             htmltools::div(style = "padding: 2px;",
+                                            reactable(funding_data,
+                                                      columns=list(
+                                                        party=colDef(show=F),
+                                                        page_name=colDef(show=F),
+                                                        funding_entity=colDef(name="funding entity"),
+                                                        ads_n=colDef(name="number of ads"),
+                                                        spend_lower_bound_rev=colDef(name="min"),
+                                                        spend_mid=colDef(name="mid"),
+                                                        spend_upper_bound=colDef(name="max")),
+                                                      theme=rt_theme),
+                                                      sortable = T,
+                                                      borderless = T,
+                                                      style="margin-left:60px",
+                                                      filterable = F,
+                                                      outlined = TRUE))}
+                           )
+            )
+            }
+            )
+```
+
+
+
+```{r echo=FALSE}
+#table.start
+# fn_reactable_headings(title="WIEN-WAHL 2020: Number and total amount spent by party",
+#                       subtitle=glue::glue("Click to see details for indiviudal Facebook pages. Ads placed between {date_observation_start_format} and {date_observation_end_format}."),
+#                       body=rt_party_pages,
+#                       caption=my_caption)
+#table.end
+
+```
+ 
+```{r}
+#| echo: false
+
+rt_party_pages %>%
+reactablefmtr::add_title(title="WIEN-WAHL 2020: Number and total amount spent by party",
+font_size=12) %>%
+add_subtitle(subtitle=glue::glue("Click to see details for indiviudal Facebook pages. Ads placed between {date_observation_start_format} and {date_observation_end_format}."), font_size=10) %>%
+reactablefmtr::add_source(my_caption, font_size=8)
+```
+
+
+<br> As it becomes quite clear, the `r df_party %>% slice_max(ads_n) %>% pull(party)` has bought the largest number of ads with `r df_party %>% slice_max(ads_n) %>% pull(ads_n) %>% scales::comma()`, followed by the `r df_party %>% slice_max(ads_n, n=2) %>% slice_tail(n=1) %>% pull(party)` with `r df_party %>% slice_max(ads_n, n=2) %>% slice_tail(n=1) %>% pull(ads_n) %>% scales::comma()` ads. The gap is quite considerable. If we unfold the `r df_party %>% slice_max(ads_n) %>% pull(party)` row, we can see that the largest chunk of its ads was bought for `r df_pages %>% filter(party==df_party %>% slice_max(ads_n) %>% pull(party)) %>% slice_max(ads_n) %>%  pull(page_name)` with `r df_pages %>% filter(party==df_party %>% slice_max(ads_n) %>% pull(party)) %>% slice_max(ads_n) %>%  pull(ads_n) %>% scales::comma()` ads.
+
+When it comes to the total sum spent on Facebook ads, the picture is less specific. As already mentioned above, Facebook's ad library API provides only each ad's *price category with its lower and upper bounds*. Hence, when seeking to obtain a total sum of expenditures, we are limited to sum up the lower and upper bounds within which the overall total is located. This limitation is particularly consequential when a party bought many ads from the lowest price category which includes the value 0 (0-99). As we will see later, this is particularly the case with the ÖVP.
+
+Bearing this caveat in mind and as an 'educated guess', let's focus on the aggregated mid-values of each ad. Again, the `r df_party %>% slice_max(spend_mid) %>% pull(party)` comes out on top with a total of `r df_party %>% slice_max(spend_mid) %>% pull(spend_mid) %>% scales::comma(, prefix="€")` spent. This number exceeds quite considerably the mid-values obtained for the `r df_party %>% slice_max(spend_mid, n=3) %>% slice(2) %>% pull(party)` (`r df_party %>% slice_max(spend_mid, n=3) %>% slice(2) %>% pull(spend_mid ) %>% scales::comma(, prefix="€")`) and the `r df_party %>% slice_max(spend_mid, n=3) %>% slice(3) %>% pull(party)` (`r df_party %>% slice_max(spend_mid, n=3) %>% slice(3) %>% pull(spend_mid) %>% scales::comma(, prefix="€")`).
+
+## Number of ads
+
+For an overview let's plot the pertaining numbers for the top 5 pages of each party (in terms of number of ads). Hover with the mouse over the bars to get details.
+
+<details closed>
+
+<summary>Code: Graph on parties' number of ads </summary>
+
+```{r message=FALSE, warning=FALSE}
+df_pl_pages <- df_ads_wide %>% 
+  ungroup() %>% 
+  group_by(party) %>% 
+  mutate(page_name_lum=fct_lump_n(page_name, n=5,
+                                  other_level="all other")) %>% 
+  ungroup() %>% 
+  group_by(party, page_name_lum) %>% 
+  summarise(ads_n=n(),
+            across(.cols=c(contains("spend_") & where(is.numeric)),
+                   .fns=sum
+                   )) %>% 
+  ungroup() %>% 
+  select(party, page_name_lum, ads_n, spend_lower_bound_rev, spend_mid, spend_upper_bound) %>%   
+  arrange(-ads_n)
+
+pl_pages <- df_pl_pages %>% 
+  mutate(party=fct_relevel(party, levels_party)) %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Number of Facebook ads",
+       subtitle=str_wrap(glue::glue("Top 5 Facebook pages per party in terms of number of ads and one 'lump' category for all other pages. Ads placed between {date_observation_start_format} and {date_observation_end_format}."), 100),
+       caption=my_caption)+
+  geom_bar_interactive(aes(x=ads_n,
+               y=tidytext::reorder_within(x=page_name_lum,
+                                          by = ads_n,
+                                          within = party),
+               tooltip=paste("Number of ads:", ads_n %>% scales::comma(., 
+                                                                       accuracy=1)),
+               fill=party),
+           stat="identity")+
+  scale_y_discrete(labels=function(x) str_extract(x, regex(".*(?=___)")))+
+  scale_x_continuous(expand=expansion(mult=c(0.01, 0.05)),
+                     breaks=seq(0, 1200, 300),
+                     limits=c(0, 1250),
+                     labels=scales::label_comma())+
+  scale_fill_manual(values=vec_party_colors)+
+  lemon::facet_rep_wrap(vars(party),
+                        ncol=2,
+                        repeat.tick.labels = T,
+                        scales = "free_y")+
+  theme_post()+
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(color="grey50", linewidth = 0.1),
+        panel.spacing.x=unit(0, units="cm"),
+        axis.text.y = element_text(size=7),
+        axis.text.x = element_text(size=7),
+        axis.title.x = element_blank())
+```
+
+</details>
+
+
+
+```{r}
+#| echo: false
+#| fig-height: 4
+#| dev: svg
+
+#preview=T
+
+girafe(ggobj=pl_pages,
+                             options=list(
+                               opts_hover_inv(css = "opacity:0.1;"),
+                               opts_hover(css = "fill:#FFA500;color:#FFA500"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               ),
+       height_svg=4)
+```
+
+
+A few details stood out for me: The ÖVP and Blümel's lead in terms of number of ads is quite remarkable. With `r df_pl_pages %>% filter(str_detect(page_name_lum, "Blümel")) %>% pull(ads_n) %>% scales::comma()` ads, Gernot Blümel's tally exceeds the one of Vienna's (previous and new) major Michael Ludwig with `r df_pl_pages %>% filter(str_detect(page_name_lum, "Ludwig")) %>% pull(ads_n) %>% scales::comma()` ads many times over. But even if we would put Blümel's record aside, and only focus on the number of ads bought by his party and colleagues, the ÖVP's strong record remains fully in order. The page of the ÖVP Vienna placed with `r df_pl_pages %>% filter(str_detect(page_name_lum, "Neue Volkspartei Wien")) %>% pull(ads_n) %>% scales::comma()` ads more than the pages of the SPÖ Wien, Michael Ludwig, and the SPÖ Inner Stadt (1st district) together (`r df_pl_pages %>% filter(str_detect(page_name_lum, "SPÖ Wien|Michael Ludwig|SPÖ Innere Stadt")) %>% pull(ads_n) %>% sum(.) %>% scales::comma()`). While I expected the ÖVP to be ahead, I didn't see the gulf to be so wide.
+
+As for the Greens, what stood out to me was the small number of ads placed by the party's main candidate, Birigt Hebein. With only `r df_pl_pages %>% filter(str_detect(page_name_lum, "Hebein")) %>% pull(ads_n) %>% sum(.) %>% scales::comma(., accuracy=1)` ads, her campaign - at least on Facebook's platforms - left the main floor to the party's institutional pages, first and foremost 'Die Grüne Wien' with `r df_pl_pages %>% filter(str_detect(page_name_lum, "Die Grünen Wien")) %>% pull(ads_n) %>% sum(.) %>% scales::comma(., accuracy=1)` ads, but also to the pages of the district branches Hietzing and Penzing with `r df_pl_pages %>% filter(str_detect(page_name_lum, "Die Grünen Hietzing|Grüne Penzing")) %>% pull(ads_n) %>% sum(.) %>% scales::comma(., accuracy=1)` ads in total. (Tellingly, Hebein was effectively removed from the party leadership by her colleagues in the wake of the elections, despite the party's all-time best result).
+
+Finally, what also struck me was the very low number of ads placed by Team Strache. With as little as `r df_pl_pages %>% filter(str_detect(party, regex("Strache", ignore_case=T))) %>% pull(ads_n) %>% sum(.) %>% scales::comma(., accuracy=1)` ads in total, the party had a very limited campaign on Facebook. Even when considering that the party was newly founded, for the former leader of the FPÖ who was renown for its strong social media presence, this was all in all quite a dramatic decline (even if the number of ads and followers are obviously not the same).
+
+## Spending
+
+Let's now look at the money spent on ads. As already mentioned above, the analysis is somewhat complicated by the fact that Facebook does not provide the specific price of an ad, but only the price category of an ad, with its lower and upper bounds. In the graph above, the point indicates the mid-value of the interval, the line's ends the lower and upper bounds.
+
+
+```{r message=FALSE, warning=FALSE}
+#| message: false
+#| warning: false
+#| code-summary: "Code: Graph on expendigure"
+
+df_pl_pages_spend <- df_ads_wide %>% 
+  group_by(party, page_name) %>% 
+  summarise(ads_n=n(),
+            across(.cols=contains("spend_") & where(is.numeric),
+                   .fns=sum)) %>% 
+  ungroup() %>% 
+  select(party, page_name, ads_n, spend_lower_bound_rev, spend_mid, spend_upper_bound) %>%   
+  group_by(party) %>% 
+  mutate(page_name_lum=fct_lump_n(page_name, n=5, 
+                                  w=spend_mid,  #weight frequencies by value
+                                  other_level="all other")) %>% 
+  group_by(party, page_name_lum) %>% 
+  summarise(across(.cols=contains("spend_") & where(is.numeric),
+                   .fns=sum)) %>% 
+  ungroup()
+
+pl_pages_spend <-  df_pl_pages_spend %>% 
+  mutate(party=fct_relevel(party, levels_party)) %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Amount spent of Facebook ads",
+       subtitle=str_wrap(glue::glue("Top 5 Facebook pages per party. Ads placed between {date_observation_start_format} and {date_observation_end_format}. Data only for ad's min/max price category available."), 100),
+       caption=my_caption)+
+  geom_linerange_interactive(aes(xmin=spend_lower_bound_rev,
+                    xmax=spend_upper_bound,
+                    y=reorder_within(x=page_name_lum,
+                                     by = spend_mid,
+                                     within=party),
+                    color=party,
+                    tooltip=paste("min:", spend_lower_bound_rev %>% scales::comma(), "\n",
+                                  "max:", spend_upper_bound %>% scales::comma())))+
+  geom_point_interactive(aes(x=spend_mid,
+                 y=reorder_within(x=page_name_lum,
+                                     by = spend_mid,
+                                     within=party),
+                 color=party,
+                 tooltip=paste("mid:", spend_mid %>% scales::comma())
+                 ))+
+  scale_y_discrete(labels=function(x) str_extract(x, regex(".*(?=___)")))+
+  scale_x_continuous(expand=expansion(mult=c(0,0.05)),
+                     breaks=seq(0, 150000, 50000),
+                     minor_breaks = NULL,
+                     labels=scales::number_format(scale=.001,
+                                                  prefix="€",
+                                                  suffix="k"),
+                     limits=c(0, 150000))+
+  scale_color_manual(values=vec_party_colors)+
+  lemon::facet_rep_wrap(vars(party),
+                        ncol=2,
+                        repeat.tick.labels = T,
+                        scales = "free_y")+
+  theme_post()+
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(color="grey50", linewidth = 0.1),
+        panel.spacing.x=unit(0, units="cm"),
+        axis.text.y = element_text(size=7),
+        axis.text.x = element_text(size=7),
+        axis.title.x = element_blank())
+
+```
+
+
+
+
+```{r}
+#| fig-height: 4
+#| fig-format: svg
+#| echo: false
+
+girafe(ggobj=pl_pages_spend,
+       options=list(
+         opts_hover_inv(css = "opacity:0.1;"),
+         opts_hover(css = "fill:#FFA500;color:#FFA500"),
+         opts_tooltip(css = "background-color:#323E4F;
+         color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               ),
+       height_svg=4)
+```
+
+
+With a few small differences, the general result on spending is congruent with the preceding analysis on the number of ads. The ÖVP and Blümel come out on top. The institutional page of the Greens in Vienna also spent considerably. Note that the top five pages in terms of money spent on ads are not always the top five pages in terms of number of ads bought.
+
+# Impressions
+
+Eventually though, the number and amount spent on ads doesn't tell us anything on how often an ad has been seen. Facebook's ad library provides data on each ad's 'impressions'. An impression is defined as the number of times an ad entered a person's screen.[^2] However, note that these figures do not tell us anything on how many unique individual have actually seen an ad. Furthermore, Facebook only provides interval data for an ad's impression (lower/upper bound). Again, I use the mid-value of these interval as an 'educated guess' and aggregate lower and upper bounds for totals. Hover with the mouse cursor over the graph to get details.
+
+[^2]: See [here.](https://www.facebook.com/business/help/675615482516035){target="_blank"}
+
+
+```{r message=FALSE, warning=FALSE}
+#| code-summary: "Code: Impression of ads"
+
+df_ads_impressions <- df_ads_wide %>% 
+  select(party, page_name, contains("impressions")) %>% 
+  group_by(party, page_name) %>% 
+  summarize(across(.cols=(contains("impressions") & where(is.numeric)), .fns=~sum(., na.rm = T))) %>% 
+  group_by(party) %>% 
+  mutate(page_name_lum=fct_lump_n(page_name, n=5, 
+                                  w=impressions_mid,
+                                  other_level = "all others")) %>% 
+  group_by(party, page_name_lum) %>% 
+  summarise(across(.cols=where(is.numeric), .fns=~sum(., na.rm=T),
+                   .names="sum_{.col}")) %>% 
+  ungroup()
+
+pl_df_impression <-  df_ads_impressions %>% 
+  mutate(party=fct_relevel(party, levels_party)) %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Total number of impressions of Facebook ads",
+       subtitle=str_wrap(glue::glue("Top 5 Facebook pages per party. Ads placed between {date_observation_start_format} and {date_observation_end_format}. Impressions: Number of ads' appearances on a screen."), 100),
+       caption=my_caption)+
+  geom_linerange_interactive(aes(xmin=sum_impressions_lower_bound,
+                    xmax=sum_impressions_upper_bound,
+                    y=reorder_within(x=page_name_lum,
+                                     by = sum_impressions_mid,
+                                     within=party),
+                    color=party))+
+                    # tooltip=paste("min:", sum_impressions_lower_bound %>% scales::comma(), "\n",
+                    #               "max:", sum_impressions_upper_bound %>% scales::comma())))+
+  geom_point_interactive(aes(x=sum_impressions_mid,
+                 y=reorder_within(x=page_name_lum,
+                                     by = sum_impressions_mid,
+                                     within=party),
+                 color=party,
+                 tooltip=paste("min:", sum_impressions_lower_bound %>% scales::comma(),"\n",
+                               "mid:", sum_impressions_mid %>% scales::comma(),"\n",
+                 "max:", sum_impressions_upper_bound %>% scales::comma())))+
+  scale_y_discrete(labels=function(x) str_extract(x, regex(".*(?=___)")))+
+  scale_x_continuous(expand=expansion(mult=c(0.01, 0.05)),
+                     breaks=seq(0, 15*10^6, 5*10^6),
+                     minor_breaks = NULL,
+                     labels=scales::number_format(scale=.000001,
+                                                  accuracy = 1,
+                                                  suffix="m")
+                     )+
+  scale_color_manual(values=vec_party_colors)+
+  lemon::facet_rep_wrap(vars(party),
+                        ncol=2,
+                        repeat.tick.labels = T,
+                        scales = "free_y")+
+  theme_post()+
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(color="grey50", linewidth = 0.1),
+        panel.spacing.x=unit(0, units="cm"),
+        axis.text.y = element_text(size=7),
+        axis.text.x = element_text(size=7),
+        axis.title.x = element_blank())
+
+```
+
+
+```{r }
+#| fig-height: 4
+#| fig-format: svg
+#| echo: false
+
+girafe(ggobj=pl_df_impression,
+       options=list(
+         opts_hover_inv(css = "opacity:0.1;"),
+         opts_hover(css = "fill:#FFA500;color:#FFA500"),
+         opts_tooltip(css = "background-color:#323E4F;
+         color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               ),
+       opts_toolbar(saveaspng = FALSE), 
+       height_svg=4)
+```
+
+What stands out is the value obtained for the institutional Facebook page of the Greens. With a total value of impressions ranging between `r df_ads_impressions %>% filter(str_detect(party, regex("Greens", ignore_case=T))) %>% slice_max(., n=1, order_by=sum_impressions_mid) %>% pull(sum_impressions_lower_bound) %>% comma()` and `r df_ads_impressions %>% filter(str_detect(party, regex("Greens", ignore_case=T))) %>% slice_max(., order_by=sum_impressions_mid, n=1) %>% pull(sum_impressions_upper_bound) %>% comma()`, the page's ads exceed the values by the pages of the ÖVP despite the latter's higher number of ads.
+
+## Distribution of ads over impression categories
+
+To get a better idea where the Green's high impression number comes from, let's disaggregate the total number of ads by their impression category. The table below shows for each impression interval, a) the number of ads per page, b) each interval's share of the page's total number of ads, and c) the contribution of the ads of each impression category to the total number of impressions. Note that these latter values are calculated on the basis of the mid values of each impression interval (e.g. impression category \<1K = 0 - 999 impressions; mid value = 499.5)!
+
+```{r message=FALSE, warning=FALSE}
+#| message: false
+#| warning: false
+#| code-summary: "Code: Distribution of ads over impression categories"
+
+df_impression_cat <- df_ads_wide %>% 
+  group_by(party) %>% 
+  mutate(page_name_lum=fct_lump_n(page_name, n=5,
+                                  other_level="all other")) %>% 
+  group_by(party, page_name_lum, impressions_category, .drop=T) %>% 
+  summarise(n_abs=n()) %>% 
+  group_by(party, page_name_lum) %>% 
+  mutate(n_total=sum(n_abs)) %>% 
+  mutate(n_rel=n_abs/n_total) %>% 
+  arrange(-n_rel, .by_group=T) %>% 
+  ungroup() %>% 
+  mutate(indicator=case_when(str_detect(page_name_lum, "Die Grünen Wien$") & 
+                               impressions_category=="10000-14999"
+~ "yes",
+                         TRUE ~ "no"))
+```
+
+```{r message=FALSE, warning=FALSE}
+fn_impression_label <- function(x) {
+  str_extract(x, ".*(?=-)") %>% 
+    as.numeric(.) %>% 
+    scales::comma(.,
+                  scale=0.001,
+                  accuracy=1,
+                  suffix="K")
+    
+}
+```
+
+
+```{r}
+#| code-summary: "Code: Table"
+#| warning: false
+#| message: false
+
+df_tb_impression_cat <- df_ads_wide %>% 
+  group_by(party) %>% 
+  mutate(page_name_lum=fct_lump_n(page_name, n=5,
+                                  other_level="all other")) %>% 
+  group_by(party, page_name_lum, impressions_category, .drop=T) %>% 
+  summarise(n_abs=n()) %>% 
+  group_by(party, page_name_lum) %>% 
+  mutate(n_total=sum(n_abs)) %>% 
+  mutate(n_rel=n_abs/n_total) %>% 
+  arrange(-n_rel, .by_group=T) %>% 
+  ungroup() %>% 
+  mutate(indicator=case_when(str_detect(page_name_lum, "Die Grünen Wien$") &
+                               impressions_category=="10000-14999"
+~ "yes",
+                         TRUE ~ "no")) %>% 
+  #impression_mid_point
+  separate(impressions_category, 
+           into=c("impression_min", "impression_max"),
+           sep = "-",
+           remove=F) %>% 
+  mutate(across(.cols=c("impression_min", "impression_max"),
+                .fns=as.numeric)) %>% 
+  mutate(impression_mid=(impression_max-impression_min)/2+impression_min) %>% 
+  mutate(across(.cols=starts_with("impression") & !contains("category"), 
+                .fns=function(x) x*n_abs,
+                .names = "abs_{.col}"))
+
+
+tb_impression_cat <- df_tb_impression_cat %>% 
+  filter(str_detect(page_name_lum, "Die Grünen Wien$|Gernot Blümel|Neue Volkspartei Wien")) %>% 
+  select(page_name_lum, impressions_category, n_abs, n_rel, starts_with("abs_impression")) %>% 
+  pivot_wider(id_cols="impressions_category",
+              names_from="page_name_lum",
+              names_glue="{page_name_lum}_{.value}", #first name then value
+              values_from=c(n_abs, n_rel, starts_with("abs")),
+              values_fill = 0,
+              names_sort=T) %>% 
+  select(impressions_category, starts_with("Die Grünen"), starts_with("Gernot"), starts_with("Neue")) %>% 
+  janitor::clean_names() %>% 
+  ungroup() %>% 
+  # mutate(xx=sum(die_grunen_wien_abs_impression_min, na.rm = T))
+  mutate(across(.cols=contains("_abs_impression_"), 
+                .fns=~sum(.,na.rm=T),
+                .names="{.col}_sum")) %>% 
+  mutate(die_grunen_abs_impression_mid_rel=die_grunen_wien_abs_impression_mid/die_grunen_wien_abs_impression_mid_sum,
+         gernot_blumel_abs_impression_mid_rel=gernot_blumel_abs_impression_mid/gernot_blumel_abs_impression_mid_sum,
+         neue_volkspartei_wien_abs_impression_mid_rel=neue_volkspartei_wien_abs_impression_mid/neue_volkspartei_wien_abs_impression_mid_sum) %>% 
+    select(impressions_category, contains("grunen"), contains("blumel"), contains("volkspartei")) 
+
+```
+
+```{r}
+orange_pal <- function(x) rgb(colorRamp(c(plot_bg_color, "#ff9500"))(x), maxColorValue = 255)
+firebrick_pal <- function(x) rgb(colorRamp(c(plot_bg_color, "#B22222"))(x), maxColorValue = 255)
+
+
+rt_impressions <- reactable(tb_impression_cat %>% 
+            mutate(impressions_category=str_extract(impressions_category, regex("(?<=-).*")) %>% 
+                     as.numeric()+1 ) %>% 
+            mutate(impressions_category = impressions_category / 1000) %>%                 #%>% #keep numeric
+              arrange(impressions_category) %>% 
+            select(-ends_with("_sum"), -ends_with("_min"), -ends_with("_max"),
+                   -ends_with("_mid")),   
+          columns=list(
+            "impressions_category"=colDef(name="impression\ncategory", 
+                                          width=100,
+                                          sortable = T,
+                                          format=colFormat(prefix="<",
+                                                           suffix="K"),
+                                          style = list(borderRight = "1px solid rgba(0, 0, 0, 0.1)")),
+            "die_grunen_wien_n_abs"=colDef(name="Die Grünen Wien", minWidth=50),
+            "die_grunen_wien_n_rel"=colDef(name="Die Grünen Wien",
+                                           format = colFormat(percent=T,
+                                                              digits=1), 
+                                           style=function(value){
+                                          
+                                          color <- orange_pal(value)
+                                          list(background=color)
+                                        },
+                                          minWidth=50),
+            "die_grunen_abs_impression_mid_rel"=colDef(name="Die Grünen Wien", 
+                                        format=colFormat(percent=T,
+                                                                  digits = 1),
+                                        style=function(value){
+                                          
+                                          color <- firebrick_pal(value)
+                                          list(background=color)
+                                        },
+                                          minWidth=50),
+            "gernot_blumel_abs_impression_mid_rel"=colDef(name="Gernot Blümel", 
+                                        format=colFormat(percent=T,
+                                                                  digits = 1),
+                                        style=function(value){
+                                          
+                                          color <- firebrick_pal(value)
+                                          list(background=color)
+                                        },
+                                        minWidth=50),
+            "neue_volkspartei_wien_abs_impression_mid_rel"= colDef(name="Neue Volkspartei Wien", 
+                                        format=colFormat(percent=T,
+                                                                  digits = 1),
+                                        style=function(value){
+                                          
+                                          color <- firebrick_pal(value)
+                                          list(background=color)
+                                        },
+                                          minWidth=50),
+            "gernot_blumel_n_abs"=colDef(name="Gernot Blümel", minWidth=50),
+            "gernot_blumel_n_rel"=colDef(name="Gernot Blümel",
+                                         format=colFormat(percent=T,
+                                                          digits=1),
+                                          style=function(value){
+                                          
+                                          color <- orange_pal(value)
+                                          list(background=color)
+                                        },
+                                         minWidth=50),
+ 
+            "neue_volkspartei_wien_n_abs"=colDef(name="Neue Volkspartei Wien", minWidth=50),
+            "neue_volkspartei_wien_n_rel"=colDef(name="Neue Volkspartei Wien",
+                                                 format=colFormat(percent=T,
+                                                                  digits = 1),
+                                                  style=function(value){
+                                          
+                                          color <- orange_pal(value)
+                                          list(background=color)
+                                        },
+                                                 minWidth=50)),
+            columnGroups = list(
+              colGroup(name="number of page's ads ",
+                       align="left",
+                       columns=str_subset(names(tb_impression_cat), regex("n_abs$"))),
+              colGroup(name="% of page's total ads",
+                       align="left",
+                       columns=str_subset(names(tb_impression_cat), regex("n_rel$"))),
+              colGroup(name="% of page's total impressions",
+                       align="left",
+                       columns=str_subset(names(tb_impression_cat), regex("mid_rel$")))),
+ sortable = T,
+ filterable = F,
+ compact = T,
+ fullWidth = T,
+ defaultPageSize = 15,
+ theme=rt_theme
+)
+
+```
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#table.start
+# fn_reactable_headings(title="Impressions",
+#                       subtitle="",
+#                       body = rt_impressions,
+#                       caption = my_caption)
+#table.end
+
+rt_impressions %>%
+add_title(title="Impressions") %>%
+add_source(source=my_caption)
+
+```
+
+<br>
+Let's start with the lowest impression category, ads with fewer than 1000 impressions (<1K). As the table shows, Gernot Blümel ran `r df_impression_cat %>% filter(str_detect(page_name_lum, "Blümel")) %>% filter(impressions_category=="0-999") %>% pull(n_abs)` ads in this category. This number represents `r df_impression_cat %>% filter(str_detect(page_name_lum, "Blümel")) %>% filter(impressions_category=="0-999") %>% pull(n_rel) %>% percent(.,accuracy=.1)` of all ads bought by his page. Remarkably though, despite this high number, these ads only contributed `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(gernot_blumel_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` of the total number of impressions generated by all his ads. This discrepancy is quite remarkable, however, the situation is not much different for the other two pages with the overall largest number of pages. The `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(die_grunen_wien_n_abs)` ads of the page of the Wiener Grünen amounted to `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(die_grunen_wien_n_rel) %>% percent(., accuracy=.1)` of all their ads, but contributed as little as `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(die_grunen_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` of the total number of impressions. For the page of the Neue Wiener Volkspartei the `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(die_grunen_wien_n_abs)` ads triggered only `r tb_impression_cat %>% filter(impressions_category=="0-999") %>% pull(neue_volkspartei_wien_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` of the overall impression.
+
+Hence, the question - where does the larger chunks of impressions come from?
+
+You can sort the columns by clicking on their headings. If you sort, the pertaining column of the Viennese Greens, you'll see that `r tb_impression_cat %>% filter(str_detect(impressions_category, "699999")) %>% pull(die_grunen_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` of their total impressions originated from as little as `r tb_impression_cat %>% filter(str_detect(impressions_category, "699999")) %>% pull(die_grunen_wien_n_abs)` ads in the category of \<700K impressions, or `r tb_impression_cat %>% filter(str_detect(impressions_category, "699999")) %>% pull(die_grunen_wien_n_rel) %>% percent(., accuracy=.1)` of its total number of ads. Another `r tb_impression_cat %>% filter(str_detect(impressions_category, "899999")) %>% pull(die_grunen_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` come from from only `r tb_impression_cat %>% filter(str_detect(impressions_category, "899999")) %>% pull(die_grunen_wien_n_abs)` ads from the \<900K category. Hence, in short, the total number of impressions seems rather concentrated on a few ads. As with the page of Gernot Blümel, the picture is somewhat similar. `r tb_impression_cat %>% filter(str_detect(impressions_category, "124999")) %>% pull(gernot_blumel_abs_impression_mid_rel) %>% percent(.,accuracy=.1)` of all impressions generated by his ads originate from only `r tb_impression_cat %>% filter(str_detect(impressions_category, "124999")) %>% pull(gernot_blumel_n_abs)` ads in the \<125K impressions category.
+
+Another way to visualize the origin of the difference in impressions is the graph below. The x-axis shows the impression categories/intervals of ads in increasing order. The y-axis shows the total number of impressions if we accumulate the impressions over the different impression categories. The graph reveals that the Green's strong impression numbers are largely due to their ads placed in the highest impression categories (larger than 400K impressions). Neither Blümel nor Nepp had placed any ads in these categories.
+
+```{r}
+#| code-summary: "Code: Impressions per ad category"
+
+df_pl_impression <- df_tb_impression_cat %>% 
+  mutate(impressions_category_num=str_extract(impressions_category, regex("(?<=-).*")) %>% 
+                     as.numeric()+1 ) %>% 
+  mutate(impressions_category_num = impressions_category_num / 1000) %>% 
+  mutate(impressions_category_fac = as_factor(impressions_category_num)) %>%  
+  mutate(impressions_category=fct_reorder(impressions_category, impressions_category_num)) %>% 
+  arrange(impressions_category) %>% 
+  group_by(page_name_lum) %>% 
+  mutate(across(.cols=starts_with("abs_impression"),
+                .fns=list(cumsum=cumsum),
+                .names="{.fn}.{.col}")) %>% 
+  ungroup() %>% 
+  filter(str_detect(page_name_lum, regex("Blümel|Nepp|Die Grünen Wien$"))) 
+
+
+df_pl_impression %>% 
+  group_by(page_name_lum) %>%
+  slice_tail(n=1) %>% 
+  ungroup() %>% 
+  filter(str_detect(page_name_lum, "Grünen"))
+
+pl_impression <- df_pl_impression %>% 
+  arrange(impressions_category_num) %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Total impressions by impression category",
+       subtitle="Top 3 pages with most total impressions.",
+       y="impressions, accumulated",
+       x="impression category of ads",
+       caption=my_caption)+
+  geom_vline(xintercept=seq(0.5, length(df_pl_impression$impressions_category_fac)+.5),
+             linetype="dotted",
+             color="grey50")+
+  geom_pointrange(aes(x=impressions_category_fac,
+                      y=cumsum.abs_impression_mid,
+                      ymin=cumsum.abs_impression_min,
+                      ymax=cumsum.abs_impression_max,
+                      color=party))+
+  geom_line(aes(x=impressions_category_fac,
+                y=cumsum.abs_impression_mid,
+                group=page_name_lum,
+                color=party))+
+  geom_text(data=. %>% 
+              group_by(page_name_lum) %>%
+              slice_tail(n=1) %>% 
+              ungroup() %>% 
+              filter(!str_detect(page_name_lum, "Grünen")),
+            aes(x=impressions_category_fac,
+                y=cumsum.abs_impression_mid,
+                label=page_name_lum, 
+                color=party),
+            hjust=0,
+            nudge_x=1)+
+    geom_text(data=. %>% 
+              group_by(page_name_lum) %>%
+              slice_tail(n=1) %>% 
+              ungroup() %>% 
+              filter(str_detect(page_name_lum, "Grünen")),
+            aes(x=impressions_category_fac,
+                y=cumsum.abs_impression_mid,
+                label=page_name_lum, 
+                color=party),
+            hjust=1,
+            fontface="bold",
+            nudge_x=-1)+
+  scale_y_continuous(labels=scales::label_comma(scale=10^-6,
+                                                accuracy=1,
+                                                suffix="m"),
+                     expand=expansion(mult=c(0,0)))+
+  scale_x_discrete(label=function(x) paste0("<",x,"K"),
+                   guide= guide_axis(n.dodge = 2),
+                   expand=expansion(ad=c(0.5, 3)))+
+  scale_color_manual(values=vec_party_colors)+
+  theme_post()+
+  theme(axis.title.y=element_markdown(angle=90,
+                                      hjust=1,
+                                      color="grey50"),
+        axis.text.x = element_markdown(color="grey50"),
+        panel.grid.minor.x = element_line(linewidth=1),
+        legend.position = "none")
+```
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+pl_impression
+```
+
+# Demography
+
+## Age
+
+Now let's turn to some of the demographic data provided by Facebook's ad library API. One demographic property is age. For this we have to unnest again the pertaining field. A critical detail here is to calculate an ad's audience share for every age group. E.g. if an ad has an audience share of 100 % in the age group of 25 to 34, we still want to have the observations for all the other age group's (with the resulting values of 0 %). Otherwise, with these observations missing, the subsequent calculation of i.e. the median per each age group would be distorted. These observations are created with the `complete` and `nesting` function of the `tidyr` package.
+
+
+```{r}
+#| code-summary: "Code: Unnest age list column"
+
+df_age <- df_ads_wide %>% 
+  select(name_party, party, page_name, ad_id, ad_creative_body, demographic_distribution_df, impressions_mid) %>% 
+  unnest(cols=c(demographic_distribution_df)) %>% 
+  mutate(percentage=as.numeric(percentage)) %>% 
+  group_by(party) %>% 
+  mutate(name_party_lum=fct_lump(name_party, n=3, other_level="all others")) %>% 
+  group_by(party, name_party_lum, page_name, ad_id, age, impressions_mid, .drop=T) %>% 
+  summarize(age_share=sum(percentage)) %>% #sum across all genders for one ad
+  ungroup() %>% 
+  complete(age, nesting(ad_id, name_party_lum, party, page_name, impressions_mid), fill=list(age_share=0)) %>% 
+  mutate(party=fct_relevel(party, levels_party)) %>% 
+  group_by(age, name_party_lum) %>% 
+  mutate(median_share=median(age_share, na.rm=T)) %>% 
+  ungroup()
+
+#every adid should appear in each age segment; => each adid should have 7 occurances;
+check <- df_age %>% 
+  group_by(ad_id) %>% 
+  summarise(n=n())
+#summary(check$n)
+
+# levels_main_pages <- c("Michael Ludwig","Gernot Blümel","Birgit Hebein","Christoph Wiederkehr","Dominik Nepp","Heinz-Christian Strache / HC Strache","Die Bierpartei")
+vec_main_pages <- c("Gernot Blümel|Michael Ludwig|Birgit Hebein|Christoph Wiederkehr|Dominik Nepp|Heinz-Christian Strache / HC Strache|Die Bierpartei")
+
+df_age_stats <-  df_age %>% 
+  filter(str_detect(page_name, regex(vec_main_pages))) %>%
+  mutate(name_party_lum=fct_drop(name_party_lum)) %>% 
+  group_by(name_party_lum, age) %>% 
+  summarise(category_median=median(age_share, na.rm=T),
+            category_mean=stats::weighted.mean(x=age_share,  #weighted mean
+                                        w=impressions_mid,
+                                        na.rm=T),
+            category_sd=sd(age_share, na.rm=T)) %>% 
+  group_by(age) %>% 
+  mutate(category_median_max=max(category_median, na.rm=T)) %>% 
+  mutate(category_median_max_indic=case_when(category_median_max == category_median ~ "max",
+                                             TRUE ~ as.character("not max"))) %>% 
+  ungroup()
+```
+
+
+```{r}
+#| include: false
+
+sample_ad <- "MichaelLudwig-2020-09-10-195"
+
+df_example <- df_age %>% 
+  filter(ad_id==sample_ad) %>% 
+  left_join(., df_ads_wide %>% 
+              select(ad_id, ad_creative_body),
+            by="ad_id") %>% 
+  select(page_name, ad_id, ad_creative_body, age, age_share) 
+
+df_example %>% 
+  slice(1) %>% 
+  select(page_name, ad_creative_body)
+```
+
+As an illustration, the ad with the text
+
+`r kableExtra::text_spec(df_example %>% slice(1) %>% pull(ad_creative_body) %>% str_remove(., "\n") %>% str_replace(., "\n", " "), italic="true", font_size=14)`
+
+run by the page of `r df_example %>% slice(1) %>% pull(page_name)` has the following age distribution:
+
+```{r echo=FALSE}
+df_example %>% 
+  select(starts_with("age"))
+
+```
+
+The graph below plots one dot for each age share for every ad. To better compare the audience shares between candidates, I added a boxplot to the graph. It provides us with a summary of the distribution of all ads' audience shares for each candidate in each age group. The vertical line within the box is the median value. Hover with the mouse over one dot to get details on the ad and highlight the ad's impression share in the other age categories.
+
+
+```{r}
+#| code-summary: "Code: Plot age profile of ads"
+#| message: false
+#| warning: false
+
+pl_demographics <- df_age %>% 
+  mutate(ad_id=str_replace_all(ad_id, "'"," ")) %>% 
+  filter(str_detect(page_name, regex(vec_main_pages))) %>%
+  mutate(name_party_lum=fct_drop(name_party_lum)) %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Age profile of Facebook ads' audience",
+       subtitle=str_wrap(glue::glue("Each dot represents one ad's audience share in a specific age group. Each ad has one dot in every age group. Over all age groups, each ad has an audience of 100 %. Only top candidates. Ads placed between {date_observation_start_format} and {date_observation_end_format}."), 110),
+x="Share of age group in ad's overall audience",
+y=NULL,
+caption=my_caption)+
+  #geoms
+  geom_jitter_interactive(aes(
+    y=reorder_within(x=name_party_lum,
+                     by=median_share,
+                     within = age),
+                  x=age_share,
+                  tooltip=glue::glue("Ad id: {ad_id},
+                                     Age group share: {scales::percent(age_share)}"),
+                  data_id=ad_id),
+                  fill="transparent",
+                  color="grey50",
+                  alpha=0.9,
+                  height = 0.1, 
+                  size=.3,
+                  width = 0.05)+
+  geom_boxplot(aes(
+    y=reorder_within(x=name_party_lum,
+                     by=median_share,
+                     within = age),
+                   x=age_share,
+    #weight=impressions_mid,
+    color=party),
+    outlier.shape = NA,
+    fill="transparent")+
+#headings
+ geom_text(aes(y=length(unique(name_party_lum))+1,
+            x=1.2),
+            label="median", 
+            size=2.5,
+            hjust=1,
+            check_overlap = T)  +
+  geom_text(aes(y=length(unique(name_party_lum))+1,
+            x=1.4),
+            label="SD", 
+            size=2.5,
+            hjust=1,
+            check_overlap = T)  +
+  #median values
+  geom_text(data=df_age_stats,
+            aes(x=1.2,
+                y=reorder_within(x=name_party_lum,
+                                               by=category_median,
+                                               within = age
+                                                 ),
+                label=c(category_median %>% scales::percent(.,
+                                                            suffix="",
+                                                            accuracy=0.1))),
+            fontface=ifelse(df_age_stats$category_median_max_indic=="max",
+                         "bold", "plain"),
+            size=2.5,
+            hjust=1)+
+  #sd values
+  geom_text(data=df_age_stats,
+            aes(x=1.4,
+                y=reorder_within(x=name_party_lum,
+                                               by=category_median,
+                                               within = age
+                                                 ),
+                label=c(category_sd %>% scales::percent(.,
+                                                        suffix="",
+                                                        accuracy=0.1))),
+            hjust=1,
+            size=2.5)+
+  scale_y_discrete(labels=function(x) str_extract(x, regex(".*(?=\\(|___)")),
+                   expand=expansion(mult=c(0, 0.25)),
+  drop=T)+
+  scale_x_continuous(labels=scales::percent,
+                     expand=expansion(mult=c(0,0.2)),
+                     breaks=seq(0,1,.5))+
+  scale_color_manual(values=vec_party_colors)+
+  lemon::facet_rep_wrap(vars(age),
+                        labeller=as_labeller(function(x) paste("age group:", x)),
+                        ncol=2,
+                        scales="free_y",
+                        repeat.tick.labels = T)+
+  theme_post()+
+  theme(legend.position = "none",
+        axis.title.y = element_markdown(size=6, 
+                                        angle=90,
+                                        color = "grey50",
+                                        hjust = 1),
+        axis.text.x = element_text(size=7),
+        axis.title.x = element_markdown(size=7, hjust=0),
+        axis.text.y=element_text(size=9),
+        panel.spacing.x = unit(0, units="cm"),
+        panel.grid.major.y = element_blank())
+
+ggsave("pl_demographics.png",
+       plot = pl_demographics,
+       dpi=300,
+       device="png")
+
+
+```
+
+
+```{r}
+#| fig-height: 7
+#| message: false
+#| warning: false
+#| fig-format: svg
+
+girafe(ggobj=pl_demographics,
+                             options=list(
+                               opts_hover_inv(css = "opacity:0.0;"),
+                               opts_hover(css = "fill:orange;colour:orange;
+                                          opacity:1;r:3pt;"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000),
+                               opts_toolbar(saveaspng = FALSE) 
+                               ),
+       height_svg=7)
+```
+
+I won't go through all details, but to understand the graph let's have a look at the age group 25-34. Ads placed by the Green's main candidate Hebein have a median audience share of `r df_age_stats %>% filter(str_detect(name_party_lum, "Hebein")) %>% filter(age=="25-34") %>% pull(category_median) %>% scales::percent()` in this age group. No other main candidate had such high median audience share in this or any other age group. On the other hand, if we look at higher/older age groups, we can see that Hebein's medians were the lowest from the age 45 up. In contrast, Mayor Ludwig featured comparably high values in the older age groups. More generally, across age groups candidates have higher values in the age groups 25-54. Gernot Blümel has relatively evenly distributed audience shares. However, note that Blümel features in almost every age group a few (outlier) ads which have an audience share of 100% in the respective age group. These were ads which were particularly targeted at this specific age group.
+
+## Gender
+
+Another demographic detail provided by Facebook's ad library is the gender composition of an ad's audience. Going back to our previous sample ad by Michael Ludwig, we obtain the following data:
+
+```{r}
+#| echo: false
+
+df_sample_age_gender <- df_ads_wide %>% 
+  select(name_party, party, page_name, ad_id, demographic_distribution_df) %>% 
+  unnest(cols=c(demographic_distribution_df)) %>% 
+  mutate(percentage=as.numeric(percentage)) %>% 
+  group_by(party) %>% 
+  mutate(name_party_lum=fct_lump(name_party, n=3, other_level="all others")) %>% 
+  ungroup() %>% 
+  complete(age, gender, nesting(ad_id, name_party_lum, party, page_name), fill=list(percentage=0)) %>%
+  filter(ad_id==sample_ad) %>% 
+  select(age, gender, percentage) %>% 
+  pivot_wider(id_cols=age,
+              names_from = gender,
+              values_from = percentage)
+
+df_sample_age_gender
+```
+
+Let's aggregate these percentages to get subtotals for each gender.
+
+```{r}
+#| echo: false
+
+df_sample_gender <- df_sample_age_gender %>% 
+  select(where(is.numeric)) %>% 
+  mutate(across(.cols=where(is.numeric), .fns=sum)) %>% 
+  slice(1)
+
+df_sample_gender
+```
+
+Hence, in this specific case, `r df_sample_gender %>% pull(female) %>% scales::percent()` of the ad's audience were women.
+
+We can apply this analysis to all ads of an candidate and contrast the obtained average with those of other candidates. The results are presented in the graph below.
+
+Each gray dot represents one ad's audience share of the respective gender group. Again, the vertical line inside the boxplot indicates the median value of all ads' audience shares of a candidate in one gender group.
+
+
+```{r}
+#| code-summary: "Code: Gender of ads' audience"
+#| message: false
+#| warning: false
+
+df_gender <- df_ads_wide %>% 
+  select(name_party, party, page_name, ad_id, demographic_distribution_df) %>% 
+  unnest(cols=c(demographic_distribution_df)) %>% 
+  mutate(percentage=as.numeric(percentage)) %>% 
+  group_by(party) %>% 
+  mutate(name_party_lum=fct_lump(name_party, n=3, other_level="all others"))   
+
+```
+ 
+```{r}
+#| include: false
+nrow(df_gender)
+```
+
+
+```{r}
+#| warning: false
+
+df_gender <- df_gender  %>%
+ungroup() %>% #added
+  tidyr::complete(gender, nesting(ad_id, name_party_lum, party, page_name), fill=list(percentage=0))  %>%
+  group_by(party, name_party_lum, page_name, ad_id, gender) %>%
+  summarise(gender_sum=sum(percentage, na.rm = T, .drop=F)) %>% ##nesting needed
+  ungroup() %>% 
+  mutate(party=fct_relevel(party, levels_party)) %>% 
+  mutate(name_party_lum=fct_reorder(name_party_lum, as.numeric(party)))
+
+```
+ 
+```{r}
+#| include: false
+
+nrow(df_gender)
+```
+
+
+```{r}
+#| warning: false
+
+# 3 observations for each ad (male/female/unknown)
+# check <- df_gender %>% 
+#   group_by(ad_id) %>% 
+#   summarise(n_ads=n())
+# summary(check)
+
+df_gender_stats <- df_gender %>% 
+  group_by(name_party_lum, page_name, gender) %>% 
+  summarise(
+    gender_mean=mean(gender_sum, na.rm=T),
+    gender_median=median(gender_sum, na.rm=T),
+    gender_sd=sd(gender_sum, na.rm=T),
+            ) %>% 
+  filter(str_detect(page_name, vec_main_pages)) %>% 
+  filter(gender!="unknown") 
+
+pl_gender <- df_gender %>% 
+  filter(str_detect(page_name, vec_main_pages)) %>% 
+  filter(gender!="unknown") %>% 
+  ggplot()+
+  labs(title="WIEN-WAHL 2020: Gender profile of Facebook ads' audience",
+       subtitle=str_wrap(glue::glue("Each dot represents one ad's audience share in a specific gender group. Each ad has one dot in every gender group. Over all age groups, each ad has an audience of 100 %. Only top candidates. Ads placed between {date_observation_start_format} and {date_observation_end_format}. Category 'unknown' not shown."),110),
+       x="Share of gender group in ad's overall audience",
+       caption=my_caption)+
+  geom_jitter_interactive(aes(y=gender,
+                  x=gender_sum,
+                  tooltip=glue::glue("Ad id: {ad_id},
+                                     Share: {scales::percent(gender_sum)}"),
+                  data_id=ad_id),
+                  color="grey50",
+                  alpha=0.9,
+                  height = 0.2, 
+                  size=.3,
+                  width = 0.01)+
+  geom_boxplot(aes(y=gender,
+                   x=gender_sum,
+                   color=party),
+               outlier.shape = NA,
+               fill="transparent")+
+  #labels
+  geom_text(aes(y=length(unique(gender))+1,
+            x=1.2),
+            label="median", 
+            size=2.5,
+            hjust=1,
+            check_overlap = T)  +
+  geom_text(aes(y=length(unique(gender))+1,
+            x=1.3),
+            label="SD", 
+            size=2.5,
+            hjust=1,
+            check_overlap = T)  +
+  #median values
+  geom_text(data=df_gender_stats,
+            aes(x=1.2,
+                y=gender,
+                label=gender_mean %>% scales::percent(.,
+                                                            suffix="",
+                                                            accuracy=0.1)),
+            # fontface=ifelse(df_age_stats$category_median_max_indic=="max",
+            #              "bold", "plain"),
+            size=2.5,
+            hjust=1)+
+  #sd values
+  geom_text(data=df_gender_stats,
+            aes(x=1.3,
+                y=gender,
+                label=gender_sd %>% scales::percent(.,
+                                                        suffix="",
+                                                        accuracy=0.1)),
+            hjust=1,
+            size=2.5)+
+  #scales
+  scale_color_manual(values=vec_party_colors)+
+  scale_x_continuous(labels=scales::label_percent())+
+  scale_y_discrete(expand=expansion(add=c(0, 1.5)), drop=T)+
+  facet_wrap(vars(name_party_lum),
+             ncol=1)+
+  theme_post()+
+  theme(legend.position = "none",
+        axis.text.y=element_text(size=9),
+        panel.spacing.x = unit(0, units="cm"),
+        panel.grid.major.y = element_blank(),
+                axis.text.x = element_text(size=7),
+        axis.title.x = element_markdown(size=7, hjust=0))
+
+
+ggsave("pl_gender.png", 
+       plot = pl_gender,
+       dpi=300,
+       device="png")
+
+```
+
+
+```{r}
+#| echo: false
+#| fig-height: 5
+#| message: false
+#| fig-format: svg
+
+
+girafe(ggobj=pl_gender,
+                             options=list(
+                               opts_hover_inv(css = "opacity:0.0;"),
+                               opts_hover(css = "fill:orange;colour:orange;opacity:1;r:3pt;"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000),
+                               opts_toolbar(saveaspng = FALSE) 
+                               ),
+       height_svg=5)
+```
+
+What we can see is that for all main candidates the median value of the male audience share is larger than that of the female audience share. The differences between the median values are particularly apart for Strache. But even for the Greens with their female candidate Hebein, ads were seen on average more often by men than by women.
+
+This result made me wonder whether there were in fact any major Facebook pages during the campaign whose ads were seen on average by more women than men.
+
+
+```{r}
+#| code-summary: "Code: Page with female audience"
+#| message: false
+#| warning: false
+
+df_female <- df_gender %>% 
+  select(party, page_name, gender, gender_sum) %>% 
+  group_by(party, page_name, gender) %>% 
+  mutate(n_ads=n()) %>% 
+  group_by(party, page_name, gender, n_ads) %>% 
+  summarise(across(.cols=gender_sum,
+                   .fns = list(mean=mean,
+                               median=median,
+                               sd=sd))) %>% 
+  filter(gender=="female" & gender_sum_median >.5) %>% 
+  arrange(desc(gender_sum_median)) %>% 
+  ungroup()
+
+
+rt_female <- reactable(df_female,
+          columns =list(
+            party=colDef(name="Party"),
+            page_name=colDef(name="page"),
+            n_ads=colDef(name="# ads"),
+            gender=colDef(show=F),
+            gender_sum_mean=colDef(name="mean",
+                                   format = colFormat(percent=T,
+                                                      digits = 1)),
+            gender_sum_median=colDef(name="median",
+                                   format = colFormat(percent=T,
+                                                      digits = 1)),
+            gender_sum_sd=colDef(name="SD",
+                                   format = colFormat(percent=T,
+                                                      digits = 1))),
+          columnGroups = list(
+            colGroup(name="female audience share",
+                     columns=c("gender_sum_mean", "gender_sum_median","gender_sum_sd"))
+          ),
+          theme=rt_theme,
+          defaultPageSize=11,
+          sortable = T,
+          borderless = T,
+          filterable = T,
+          outlined = TRUE)
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| inclue: false
+
+
+# #table.start
+# fn_reactable_headings(title="WIEN-WAHL 2020: Accounts which placed ads with a median female audience share of >50%", subtitle="", body = rt_female, caption=my_caption)
+# #table.end
+
+rt_female %>%
+add_title(title="WIEN-WAHL 2020: Accounts which placed ads with a median female audience share of >50%") %>%
+add_source(source=my_caption)
+
+```
+<br>
+Indeed, as the table above shows there were indeed a few pages with an average female audience share larger than 50 %. What is noteworthy, these pages belong almost exclusively to the Greens. There were only `r df_female %>% filter(party=="SPÖ") %>% nrow()` pages which belonged to the SPÖ, and `r df_female %>% filter(party=="ÖVP") %>% nrow()` to the ÖVP. There was not a single page from the FPÖ, Strache and, more surprisingly, the Neos.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+df_female %>% 
+  count(party)
+```
+
+# Fin
+
+So, again a blog post which got much longer than initially planned. If there's anything you want to know more about, something that's not clear, feel free to send me a DM via [twitter.](https://twitter.com/zoowalk){target="_blank"}
+

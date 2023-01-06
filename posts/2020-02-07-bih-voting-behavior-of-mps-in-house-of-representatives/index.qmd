@@ -1,0 +1,1324 @@
+---
+title: "Bosnia: Voting behavior of MPs in the House of Representatives"
+
+description: "Creating and analyzing a new dataset on the voting behavior of BiH's members of the House of Representatives."
+
+date: 02-07-2020
+
+categories:
+  - Bosnia
+  - OCR
+  - web scraping
+
+image: preview - Copy.png  
+
+---
+
+# CONTEXT
+
+A while ago I noticed that the website of Bosnia's parliament also provides the voting records for each separate vote taken in both houses. These records also include the voting behavior for each individual MP. Here an example of one of these voting records:
+
+![](record.PNG){width=100% height=100%}
+
+While the dominant role of the ethnic cleavage in Bosnian politics has been a constant theme and continuously emphasized for the last 25 years (to an extent which frequently blanks out other salient issues), I hadn't seen any empirical record on MP's individual voting behavior which could corroborate the cleavage's prevalence in the legislative arena (one insightful exception is Birgit Bahtić-Kunrath's 2011 [paper](https://www.cambridge.org/core/journals/nationalities-papers/article/of-veto-players-and-entityvoting-institutional-gridlock-in-the-bosnian-reform-process/96BB80A5191E12B40F501841546C151D){target="_blank"}).
+
+This post digs into the now available records for the 2014-2018 parliament and seeks to shed some light on the legislative process. The first part presents the results, the second highlights the most relevant steps in R to produce them. The entire code for the analysis is again available on my [github account](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives){target="_blank"}. Since the post got a bit longer than initially expected, this one will mainly focus on the lower chamber (House of Representatives). A later post will take up the upper chamber in detail (House of Peoples).
+
+As always, if you see any glaring error, feel free to let me know (best via [twitter](https://twitter.com/zoowalk){target="_blank"} DM). If you think the blog is interesting and feel like quoting it, please refer to it as _Roland Schmidt, "Bosnia: Voting behavior of MPs in the House of Representatives (2014-2018)", https://werk.statt.codes/post/bih-voting-behavior-of-mps-in-house-of-representatives/, 8 February 2020_.
+
+For those working in R, the blog post might be particularly interesting when it comes to retrieving the actual data. As so often with empirical research the challenges has been less the analysis of the data itself, but 'liberating' it from the format within which it is provided. In this case, the voting records for both the House of Peoples and the House of Representative are provided in pdfs, such as the one above or this [_one_](http://parlament.ba/oLaw/GetOwisDocument/?documentId=206164&data=10788B4568269048D57D8F644F829519&lang=hr){target="_blank"} or this [_one_](http://parlament.ba/oLaw/GetOwisDocument/?documentId=193121&data=E0B8243EF8B51ED931E698C78D196E84&lang=hr){target="_blank"}. Hence, there's been some hefty OCR-ing involved thanks to the powerful [`pdf_tools`](https://docs.ropensci.org/pdftools/){target="_blank"} package by [Jeroen Ooms](https://twitter.com/opencpu){target="_blank"}.
+
+# RESULTS
+
+```{r include=FALSE}
+# setup -------------------------------------------------------------------
+library(tidyverse)
+library(ggplot2)
+library(paletteer)
+library(glue)
+library(extrafont)
+library(paletteer)
+loadfonts(device = "win", quiet = T)
+library(hrbrthemes)
+library(paletteer)
+library(ggtext)
+library(scales)
+library(patchwork)
+library(padr)
+library(here)
+library(furrr)
+
+wdr <- getwd() 
+
+plot_bg_color <- "white"
+
+blog_theme <- function(){
+    hrbrthemes::theme_ipsum_rc() +
+    theme(
+        axis.text.x = element_text(angle=0, size=10),
+        axis.title = element_blank(),
+        legend.position = "bottom",
+        legend.justification = "left",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        plot.title = element_text(size = 18, 
+                                  face="bold", 
+                                  margin=margin(b=0.3, unit="cm")),
+        plot.title.position="plot",
+        plot.background= element_rect(fill=plot_bg_color, color=plot_bg_color),
+        plot.subtitle = element_text(size = 15, color = "grey30"),
+        plot.margin=margin(l=0, t=0.5, b=0.5, unit="cm"),
+       # plot.caption = element_text(hjust=c(0,1)),
+        panel.spacing.x = unit(0, "cm"))}
+
+
+my_caption <- c("Data: parlament.ba", "Analysis: Roland Schmidt | @zoowalk | https://werk.statt.codes/")
+
+df_ocr_results_unnested <- readr::read_csv2(here("posts", "2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives", "df_ocr_results_unnested.csv"))
+  
+df_ocr_results_unnested <- df_ocr_results_unnested %>% 
+  mutate_if(is.character, as.factor) 
+  
+#parse_date_time order allows to specify different formats and their priority
+
+df_ocr_results_unnested <- df_ocr_results_unnested %>% 
+  mutate(session_date=as.character(session_date)) %>% 
+  mutate(session_date=lubridate::parse_date_time(session_date,
+                                                 orders=c("dmy","ymd", "mdy")) %>% 
+           lubridate::as_date(.)) 
+
+#order factor of vote
+df_ocr_results_unnested <- df_ocr_results_unnested %>% 
+  mutate(vote=forcats::fct_infreq(vote)) #%>% 
+ # mutate(vote=forcats::fct_collapse(vote, abstained=c("abstained", "no vote", "restrained")) %>% 
+ #          forcats::fct_drop(.))
+
+
+voting_colors <- c("no"="firebrick2",
+                   "no vote" = "steelblue",
+                   "not present" = "grey",
+                   "yes" = "springgreen3",
+                   "abstained"="orange")
+
+
+# _ ----------------------------------------------------------------------
+
+# FILTER ------------------------------------------------------------------
+
+#identify start of new legislative session
+# date_new_parliament <- df_ocr_results_unnested %>% 
+#   filter(str_detect(delegate_name_2, "^Ahmetovic")) %>% 
+#   filter(session_date==min(session_date)) %>% 
+#   distinct(session_date) %>% 
+#   pull(session_date)
+
+df_ocr_results_unnested_truncated <- df_ocr_results_unnested %>% 
+  filter(session_date > lubridate::dmy("12/10/2014")) %>% #date of elections
+  mutate(party=forcats::fct_drop(party)) %>% #remove empty party factor levels
+  mutate_at(vars(contains("name")), ~fct_drop(.))
+
+```
+
+## Number of bills considered and outcome
+
+Overall, during the 2014 to 2018 parliament session 163 bills were considered in both houses. Out of this total, only 37 % were eventually passed and published to become law. 38 % of all bills were rejected in at least one of both houses.^[Bills' outcome was translated as follows: "Usvojen"="adopted", "Procedura - nije preuzet"="procedure - not started", "Procedura"="procedure", "Donesen i objavljen"="submitted and published",
+"Odbijen"="rejected", "Obustavljen zakonodavni postupak"="legislative process suspended", "Povucen"="withdrawn",
+"Ceka na pokretanje procedure"="waiting for the procedure to start", "Nije razmatran"="not considered". If you think there are more fitting translations, feel free to let me know.]
+
+```{r echo=FALSE, fig.height=7, fig.width=10, message=FALSE}
+df_details_all_status_wide <- readr::read_csv2(here::here("posts","2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives","df_details_all_status_wide.csv")) %>% 
+    mutate_at(vars(contains("status")), as.factor)
+
+#standardize colors across plots
+colors_outcome <- paletteer_d("ggsci::default_jco", n = 10) %>% as.character() 
+names(colors_outcome) <- unique(c(levels(df_details_all_status_wide$HoP_status), levels(df_details_all_status_wide$HoR_status), levels(df_details_all_status_wide$BiH_Parl_final_status)))
+
+df_laws_outcome <- df_details_all_status_wide %>% 
+  group_by(BiH_Parl_final_status) %>% 
+  summarise(n_obs=n()) %>% 
+  ungroup() %>% 
+  mutate(n_rel=n_obs/sum(n_obs)) 
+
+df_laws_outcome %>% 
+  ggplot()+
+  labs(title="BiH House of Representatives: Outcome of bills",
+       subtitle="Outcome of bills considered during legislative period 2014-2018; Total number: 163.",
+       y="Number of bills",
+       caption=my_caption)+
+  geom_bar(aes(x=reorder(BiH_Parl_final_status, n_rel),
+               y=n_obs,
+               fill=BiH_Parl_final_status),
+           stat="identity",
+           position=position_dodge())+
+  geom_text(aes(x=reorder(BiH_Parl_final_status, n_rel),
+                y=70,
+                label=paste0(n_obs, " (",
+                  percent(n_rel, accuracy = 1),
+                  ")")),
+            family = "Roboto Condensed",
+            color = "grey30",
+            hjust = 1,
+            size=5,
+           # group = name,
+            stat="identity")+
+  scale_fill_manual(values=colors_outcome,
+                    name="Outcome:")+
+  scale_x_discrete(labels=function(x) str_wrap(x, 15))+
+  scale_y_continuous(breaks=seq(0,60, 20),
+                     expand=expansion(mult=c(0.01,0)))+
+  blog_theme()+
+  theme(panel.grid.major.y = element_blank(),
+        legend.position = "none",
+        panel.grid.major.x = element_line(),
+        axis.text.x= element_text(size=14),
+        axis.text.y = element_text(size=14),
+        axis.title.x = element_text(size=14),
+        axis.title.y = element_blank(),
+        plot.caption = element_text(hjust=c(0, 1), size=12))+
+  coord_flip()
+
+```
+
+### by house
+
+Looking separately at each of the two houses provides a more detailed picture. In the lower chamber, the House of Representatives,  153 bills were considered in total out of which a bit more than 50 % were approved. In the upper chamber, the House of Peoples, which comprises five delegates of each constituent people (Bosniak, Croats, Serbs), 56.7 % of all considered bills were passed. 
+
+```{r echo=FALSE, fig.height=5, fig.width=10}
+#in which house are bills rejected
+
+df_outcome_chambers <- df_details_all_status_wide %>% 
+  select(contains("status"), -contains("final")) %>% 
+  pivot_longer(cols=contains("status"), names_to="house", values_to="outcome") %>% 
+  filter(outcome!="missing") %>%
+  mutate(outcome=fct_drop(outcome, only="missing")) %>%
+  mutate(outcome=fct_infreq(outcome) %>% fct_rev) %>% 
+  group_by(house, outcome, .drop=F) %>% 
+  summarise(n_obs=n()) %>% 
+  group_by(house) %>% 
+  mutate(n_rel=n_obs/sum(n_obs)) %>% 
+  arrange(desc(n_obs), .by_group=T) %>% 
+  mutate(cumsum_n_obs=cumsum(n_obs)) %>% 
+  ungroup() %>% 
+  mutate(outcome_label = case_when(house=="HoR_status" ~ paste0(outcome, "\n(", n_obs, ")"),
+                                   house=="HoP_status" ~ paste0(outcome, "(", n_obs, ")")))
+
+plot_df_outcome_chambers <- df_outcome_chambers %>% 
+  group_split(house) %>% 
+  map(~ggplot(.)+
+  geom_bar(aes(x=1,
+               y=n_obs,
+               fill=outcome,
+               group=outcome),
+           stat="identity",
+           position = position_stack())+
+  geom_text(aes(x=1,
+                y = n_obs,
+                label=ifelse(n_obs>0,
+                             n_obs,
+                             ""),
+                group=outcome),
+            family = "Roboto Condensed",
+            color = "white",
+            size=5,
+            position = position_stack(vjust= 0.4))+
+  geom_text(aes(x=1,
+                y = n_obs,
+                label=ifelse(n_obs>10,
+                             paste0("\n\n", scales::percent(n_rel, 
+                                                            accuracy = .1)),
+                             ""),
+                group=outcome),
+            family = "Roboto Condensed",
+            color = "white",
+            size=5,
+            position = position_stack(vjust= 0.4))+  
+  labs(y="Number of bills",
+       title=ifelse(unique(.$house)=="HoP_status", 
+                    "House of Peoples",
+                    "House of Representatives"))+
+      #subtitle="Bills considered in 2014 - 2018 legislative period.",
+      # caption=my_caption)+
+  scale_fill_manual(values=colors_outcome,
+                    name="Outcome of bill:")+
+  # scale_y_continuous(expand=expansion(mult=c(0,0.1)),
+  #                    breaks=df_outcome_chambers %>% 
+  #                      filter(house==.$house) %>% 
+  #                      pull(cumsum_n_obs))+
+  scale_y_continuous(expand=expansion(mult=c(0,0.1)),
+                     limits=c(0, max(df_outcome_chambers$cumsum_n_obs)),
+                     # breaks=.$cumsum_n_obs,
+                     breaks=max(.$cumsum_n_obs),
+                     guide=guide_axis(n.dodge=2),
+                     # labels=c(unique(ifelse(.$n_obs<10,
+                     #               ifelse(.$cumsum_n_obs==max(.$cumsum_n_obs),
+                     #                      # "", ""),
+                     #                      unique(max(.$cumsum_n_obs)), ""),
+                     #                      .$cumsum_n_obs))," ")
+                     labels=max(.$cumsum_n_obs)
+                     )+
+  coord_flip()+
+  # lemon::facet_rep_wrap(vars(house),
+  #                       repeat.tick.labels = F,
+  #                       nrow=2,
+  #                       labeller = labeller(house=c("HoP_status"="House of Peoples",
+  #                                                "HoR_status"="House of Representatives")))+
+  blog_theme()+
+  theme(panel.grid=element_blank(),
+          axis.text.x=element_text(size=15),
+          axis.title.x = element_text(size=15),
+          axis.title.y = element_blank(),
+          
+          panel.grid.major.y=element_blank(),
+          axis.text.y = element_blank()))
+
+(patchwork::wrap_plots(plot_df_outcome_chambers))+
+  plot_layout(ncol=1, guides="collect") &
+  plot_annotation(caption="Analysis: Roland Schmidt | @zoowalk | https://werk.statt.codes",
+                  
+                  theme = theme_ipsum_rc()) &
+  theme(legend.position = "bottom",
+        plot.background=element_rect(fill=plot_bg_color, color=plot_bg_color),
+        plot.margin=margin(b=0, t=0, l=0, r=0, unit="cm"),
+        legend.text = element_text(size=12),
+        legend.justification = "left") 
+```
+
+### intersection of houses
+
+If we intersect the developments for each law in each chamber, we get a clearer picture where bills were actually rejected/not passed. The table/heatmap below intends to show this. The x-axis shows a bill's outcome in the House of Representative, the y-axis the outcome of the same bill in the House of Peoples (if a bill was considered only in one chamber, the respective status in the other chamber is 'missing').
+
+Out of the 67 bills adopted in the House of Peoples and 77 in the House of Representatives, 60 were actually considered in both chambers and eventually passed.  With 37 % of all bills it's the largest category in the table. The second largest category comprises 27 bills (16.7 % of all bills) which were rejected in the House of Representatives and never made it to the House of Peoples. The third largest category contains 12 bills (7.4 % of all bills) which were adopted in the lower house but rejected in the upper chamber. 
+
+```{r echo=FALSE, fig.width=10, fig.height=7 , message=FALSE}
+df_outcome_chambers_combined <- df_details_all_status_wide %>% 
+  mutate_at(vars(contains("status")), as.factor) %>% 
+  group_by_at(vars(contains("status"), -contains("final")),
+              .drop=F) %>% 
+  summarise(n_obs=n()) %>% 
+  ungroup() %>% 
+  mutate(n_rel=n_obs/sum(n_obs)) %>% 
+  group_by(HoR_status) %>% 
+  mutate(HoR_outcome_label=sum(n_obs) %>% paste0(HoR_status, " (", ., ")")) %>% 
+  group_by(HoP_status) %>% 
+  mutate(HoP_outcome_label=sum(n_obs) %>% paste0(HoP_status, " (", ., ")")) %>% 
+  ungroup() %>%  #ungroup before converting to factor
+  mutate_at(vars(contains("label")), as_factor)
+
+#to duplicate axis labels scale has to be numeric; convert to numeric, but
+#us character labels;
+
+plot_df_outcome_chambers_combined <- df_outcome_chambers_combined  %>% 
+  ggplot()+
+  labs(title="Outcome of bills by house",
+       x="final status in House of Representatives",
+       y=str_wrap("final status in House of Peoples", 20),
+       caption=my_caption)+
+  geom_tile(aes(x=as.numeric(HoR_outcome_label),
+                y=as.numeric(HoP_outcome_label),
+                fill=n_obs))+
+  geom_text(data=. %>% filter(n_obs!=0),
+              aes(x=as.numeric(HoR_outcome_label),
+                y=as.numeric(HoP_outcome_label),
+                label=paste0(n_obs, " (",
+                             percent(n_rel, accuracy = 0.1),
+                             ")")),
+            family = "Roboto Condensed",
+            color = "grey30",
+            hjust = .5,
+            # group = name,
+            stat="identity")+
+  scale_fill_gradient(low="white", high="steelblue",
+                      na.value="white")+
+  scale_x_continuous(labels=levels(df_outcome_chambers_combined$HoR_outcome_label) %>% map_chr(., label_wrap(15)),
+                     breaks=seq(1, length(unique(df_outcome_chambers_combined$HoR_outcome_label))),
+                     sec.axis = dup_axis())+
+  scale_y_continuous(labels=levels(df_outcome_chambers_combined$HoP_outcome_label) %>% map_chr(., label_wrap(20)),
+                     breaks=seq(1, length(unique(df_outcome_chambers_combined$HoP_outcome_label))),
+                     sec.axis = dup_axis(),
+                     trans="reverse")+
+  blog_theme()+
+  theme(axis.text.x.top=element_blank(),
+        axis.title.x.top = element_text(hjust=0, size=11),
+        axis.title.x.bottom = element_blank(),
+        axis.text.y.left=element_blank(),
+        axis.title.y.left = element_text(hjust=0, size=11),
+        axis.title.y.right = element_blank(),
+        #axis.text.x.bottom=element_text(angle=0, hjust=.5),
+        panel.grid = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "none",
+        panel.border = element_rect(color="grey30", fill=NA),
+        axis.title.y = element_text(angle=0),
+        plot.title = element_text(size = 14, face="bold", margin=margin(b=0.3, unit="cm")),
+        plot.title.position = "plot",
+        plot.background= element_rect(fill=plot_bg_color, color=plot_bg_color),
+        plot.margin=margin(l=0, r=0, b=0, unit="cm"),
+        plot.subtitle = element_text(size = 12, color = "grey30"),
+        plot.caption.position = "plot",
+        plot.caption = element_text(color = "grey30", hjust = c(0, 1)))
+
+plot_df_outcome_chambers_combined
+
+
+```
+
+## Legislative votes over time
+
+How was the legislative activity distributed over time? The graph below provides the number of ballots in both houses per month. Note that the graph also includes votes which were held in both houses outside of the 2014-2018 legislative session. The reason is that bills considered in 2014-2018 also include bills which were initiated prior to 2014 and hence also ballots which were taken outside of the 2014-2018 legislative session.
+
+If we focus only on the 2014-2018 session, it is rather clear that both chambers were most active in the first half of 2016 and the end of 2017. I am not sure exactly what caused this bout of activity, but it's quite distinct if contrasted e.g. with 2015 or the early parts of 2017.
+
+```{r echo=FALSE, fig.width=10, fig.height=6}
+#number of votes per week
+#use floor_date to aggregate witin a week
+#use pdr to thicken to weeks, then pad for missing weeks, then plot;
+
+election_dates <- c("07/10/2018", "12/10/2014") %>% 
+  enframe(., 
+          value="election_date",
+          name=NULL) %>% 
+  mutate(election_date=lubridate::dmy(election_date)) %>% 
+  mutate(election_month=lubridate::floor_date(election_date, unit="month"))
+
+df_ocr_results_unnested %>% 
+  mutate(month=lubridate::floor_date(session_date, unit="month")) %>%   group_by(house, month) %>% 
+  summarise(n_votes=n_distinct(record_id)) %>%
+  pad(., interval="month",
+      start_val=min(.$month),
+      end_val=max(.$month)
+  ) %>% 
+  padr::fill_by_value() %>% 
+  mutate(year=lubridate::year(month)) %>% 
+  ggplot()+
+  labs(subtitle="Number of items voted on per month.",
+       title="Legislative activity",
+       caption=my_caption)+
+  geom_bar(aes(y=n_votes,
+               x=month),
+          orientation="x",
+          fill="steelblue",
+           stat="identity")+
+  geom_vline(data=election_dates,
+             aes(xintercept=election_month,
+                 color="election"))+
+  scale_x_date(date_breaks = "1 month",
+               labels=scales::label_date(format="%b"))+  #prints year only when year changes
+  scale_color_manual(values=c("election"="orange"))+
+  facet_grid(house~year,
+             scales="free_x",
+             space="free_x",
+             shrink=F)+
+  guides(color=guide_legend(title=NULL))
+
+#check session number and dates
+
+df_sessions <- df_ocr_results_unnested %>% 
+  select(house, session_date, session_no) %>% 
+  distinct() %>% 
+  arrange(house, session_date) %>% 
+  mutate(new_parlament=case_when(session_no<lag(session_no) ~ "start",
+                                 TRUE ~ NA_character_)) 
+
+```
+
+## Voting behavior per MP
+
+So far the analysis presented was limited to bills as the unit of analysis. Now let's dig a bit deeper and see how individual MPs voted. The graph below provides the results for every voting decision (including abstentions, no vote, not present) of every MP, by party affiliation, during the 2014-2018 legislative period. Since a bill undergoes several readings before it can become a law/is forwarded to the other chamber, there are more votes than bills. Overall, MPs in the House of Representatives were asked to cast their votes 451 times in total. These votes pertain to 148 laws (out of the initial 162 laws above eleven have not entailed any vote by the end of the 2014-2018 legislative period and three entailed ballots prior to the 2014 elections).
+
+In the graphs below each vertical line (small rectangle) represents an MP's vote in one ballot (hence the x axis is 451 small rectangles long; ordered chronologically). According to the voting records, there are five possible options: an MP can cast 1) a 'yes' (*za*), or 2) an 'against' or 'no' vote (*protiv*); 3) be not present during the ballot (*nije prisuta*); 4) abstained (*suzdržan*), or 5) do not cast a vote (*nije glasao*). Note that the Rules of Procedure for the House of Representatives (as for the House of Peoples) stipulate that 'in case a representative does not vote “in favour”, “against” or “abstained”, but he/she is present at the session during the voting, he/she is considered “abstained” (see [here](https://www.parlament.ba/Content/Read/60?title=Odlu%C4%8Divanje-u-Predstavni%C4%8Dkom-domu){target="_blank"}).'
+
+Unfortunately, I had to remove names' diacritics which added a major source of complication (at least for me).
+
+```{r echo=FALSE, fig.height=12, fig.width=10, warning=FALSE}
+# tile graph --------------------------------------------------------------
+library(ggforce)
+library(ggiraph)
+
+n_record_ids <- df_ocr_results_unnested_truncated %>% 
+  filter(house=="HoR") %>% 
+  pull(record_id) %>% 
+  n_distinct()
+
+plots_tile <- df_ocr_results_unnested_truncated %>% 
+  filter(house=="HoR") #%>% 
+  #mutate(vote=forcats::fct_collapse(vote, abstained=c("abstained", "no vote", "restrained"))) 
+
+plots_tile <- plots_tile %>% 
+  ggplot()+
+  labs(x="items voted at",
+       y="Member of House of Representative",
+       subtitle="451 decisions in total; 2014-2018 legislative period.",
+       title="House of Representative: Vote choice by individual MPs per decision",
+       caption=my_caption)+
+  geom_tile(aes(x=reorder(record_id, session_date),
+                y=fct_rev(delegate_name_family),
+                fill=vote))+
+  # scale_y_discrete(label=delegate_name_2)+
+  scale_fill_manual(values=voting_colors,
+                    na.value="white")+
+  theme_ipsum_rc() +
+  theme(axis.text.x=element_blank(),
+        axis.title.x=element_text(hjust=0),
+        strip.text = element_text(face="bold"),
+        panel.background = element_rect(fill=plot_bg_color, color=plot_bg_color),
+        panel.grid.major = element_blank(),
+        plot.subtitle = element_text(size = 12, color = "grey30"),
+        plot.title = element_text(size = 14, face="bold", margin=margin(b=0.3, unit="cm")),
+        plot.margin=margin(l=0, t=0.5, b=0.5, unit="cm"),
+        plot.title.position = "plot",
+        plot.caption = element_text(hjust=c(0, 1)),
+        plot.background= element_rect(fill=plot_bg_color, color=plot_bg_color),
+        legend.position = "top",
+        legend.justification = "left")+
+  facet_wrap(vars(party),
+             ncol = 3,
+             scales="free_y")
+
+plots_tile
+
+```
+
+Even without going into numeric details, I find the graph rather informative. While with most parties/MPs the yes votes (green) dominate, the SNSD is a glaring aberration. Milorad Dodik's SNSD clearly stands out as the party which says 'no' (to paraphrase Ian Paisley) or simply doesn't show up when asked to cast a vote.
+
+Note that the representatives Vjekoslav Bevanda and Halid Genjac were only briefly members of the House of Representatives. If not mistaken, Bevanda subsequently became Chairperson of the Council of Ministers. From the graph it appears that his place was taken by Predrag Kožul. Similarly, SDA's Genjac was only for the early sessions member of the HoR. His place seems to have been taken over by Hazim Rančić.
+
+As a general caveat, note that I took MPs' party affiliation as stated on the parliament's website which may omit instances in which MPs have changed their party affiliation in the course of the 2014-2018 legislative period. I am not aware that this was actually the case, but if so, please let me know.^[One way to improve the graph would be to have equally sized heights per MP.]
+
+## MP ranking per vote category 
+
+To get a more detailed view on MPs' individual voting behavior, the next graph presents each MP's voting behavior per voting category as % of an MP's number of total voting decisions (incl. abstentions etc). In other words, the graph reveals how often an MP votes for e.g. yes, no etc. as % of all instances in which she was tasked to cast a vote. Party affiliation is presented next to each MP's name. Furthermore, to highlight discrepancies between representatives originating (in terms of mandate) from the Federation and the RS, the bars are colored differently. The variation is rather remarkable, particularly with regard to MPs' 'no' votes and absence (not present and abstentions). 
+
+I leave it up to the reader to go through each category, but just to highlight one case: According to the published voting records, Nikola Špirić, one of SNSD's main figure heads (and previously Chairperson of the Council of Ministers), was absent in 44.8 % of all ballots. Even with the benefit of doubt and acknowledging that an MP's work entails more than participating in ballots (work in committees etc), this is a rather, let's say, 'remarkably' low rate of presence.  His party colleagues Markovic and Milovanovic participated only a few times more often. In those instances in which they were present, they voted predominantly with 'no'. Constructive engagement in the legislative process looks different, at least to me.
+
+```{r echo=FALSE, fig.height=20, fig.width=10, message=FALSE, warning=FALSE}
+library(tidytext)
+library(lemon)
+
+df_votes_delegates  <- df_ocr_results_unnested_truncated %>% 
+  filter(house=="HoR") %>% 
+  group_by(entity, party, delegate_name_2, delegate_name_family, vote) %>% 
+  summarise(n_votes_cat=n()) %>% 
+  group_by(party, delegate_name_2, delegate_name_family) %>% 
+  mutate(n_votes_total=sum(n_votes_cat)) %>% 
+  mutate(n_votes_cat_rel=n_votes_cat/n_votes_total) %>% 
+  ungroup()
+
+df_votes_delegates %>% 
+  mutate(delegate_name_3=str_extract(delegate_name_2, "[:alpha:]+,\\s[:alpha:]?")) %>% 
+  ggplot()+
+  labs(title="HoR members' voting decision by category during 2014-2018 legislative period (in %)",
+       subtitle ="In how many % of all her votes did the MP vote/was.... Absolute number in category and total in brackets.",
+       caption=my_caption)+
+  geom_bar(aes(x=reorder_within(paste0(delegate_name_3, " (", party, ")"), n_votes_cat_rel, vote),
+               y=n_votes_cat_rel,
+               fill=entity),
+           stat="identity",
+           position=position_stack())+
+  geom_text(aes(x=reorder_within(paste0(delegate_name_3, " (", party, ")"), n_votes_cat_rel, vote),
+                y=1.2,
+                label=paste0(scales::percent(n_votes_cat_rel, accuracy =0.1), " (", n_votes_cat, "/", n_votes_total, ")")),
+            family = "Roboto Condensed",
+            color = "grey30",
+            hjust = 1,
+            stat="identity")+
+  scale_fill_paletteer_d("ggsci::default_jama")+
+  scale_x_reordered()+
+  scale_y_continuous(minor_breaks = NULL,
+                     labels=scales::label_percent(accuracy=1),
+                     breaks=seq(0,0.8,.1),
+                     expand=expansion(mult=c(0, 0)))+
+  theme_ipsum_rc()+
+  theme(axis.text.x = element_text(angle=90),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.spacing = unit(0, "cm"),
+        strip.text = element_text(face="bold"),
+        plot.title = element_text(size = 14, face="bold", margin=margin(b=0.3, unit="cm")),
+        plot.title.position = "plot",
+        plot.caption.position = "plot",
+        plot.caption = element_text(hjust=c(0,1)),
+        plot.margin=margin(l=0, t=0.5, b=0.5, r=0, unit="cm"),
+        plot.subtitle = element_text(size = 12, color = "grey30"),
+        plot.background=element_rect(fill=plot_bg_color, color=plot_bg_color),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        legend.position = "top",
+        legend.justification = "left")+
+  lemon::facet_rep_wrap(~vote,
+                        repeat.tick.labels = T,
+                        ncol=2,
+                        scales="free_y")+
+  coord_flip()
+
+  
+```
+
+## Party differences
+As a next step, let's group MPs' voting behavior by party and the respective (ascribed or self-declared) ethnic affiliation. Admittedly, the latter is not without problems, but I guess the categorization below reflects some kind of middle-ground (SDP could probably be moved to the 'Bosniak' category, but well...). The table provides the total number of votes casted by all representatives of each party and their respective share in each vote category. Note the high percentage rate of SDA in the 'yes' category and SNSD's ratio in the 'no' or 'not present' category. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+options(kableExtra.html.bsTable = TRUE)
+
+df_party_voting <- df_ocr_results_unnested_truncated %>% 
+  filter(house=="HoR") %>% 
+  mutate(ethnicity=forcats::fct_relevel(ethnicity, "Bosniak", "Croat", "Serb", "civic", "independent")) %>% 
+  group_by(ethnicity, party, vote) %>% 
+  summarise(n_obs=n()) %>% 
+  group_by(ethnicity, party) %>% 
+  mutate(n_total=sum(n_obs)) %>% 
+  mutate(n_rel=n_obs/n_total)
+
+df_party_voting %>% 
+  mutate(n_rel=scales::percent(n_rel)) %>% 
+  pivot_wider(., id_cols=c(ethnicity, party, n_total), names_from=vote, values_from=n_rel) %>% 
+  rename(`votes total`=n_total) %>% 
+  mutate(`number MPs`=`votes total`/451) %>% 
+ # mutate(total_reps=map_dbl(`# representatives`, sum)) %>% 
+  select(ethnicity, party, `number MPs`, everything()) %>% 
+  kable() %>%   
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                fixed_thead = T, 
+                font_size = 12) %>%
+  scroll_box(width = "100%", height = "400px")
+
+```
+
+Below the same results, put presented as a graph.
+
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+
+df_party_voting %>% 
+  ggplot()+
+  geom_bar(aes(x=tidytext::reorder_within(party, n_rel, within=vote),
+               fill=vote,
+               y=n_rel),
+           stat="identity")+
+  geom_text(aes(x=tidytext::reorder_within(party, n_rel, within=vote),
+                #y=n_rel+.1,
+                y=1.1,
+                label=paste0(n_obs, "/", n_total, 
+                             " (", 
+                             scales::percent(n_rel, accuracy=.1),
+                             ")")),
+            hjust=1,
+            size=4,
+            family = "Roboto Condensed",
+            color = "grey30",
+            stat="identity")+
+  scale_x_reordered()+
+  facet_rep_wrap(vars(vote),
+                 repeat.tick.labels = T,
+                 ncol=2,
+             scales="free_y")+
+  scale_y_continuous(expand=expansion(mult=0),
+                     limits=c(0, 1.2),
+                     labels=scales::label_percent(accuracy=1),
+                     breaks=seq(0, .7, .25))+
+  scale_fill_manual(values=voting_colors)+
+  coord_flip()+
+  theme_ipsum_rc()+
+  theme(plot.subtitle = element_text(size = 12, color = "grey30"),
+        plot.title = element_text(size = 14, face="bold", margin=margin(b=0.3, unit="cm")),
+        plot.title.position="plot",
+        plot.margin=margin(l=0, t=0.5, b=0.5, r=0, unit="cm"),
+        plot.background=element_rect(fill=plot_bg_color, color=plot_bg_color),
+        panel.grid.major.y =  element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "none",
+        strip.text = element_text(face="bold"),
+        axis.title.y=element_blank(),
+        axis.title.x=element_text(hjust=0),
+        plot.caption = element_text(hjust=c(0,1)))+
+  labs(title="Parties' voting decisions per category (HoR)",
+       subtitle="% of all decisions by members of each party; Legislative period 2014-2018.",
+       caption=my_caption,
+       y="voting decisions in category as % of all decisions by all MPs of each party")
+
+```
+
+
+```{r eval=FALSE, fig.height=20, fig.width=10, warning=FALSE, include=FALSE}
+
+colors_ethnicity=c("Bosniak"="darkgreen",
+                   "Croat"="blue",
+                   "Serb"="red",
+                   "civic"="orange",
+                   "independent"="grey")
+
+df_delegate_voting <- df_ocr_results_unnested_truncated %>% 
+  filter(house=="HoR") %>% 
+  mutate(ethnicity=forcats::fct_relevel(ethnicity, "Bosniak", "Croat", "Serb", "civic", "independent")) %>% 
+  group_by(ethnicity, party, delegate_name, vote, .drop=T) %>% 
+  summarise(nobs=n()) %>%
+  mutate(total.votes=sum(nobs, na.rm = T)) %>% 
+  mutate(perc=nobs/total.votes) %>% 
+  ungroup()
+
+plot_delegates <- df_delegate_voting %>% 
+  group_split(vote) %>% 
+  map(~ggplot(., aes(x=reorder_within(party, desc(perc), ethnicity),
+                     y=perc,
+                     group=party,
+                     tooltip=paste0(delegate_name, "\n",
+                                   nobs, " out of ",
+                                   total.votes, "\n",
+                                   "ratio:", 
+                                   scales::percent(perc)),
+                     #tooltip=delegate_name,
+                     color=ethnicity))+
+        geom_jitter_interactive(width=0.03)+
+        geom_boxplot(aes(weight=nobs))+
+        labs(title=paste(unique(.$vote)))+
+        hrbrthemes::theme_ipsum_rc()+
+        theme(legend.position="none",
+              plot.title = element_text(size = 14, face="bold", margin=margin(b=0.3, unit="cm")),
+              plot.subtitle = element_text(size = 12, color = "grey30"),
+              axis.title = element_blank(),
+              axis.text.x=element_text(angle=45,
+                                       vjust=1,
+                                       hjust=1,
+                                       size=11),
+              strip.text.y = element_text(angle=180, 
+                                          vjust=1,
+                                          hjust=1),
+              plot.margin = margin(t=0, b=0, unit="cm"),
+              panel.grid.minor = element_blank(),
+              panel.grid.major.x = element_blank(),
+              panel.spacing.x = unit(0.3, "cm"),
+              plot.background=element_rect(fill=plot_bg_color, color=plot_bg_color),
+              panel.spacing.y = unit(0.3, "cm"))+
+        scale_y_continuous(labels=scales::label_percent(accuracy=1),
+                           minor_breaks = NULL,
+                           limits=c(0,NA),
+                           position = "right",
+                           sec.axis = dup_axis())+
+        scale_x_reordered()+
+        scale_color_manual(values=colors_ethnicity, na.value="grey")+
+        #scale_color_paletteer_d("ggsci::default_jama")+
+        facet_row(~ethnicity,
+                  # switch = "y",
+                  scales="free_x",
+                  space="free"))
+
+wrap_plot_delegats <- wrap_plots(plot_delegates, ncol = 1)
+
+girafe(ggobj=wrap_plot_delegats,
+       options=list(opts_tooltip(css = "background-color:lightgray; font-family:Roboto Condensed;",
+                                 delay_mouseout = 5000)),
+       pointsize=6,
+       width_svg=10, height_svg=15)
+```
+
+## Conclusion
+
+Overall, the results are pretty much in line with what I expected, but the details nevertheless are quite intriguing. Delegates of SNSD are either absent or vote with 'no' in the House of Representatives. There is a clear gulf between representatives from the Federation and the RS when it comes to 'no' votes.
+
+Since this has been already rather lengthy (not to speak of the actual coding), I leave it here and will continue the analysis with a new post in a bit. If you spotted anything peculiar or have any other constructive comment etc. feel free to let me know and I will try to follow up on it. In any case, thanks for reading.
+  
+  
+----
+
+# STEPS IN R
+Below the most important steps to obtain the results from above. The entire code for the  (and more) is available at my github [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives){target="_blank"}.
+
+As already mentioned above, getting the actual data from the voting records/pdfs has been the main challenge. Essentially, there were three steps required: 
+
+* First, get the links to each law 
+* Second, from there extract
+  + data on the status and details of the law in each chamber
+  + the links to each voting record(s)
+  + use this links to download each voting results file
+* Third, get 
+  + the raw text from the voting result files and 
+  + extract data of interest (e.g. MP and vote)
+* Finally, start with the actual analysis ;-)
+
+## Get the data
+### Getting the links to each law
+The parliament's website provides a list with all bills considered during the 2014-2018 session. See [*here*](http://parlament.ba/oLaw/GetOLawsByStatus?SearchTerm=&MandateId=4&Status=-1){target="_blank"}. Overall, there are 17 pages which contain short summaries on each law plus the links a site with more details on each law. Iterating over these 17 pages and extracting the pertaining links provides us with a dataframe containing the links to the 162 (proposed) laws which were considered in at least one of both houses. To do this, the `purrr` and `rvest` package are our tools of choice. The `possibly` option provides us with a NULL response should the link no yield any info (instead of causing an error). 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=TRUE}
+library(tidyverse)
+library(glue)
+library(rvest)
+
+#define pages to iterate over
+seq_page<- seq(1:17)
+seq_page_links <- glue("http://parlament.ba/oLaw/GetOLawsByStatus?page={seq_page}&MandateId=4&Status=-1") %>% 
+  enframe(name=NULL)
+
+#define function to extract short info + link of each law 
+pb <- progress_estimated(nrow(seq_page_links))
+
+fn_scrap <- function(x){
+  
+  pb$tick()$print()
+  
+  x %>% 
+    read_html() %>% 
+    html_nodes("a") %>% 
+    html_attr(.,"href") %>% 
+    enframe(name=NULL) %>% 
+    filter(str_detect(value, "OLawDetails")) %>% 
+    mutate(links_to_law_details=paste0("http://parlament.ba", value)) 
+  
+}
+
+#apply function to each of the 17 pages
+df_links_to_laws <- seq_page_links$value %>% 
+  set_names() %>% 
+  map_dfr(.,  possibly(fn_scrap, otherwise=NULL), .id="seq_page_links")
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+options(kableExtra.html.bsTable = TRUE)
+
+df_links_to_laws %>% 
+  select(-value) %>%
+  kable() %>%   
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T, font_size = 10) %>%
+  scroll_box(width = "100%", height = "200px")
+```
+
+With these links we are now able to scrap the status and details of each single (proposed) law (see e.g. [*here*](http://parlament.ba/olaw/OLawDetails?lawId=61794){target="_blank"}). In short, the code produces the same result as if we were clicking through our initial list from above and copy-paste the information from each law's details page. The `rvest`'s functions were again applied to each link with the purrr's `map_dfr`. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+pb <- dplyr::progress_estimated(nrow(df_links_to_laws)) #define length for progress bar
+
+#scrap law details
+fn_scrap_law_details <- function(x) { 
+  
+  pb$tick()$print()
+  
+  df.contents <- x %>% 
+    read_html() %>% 
+    html_nodes("td") %>% 
+    html_text(.,trim=T) %>% 
+    enframe(name=NULL, value="content") %>% 
+    slice(c(1:13))
+  
+  df.names<- x %>% 
+    read_html() %>% 
+    html_nodes("th") %>% 
+    html_text(.,trim=T) %>% 
+    enframe(name=NULL, value="heading") %>% 
+    slice(c(1:13))
+  
+  bind_cols(df.names, df.contents) %>% 
+    mutate(house=case_when(row_number()>7 ~ "DP",    #House of Peoples
+                           TRUE ~ "PS"))           #House of Representatives
+  
+}
+
+#Scrap overview of law status 
+fn_get_law_status <- function(x) {
+  x %>%
+    read_html() %>%
+    html_nodes("body > section > div.container > div > div.col-md-8 > article > div > div:nth-child(2) > table") %>%
+    html_table() %>%
+    enframe(name = NULL) %>%
+    map_df(., bind_rows) %>%
+    rename(
+      heading = X1,
+      content = X2
+    ) %>%
+    mutate(heading = case_when(
+      lag(heading) %>% str_detect(., "Status u DNPSBiH") ~
+        paste("DNPSBiH -", heading),
+      lag(heading) %>% str_detect(., "Status u PDPSBiH") ~
+        paste("PDPSBiH -", heading),
+      TRUE ~ as.character(heading)
+    ))
+}
+
+#apply function to each link
+df_details_all_status<- df_links_to_laws$links_to_law_details %>% 
+  set_names() %>% 
+  future_map_dfr(.,  fn_get_law_status, 
+                 .progress=T,
+                 .id="seq_page_links")
+```
+
+### Get status of each law
+As a first step, I want to get info on each law's status by the end of the 2014-2018 legislative period in each house. We get this info by applying the below scrapping function to each law's link (obtained above). Subsequently I reshape the data to a more convenient wider rectangular form (`pivot_wider`) and extract each field of interest with `stringr` and `regex`.
+
+```{r eval=FALSE}
+df_details_all_status_wide <- df_details_all_status %>% 
+  mutate(content=str_trim(content, side=c("both"))) %>% 
+  mutate(content=iconv(content, from="UTF-8", to="windows-1253")) %>% #removes diacrits; makes it easier to work with
+  pivot_wider(id_cols = "seq_page_links",
+              names_from = "heading",
+              values_from = "content") %>% 
+  mutate(law_id=str_extract(seq_page_links, "[0-9]+$")) %>% 
+  rename(doc_name ="Naziv dokumenta",
+         period = Saziv,
+         HoR_draft_law_number_date  = "Broj i datum Prijedloga zakona u PDPSBiH",
+         HoR_tabler = `Predlagač u PDPSBiH`,
+         HoR_status = "Status u PDPSBiH",
+         HoR_order_number_session_date_agenda_item = `PDPSBiH - Red. br. i datum sjednice - tačka dnevnog reda`,
+         HoP_draft_law_number_date= `Broj i datum Prijedloga zakona u DNPSBiH`,
+         HoP_tabler =`Predlagač u DNPSBiH`,
+         HoP_status =`Status u DNPSBiH`,
+         HoP_order_number_session_date_agenda_item =`DNPSBiH - Red. br. i datum sjednice - tačka dnevnog reda`,
+         BiH_Parl_final_status=`Konačni status u PSBiH`,
+         ended_tabler_session =`Utvrđen na sjednici predlagača`) %>% 
+  separate(col=HoR_draft_law_number_date, 
+           into=c("HoR_draft_law_number", "HoR_draft_law_date"),
+           sep="od",
+           remove=F) %>% 
+  separate(col=HoP_draft_law_number_date, 
+           into=c("HoP_draft_law_number", "HoP_draft_law_date"),
+           sep="od",
+           remove=F) %>% 
+  mutate_at(vars(contains("draft_law_date")), ~str_remove(., ".$") %>% 
+              lubridate::dmy(.)) %>% 
+  mutate_at(vars(ends_with("draft_law_number")), ~str_trim(., side=c("both")) %>% 
+            str_remove(., ",$") %>% str_replace(., ",","-")) %>% 
+  mutate(HoP_order_number_session_date_agenda_item=ifelse(HoP_order_number_session_date_agenda_item=="",
+                                                          NA, HoP_order_number_session_date_agenda_item)) %>% 
+  mutate(HoP_order_number=stringr::str_extract_all(HoP_order_number_session_date_agenda_item,
+                                                   "^[0-9]+") %>% as.numeric) %>% 
+  mutate(HoP_session_date=stringr::str_extract_all(HoP_order_number_session_date_agenda_item,
+                                                   "[:digit:]+\\.[:digit:]+\\.[:digit:]{4}") %>% 
+           map_chr(., paste, collapse="; ")) %>% 
+  mutate(HoP_agenda_item=stringr::str_extract(HoP_order_number_session_date_agenda_item,
+                                              "Ad\\. [:digit:]+")) %>% 
+#  select(-HoP_order_number_session_date_agenda_item) %>% 
+  mutate(HoR_order_number_session_date_agenda_item=ifelse(HoR_order_number_session_date_agenda_item=="",
+                                                          NA, HoR_order_number_session_date_agenda_item)) %>% 
+  mutate(HoR_order_number=stringr::str_extract_all(HoR_order_number_session_date_agenda_item,
+                                                   "^[0-9]+") %>% as.numeric) %>% 
+  mutate(HoR_session_date=stringr::str_extract_all(HoR_order_number_session_date_agenda_item,
+                                                   "[:digit:]+\\.[:digit:]+\\.[:digit:]{4}") %>% 
+           map_chr(., paste, collapse="; ")) %>% 
+  mutate(HoR_agenda_item=stringr::str_extract(HoR_order_number_session_date_agenda_item,
+                                              "Ad\\. [:digit:]+")) %>% 
+#  select(-HoR_order_number_session_date_agenda_item) %>% 
+  mutate_at(vars(contains("status")),
+            .funs=list(~case_when(
+              .=="Usvojen"~"adopted",
+              .=="Procedura - nije preuzet" ~ "procedure - not started",  #?
+              .=="Procedura" ~ "procedure",
+              str_detect(., regex("Povucen")) ~ "withdrawn",  #Povucen encoding issue
+              .=="Donesen i objavljen" ~ "submitted and published",
+              .=="Odbijen" ~ "rejected",
+              .=="Obustavljen zakonodavni postupak" ~ "legislative process suspended",
+              str_detect(., "Ceka na pokretanje procedure") ~ "waiting for the procedure to start", #encoding issue
+              .=="Nije razmatran" ~ "not considered",
+              is.na(.) ~ "missing",
+              TRUE ~ .)))
+
+```
+
+Finally, to make things more accessible to clowns like me who haven't managed to properly learn BCS after too many years, I translate each law's title with google translate (checkout the vignette of the powerful [googleLanguageR](https://cran.r-project.org/web/packages/googleLanguageR/index.html){target="_blank"} package and to how get the necessary authorization for the google translate engine).
+
+```{r}
+#| eval: false
+#| include: false
+library(googleLanguageR)
+gl_auth("C:/Users/Roland/Google Drive/Events - Projects/R-Projects/GoogleAPI/BiH-Laws-49dca6b0c199.json")
+
+```
+ 
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+df_details_all_status_wide<- df_details_all_status_wide %>% 
+  mutate(doc_name_eng=googleLanguageR::gl_translate(doc_name, target="en", format=c("text"),
+                                                    source="bs")$translatedText) %>%
+  select(doc_name, doc_name_eng, everything())
+
+```
+
+So this all yields us with a table containing plenty of information on each bill, including the eventual status in each house, the date of the bills submission and the name of those who tabled the bill (in each house). Not too bad me thinks.
+
+```{r echo=FALSE}
+library(knitr)
+library(kableExtra)
+options(kableExtra.html.bsTable = TRUE)
+
+df_details_all_status_wide %>% 
+  kable() %>%   
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T, font_size = 10) %>%
+  scroll_box(width = "100%", height = "600px")
+
+```
+
+### Get details of each law
+In the next step I want to go beyond each bill's eventual status, but get details on each bill's development. The function below, again applied to each link we initially obtained provides us with this. See e.g. [here](http://parlament.ba/olaw/OLawDetails?lawId=61794){target="_blank"}. Note, to speed things up, I use the `furrr` package with the multiprocess option to apply the function in parallel and not in sequence to each link. Hence, rather than scrapping the details of each bill one after the other, they are downloaded in parallel and therefore much quicker.
+
+```{r message=FALSE, warning=FALSE}
+#| cache: true
+library(furrr)
+plan(multisession)
+
+fn_get_law_status <- function(x) {
+  x %>%
+    read_html() %>%
+    html_nodes("body > section > div.container > div > div.col-md-8 > article > div > div:nth-child(2) > table") %>%
+    html_table() %>%
+    enframe(name = NULL) %>%
+    map_df(., bind_rows) %>%
+    rename(
+      heading = X1,
+      content = X2
+    ) %>%
+    mutate(heading = case_when(
+      lag(heading) %>% str_detect(., "Status u DNPSBiH") ~
+        paste("DNPSBiH -", heading),
+      lag(heading) %>% str_detect(., "Status u PDPSBiH") ~
+        paste("PDPSBiH -", heading),
+      TRUE ~ as.character(heading)
+    ))
+}
+
+
+df_details_all_status<- df_links_to_laws$links_to_law_details %>% 
+  set_names() %>% 
+  future_map_dfr(.,  fn_get_law_status, 
+                 .progress=F,
+                 .id="seq_page_links")
+
+```
+
+### Getting links to each voting record 
+Critically, the details page of each bill also contains links to the records for each vote taken pertaining to the bill in question. This can be only one vote in only one house, or multiple votes in each house since a bill goes through several readings and entails also votes on procedural issues (e.g. whether the bill should be fast-tracked). For an example see [here](http://parlament.ba/olaw/OLawDetails?lawId=61565){target="_blank"} and note that the links to the voting records are called 'Listing glasanja o skracenom postupku' or 'Listing glasanja o zahtjevu za hitni postupa'. The critical point here is that links to voting records always contain the word 'listing'. What is hence required at this stage is to extract from all bills' detail pages every link which contains the word 'listing'. Once these links are obtained, the voting records to which these links lead can be downloaded. The function below extracts these links of interest.
+
+```{r}
+#| cache: true
+
+fn_scrap_links_to_voting_records <- function(x) {
+
+    x %>% 
+    read_html() %>% 
+    html_nodes(xpath="//a[contains(text(), 'Listing')]") %>%  #filters links based on text/name of links
+    html_attr('href') %>%  #extracts links
+    enframe(name=NULL) %>% 
+    mutate(link_to_voting_record=paste0("http://parlament.ba", value))
+  
+}
+
+df_voting_results_links <- df_links_to_laws$links_to_law_details %>% 
+  set_names() %>% 
+  future_map_dfr(.,  possibly(fn_scrap_links_to_voting_records, otherwise=NULL), 
+                 .progress = F, .id="seq_page_links") %>% 
+  select(-value) %>% 
+  mutate(law_id=str_extract(seq_page_links, "[0-9]+$"),
+         record_id=str_extract(link_to_voting_record, "(?<=documentId=)[0-9]+")) #pos. look-behind
+
+```
+
+```{r echo=FALSE}
+library(knitr)
+library(kableExtra)
+options(kableExtra.html.bsTable = TRUE)
+
+df_voting_results_links %>% 
+  kable() %>%   
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T, font_size = 10) %>%
+  scroll_box(width = "100%", height = "200px")
+```
+
+### Download voting records
+Overall we obtain links to 793 voting records which pertain to any of both houses. With these links we can now download each voting record. Note that these voting records pertain to the bills which were considered during the 2014-2018 legislative period. This does not mean the voting took actually place in the 2014-2018 period. A bill might have been initiated prior to 2014 and hence some voting took place prior to the 2014-2018 period. At a later step, once when we have extracted the actual date of each vote, we are able to separate votes which took place during the 2014-2018 session from others.
+
+```{r, eval=FALSE, echo=T}
+# download voting records (pdfs) 
+pdf_destination <- glue("{wdr}/data/voting_records/law_id_{df_voting_results_links$law_id}-record_id_{df_voting_results_links$record_id}.pdf")
+
+furrr::future_walk2(df_voting_results_links$link_to_voting_record, pdf_destination, download.file, mode = "wb") 
+```
+## Extracting text from voting records (OCR)
+Now, with eventually our objects of desire obtained, we have to retrieve the data we are actually interested in from each pdf, e.g.  eave a look at [*this record*](http://parlament.ba/oLaw/GetOwisDocument/?documentId=201825&data=66A251EE8272F76CD4563213F5B76864&lang=bs){target="_blank"}. 
+
+The primary tool which enables us to extract the text from the pdfs is the `pdf_tools` package (see package site [here](https://docs.ropensci.org/pdftools/){target="_blank"}). What hte package basically does is it recognizes the characters in each pdf and extracts them as plain text. Before doing so, one has to download the required language package. Subsequently, apply a function which extracts the entire (!) text from each pdf.
+
+Below the main steps (see the full script at my repo [here.](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/ocr_files.R){target="_blank"}). 
+
+
+```{r eval=FALSE}
+library(pdftools)
+
+#downlaod required language
+tesseract_download("bos")
+myengine<- tesseract(language = "bos",
+                     datapath =paste0(wdr, "/tesseract_lang/") )
+
+#function to apply to each pdf file/voting record
+fn_extract_text <- function(x) {
+  
+  x %>% 
+    pdf_ocr_text(., language="bos") %>% 
+    data.frame(text_raw=.)
+}
+
+#apply function in parallel to speed things up
+x<- file_list %>% 
+  set_names() %>% 
+  future_map_dfr(., fn_extract_text, .progress=F, .id="link") 
+
+#group extracted text by voting record (unique link); relevant for
+#multi-page documents;
+
+df_ocr_results <- x %>% 
+  group_by(link) %>% 
+  summarise(raw_text=paste(text_raw, collapse=", "),
+            pages=n()) %>% 
+  mutate(raw_text=iconv(raw_text, from="UTF-8", to="windows-1253")) 
+
+```
+## Extract data of interest from ocr-ed text
+Once this is done, the probably trickiest part of the entire endeavor comes. Extracting our data of interest from the raw text obtained above. Below, in the R code chunk comments which hopefully make a bit clear what's going on.
+
+```{r eval=FALSE}
+
+#check whether the voting record pertains to the upper or lower house and create a pertaining indicator variable
+df_ocr_results <- df_ocr_results %>%
+  mutate(house_indicator=str_extract(raw_text, "Predstav*|naroda")) %>% 
+  mutate(house = case_when(
+    str_detect(house_indicator, regex("Predstav*", ignore_case = T)) & !str_detect(house_indicator, regex("naroda", ignore_case = T)) ~ "HoR",
+    str_detect(house_indicator, "naroda") ~ "HoP",
+    TRUE ~ as.character("missing")
+  ))
+
+
+# Split the long raw text of each bills into multiple lines whenever a line break was in the pdf. 
+
+df_ocr_results <- df_ocr_results %>%
+  mutate(raw_text2 = stringr::str_split(raw_text, "\n"))
+
+#Extract the session number, the vote number and session date;
+#regex has to account for different date formats
+
+df_ocr_results <- df_ocr_results %>%
+  mutate(raw_text = stringr::str_squish(raw_text)) %>%
+  mutate(session_no = stringr::str_squish(raw_text) %>% stringr::str_extract(., "[0-9]+(?=\\.?\\s?sjednic)")) %>%
+  mutate(vote_no = stringr::str_extract(raw_text, "(?<=(Glasanje br:\\s?|Redni broj.{0,20}))[0-9]+")) %>% 
+  mutate(session_date = str_extract(raw_text, "[0-9]{1,2}/[0-9]{1,2}/20[0-9]{2}|[0-9]{1,2}.[0-9]{2}.20[0-9]{2}|[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}|[0-9]{1,2}.[:alpha:]+20[1-9]{2}."))
+
+
+# Extract those lines which contain the votes of each indiviudal member of parliament (yes, no, absent...).
+# extract from these lines each MP's name, entity and vote.
+
+df_ocr_results <- df_ocr_results %>%
+  mutate(delegate_votes = map(raw_text2, ~ str_subset(., regex(" Za| Nije prisutan| PROTIV| UKUPNO| SUZDRZAN| NIJE GLASAO",
+    ignore_case = T
+  )) %>%
+    str_subset(., " FBiH | RS | Federacija | Republika Srpska ") %>%
+    str_remove(., "^[^[:alpha:]]+") %>% # remove every non-alpha before the frist alpha.
+    str_squish(.) %>%
+    enframe(name = NULL, value = "delegate_raw"))) %>%
+  mutate(delegate_votes = map(delegate_votes, ~ .x %>%
+    mutate(
+      delegate_name = stringr::word(delegate_raw, 1, 2),
+      entity = case_when(
+        str_detect(delegate_raw, "FBiH|Federacija") ~ "FBiH",
+        str_detect(delegate_raw, "RS|Republika Srpska") ~ "RS",
+        TRUE ~ as.character("missing")
+      ),
+      vote = case_when(str_detect(delegate_raw, regex(" za", ignore_case = T)) ~ "yes",  #space before is important; attention suzdrZAn;
+                           str_detect(delegate_raw, regex(" protiv", ignore_case = T)) ~ "no",
+                           str_detect(delegate_raw, regex(" suzdrzan", ignore_case = T)) ~ "restrained", #reserved
+                           str_detect(delegate_raw, regex(" nije glasao", ignore_case = T)) ~ "no vote", 
+                           str_detect(delegate_raw, regex(" nije prisutan", ignore_case = T)) ~ "not present",
+                       TRUE ~ as.character("missing")
+                     ) %>% stringr::str_to_lower()
+      ))) %>%
+  mutate(delegate_num = map_int(delegate_votes, nrow)) %>% 
+  mutate(law_id=str_extract(link, "(?<=law_id_)[0-9]+"),
+         record_id=str_extract(link, "(?<=record_id_)[0-9]+")) %>% #pos. look-behind 
+  mutate(session_date=as.character(session_date)) %>% 
+  mutate(session_date=lubridate::parse_date_time(session_date, #parse_date_time recognizes different date formats
+                                                 orders=c("dmy","ymd", "mdy")) %>% 
+           lubridate::as_date(.)) 
+
+#above code provided info on MPs, their votes nested within each voting record; code below unnests and provides one row per MP and vote;
+df_ocr_results_unnested <- df_ocr_results %>% 
+  unnest(delegate_votes)
+
+#As it turned out one voting record (07.10.2015) caused some ocr erros which need to be accounted for manually; below the necessary modifcations:
+df_ocr_results_unnested<- df_ocr_results_unnested %>% 
+  mutate(delegate_name = case_when(delegate_name=="Zaim Backovib" ~ "Zaim Backovic",
+                                   str_detect(delegate_name, "Aleksandra Pandu") ~ "Aleksandra Pandurevic",
+                                   str_detect(delegate_name, "Amir Fazl") ~ "Amir Fazlic",
+                                   str_detect(delegate_name, "Asim Sarajlib") ~ "Asim Sarajlic",
+                                   str_detect(delegate_name, "Borislav Boji") ~ "Borislav Bojic",
+                                   str_detect(delegate_name, "Ljiulja Zovko") ~ "Ljilja Zovko",
+                                   str_detect(delegate_name, "D. Nermina") ~ "Nermina Kapetanovic",
+                                   str_detect(delegate_name, "D. Safer") ~ "Safer Demirovic",
+                                   str_detect(delegate_name, "Magazinovic") ~ "Sasa Magazinovic",
+                                   TRUE ~ as.character(delegate_name))) %>% 
+  mutate(delegate_name_2=paste(str_remove(delegate_name, "^[:alpha:]+\\s"),
+                               word(delegate_name, 1), sep=", ")) %>% 
+  mutate(delegate_name_family=stringr::word(delegate_name, -1))
+```
+
+The table below presents first 200 out of 24637 rows of the resulting dataframe which is essentially the basis for any further analysis. Each row represents the vote of one MP for a specific ballot. For future research the obtained dataset is made available [here](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/data/df_ocr_results_unnested.csv){target="_blank"}. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+options(kableExtra.html.bsTable = TRUE)
+
+my_link <- here::here("posts", "2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives","df_ocr_results_unnested.csv")
+
+read_csv2(my_link,
+          n_max=200) %>% 
+  select(-link) %>% 
+  select(law_id, record_id, -raw_text, everything()) %>% 
+  kable() %>%   
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T, font_size = 10) %>%
+  scroll_box(width = "100%", height = "500px")
+
+```
+
+## Get party affiliation of MPs
+
+Since we are also interested in MP's party affiliation (already included in the table above) we need to get this information. Luckily, the parliament's website also provides us with this detail. The code below extracts the information (for both houses and all legislative sessions). 
+
+```{r eval=FALSE}
+library(tidyverse)
+library(rvest)
+library(glue)
+
+wdr <- getwd()
+
+# Members of House of REPRESENTATIVES 
+page_index <- seq(1,5,1)
+mandate_no <- c(6, 7,8, 9)
+df_ids<- crossing(page_index, mandate_no)
+
+MP_links <- glue("https://www.parlament.ba/Representative/List?page={df_ids$page_index}&mandateId={df_ids$mandate_no}")
+
+pb <- dplyr::progress_estimated(length(MP_links))
+
+fn_scrap_MPs <- function(x) {
+  
+  pb$tick()$print()
+  
+  x  %>% 
+    read_html() %>% 
+    html_nodes("table") %>% 
+    html_table(.,trim=T, fill=T) %>% 
+    map_dfr(., as_tibble)
+}
+
+
+df_members_HoRepresentatives <- MP_links %>% 
+  set_names() %>% 
+  map_dfr(.,  possibly(fn_scrap_MPs, otherwise = NULL), .id = "MP_links")
+
+df_members_HoRepresentatives<- df_members_HoRepresentatives %>% 
+  rename(name=X2,
+         party2=X3,
+         party=X4,
+         constituency=X5) %>% 
+  #  mutate(name=map(., iconv, from="UTF-8", to="window-1253")) %>% 
+  tidyr::separate(name, c("family_name", "first_name"), sep=", ") %>% 
+  mutate(party2=stringr::str_remove(party2, "Klup poslanika ")) %>% 
+  mutate_at(vars(contains("name"), party), iconv, from="UTF-8", to="windows-1253")
+
+
+df_members_HoRepresentatives<- df_members_HoRepresentatives %>% 
+  select(-X1) %>% 
+  mutate(first_name=stringr::str_squish(first_name)) %>% #removes space between double names
+  unite(name, c("first_name","family_name"), sep=" " , remove=FALSE) %>% 
+  mutate(house="House of Representatives") %>% 
+  mutate(entity=case_when(str_detect(constituency, "RS") ~ "RS",
+                          str_detect(constituency, "FBiH") ~ "FBiH",
+                          TRUE ~ as.character(constituency))) %>% 
+  mutate(party.original=party) %>% 
+  mutate(party=case_when(party.original=="Samostalni poslanik" ~ "independent",
+                         str_detect(party.original, "SBB") ~ "SBB",
+                         str_detect(party.original, "BPS") ~ "BPS",
+                         str_detect(party.original, "fronta") ~ "DF",
+                         str_detect(party.original, "Za evropsku") ~ "A-SDA",
+                         str_detect(party.original, "Koalicija HDZ") ~ "HDZ Coalition",
+                         TRUE ~ as.character(party.original))) %>% 
+  mutate(period=str_extract(MP_links, "(?<=mandateId=)[0-9]+")) %>% 
+  mutate(period=case_when(period=="6" ~ "2006-2010",
+                          period=="7" ~ "2010-2014",
+                          period=="8" ~ "2014-2018",
+                          period=="9" ~ "2018-2022",
+                     TRUE ~ NA_character_)) %>%
+  mutate(house="HoR") %>% 
+  mutate_at(vars(contains("name"), party), iconv, from="UTF-8", to="windows-1253") %>% 
+  mutate(name=case_when(name=="Nermina Zaimovic - Uzunovic" ~ "Nermina Zaimovic-Uzunovic",
+                        name=="Mladen Ivankovic Lijanovic" ~ "Mladen Ivankovic-Lijanovic",
+                        name=="Vesna Krstovic – Spremo" ~ "Vesna Krstovic-Spremo",
+                        TRUE ~ as.character(name)))
+
+# Members of House of PEOPLES ---------------------------------------------
+
+page_index <- seq(1,5,1)
+mandate_no <- c(6, 7, 8, 9)
+df_ids<- crossing(page_index, mandate_no)
+
+MP_links <- glue("https://www.parlament.ba/Delegate/List?page={df_ids$page_index}&mandateId={df_ids$mandate_no}")
+
+pb <- dplyr::progress_estimated(length(MP_links))
+
+fn_scrap_MPs <- function(x) {
+  
+  pb$tick()$print()
+  
+  y <- x  %>% 
+    read_html() %>% 
+    html_nodes("table") %>% 
+    html_table(.,trim=T, fill=T) %>% 
+    map_dfr(., as_tibble)
+}
+
+
+df_members_HoPeoples <- MP_links %>% 
+  set_names() %>% 
+  map_dfr(.,  possibly(fn_scrap_MPs, otherwise = NULL), .id = "MP_links")
+
+df_members_HoPeoples<- df_members_HoPeoples %>% 
+  rename(name=X2,
+         party2=X3,
+         party=X4,
+         constituency=X5) %>% 
+  tidyr::separate(name, c("family_name", "first_name"), sep=", ") %>% 
+  mutate(party2=stringr::str_remove(party2, "Klup poslanika ")) %>% 
+  mutate_at(vars(contains("name"), party), iconv, from="UTF-8", to="windows-1253") 
+
+df_members_HoPeoples<- df_members_HoPeoples %>%
+  select(-X1) %>% 
+  mutate(first_name=stringr::str_squish(first_name)) %>% #removes space between double names
+  unite(name, c("first_name","family_name"), sep=" " , remove=FALSE) %>% 
+  mutate(house="House of Peoples") %>% 
+  rename(entity=constituency) %>% 
+  mutate(party.original=party) %>% 
+  mutate(party=stringr::word(party, 1)) %>% 
+  mutate(period=str_extract(MP_links, "(?<=mandateId=)[0-9]+")) %>% 
+  mutate(period=case_when(period=="6" ~ "2006-2010",
+                          period=="7" ~ "2010-2014",
+                          period=="8" ~ "2014-2018",
+                          period=="9" ~ "2018-2022",
+                          TRUE ~ NA_character_)) %>% 
+  mutate(house="HoP")
+
+df_members_parliament <- bind_rows(df_members_HoPeoples, df_members_HoRepresentatives)  
+head(df_members_parliament)
+
+```
+With this source on MP's party affiliation however comes an important caveat: The source does not provide any details on whether MP's changed party affiliation during (!) a legislative period. I am not aware that this has actually been the case, but if so, it would distort results grouped by party affiliation (please let me know in case you're aware of such a change of party affiliation).
+
+## Analysis
+The rest of the R code is more or less 'only' number crunching and producing the graphs above. I won't go into much detail here since i think it's rather straightforward and renders the blog post only unnecessarily longer. In any case, the code is available [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/analysis.R){target="_blank"}. 
+
+
+
+
+
+
+
+
+

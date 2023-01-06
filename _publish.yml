@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 512a3692-7097-4a93-95ea-5ef42b10beec
+      url: 'https://werk.statt.codes'

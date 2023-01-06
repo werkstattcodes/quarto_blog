@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.280">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Roland Schmidt">
+<meta name="dcterms.date" content="2021-11-21">
+<meta name="description" content="In a previous post, I detailed how to extract statements given in Austria’s parliament from the sessions’ transcripts. In this post, I use the extracted text - in combination with an already existing database on earlier sessions - to compare chancellors’ engagement with parliament and …their use of the word ‘I’.">
+
+<title>werk.statt.codes - How often do Austria’s Chancellors use the word ‘I’</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/cookie-consent/cookie-consent.js"></script>
+<link href="../../site_libs/cookie-consent/cookie-consent.css" rel="stylesheet">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script type="text/javascript" charset="UTF-8">
+document.addEventListener('DOMContentLoaded', function () {
+cookieconsent.run({
+  "notice_banner_type":"simple",
+  "consent_type":"implied",
+  "palette":"dark",
+  "language":"en",
+  "page_load_consent_levels":["strictly-necessary","functionality","tracking","targeting"],
+  "notice_banner_reject_button_hide":false,
+  "preferences_center_close_button_hide":false,
+  "website_name":""
+  });
+});
+</script> 
+  
+<style>html{ scroll-behavior: smooth; }</style>
+
+<script src="../../site_libs/twitter-widget-0.0.1/widgets.js"></script>
+<script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+<script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+<script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+<script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">werk.statt.codes</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">more</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
+        <li>
+    <a class="dropdown-item" href="../../about.html">
+ <span class="dropdown-text">About</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">How often do Austria’s Chancellors use the word ‘I’</h1>
+                  <div>
+        <div class="description">
+          In a previous post, I detailed how to extract statements given in Austria’s parliament from the sessions’ transcripts. In this post, I use the extracted text - in combination with an already existing database on earlier sessions - to compare chancellors’ engagement with parliament and …their use of the word ‘I’.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">Austria</div>
+                <div class="quarto-category">regex</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Roland Schmidt </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">21 Nov 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#just-the-results-please" id="toc-just-the-results-please" class="nav-link active" data-scroll-target="#just-the-results-please"><span class="toc-section-number">1</span>  Just the results, please!</a></li>
+  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context"><span class="toc-section-number">2</span>  Context</a></li>
+  <li><a href="#getting-the-data" id="toc-getting-the-data" class="nav-link" data-scroll-target="#getting-the-data"><span class="toc-section-number">3</span>  Getting the data</a>
+  <ul class="collapse">
+  <li><a href="#import-parlspeech-datset" id="toc-import-parlspeech-datset" class="nav-link" data-scroll-target="#import-parlspeech-datset"><span class="toc-section-number">3.1</span>  Import ParlSpeech datset</a></li>
+  <li><a href="#add-data-extracted-from-transcripts" id="toc-add-data-extracted-from-transcripts" class="nav-link" data-scroll-target="#add-data-extracted-from-transcripts"><span class="toc-section-number">3.2</span>  Add data extracted from transcripts</a></li>
+  <li><a href="#combine" id="toc-combine" class="nav-link" data-scroll-target="#combine"><span class="toc-section-number">3.3</span>  Combine</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="toc-section-number">4</span>  Results</a>
+  <ul class="collapse">
+  <li><a href="#some-exploratory-snapshots" id="toc-some-exploratory-snapshots" class="nav-link" data-scroll-target="#some-exploratory-snapshots"><span class="toc-section-number">4.1</span>  Some exploratory snapshots:</a>
+  <ul class="collapse">
+  <li><a href="#number-of-days-with-at-least-one-statement-by-a-chancellor" id="toc-number-of-days-with-at-least-one-statement-by-a-chancellor" class="nav-link" data-scroll-target="#number-of-days-with-at-least-one-statement-by-a-chancellor"><span class="toc-section-number">4.1.1</span>  Number of days with at least one statement by a chancellor</a></li>
+  <li><a href="#total-number-of-words-spoken-by-a-chancellor" id="toc-total-number-of-words-spoken-by-a-chancellor" class="nav-link" data-scroll-target="#total-number-of-words-spoken-by-a-chancellor"><span class="toc-section-number">4.1.2</span>  Total number of words spoken by a chancellor</a></li>
+  </ul></li>
+  <li><a href="#use-of-term-i" id="toc-use-of-term-i" class="nav-link" data-scroll-target="#use-of-term-i"><span class="toc-section-number">4.2</span>  Use of term “I”</a>
+  <ul class="collapse">
+  <li><a href="#plot-version-1" id="toc-plot-version-1" class="nav-link" data-scroll-target="#plot-version-1"><span class="toc-section-number">4.2.1</span>  Plot version 1</a></li>
+  <li><a href="#plot-version-2" id="toc-plot-version-2" class="nav-link" data-scroll-target="#plot-version-2"><span class="toc-section-number">4.2.2</span>  Plot version 2</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up"><span class="toc-section-number">5</span>  Wrap-up</a></li>
+  </ul>
+</nav>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+<section id="just-the-results-please" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Just the results, please!</h1>
+<p><em>Plot version 1</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="how-often-do-austrias-chancellors-use-the-word-i_files/images/pl_search_term_total.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="how-often-do-austrias-chancellors-use-the-word-i_files/images/pl_search_term_total.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+<p><em>Plot version 2</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="preview - Copy.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="preview - Copy.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</section>
+<section id="context" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Context</h1>
+<p>This is another blog post which has populated my draft folder for much too long, and eventually got overtaken by reality. However, in light of the resignation of Austria’s Chancellor Sebastian Kurz, I felt compelled to finalize it.</p>
+<p>The former chancellor is, so it is said, a man of many talents. Among them, and one in which he undoubtedly excels, is the ability to present himself in the most favorable light, catch the limelight, and take credit for positive developments (whether the latter are indeed always of his own making is another story). Within this context, former Neos boss Matthias Strolz posted a few months ago with tongue in cheek a tweet announcing that he had successfully enforced on a Friday that the weekend will start on the next day. Hashtag I, I, I (<em>“Ich, Ich, Ich”</em>).</p>
+<div class="cell" data-code_folding="{}" data-hash="index_cache/html/unnamed-chunk-1_4417a4f25ae6fefd275b3b3c8bc134e0">
+<div class="cell-output-display">
+<blockquote class="twitter-tweet blockquote" data-width="550" data-lang="en" data-dnt="true" data-theme="light"><p lang="de" dir="ltr">ICH habe durchgesetzt, dass morgen Samstag ist. Und jetzt schönes WE, enk B. <a href="https://twitter.com/hashtag/ICHICHICH?src=hash&amp;ref_src=twsrc%5Etfw">#ICHICHICH</a></p>— Matthias Strolz (@matstrolz) <a href="https://twitter.com/matstrolz/status/1383118975807188998?ref_src=twsrc%5Etfw">April 16, 2021</a></blockquote>
+
+</div>
+</div>
+<p>This jokingly phrased tweet with its hashtag made me wonder whether there is actually any empirical evidence for Kurz using the word “I” (<em>ich</em>) more often than others. Around the same time as Strolz’ tweet, I (!) coincidentally stumbled across a relatively new dataset by Christian Rau and Jan Schwalbach <span class="citation" data-cites="Rauh.2020">[@Rauh.2020]</span>. The very impressive <em>ParlSpeech V2</em> dataset comprises the transcripts of parliamentary speeches of nine states, including Austria. In short, a wonderful source to check for Kurz’s use of the word ‘I’ and contrast it with that of his peers, i.e.&nbsp;previous chancellors.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Unfortunately though, there’s a catch. For Austria, the ParlSpeech dataset only covers statements made between 15 Jan 1996 and 13 Dec 2018. Consequently, it excludes chancellors prior to Franz Vranitzky, and also only covers a part of the latter’s time in office. Furthermore, and more problematic, the dataset also does not cover the later part of Kurz’s first government (18 Dec 2017 - 28 May 2019) and Kurz’s latest (last?) government (7 Jan 2020 - 11 October 2021).</p>
+<p>In order to overcome the latter shortcoming, I digged into the transcripts as provided on the website of Austria’s parliament and extracted all statements given in Parliament, including those of Kurz. While one may rightfully wonder whether the frequency of the word “I” has actually any instrumental, epistemological value, let alone taking it as an indicator for a personality feature, the work to extract all statements was too arduous to simply leave it unused. The instructions on how to extract the statements from Parliament’s transcripts I detailed in this previous <a href="https://werk.statt.codes//post/2021-04-20-extracting-speeches-held-at-austrias-parliament/" target="_blank">post</a>.</p>
+<div class="cell" data-hash="index_cache/html/unnamed-chunk-2_c512cc0ebacf60b249343a8902e16b69">
+<div class="cell-output-display">
+
+<div id="frucxdjtzp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  
+  <table class="gt_table" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif; display: table; border-collapse: collapse; margin-left: auto; margin-right: auto; color: #333333; font-size: 14px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: none; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3;" bgcolor="#FFFFFF">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="5" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="background-color: #FFFFFF; text-align: left; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; color: #333333; font-size: 125%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; font-family: 'Libre Franklin'; font-weight: 800;" bgcolor="#FFFFFF" align="left">Speeches by chancellors covered by the ParlSpeech dataset and own data</td>
+    </tr>
+    
+  </thead>
+  <thead class="gt_col_headings" style="border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: none; border-bottom-width: 1px; border-bottom-color: #334422; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3;">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="background-color: #FFFFFF; font-size: 12px; font-weight: normal; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; text-align: left; color: #A9A9A9; font-family: 'Source Sans Pro'; text-transform: uppercase;" scope="col" id="gov" bgcolor="#FFFFFF" valign="bottom" align="left">gov</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="background-color: #FFFFFF; font-size: 12px; font-weight: normal; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; color: #A9A9A9; font-family: 'Source Sans Pro'; text-transform: uppercase;" scope="col" id="office_start" bgcolor="#FFFFFF" valign="bottom" align="right">office_start</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="background-color: #FFFFFF; font-size: 12px; font-weight: normal; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; color: #A9A9A9; font-family: 'Source Sans Pro'; text-transform: uppercase;" scope="col" id="office_end" bgcolor="#FFFFFF" valign="bottom" align="right">office_end</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="background-color: #FFFFFF; font-size: 12px; font-weight: normal; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; text-align: left; color: #A9A9A9; font-family: 'Source Sans Pro'; text-transform: uppercase;" scope="col" id="dataset" bgcolor="#FFFFFF" valign="bottom" align="left">dataset</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="background-color: #FFFFFF; font-size: 12px; font-weight: normal; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; text-align: left; color: #A9A9A9; font-family: 'Source Sans Pro'; text-transform: uppercase;" scope="col" id="scope of analysis" bgcolor="#FFFFFF" valign="bottom" align="left">scope of analysis</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body" style="border-top-style: none; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #FFFFFF;">
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Schallenberg</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2021-10-11</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">ongoing</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #FFA500; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">own data</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">not included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Kurz II</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2020-01-07</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2021-10-11</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #FFA500; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">own data</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Bierlein</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2019-06-03</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2020-01-07</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #FFA500; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">own data</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Kurz I</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2017-12-18</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2019-05-28</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #FFA500; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech partly &amp; own data</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Kern</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2016-05-17</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2017-12-18</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Faymann II</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2013-12-16</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2016-05-09</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Faymann I</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2008-12-02</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2013-12-16</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Gusenbauer</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2007-01-11</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2008-12-02</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Schüssel II</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2003-02-28</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2007-01-11</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Schüssel I</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2000-02-04</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2003-02-28</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Klima</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1997-01-28</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">2000-02-04</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Vranitzky V</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1996-03-12</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1997-01-28</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; color: #006400; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Vranitzky IV</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1994-11-29</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1996-03-12</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">ParlSpeech partly</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">not included</td></tr>
+    <tr><td headers="gov" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">Vranitzky III</td>
+<td headers="office_start" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1990-12-17</td>
+<td headers="office_end" class="gt_row gt_right" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: right; font-variant-numeric: tabular-nums; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="right">1994-11-29</td>
+<td headers="dataset" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">not included</td>
+<td headers="scope" class="gt_row gt_left" style="padding-top: 0px; padding-bottom: 0px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left; font-family: 'Source Sans Pro'; font-weight: 400;" valign="middle" align="left">not included</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<p>To eventually obtain a consolidated dataset which also includes Kurz’s statements up to his last day in office and be able to check for the presence of the word “I” the following steps were required:</p>
+<ol type="1">
+<li><p>Get data</p>
+<ol type="1">
+<li>Load data from <span class="citation" data-cites="Rauh.2020">[@Rauh.2020]</span> and keep only statements by chancellors</li>
+<li>Extract text from transcripts for missing periods and keep only statements by chancellors (Kurz, Bierlein)</li>
+<li>Combine both datasets and avoid overlaps/duplications</li>
+<li>Complement data with additional details for further analysis (number of words, time in office)</li>
+</ol></li>
+<li><p>Analysis</p>
+<ol type="1">
+<li>Get frequency of word “I”</li>
+<li>Control for total number of words spoken and/or time in office (relative frequency).</li>
+<li>Compare and plot</li>
+</ol></li>
+</ol>
+<p>Below the pertaining code with some comments added inline.</p>
+</section>
+<section id="getting-the-data" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Getting the data</h1>
+<section id="import-parlspeech-datset" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="import-parlspeech-datset"><span class="header-section-number">3.1</span> Import ParlSpeech datset</h2>
+<p>First, let’s get the data contained in the ParlSpeech V2 dataset, which is on Harvard’s dataverse <a href="https://dataverse.harvard.edu/dataset.xhtml;jsessionid=9527732cd95a51862be5fc135568?persistentId=doi%3A10.7910%2FDVN%2FL4OAKN&amp;version=&amp;q=&amp;fileAccess=&amp;fileTag=&amp;fileSortField=size&amp;fileSortOrder=" target="_blank">here</a>. As you’ll see, there is a file for each of the nine parliaments. <em>Corp_Nationalrat_V2.rds</em> is the file on Austria we are looking for. The code chunk below makes use of the <code>dataverse</code> package which enables you to directly import files from Harvard’s dataverse.</p>
+<div class="cell">
+
+</div>
+<p>Let’s only keep the statements by chancellors, and extract their family name.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df_parlspeech_chancellor <span class="ot">&lt;-</span> df_parlspeech <span class="sc">%&gt;%</span> </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(speaker, <span class="fu">regex</span>(<span class="st">"^Bundeskanzler(in)?</span><span class="sc">\\</span><span class="st">b"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name_family=</span><span class="fu">str_extract</span>(speaker, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w+$"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Here the first (truncated) statement of every chancellor contained in the ParlSpeech dataset.</p>
+<p>Before combining the data obtained from the ParlSpeech dataset, we’ve to make sure that there is no overlap in terms of time covered by the two datasets (what would result in duplicates). With a view to ensure this, I’ll take the latest date in the ParlSpeech dataset as a cut-off date. Any observation contained in the data retrieved by me which precedes this cut-off date will be excluded.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>date_cut_off_max <span class="ot">&lt;-</span> <span class="fu">max</span>(df_parlspeech_chancellor<span class="sc">$</span>date)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>date_cut_off_max</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2018-12-13"</code></pre>
+</div>
+</div>
+<p>Furthermore, let’s check the starting date of the ParlSpeech data.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>date_cut_off_min <span class="ot">&lt;-</span> <span class="fu">min</span>(df_parlspeech_chancellor<span class="sc">$</span>date)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>date_cut_off_min</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "1996-01-31"</code></pre>
+</div>
+</div>
+<p>A look at chancellors’ time in office reveals that the starting date of covered statements is at the end of Vranitzky’s fourth term. Consequently, I only keep his fifth term, for which data on all statements is available. The data on chancellors’ time in office is retrieved from a <a href="https://github.com/werkstattcodes/AT_gov_members" target="_blank">repository</a> which I had previously created, and based on data published on the parliament’s website.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#keep data only for Vranitzky's 5th term</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>df_parlspeech_chancellor <span class="ot">&lt;-</span> df_parlspeech_chancellor <span class="sc">%&gt;%</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"1996-03-12"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="add-data-extracted-from-transcripts" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="add-data-extracted-from-transcripts"><span class="header-section-number">3.2</span> Add data extracted from transcripts</h2>
+<p>Now let’s add those statements which were given after the end of ParlSpeech’s coverage (2018-12-13). These statements were previously extracted <a href="https://werk.statt.codes/post/2021-04-20-extracting-speeches-held-at-austrias-parliament/" target="_blank">here</a> and are available for download <a href="https://data.world/zoowalk/parlspeeches" target="_blank">here</a>.</p>
+<p>To directly import the dataset from data.world, where I stored it, I’ll use <code>data.world</code> package.</p>
+<div class="cell" data-hash="index_cache/html/unnamed-chunk-12_6dfa1e77cadc6f955da4fac4b673e27b">
+
+</div>
+</section>
+<section id="combine" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="combine"><span class="header-section-number">3.3</span> Combine</h2>
+<p>Keep only statements by chancellors made after the end of ParlSpeech’s coverage.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_additions <span class="ot">&lt;-</span> df_XXVI_XXVII <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">date=</span>date_first, speaker, <span class="at">text=</span>statement, office_position) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#remove statements preceding ParlSpeech's end date</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">&gt;</span> date_cut_off_max) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#keep only statements by chancellors</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(office_position, <span class="fu">regex</span>(<span class="st">"Bundeskanzler(in)?</span><span class="sc">\\</span><span class="st">b"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Combine both datasets.</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(df_parlspeech_chancellor, df_additions) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">speaker_name_family=</span><span class="fu">str_extract</span>(speaker, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">S*$"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">text_length=</span><span class="fu">str_count</span>(text, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w+"</span>))) <span class="co">#</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Add details on chancellors’ terms to the data:</p>
+<div class="cell">
+
+</div>
+<p>Add details on party affiliation:</p>
+<div class="cell" data-code_folding="{}">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>vec_color <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"SPÖ"</span><span class="ot">=</span><span class="st">"red"</span>, <span class="st">"ÖVP"</span><span class="ot">=</span><span class="st">"black"</span>, <span class="st">"Neue ÖVP"</span><span class="ot">=</span><span class="st">"#62C3D0"</span>, <span class="st">"unabhängig"</span><span class="ot">=</span><span class="st">"grey30"</span>)  </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>df_party<span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tribble</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>          <span class="sc">~</span>name, <span class="sc">~</span>party,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Vranitzky"</span>, <span class="st">"SPÖ"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Klima"</span>,  <span class="st">"SPÖ"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Kurz"</span>, <span class="st">"Neue ÖVP"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Schüssel"</span>,  <span class="st">"ÖVP"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Bierlein"</span>, <span class="st">"unabhängig"</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Gusenbauer"</span>,  <span class="st">"SPÖ"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Faymann"</span>,  <span class="st">"SPÖ"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Kern"</span>,  <span class="st">"SPÖ"</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>df_chancellors_speeches <span class="ot">&lt;-</span> df_chancellors_speeches <span class="sc">%&gt;%</span> </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(.,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            df_party,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">by=</span><span class="fu">c</span>(<span class="st">"chancellor_name_family"</span><span class="ot">=</span><span class="st">"name"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="results" class="level1 page-columns page-full" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Results</h1>
+<section id="some-exploratory-snapshots" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="some-exploratory-snapshots"><span class="header-section-number">4.1</span> Some exploratory snapshots:</h2>
+<section id="number-of-days-with-at-least-one-statement-by-a-chancellor" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="number-of-days-with-at-least-one-statement-by-a-chancellor"><span class="header-section-number">4.1.1</span> Number of days with at least one statement by a chancellor</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-17-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="total-number-of-words-spoken-by-a-chancellor" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored"><span class="header-section-number">4.1.2</span> Total number of words spoken by a chancellor</h3>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-19-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+
+<h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:18px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Anzahl der gesprochenen Worte im Parlament pro Tag im Amt</h1>
+<h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="total-number-of-words-spoken-by-a-chancellor">Daten ab Vranitzky 5 (März 1996).</h2>
+<div id="htmlwidget-01fdf53a37b55ce0a9f4" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<p style="color:#999999;background:#FFFFFF;text-align:left;font-size:11px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für 1996-01-31 bis 2018-12-13; eigene Erhebung aus Protokollen des Parlaments 
+für 2018-12-13 bis 2021-05-19. Daten zu Vranitzky beziehen sich nur auf seine 5. Amtsperiode (1996-03-12 bis 1997-01-18).
+                        Analyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes</p>
+<script type="application/json" data-for="htmlwidget-01fdf53a37b55ce0a9f4">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"gov":["Vranitzky V","Schüssel I","Schüssel II","Gusenbauer","Faymann I","Klima","Faymann II","Kern","Kurz II","Kurz I","Bierlein"],"office_duration":[322,1120,1413,691,1840,1102,875,580,643,526,218],"text_length_total":[52343,143863,144149,64027,128205,74212,57225,36461,38487,27577,1136],"text_length_day":[162.555900621118,128.449107142857,102.016277423921,92.6584659913169,69.6766304347826,67.3430127041742,65.4,62.8637931034483,59.855365474339,52.4277566539924,5.21100917431193]},"columns":[{"id":"gov","name":"gov","type":"character"},{"id":"office_duration","name":"Tage im Amt","type":"numeric"},{"id":"text_length_total","name":"Summe an insgesamt gesprochener Worte","type":"numeric","format":{"cell":{"separators":true},"aggregated":{"separators":true}}},{"id":"text_length_day","name":"Worte pro Tag","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"style":[{"background":"#0000FFFF","color":"white","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#2929F0FF","color":"white","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#4949E5FF","color":"white","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#5454E2FF","color":"white","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#7070D8FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#7272D7FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#7575D6FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#7878D5FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#7C7CD4FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#8484D1FF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""},{"background":"#BEBEBEFF","color":"black","fontSize":null,"fontWeight":"normal","transition":"background 1s ease","borderStyle":"","borderWidth":"px","borderColor":""}]}],"defaultPageSize":11,"theme":{"color":"#333333","borderColor":"#e7e7e7","borderWidth":"1px","stripedColor":"#e7e7e7","highlightColor":"#eeeeee","cellPadding":5,"tableStyle":{"fontSize":13},"headerStyle":{"borderWidth":"0px","padding":"5px","background":"#ffffff","borderColor":"#ffffff","color":"#999999","fontWeight":"500","textTransform":"uppercase","fontSize":11},"groupHeaderStyle":{"&:not(:empty)":{"borderWidth":"0px","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":11,"borderColor":"#ffffff","color":"#333333"}},"rowSelectedStyle":{"backgroundColor":"#e9edf0"},"inputStyle":{"backgroundColor":"#ffffff","color":"#333333"},"searchInputStyle":{"color":"#333333","fontSize":"13px"},"selectStyle":{"color":"#333333"},"paginationStyle":{"color":"#333333","fontSize":"14px"},"pageButtonStyle":{"color":"#333333","fontSize":"14px"}},"dataKey":"29698fc6085bf307bd9c56ca752f83ab"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>A few things stood out for me here: First, Chancellor Schüssel, who is occasionally remembered as the “Chancellor of Silence” (“Schweigekanzler”) was actually quite talkative. In absolute numbers, no other chancellor in the dataset spoke more than Schüssel during his second term. And also his relative numbers are among the top figures. Admittedly, his nickname did not refer to the length of his statements, but rather - if I remember correctly - the (alleged) absence of statements when it came to controversial issues, i.e.&nbsp;statements by his extreme-right coalition partner.</p>
+<p>Second, and more related to my point of departure, chancellor Kurz features very low numbers. With the exception of the special case of chancellor Bierlein (caretaker/expert government) no other chancellor had fewer words spoken in parliament, if take the duration of his office into account.</p>
+</section>
+</section>
+<section id="use-of-term-i" class="level2 page-columns page-full" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="use-of-term-i"><span class="header-section-number">4.2</span> Use of term “I”</h2>
+<p>Now let’s focus on the chancellors’ usage of the word ‘I’ (<em>‘ich’</em>). Below the code and comments.</p>
+<div class="cell">
+
+</div>
+<p>For the sake of clarity, but mainly due to an inability to make up my mind, two plots which depict the same data. Again, with the exception of the special case of Bierlein, no other chancellor used the word ‘I’ more often than Kurz (however, the difference to Klima seems not considerable).</p>
+<section id="plot-version-1" class="level3 page-columns page-full" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="plot-version-1"><span class="header-section-number">4.2.1</span> Plot version 1</h3>
+<div class="cell">
+
+</div>
+<div class="cell page-columns page-full">
+<div class="cell-output-display column-body-outset-right">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-23-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-version-2" class="level3 page-columns page-full" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="plot-version-2"><span class="header-section-number">4.2.2</span> Plot version 2</h3>
+<div class="cell">
+
+</div>
+<div class="cell page-columns page-full" data-layout-align="left">
+<div class="cell-output-display column-body-outset-right">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-27-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="wrap-up" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Wrap-up</h1>
+<p>So that’s it. If the above results are not profoundly meaningful (or maybe they are?), I found them at least somewhat entertaining. As always, if you spot any error, have a question etc. feel free to contact me, best via <a href="https://twitter.com/zoowalk" target="_blank">twitter</a> direct message.</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Obviously, a chancellor’s speeches in Parliament are only one part of his/her overall corpus of statements. It could be that answers in Parliament are formulated differently than those outside when it comes to the use of the word ‘I’.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2021,
+  author = {Roland Schmidt},
+  title = {How Often Do {Austria’s} {Chancellors} Use the Word “{I}”},
+  date = {2021-11-21},
+  url = {https://werk.statt.codes/posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2021" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Roland Schmidt. 2021. <span>“How Often Do Austria’s Chancellors Use the
+Word <span>‘I’</span>.”</span> November 21, 2021. <a href="https://werk.statt.codes/posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i">https://werk.statt.codes/posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i</a>.
+</div></div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/werkstattcodes">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://mastodon.social/@zoowalk">
+      <i class="bi bi-mastodon" role="img" aria-label="mastodon">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/zoowalk">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml">
+      <i class="bi bi-rss" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="../../subscribe.html">
+      <i class="bi bi-envelope-plus" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":true,"descPosition":"bottom","openEffect":"zoom","closeEffect":"zoom"});</script>
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

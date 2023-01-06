@@ -1,0 +1,1442 @@
+---
+title: "Vienna Elections 2020: Age profile of electoral candidates"
+description: "An empirical look at candidates' age."
+date: 10-10-2020
+
+author: Roland Schmidt
+
+categories:
+  - Austria
+  - elections
+  - OCR
+  - regex
+  - reactable
+  - gt
+
+# preview: 
+
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-title: Contents
+    toc-location: left
+    code-fold: true
+    echo: false
+    fig-cap-location: top
+    number-sections: true
+    smooth-scroll: true
+
+filters: 
+    - lightbox
+lightbox: auto
+
+image: preview.png
+
+---
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = T)
+```
+
+# Setup
+<details closed> 
+<summary>Code: Load packages</summary> 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(extrafont)
+loadfonts(device = "win", quiet = T)
+library(hrbrthemes)
+hrbrthemes::update_geom_font_defaults(
+  family = "Roboto Condensed",
+  size = 3.5,
+  color = "grey50"
+)
+library(scales)
+library(knitr)
+library(paletteer)
+library(ggtext)
+library(glue)
+library(pdftools)
+library(svglite)
+library(tictoc)
+library(tidytext)
+library(gt)
+library(reactable)
+library(reactablefmtr)
+library(ggforce)
+library(ggiraph)
+library(htmltools)
+
+
+```
+</details>
+
+<details closed> 
+<summary>Code: Define rmarkdown options</summary> 
+```{r setup, echo = T}
+knit_hooks$set(wrap = function(before, options, envir) {
+  if (before) {
+    paste0("<", options$wrap, ">")
+  } else {
+    paste0("</", options$wrap, ">")
+  }
+})
+
+knitr::opts_chunk$set(
+ 	fig.align = "left",
+	message = FALSE,
+	warning = FALSE,
+ 	dev = "svglite",
+#	dev.args = list(type = "CairoPNG"),
+	dpi = 300,
+ 	out.width = "100%"
+)
+options(width = 180, dplyr.width = 150)
+```
+</details>
+
+<details closed> 
+<summary>Code: Define plot theme, party colors, caption</summary> 
+```{r echo=TRUE}
+
+plot_bg_color <- "white"
+
+caption_table <- "Source:\ndata: https://www.wien.gv.at/politik/wahlen/grbv/2020/ analysis: Roland Schmidt | @zoowalk | https://werk.statt.codes"
+
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() +
+    theme(
+      plot.background = element_rect(fill = plot_bg_color, color=NA),
+      panel.background = element_rect(fill = plot_bg_color, color=NA),
+      #panel.border = element_rect(colour = plot_bg_color, fill=NA),
+      #plot.border = element_rect(colour = plot_bg_color, fill=NA),
+      plot.margin = ggplot2::margin(l = 0, 
+                           t = 0.25,
+                           unit = "cm"),
+      plot.title = element_markdown(
+        color = "grey20",
+        face = "bold",
+        margin = ggplot2::margin(l = 0, unit = "cm"),
+        size = 11
+      ),
+      plot.title.position = "plot",
+      plot.subtitle = element_text(
+        color = "grey50",
+        margin = ggplot2::margin(t = 0.2, b = 0.3, unit = "cm"),
+        size = 10
+      ),
+      plot.caption = element_text(
+        color = "grey50",
+        size = 8,
+        hjust = c(0)
+      ),
+      plot.caption.position = "panel",
+      axis.title.x = element_text(
+        angle = 0,
+        color = "grey50",
+        hjust = 1
+      ),
+      axis.text.x = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.spacing = unit(0.25, "cm"),
+      panel.spacing.y = unit(0.25, "cm"),
+      strip.text = element_text(
+        angle = 0,
+        size = 9,
+        vjust = 1,
+        face = "bold"
+      ),
+      legend.title = element_text(
+        color = "grey30",
+        face = "bold",
+        vjust = 1,
+        size = 7
+      ),
+      legend.text = element_text(
+        size = 7,
+        color = "grey30"
+      ),
+      legend.justification = "left",
+      legend.box = "horizontal", # arrangement of multiple legends
+      legend.direction = "vertical",
+      legend.margin = ggplot2::margin(l = 0, t = 0, unit = "cm"),
+      legend.spacing.y = unit(0.07, units = "cm"),
+      legend.text.align = 0,
+      legend.box.just = "top",
+      legend.key.height = ggplot2::unit(0.2, "line"),
+      legend.key.width = ggplot2::unit(0.5, "line"),
+      text = element_text(size = 5)
+    )
+}
+
+data_date <- format(Sys.Date(), "%d %b %Y")
+
+my_caption <- glue::glue("data: https://www.wien.gv.at/politik/wahlen/grbv/2020/\nanalysis: Roland Schmidt | @zoowalk | https://werk.statt.codes")
+
+```
+</details>
+
+
+# Context
+Elections in Vienna are today and while glancing through the electoral lists I couldn’t help but paying attention to candidates’ birth years. Maybe that’s an age thing...  This got me thinking that I haven’t seen any more systematic analysis of parties’/candidates’ age profile. So as a modest contribution to this end, here are my two cents. Again, I'll focus mainly on the pertaining steps in R and related number crunching. Due to a lack of time and not being an expert on Vienna's electoral system, I'll be brief when it comes to substantive matters. But the presented results hopefully provide sufficient material to dig into.
+
+As always, if you see any glaring error or have any constructive comment, feel free to let me now (best via twitter DM).
+
+# Data
+Again, as so often, the trickiest part is to get the data ‘liberated’ from the format it is provided in. The entire list of candidates is published in [this pdf](https://www.wien.gv.at/politik/wahlen/grbv/pdf/amtsblatt2020.pdf){target=”_blank”}. Note that there are three lists: One for the city council ('Gemeinderat'; composed on the basis of the results in 18 multi-member electoral districts), one for the 23 district councils ('Bezirksrat'; one in each district), and the ‘city election proposal’ ('Stadtwahlvorschlag'; admittedly a somewhat clumsy translation). The latter doesn't constitute a body in itself, but serves to allocate mandates which remained unassigned after counting the votes for the city council ('zweites Ermittlungsverfahren'/similar to the d'Hondt procedure).
+
+When it comes to extracting the data from the linked pdf, a difficulty may arise due to the two-column format of the document. Hence, simple row-wise extraction doesn’t help much since it would put candidates together which could be from different parties. Similarly, simply isolating the two columns and extracting candidates would also not do the trick since breaks betwee parties, districts etc run over two, and not one column. To illustrate this, I resorted to cutting edge technology and drew the two arrows below:
+
+![](Inkedtext_flow_LI_Moment.jpg){width=50% height=50%}
+
+Luckily, the [`tabulizer` package](https://docs.ropensci.org/tabulizer/){target="_blank"} is not only very powerful when it comes to extracting text/data from a pdf, it is also sophisticated enough to take into consideration the text flow highlighted above. I am not familiar with the underlying heuristic, but I assume it is contingent on consistently formatted section headings. Hence, empowered with this tool, retrieving the text becomes rather effortless. The subsequent steps are a battery of regular expressions to extract the specific data we are interested in. To see the code, unfold the snippets below.
+
+<details open> 
+<summary>Code: Extract text from pdf</summary> 
+```{r eval=FALSE, include=T}
+df_raw <- tabulizer::extract_text(file=here::here("_blog_data", 
+                                                  "vienna_elections_2020",
+                                                  "amtsblatt2020.pdf"),
+                        pages=c(1:115),
+                        encoding="UTF-8") %>%  #capital letters of UTF!
+  enframe(name=NULL,
+          value="text_raw")
+```
+</details>
+
+<details open> 
+<summary>Code: Extract data of interest (regex)</summary> 
+```{r eval=FALSE, include=T}
+df_clean <- df_raw %>% 
+  ungroup() %>% 
+  mutate(text_split=str_split(text_raw, regex("\r\n\\s*(?=\\d+\\.)"))) %>% 
+  unnest_longer(text_split) %>% 
+  mutate(text_split=text_split %>% str_squish() %>% str_trim()) %>% 
+  mutate(text_split=str_split(text_split, ".(?=Zustellungsbevollmächtigte(r)? Vertreter(in)?)")) %>% 
+  unnest_longer(text_split) 
+
+# get Listenplatz ------------------------------------------------------------
+
+df_clean <- df_clean %>% 
+  mutate(listenplatz=str_extract(text_split, regex("^\\d+\\.?\\s+(?!Bezirk)")) %>%
+           str_extract(., "\\d*") %>% as.numeric())  
+
+# get elections -----------------------------------------------------------
+
+df_clean <- df_clean %>%   
+  mutate(election=text_raw %>% str_extract(., regex("(?<=[A-Z]\\.)\\s*[A-z]+wahl(en)?", dotall = T)) %>% 
+           str_trim(., side=c("both"))) %>% 
+  tidyr::fill(election, .direction="down") 
+
+
+# electoral district --------------------------------------------------------------
+df_clean <- df_clean %>%   
+    mutate(wahlkreis=case_when(election=="Bezirksvertretungswahlen" ~ str_extract(text_split, "\\d{1,2}\\. Bezirk"),
+                             election=="Gemeinderatswahl"~ str_extract(text_split, regex("Wahlkreis.*?(?=[:upper:]{2,}?)",
+                                                                                     dotall = T,
+                                                                                     multiline = T)),
+                             election=="Stadtwahl" ~ as.character("Stadtwahl"),
+                             TRUE ~ as.character("missing"))) %>% 
+  mutate(wahlkreis=str_trim(wahlkreis, side=c("both"))) %>% 
+  tidyr::fill(wahlkreis, .direction="down") %>% 
+  mutate(wahlkreis=str_remove(wahlkreis, "Wahlkreis ") %>% 
+           str_remove(., regex("\\(.*\\)")) %>% 
+           str_trim(., side=c("both")))
+
+
+# other -------------------------------------------------------------------
+
+df_clean <- df_clean %>% 
+  mutate(page=text_raw %>% str_extract(., regex("Seite \\d+")) %>% str_extract(., "\\d+") %>% 
+           as.numeric()) %>% 
+  mutate(name=str_extract(text_split, regex("(?<=\\d\\.\\s?).*?(?=,\\s?\\d{4},)")) %>% 
+           str_trim(., side=c("both"))) %>% 
+  mutate(first_name=text_split %>% str_extract(., regex("[:alpha:]*(?=,\\s?\\d+)"))) %>% 
+  mutate(year_birth=text_split %>% str_extract(., regex("\\d{4}")) %>% 
+           as.numeric()) %>% 
+  mutate(year_interval=cut(year_birth, seq(1930, 2005, 5))) %>% 
+  mutate(plz=text_split %>% str_extract(., regex("\\d{4}\\s(?=Wien)")) %>% 
+           str_trim(., side=c("both"))) 
+  
+
+# get party ---------------------------------------------------------------
+
+df_clean <- df_clean %>%
+  mutate(party=text_split %>% str_extract(., regex("(?<=^Zustellung)[:alpha:]*$"))) %>%
+  mutate(party=case_when(lead(listenplatz==1) ~ str_extract(text_split, regex("\\w+$")),
+                         TRUE ~ NA_character_)) %>% 
+  tidyr::fill(party, .direction = "down") %>% 
+  mutate(party=party %>% 
+             as_factor() %>% 
+             fct_relevel(., sort) %>% 
+             fct_relevel(., "SPÖ", "FPÖ", "GRÜNE", "ÖVP", "NEOS"))
+
+
+# wrap up -----------------------------------------------------------------
+
+df_clean <- df_clean %>% 
+  mutate(wahlkreis_plz=str_extract(wahlkreis, regex("\\d+")) %>% 
+           as.numeric()+100) %>% 
+  mutate(wahlkreis_plz=wahlkreis_plz %>% as.character() %>% paste0(., "0")) %>% 
+  mutate(wahlkreis_plz=case_when(str_detect(wahlkreis, "Zentrum") ~ "1010, 1040, 1050, 1060",
+                                 str_detect(wahlkreis, "Innen") ~ "1070, 1080, 1090",
+                                 str_detect(wahlkreis, "Leopoldstadt") ~ "1020",
+                                 str_detect(wahlkreis, "Landstraße") ~ "1030",
+                                 str_detect(wahlkreis, "Favoriten") ~ "1100",
+                                 str_detect(wahlkreis, "Simmering") ~ "1110",
+                                 str_detect(wahlkreis, "Meidling") ~ "1120",
+                                 str_detect(wahlkreis, "Hietzing") ~ "1130",
+                                 str_detect(wahlkreis, "Penzing") ~ "1140",
+                                 str_detect(wahlkreis, "Rudolf") ~ "1150",
+                                 str_detect(wahlkreis, "Ottakring") ~ "1160",
+                                 str_detect(wahlkreis, "Hernals") ~ "1170",
+                                 str_detect(wahlkreis, "Währing") ~ "1180",
+                                 str_detect(wahlkreis, "Döbling") ~ "1190",
+                                 str_detect(wahlkreis, "Brigittenau") ~ "1200",
+                                 str_detect(wahlkreis, "Floridsdorf") ~ "1210",
+                                 str_detect(wahlkreis, "Donaustadt") ~ "1220",
+                                 str_detect(wahlkreis, "Liesing") ~ "1230",
+                                 TRUE ~ as.character(wahlkreis_plz))) %>% 
+  mutate(residence=case_when(
+    str_detect(wahlkreis_plz, plz) ~ "inside",
+    !str_detect(wahlkreis_plz, plz) ~ "outside",
+    TRUE ~ as.character("missing"))) #%>% 
+
+
+df_clean <- df_clean %>%   
+  select(-text_raw) %>% 
+  filter(!is.na(listenplatz)) 
+
+```
+</details>
+
+```{r include=FALSE}
+ # readr::write_excel_csv2(df_clean, path=here::here("_blog_data",
+ #                                                  "vienna_elections_2020",
+ #                                                  "df_clean.csv"))
+
+```
+ 
+```{r}
+#| include: false
+#| warnings: false
+#| message: false
+
+df_clean <- readr::read_csv2(file=here::here("posts","2020-10-10-vienna-elections-2020-age-profile",
+                                             "df_clean.csv")) %>% 
+  mutate(party=party %>% 
+             as_factor() %>% 
+             fct_relevel(., sort) %>% 
+             fct_relevel(., "SPÖ", "FPÖ", "GRÜNE", "ÖVP", "NEOS")) %>% 
+  mutate(election=str_remove(election, regex("s?wahl"))) %>% 
+  mutate(election=fct_relevel(election, "Gemeinderat", "Bezirksvertretungen", "Stadt"))
+```
+
+After these few steps we have a searchable/sortable table of all candidates (or better candidatures since one person can be candidate on multiple districts/lists). There have been `r df_clean %>% nrow() %>% scales::comma()` candidatures by `r df_clean %>% distinct(name) %>% nrow() %>% scales::comma()` individuals.
+
+The table essentially provides all necessary data for the subsequent analysis. While the pdf does not include the exact birth date of each candidate, it provides us with their birth years which we can take as a proxy for age. Note that I also extracted candidates' residence zip code to see how often place of residence and candidature actually overlap (see below).
+
+## Result
+
+<details closed> 
+<summary>Code: Table with all candidates</summary> 
+```{r}
+
+tb_all <- reactable(df_clean %>% 
+            select(election, wahlkreis, party, name, listenplatz, year_birth, plz),
+          columns=list(election=colDef(name="Wahl", width=130),
+                       wahlkreis=colDef(name="Wahlbezirk", width=100),
+                       party=colDef(name="Partei", width=50),
+                       name=colDef(name="KandidatIn"),
+                       listenplatz=colDef(name="Listenplatz", 
+                                          width=70,
+                                          align="center"),
+                       year_birth=colDef(name="Geburtsjahr", width=90),
+                       plz=colDef(name="PLZ Wohnort", width=90)),
+          bordered=F,
+          compact = TRUE,
+          highlight = TRUE,
+          style = list(fontSize = "10px"),
+          filterable = TRUE,
+          defaultPageSize = 23,
+          theme = reactablefmtr::nytimes()) %>%
+          add_title(title= "WIEN-WAHL 2020: Liste aller KandidatInnen") %>%
+          reactablefmtr::add_source(source=caption_table)
+
+
+
+
+```
+</details>
+
+```{r echo=FALSE}
+#table.start
+tb_all
+#table.end
+```
+
+# Analysis
+
+## Oldest and youngest candidates
+
+```{r eval=FALSE, include=FALSE}
+df_old<- df_clean %>% 
+  slice_min(., order_by=year_birth, n=5) %>% 
+  select(
+    name,
+    year_birth,
+    party,
+    election,
+    wahlkreis,
+    listenplatz) %>% 
+  mutate(age_group="Ältesten")
+
+df_young<- df_clean %>% 
+  slice_max(., order_by=year_birth, n=5) %>% 
+  select(
+    name,
+    year_birth,
+    party,
+    election,
+    wahlkreis,
+    listenplatz)%>% 
+  mutate(age_group="Jüngsten")
+
+df_old_young <- bind_rows(df_old, df_young) %>% 
+  group_by(age_group) %>% 
+  arrange(year_birth, name, .by_group=T) %>% 
+  mutate(index=dplyr::min_rank(year_birth)) %>% 
+  mutate(index_name=paste(index, ". ",name)) %>% 
+  select(-index)
+
+#table
+tb_old_young <- df_old_young %>% 
+  select(-name) %>% 
+  gt(groupname_col = "age_group",  rowname_col  = "index_name") %>% 
+  tab_header(title=md("**WIEN-WAHLEN 2020:<br>Ältesten u jüngsten KandidatInnen**"),
+             subtitle = md("Top 5 nach Geburtsjahr")) %>% 
+  gt::cols_label(year_birth="Geburtsjahr",
+                 party="Partei",
+                 election="Wahl",
+                 wahlkreis="Wahlkreis",
+                 listenplatz="Listenplatz") %>% 
+  cols_width(
+      c(index_name) ~ px(100),
+      c(year_birth, party, wahlkreis, listenplatz) ~ px(50),
+      c(election) ~ px(100)
+               ) %>% 
+  tab_options(heading.align = "left",
+                table.background.color = plot_bg_color,
+                table.width=pct(100),
+                table.font.size = "11px",
+                row_group.font.weight = "bold",
+                data_row.padding = px(0),
+                table.align = "left")
+
+tb_old_young %>% gt::as_raw_html()
+  
+```
+
+Let's now look at the overall youngest and oldest candidates. We could retrieve this information already from the main table provided above (sort column birth year). Here, however, let's nest candidates' different candidatures for the sake of clarity.
+
+### Youngest candidates
+<br>
+<details closed> 
+<summary>Code: Youngest candidates</summary> 
+```{r}
+df_main <- df_clean %>% 
+  distinct(name, year_birth, party) %>% 
+  slice_max(.,order_by=year_birth, n=10) %>% 
+  arrange(name, desc(year_birth)) %>% 
+  mutate(index=dplyr::min_rank(year_birth)) %>% 
+  mutate(index_name=paste(index, ". ",name), .before=1) %>% 
+  select(-index)
+
+tb_young <- reactable(df_main,
+                          columns=list(index_name=colDef(name="KandidatIn", 
+                                                         width=130),
+                                       name=colDef(show=F),
+                                       year_birth=colDef(name="Geburtsjahr",
+                                                         width=70),
+                                       party=colDef(name="Partei",
+                                                         width=50)),
+                          pagination = FALSE,
+                          onClick = "expand",
+                          bordered=F,
+                          compact = TRUE,
+                          highlight = TRUE,
+                          rowStyle = list(cursor = "pointer"),
+                          style = list(fontSize = "10px"),
+                          theme = reactableTheme(
+                            borderWidth = 1,
+                            borderColor = "#7f7f7f",
+                            backgroundColor = plot_bg_color,
+                            filterInputStyle = list(
+                              color="green",
+                              backgroundColor = plot_bg_color)),
+                          
+            details=function(index){
+              df_nested <- df_clean %>% 
+                slice_max(.,order_by=year_birth, n=10) %>% 
+                select(name, election, wahlkreis, listenplatz) %>% 
+                filter(name==df_main$name[index]) %>% 
+                select(-name)
+                
+              tbl_nested <- reactable(df_nested, 
+                                      columns = list(
+                                        election=colDef(name="Wahl"),
+                                        wahlkreis=colDef(name="Wahlbezirk"),
+                                        listenplatz=colDef(name="Listenplatz")
+                                      ),
+                                        outlined = TRUE, 
+                                        highlight = TRUE, 
+                                        fullWidth = TRUE,
+                                      theme = reactableTheme(
+                                        backgroundColor = "#ab8cab"))
+              
+              htmltools::div(style = list(margin = "12px 45px"), tbl_nested)}
+            
+
+            ) %>%
+            add_title(title="WIEN-WAHL 2020: Jüngesten KandidatInnen") %>%
+            add_source(source="Geburtsjahr lt. Wahlvorschlag als Basis. Top 10.")
+
+
+```
+</details>
+```{r echo=FALSE}
+#table.start
+tb_young
+#table.end
+```
+
+As becomes clear from the table, there are overall `r df_main %>% nrow()` candidates who were all born in `r df_main %>% distinct(year_birth) %>% pull()`. 
+
+### Oldest candidates
+<br>
+<details closed> 
+<summary>Code: oldest candidates</summary> 
+```{r}
+df_main <- df_clean %>% 
+  distinct(name, year_birth, party) %>% 
+  slice_min(., order_by=year_birth, n=10) %>% 
+  arrange(year_birth, name) %>% 
+  mutate(index=dplyr::min_rank(year_birth)) %>% 
+  mutate(index_name=paste(index, ". ", name), .before=1) %>% 
+  select(-index) 
+  
+tb_old <- reactable(df_main,
+                          columns=list(index_name=colDef(name="KandidatIn", 
+                                                         width=130),
+                                       name=colDef(show=F),
+                                       year_birth=colDef(name="Geburtsjahr",
+                                                         width=70),
+                                       party=colDef(name="Partei",
+                                                         width=50)),
+                          pagination = FALSE,
+                          onClick = "expand",
+                          bordered=F,
+                          compact = TRUE,
+                          highlight = TRUE,
+                          rowStyle = list(cursor = "pointer"),
+                          style = list(fontSize = "10px"),
+                          theme = reactableTheme(
+                            borderWidth = 1,
+                            borderColor = "#7f7f7f",
+                            backgroundColor = plot_bg_color,
+                            filterInputStyle = list(
+                              color="green",
+                              backgroundColor = plot_bg_color)),
+                          
+            details=function(index){
+              df_nested <- df_clean %>% 
+                slice_min(.,order_by=year_birth, n=10) %>% 
+                select(name, election, wahlkreis, listenplatz) %>% 
+                filter(name==df_main$name[index]) %>% 
+                select(-name)
+                
+              tbl_nested <- reactable(df_nested, 
+                                      columns = list(
+                                        election=colDef(name="Wahl"),
+                                        wahlkreis=colDef(name="Wahlbezirk"),
+                                        listenplatz=colDef(name="Listenplatz")
+                                      ),
+                                        outlined = TRUE, 
+                                        highlight = TRUE, 
+                                        fullWidth = T,
+                                      theme = reactableTheme(
+                                        backgroundColor = "#ab8cab"))
+              
+              htmltools::div(style = list(margin = "12px 45px"), tbl_nested)}
+            
+
+            ) %>%
+            add_title(title="WIEN-WAHL 2020: Ältesten KandidatInnen") %>%
+            add_source(source="Geburtsjahr lt. Wahlvorschlag als Basis. Top 10.")
+
+```
+</details>
+
+```{r echo=FALSE}
+#table.start
+tb_old
+#table.end
+```
+<br>
+
+The oldest candidate is `r df_main  %>% slice_head(.,n=1) %>% pull(name)`, who was born in `r df_main %>% slice_head(., n=1) %>% pull(year_birth)`. Not bad.
+
+## Avgerage birth year per election and party
+
+Let's now look at the average year of birth of parties' candidates on each of the different electoral levels. The table below provides the median, mean and standard deviation for each party. The thin white line in the density plots on the right indicates the median.
+
+<details closed> 
+<summary>Code: Median age of lists</summary> 
+```{r}
+# summarize data (median, mean, sd)
+df_list_age <- df_clean %>% 
+  group_by(election, party) %>% 
+  summarize(year_median=median(year_birth, na.rm = T),
+         year_mean=mean(year_birth, na.rm=T),
+         year_sd=sd(year_birth, na.rm=T)) %>% 
+  group_by(election) %>% 
+  arrange(desc(year_median), .by_group=T) #order as gt table
+
+
+#create graphs for table
+
+## define function creating plot
+fn_plot <- function(data){
+  data %>% 
+    ggplot()+
+    ggridges::geom_density_ridges(aes(x=year_birth,
+                     y=0),
+                 fill="firebrick",
+                 color=plot_bg_color,
+                 quantile_lines=T,
+                 quantiles=2,
+                 panel_scaling = F,
+                 linewidth=12)+
+    scale_x_continuous(limits=c(min(df_clean$year_birth),
+                                max(df_clean$year_birth)),
+                       expand=expansion(mult=0))+
+    scale_y_discrete(expand=expansion(mult=0))+
+    theme(
+      plot.background = element_rect(fill = plot_bg_color, color=NA),
+      panel.background = element_rect(fill = plot_bg_color, color=NA),
+      plot.margin = ggplot2::margin(0, unit="cm"),
+      axis.text = element_blank(),
+      axis.title = element_blank()
+    )
+
+  }
+
+## apply function, dataframe with plots
+box_plot <- df_clean %>% 
+  select(election, party, year_birth) %>% 
+  group_by(election, party) %>% 
+  mutate(year_median=median(year_birth, na.rm = T)) %>% 
+  #ungroup() %>% 
+  nest(year_birth_nest=c(year_birth)) %>% 
+  mutate(plot=map(year_birth_nest, fn_plot)) %>% 
+  group_by(election) %>% 
+  arrange(desc(year_median), .by_group=T) #order as gt table
+
+#create gt table & insert df with plots; 
+tb_list_age <- df_list_age %>% 
+  mutate(year_mean=round(year_mean, digits = 2)) %>% 
+  select(election, party, contains("year")) %>% 
+  group_by(election) %>% 
+  arrange(desc(year_median), .by_group=T) %>% #order as plots
+  mutate(index=min_rank(-year_median), .before=1) %>% 
+  mutate(index_party=paste0(index,". ", party)) %>% 
+  ungroup() %>% 
+  select(-index, -party) %>% 
+  mutate(boxplot=NA) %>% 
+  gt(groupname_col = "election",  rowname_col  = "index_party") %>% 
+    tab_header(title=md("**WIEN-WAHLEN 2020:<br>Durchschnittliches Geburtsjahr der KandidatInnen**")) %>% 
+  gt::cols_label(index_party="Partei",
+                 year_median="Median",
+                 year_mean="arith. Mittel",
+                 year_sd="Std. Abw.",
+                 boxplot="Verteilung") %>% 
+  gt::fmt_number(columns=c(year_sd),
+                              decimals=2,
+                  suffixing=F) %>% 
+  gt::text_transform(
+    locations=cells_body(c(boxplot)),
+    fn=function(x){
+      map(box_plot$plot, ggplot_image, height=px(11), aspect_ratio=4)}
+    ) %>% 
+    cols_width(
+      c(boxplot) ~ px(200),
+      c(index_party) ~ px(100)
+               ) %>% 
+    tab_options(heading.align = "left",
+                table.background.color = plot_bg_color,
+                table.width=pct(100),
+                table.font.size = "11px",
+                row_group.font.weight = "bold",
+                data_row.padding = px(0),
+                table.align = "left") %>% 
+   tab_footnote(
+    footnote = "Vertical white line indicates median.",
+    locations = cells_column_labels(
+      columns = c(boxplot))
+  ) %>% 
+   tab_source_note(
+    source_note = my_caption)
+
+# gtsave(tb_list_age, "tb_list_age.png", path = here::here("_blog_data"))
+
+
+
+```
+</details>
+
+```{r echo=FALSE}
+tb_list_age %>% as_raw_html()
+```
+
+I won't dig into every details, so only a few general remarks:
+On the city council level ('Gemeinderat') the established parties (SPÖ, FPÖ, Greens, ÖVP, Neos) feature (on average) somewhat older candidates  than other, newer parties. On the district level ('Bezirksvertretungen'), the former are occupying more of a middle ground. Among them, Neos' candidates are on average younger, FPÖ candidates older. Funnily, when ranking parties according their median age, FPÖ and Team HC Strache (=former leader of FPÖ) are always adjacent. 
+
+
+```{r eval=FALSE, include=FALSE}
+pl_list_median_age <- df_list_median_age %>%   
+  ggplot()+
+  labs(title="Wienwahl 2020: Durchschnittsalter per Liste",
+       caption=my_caption
+       )+
+  scale_x_continuous(breaks=seq(1940, 2000, 10))+
+  geom_jitter(aes(y=tidytext::reorder_within(party, by=year_median, within = election),
+                   x=year_birth,
+                   group=party,
+                   color=party),
+              alpha=0.1)+
+  geom_boxplot_interactive(aes(y=tidytext::reorder_within(party, by=year_median, within = election),
+                   x=year_birth,
+                   group=party,
+                   tooltip=glue::glue("Partei: {party},
+                                      Median Geb.Jahr: {year_median}"),
+                   color=party),
+               fill=NA,
+               outlier.shape = NA)+
+  theme_post()+
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank())+
+  tidytext::scale_y_reordered()+
+  ggforce::facet_col(vars(election),
+             scales = "free_y",
+             space = "free")
+```
+</details>
+
+```{r eval=FALSE, fig.height=12, dev='svg', include=FALSE}
+girafe(ggobj =pl_list_median_age,
+                             options=list(
+                               opts_hover_inv(css = "opacity:0.1;"),
+                               opts_hover(css = "fill:#FFA500;color:#FFA500"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               ),
+       height_svg=6)
+
+```
+<br>
+
+## Average birth year per electoral districts
+
+Let's now take up a 'geographical perspective' and see how birth years are distributed within electoral districts and the difference between the latter.
+
+```{r eval=FALSE, include=FALSE}
+pl_district_age <- df_clean %>% 
+  group_by(election, wahlkreis) %>% 
+  mutate(year_median=median(year_birth, na.rm=T)) %>% 
+  ungroup() %>% 
+  ggplot()+
+  labs(title="WIEN-WAHLEN 2020:<br>Durchschnittsalter der Kandidatinnen pro Wahlbezirk",
+       subtitle="Geburtsjahr als proxy für Alter.",
+       x="Geburtsjahr",
+       caption=my_caption)+
+  geom_boxplot_interactive(aes(y=reorder_within(wahlkreis,
+                                    by=year_median,
+                                    within=election),
+               x=year_birth,
+               group=wahlkreis,
+              # color=wahlkreis,
+               tooltip=glue::glue("Median Geb.Jahr: {year_median}"),
+               data_id=paste0(election, wahlkreis)),
+               fill=NA)+
+  #tidytext::scale_y_reordered()+
+  scale_y_discrete(labels=function(x) {stringr::str_remove(x, regex("___.*")) %>% 
+      str_trunc(., width=10, side="right", ellipsis = "...")})+
+  theme_post()+
+  theme(legend.position="none",
+      #  axis.text.y = element_markdown(size=3),
+        panel.grid.major.y = element_blank()
+        # axis.text.y = element_text_interactive(
+        #        group=wahlkreis,
+        #   data_id="axis.text.y",
+        #  tooltip = "Description for y axis",
+        #   hover_css = "fill:red;stroke:none;")
+        )+
+  facet_col(vars(election),
+            scale="free_y",
+            space="free")
+
+
+giraph_options=list(opts_hover_inv(css = "opacity:0.5;"),
+                    opts_hover(css = "fill:#FFA500;color:#FFA500"),
+                    opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               )
+
+giraph_height=7
+
+
+girafe(ggobj=pl_district_age,
+       options=giraph_options,
+       height_svg=giraph_height)
+```
+
+<details closed> 
+<summary>Code: birth years by electoral districts </summary> 
+```{r}
+
+df_pl <- df_clean %>% 
+  group_by(election) %>% 
+  mutate(year_median_election=median(year_birth, na.rm=T)) %>%
+  group_by(election, wahlkreis) %>% 
+  mutate(year_median_wahlkreis=median(year_birth, na.rm=T)) %>% 
+  mutate(year_mean_wahlkreis=mean(year_birth, na.rm=T)) %>% 
+  mutate(year_sd_wahlkreis=sd(year_birth, na.rm=T)) %>% 
+  ungroup() %>% 
+  mutate(wahlkreis_fct=fct_reorder(wahlkreis, year_median_wahlkreis))
+
+ls_pl <- df_pl %>% 
+  group_split(election) %>% 
+    imap(~ggplot(data=.x)+
+           labs(title=glue::glue("WIEN-WAHLEN 2020 <span style=color:firebrick>{unique(.x$election)}</span>:<br>Verteilung des Geburtsjahres von KandidatInnen pro Wahlbezirk"),
+      subtitle="Median bei vertikaler weißer Linie.",
+       x="Geburtsjahr",
+       caption=my_caption)+
+  ggridges::geom_density_ridges(aes(y=wahlkreis_fct,
+                                     x=year_birth),
+                                 fill="firebrick",
+                                 scale=2,
+                                rel_min_height = 0.01,
+                                quantile_lines=T,
+                                quantiles=2,
+                                color="white")+
+  geom_text(aes(y=length(unique(.x$wahlkreis)),
+            x=2010),
+            label="Median", 
+            nudge_y=+1.5,
+            size = 3,
+            check_overlap = T,
+            hjust=0)  +
+    
+  geom_text(aes(y=length(unique(.x$wahlkreis)),
+            x=2020),
+            label="Mean",
+            check_overlap = T,
+            nudge_y=+1.5,
+            size = 3,
+            hjust=0)  +
+    
+  geom_text(aes(y=length(unique(.x$wahlkreis)),
+            x=2030),
+            label="SD", 
+            nudge_y=+1.5,
+            size = 3,
+            check_overlap = T,
+            hjust=0)  +
+    
+  geom_text(aes(y=wahlkreis_fct,
+                x=2010,
+                label=glue::glue("{year_median_wahlkreis}")),
+            check_overlap = T,
+            size = 3,
+            color = "grey50",
+            hjust=0,
+            nudge_y = 0.5
+            )+
+  geom_text(aes(y=wahlkreis_fct,
+                x=2020,
+                label=glue::glue("{round(year_mean_wahlkreis, digits=1)}")),
+            check_overlap = T,
+            size = 3,
+            color = "grey50",
+                        size=9,
+            hjust=0,
+            nudge_y = 0.5
+            )+
+          geom_text(aes(y=wahlkreis_fct,
+                x=2030,
+                label=glue::glue("{round(year_sd_wahlkreis, digits=2)}")),
+            check_overlap = T,
+            size = 3,
+            color = "grey50",
+            hjust=0,
+            nudge_y = 0.5
+            )+
+  scale_y_discrete(labels=function(x) {stringr::str_remove(x, regex("___.*")) %>% 
+      str_trunc(., width=10, side="right", ellipsis = "...")},
+      expand=expansion(mult=c(0,.1)))+
+  scale_x_continuous(limits=c(1925, 2030),
+                     breaks=seq(1950, 2000, 10),
+                     expand=expansion(mult=c(0,.10)))+
+  theme_post()+
+  theme(legend.position="none",
+        axis.title.x=element_text(hjust=0.7),
+        axis.text.y=element_text(vjust=0)))
+  
+```
+</details>
+
+```{r echo=FALSE, dev='svg'}
+ls_pl[[1]]
+```
+
+There is quite a difference in the median value between Ottakring (the youngest, 1979) and Donaustadt (the oldest, 1970.5). But then again the median value is just an aggregate value and conveys only a bit of the wider picture. I think the distribution curves are more telling. Whether that's useful information or not, I am not entirely sure. At least it's something, I have not seen before.
+
+<details closed> 
+<summary>Plot: District Councils</summary> 
+```{r echo=FALSE, dev='svg'}
+ls_pl[[2]]
+
+```
+</details>
+
+<details closed> 
+<summary>Plot: City electoral proposal</summary> 
+```{r echo=FALSE, dev='svg'}
+ls_pl[[3]]
+```
+</details>
+<br>
+
+## Average birth year per electoral district and party
+
+Now let's dig deeper and see for the distribution of birth years by electoral districts and parties, again for each election (city council, district councils).
+
+### Graph
+<br>
+
+Hover with the mouse over the box plot and dots to obtain the pertaining data.
+
+<details closed> 
+<summary>Code: graph</summary> 
+```{r}
+df_age_list_district_graph <- df_clean %>% 
+  filter(!str_detect(election, "Stadt")) %>% 
+  group_by(election, wahlkreis, party) %>% 
+  mutate(year_median=median(year_birth, na.rm=T),
+    year_mean=mean(year_birth, na.rm=T),
+    year_se=sd(year_birth, na.rm=T),
+    values_nested=list(year_birth=year_birth)) %>% 
+  group_by(election) %>% 
+  mutate(median_election=median(year_birth, na.rm = T)) %>% 
+  group_by(election, wahlkreis) %>% 
+  mutate(median_wahlkreis=median(year_birth, na.rm=T)) %>% 
+  ungroup() %>% 
+  mutate(wahlkreis_num=str_extract(wahlkreis, regex("\\d+")) %>% as.numeric()) %>% 
+  mutate(wahlkreis_fac=fct_reorder(wahlkreis, wahlkreis_num)) %>% 
+  mutate(party=fct_rev(party)) 
+
+
+ls_age_list_district_graph <- df_age_list_district_graph %>% 
+  mutate(election=fct_relevel(election, "Gemeinderat", "Bezirksvertretungen")) %>%   group_split(election) %>% 
+  imap(~ggplot(data=.x)+
+         labs(title=glue::glue("WIEN-WAHL 2020: <span style=color:firebrick>{unique(.x$election)}</span><br>Verteilung des Geburtsjahres pro Wahlbezirk und Partei"),
+              #subtitle="Geburtsjahr als proxy für Alter.",
+              x="Geburtsjahr",
+              caption=my_caption)+
+  geom_jitter_interactive(aes(y=tidytext::reorder_within(
+    x=party,
+    by=year_median,
+    within=wahlkreis_fac
+  ),
+                              x=year_birth,
+                              tooltip=glue::glue("{name}
+                                                 {party}
+                                                 {year_birth}"),
+                              data_id=paste(name)),
+              color="grey50",
+              size=.5,
+              alpha=0.5)+
+  geom_boxplot_interactive(aes(
+    y=tidytext::reorder_within(
+    x=party,
+    by=year_median,
+    within=wahlkreis_fac
+  ),
+                               x=year_birth,
+                               tooltip=glue::glue("{party}
+                                                  Median: {year_median}
+                                                  arith Mittelw.: {round(year_mean, 2)}
+                                                  Std.Abw.: {round(year_se,2)}"),
+                               data_id=paste(wahlkreis, party)),
+               outlier.shape = NA,
+               size=.2,
+               color="#374E55FF",
+               fill=NA)+
+  geom_vline(aes(xintercept=median_election,
+                 color="color_vline",
+                 group=wahlkreis,
+                 name=""),
+             #key_glyph=c("vline"),
+             linetype="dotted"
+             )+
+  scale_color_manual(labels=c(color_vline="median of all candidates"),
+                     values=c(color_vline="firebrick"))+
+  scale_x_continuous(labels=function(x) str_sub(x, start=3),
+                     breaks=seq(1940, 2000, 20))+
+  tidytext::scale_y_reordered()+
+  facet_wrap(vars(wahlkreis_fac),
+             scales="free",
+             ncol=4,
+             labeller=as_labeller(function(x) str_trunc(x, 
+                                                        width=15, 
+                                                        side=c("right"),
+                                                        ellipsis="...")
+                                  )
+             )+
+  theme_post()+
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_markdown(size=6),
+    axis.text.x = element_markdown(size=6),
+    axis.title.x = element_markdown(size=6),
+    legend.position = "top",
+    legend.justification = "left",
+    legend.title=element_blank()
+  ))
+  
+  
+```
+</details>
+<br>
+
+```{r echo=FALSE}
+giraph_options=list(# opts_hover_inv(css = "opacity:0.1;"),
+                               opts_hover(css = "fill:#FFA500;color:#FFA500"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               )
+giraph_height=9
+
+girafe(ggobj=ls_age_list_district_graph[[1]],
+       options=giraph_options,
+       height_svg=giraph_height)
+```
+
+<br>
+<details closed> 
+<summary>Graph: Bezirksvertretung</summary> 
+```{r echo=FALSE}
+girafe(ggobj=ls_age_list_district_graph[[2]],
+       options=giraph_options,
+       height_svg=giraph_height)
+
+```
+</details>
+
+<br>
+
+### Table
+
+Below essentially the same information as provided in the graph above but in a tabular form.
+
+<details closed> 
+<summary>Code: Avg. birth year of lists by district</summary> 
+```{r}
+
+df_age_list_district <- df_clean %>% 
+  #filter(!str_detect(election, "Stadt")) %>% 
+  group_by(election, wahlkreis, party) %>% 
+  summarize(year_median=median(year_birth, na.rm=T),
+    year_mean=mean(year_birth, na.rm=T),
+    year_se=sd(year_birth, na.rm=T),
+    values_nested=list(year_birth=year_birth)) %>% 
+  ungroup() %>% 
+  mutate(values_df=map(values_nested, as_tibble_col, column_name ="birth_year")) 
+
+tb_age_list_district <- df_age_list_district %>% 
+  reactable(.,
+            columns=list(election=colDef(name="Wahl"),
+                         wahlkreis=colDef(name="Wahlkreis"),
+                         party=colDef(name="Partei",
+                                      width=70),
+                         year_median=colDef(name="Median",
+                                            format=colFormat(digits=1)),
+                         year_mean=colDef(name="arith. Mittel", 
+                                          format=colFormat(digits=1)),
+                         values_nested=colDef(show = F),
+                         values_df=colDef(show = F),
+                         year_se=colDef(name="Std.Abw.",
+                                        format=colFormat(digits=1))),
+            bordered=F,
+            compact = TRUE,
+            highlight = TRUE,
+            style = list(fontSize = "10px"),
+            filterable = TRUE,
+            theme = reactableTheme(
+                            borderWidth = 1,
+                            borderColor = "#7f7f7f",
+                            backgroundColor = plot_bg_color,
+                            filterInputStyle = list(
+                              color="green",
+                              backgroundColor = plot_bg_color))
+            ) %>%
+            add_title(title="WIEN-WAHL 2020: Durchschnittliches Alter pro Wahlbezirk") %>%
+            add_source(source="Geburtsjahr lt. Wahlvorschlag als Basis.")
+
+
+```
+</details>
+```{r echo=FALSE}
+#table.start
+tb_age_list_district
+#table.end
+```
+<br>
+
+## Birth year and position on electoral list
+
+Another question which came to my mind: How is a candidate's birth year/age related to his or her position on the electoral list. Are more senior candidates more likely to be on more attractive, i.e. top positions? Or is youth related to competitive positions? Are there any differences between the parties or elections (city vs district level) when it comes to this relation? 
+Hover with the mouse over the individual dots to obtain data on indivdual candidates.
+
+
+<details closed> 
+<summary>Code: Age and position on electoral list</summary> 
+```{r}
+ls_pl_age_rank_district <- df_clean %>% 
+  group_split(election) %>% 
+  imap(~ggplot(data=.x)+
+  labs(
+    title=glue::glue("WIEN-WAHL 2020: <span style  = color:firebrick>{unique(.x$election)}</span><br>Listenplatz und Geburtsjahr"),
+    subtitle="Loess regression.",
+       x="Geburtsjahr",
+       y="Listenplatz",
+       caption=my_caption)+
+  geom_jitter_interactive(aes(x=year_birth,
+                              y=listenplatz,
+                              tooltip=glue::glue("{name}
+                                                 Geb.Jahr: {year_birth}
+                                                 Listenplatz: {listenplatz}
+                                                 Wahlkreis: {wahlkreis}
+                                                 ")),
+              color="grey50",
+              alpha=0.2)+
+  geom_smooth(aes(x=year_birth,
+                  y=listenplatz),
+                  method='loess', 
+              formula= y~x,
+              linewidth=0.5,
+              color="firebrick")+
+    scale_x_continuous(labels=function(x) str_sub(x, start=3),
+                     breaks=seq(1940, 2000, 20))+
+  facet_wrap(vars(party))+
+  theme_post()+
+  theme(axis.title.x=element_text(size=6),
+        axis.title.y=element_text(
+          angle=90,
+          size=6,
+          color="grey50",
+          hjust=1),
+        axis.text.y = element_markdown(size=6),
+        axis.text.x = element_markdown(size=6)))
+
+```
+</details>
+
+<details open> 
+<summary>Plot: City Council - Age and position on electoral list</summary> 
+```{r echo=FALSE}
+giraph_options=list(# opts_hover_inv(css = "opacity:0.1;"),
+                               opts_hover(css = "fill:#FFA500;color:#FFA500"),
+                               opts_tooltip(css = "background-color:#323E4F;
+                               color: white;
+                               font-family: Roboto;",
+                               offx = 30, offy = -30,
+                               delay_mouseout = 5000)
+                               )
+giraph_height=4
+
+
+girafe(ggobj=ls_pl_age_rank_district[[1]],
+       options=giraph_options,
+       height_svg=giraph_height)
+```
+</details>
+
+Interestingly, there are some subtle differences between the regression lines' slope. Note how it increases for higher birth years for the SPÖ and the FPÖ. In other words, younger candidates tend to be on higher (less attractive) positions on the electoral list for these two parties. As for the other major parties, there is no comparable relation, at least not as visible as in the two previous cases. Obviously, this is purely descriptive.
+
+To see the results for the other electoral levels unfold the sections below.
+
+<details closed> 
+<summary>Plot: District Councils - Age and position on electoral list</summary> 
+```{r echo=FALSE}
+girafe(ggobj=ls_pl_age_rank_district[[2]],
+       options=giraph_options,
+       height_svg=6)
+```
+</details>
+
+<details closed> 
+<summary>Plot: City - Age and position on electoral list</summary> 
+```{r echo=FALSE}
+girafe(ggobj=ls_pl_age_rank_district[[3]],
+       options=giraph_options,
+       height_svg=giraph_height)
+```
+</details>
+<br>
+
+## Non-resident candidates
+tb_residence_party
+When extracting data from the pdf document with candidates’ details, I also retrieved the zip code of their places of residence. The idea was to see whether candidates actually live in the electoral districts where they are running for office. For the lack of a better term, I call these candidates ‘non-resident candidates.’ 
+
+I could imagine that ‘non-residency’ conflates quite a number of factors, and the reasons and consequences of ‘non-residency’ are likely to be quite complex. A possible hypotheses could be that parties with high number of non-resident candidates are unevenly institutionalized across the city and hence have to bring in members from outside of the electoral district. But again, this is purely speculative and I haven’t thought, let alone read about it systematically.  Nevertheless,  as some kind of tentative inquiry, I thought it’s worth looking at the numbers. 
+Three specific questions came to my mind: 1) Are there parties which feature particularly frequently such non-resident candidates? 2) Are there districts where non-resident candidates are particularly frequently running for office? 3) Do the shares of non-resident candidates differ between elections for the city council and for the district councils? I would think that the relation between a candidate and her electoral district, i.e. place of residence, is more of a significance in the latter case.
+
+
+### Share per party
+<br>
+<details closed> 
+<summary>Code: Out-of-residence candidates per party and election</summary> 
+```{r}
+#party with most out-of-residence candidates
+df_residence_party <- df_clean %>% 
+  filter(!str_detect(election, "Stadt")) %>% 
+  group_by(election, party, residence) %>% 
+  summarize(n_residence=n()) %>% 
+  mutate(rel_residence=n_residence/sum(n_residence, na.rm = T)) %>% 
+  filter(residence=="outside") %>% 
+  arrange(desc(rel_residence)) %>% 
+  ungroup()
+
+#fn for barchart
+bar_chart <- function(label, width = "100%", height = "16px", fill = "#00bfc4", background = NULL) {
+  bar <- div(style = list(background = fill, width = width, height = height))
+  chart <- div(style = list(flexGrow = 1, marginRight = "8px", background = background), bar)
+  div(style = list(display = "flex", alignItems = "right"), chart, label)
+}
+
+#assemble table
+tb_residence_party <- df_residence_party %>% 
+  select(party, everything()) %>% 
+  reactable(.,
+            columns = list(
+              party=colDef(name="Party"),
+              election=colDef(name="Election"),
+              residence=colDef(show=FALSE),
+              n_residence = colDef(name = "Number",
+                                   align = "left", 
+                                   cell = function(value) {
+    width <- paste0(value / max(df_residence_party$n_residence) * 100, "%")
+    value <- format(value, trim=F, width=3, justify = "right")
+    bar_chart(value, width = width, fill = "#00bfc4")}),
+                  rel_residence = colDef(name = "Share",
+                                   align = "left",
+                                   cell = function(value) {
+    width <- paste0(value * 100, "%")
+    value <- scales::percent(value)
+    bar_chart(value, width = width, fill = "orange", background = "#e1e1e1")})),
+    bordered=F,
+    compact = TRUE,
+    highlight = TRUE,
+    style = list(fontSize = "10px"),
+    filterable = TRUE,
+    theme = reactableTheme(
+      borderColor = "#7f7f7f",
+      borderWidth = 1,
+      backgroundColor = "#f0eff0",
+      filterInputStyle = list(
+                  color="green",
+                  backgroundColor = plot_bg_color)
+            )) %>%
+            add_title(title="Parties' number and share of non-resident candidates per election") %>%
+            add_source(source="Non-resident candidates: Candidates not residing in their electoral district according to their residency zip code.")
+
+
+```
+</details>
+
+```{r echo=FALSE}
+#table.start
+tb_residence_party
+#table.end
+```
+
+
+### Share per electoral districts
+<br>
+<details closed> 
+<summary>Code: Share of out-of-residence candidates per district</summary> 
+```{r}
+#share in districts
+df_residence_district <- df_clean %>% 
+  filter(!str_detect(election, "Stadt")) %>% 
+  group_by(election, wahlkreis, residence) %>% 
+  summarize(n_residence=n()) %>% 
+  mutate(rel_residence=n_residence/sum(n_residence, na.rm = T)) %>% 
+  filter(residence=="outside") %>% 
+  ungroup() %>% 
+  arrange(election, desc(rel_residence))  
+
+#fn for barchart
+bar_chart <- function(label, width = "100%", height = "16px", fill = "#00bfc4", background = NULL) {
+  bar <- div(style = list(background = fill, width = width, height = height))
+  chart <- div(style = list(flexGrow = 1, marginRight = "8px", background = background), bar)
+  div(style = list(display = "flex", alignItems = "right"), chart, label)
+}
+
+#assemble table
+tb_residence_district <- df_residence_district %>% 
+  reactable(.,
+            columns = list(
+              election=colDef(name="Election"),
+              wahlkreis=colDef(name="Electoral district"),
+              residence=colDef(show=FALSE),
+              n_residence = colDef(name = "Number",
+                                   align = "left", 
+                                   cell = function(value) {
+    width <- paste0(value / max(df_residence_district$n_residence) * 100, "%")
+    value <- format(value, trim=F, width=3, justify = "right")
+    bar_chart(value, width = width, fill = "#00bfc4")}),
+    
+              rel_residence = colDef(name = "Share",
+                                   align = "left",
+                                   cell = function(value) {
+    # width <- paste0(value / max(df_residence_district$rel_residence) * 100, "%")
+    width <- paste0(value * 100, "%")
+    value <- scales::percent(value)
+    bar_chart(value, width = width, fill = "orange", background = "#e1e1e1")})),
+    bordered=F,
+    compact = TRUE,
+    highlight = TRUE,
+    style = list(fontSize = "10px"),
+    filterable = TRUE,
+    theme = reactableTheme(
+      borderColor = "#7f7f7f",
+      borderWidth = 1,
+      backgroundColor = "#f0eff0",
+      filterInputStyle = list(
+                  color="green",
+                  backgroundColor = plot_bg_color)
+            )) %>%
+            add_title(title="Share of non-resident candidates per electoral district")
+
+
+
+```
+</details>
+
+```{r echo=FALSE}
+#table.start
+tb_residence_district
+#table.end
+```
+<br>
+
+### City council vs district councils
+
+Finally, let's contrast parties' non-resident candidate ratios for the election to the city council and the district councils.
+
+<details closed> 
+<summary>Code: City vs district councils </summary> 
+```{r message=FALSE, warning=FALSE}
+diff_share_non_residency <- df_clean %>% 
+  filter(!str_detect(election, "Stadt")) %>% 
+  group_by(election, party, residence) %>% 
+  summarize(n_residence=n()) %>% 
+  mutate(rel_residence=n_residence/sum(n_residence, na.rm = T)) %>% 
+  filter(residence=="outside") %>% 
+  ungroup() %>% 
+  group_by(party) %>% 
+  mutate(n_elections=n()) %>% 
+  filter(n_elections==2)
+
+diff_share_non_residency_wide <- diff_share_non_residency %>% 
+  pivot_wider(id_cols=party, names_from=election,
+              values_from=rel_residence) %>% 
+  mutate(city_larger_district=case_when(Gemeinderat > Bezirksvertretungen ~ "GR größer",
+                                        Gemeinderat <  Bezirksvertretungen ~ "GR kleiner"))
+```
+
+```{r}
+
+pl_diff_share_non_residency<- diff_share_non_residency %>% 
+  drop_na() %>% 
+  ggplot()+
+  labs(title=glue::glue("WIEN-WAHL 2020: Share of non-resident candidates per party.<br><span style=color:{paletteer_d('ggsci::default_jama')[2]}>City council (Gemeinderat)</span> vs <span style=color:{paletteer_d('ggsci::default_jama')[3]}>district councils (Bezirksräte)</span>"),
+  subtitle="Non-resident candidates: Candidates with different residence zip-code than their electoral district",
+  x="Share of non-resident candiates",
+  caption=my_caption)+
+  geom_segment(data=diff_share_non_residency_wide,
+               aes(y=reorder(party, -Gemeinderat),
+                   yend=reorder(party, -Gemeinderat),
+                 x=Gemeinderat,
+                 xend=Bezirksvertretungen),
+               color="grey50")+
+  geom_point(aes(y=reorder(party, -rel_residence),
+                 x=rel_residence,
+                 shape=election,
+                 color=election),
+             size=2)+
+  scale_color_manual(values=c("Gemeinderat"=paletteer_d("ggsci::default_jama")[c(2)],
+                          "Bezirksvertretungen"=paletteer_d("ggsci::default_jama")[c(3)]),
+                          label=c("Gemeinderat"="City council",
+                                  "Bezirksvertretungen"="District councils"))+
+  scale_shape(guide="none")+
+  scale_x_percent()+
+  theme_post()+
+  theme(legend.position = "none",
+        legend.direction = "horizontal",
+        legend.title=element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line())
+```
+</details>
+
+```{r echo=FALSE, dev='svg'}
+pl_diff_share_non_residency
+```
+
+
+The graph shows that almost all parties feature a smaller share of non-resident candidates in the elections to the city council than in the elections to the district councils. This difference is particularly strong for the FPÖ and for Team HC Strache. However, there are two notable exceptions. On is WIFF - Wir für Floridsdorf, a party with a clear programmatic focus for one specific district. Hence, it doesn't come as a surprise that the share of non-resident candidates for the district council is low. The second exceptions are the Greens. I am second guessing here, but I could imagine that this is indicative for a strong 'grass-root', locally based party organization and reflecting the engagement of candidates who actually live in their electoral districts. I find the graph in any case quite noteworthy. 
+
+# Wrap-up
+
+So that's it for now. Again, this has been largely about retrieving and crunching numbers, but I guess some bits are worth entertaining more substantively.
+
+
+
+

@@ -1,0 +1,20 @@
+---
+listing:
+  type: grid
+  grid-columns: 4
+  grid-item-border: true
+  contents: posts
+  sort: "date desc"
+  categories: false
+  sort-ui: false
+  filter-ui: false
+  fields: [image, date, title, description, categories]
+  feed: true
+  image-height: 150px
+  page-size: 20
+  image-align: right
+  date-format: D MMM YYYY
+  
+page-layout: full
+title-block-banner: false
+---

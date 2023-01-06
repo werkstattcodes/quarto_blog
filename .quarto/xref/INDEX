@@ -1,0 +1,80 @@
+{
+  "index.qmd": {
+    "index.html": "9ca531e6"
+  },
+  "about.qmd": {
+    "about.html": "79628f3d"
+  },
+  "posts/post-with-code/index.qmd": {
+    "index.html": "03a81cdf"
+  },
+  "posts/welcome/index.qmd": {
+    "index.html": "7a18e02d"
+  },
+  "posts/kurz/index.qmd": {
+    "index.html": "670dc695"
+  },
+  "posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i/index.qmd": {
+    "index.html": "dabd7015"
+  },
+  "posts/2019-10-24-women-in-parliament/index.qmd": {
+    "index.html": "8116ad92"
+  },
+  "posts/2020-11-25-static-maps-with-mapbox-background-images-snapbox/index.qmd": {
+    "index.html": "bdb72897"
+  },
+  "posts/2020-03-02-primary-schools-in-vienna/index.qmd": {
+    "index.html": "c33f1840"
+  },
+  "posts/2020-12-19-vienna-elections-2020-analysis-of-parties-ads-on-facebook/index.qmd": {
+    "index.html": "6c0068c6"
+  },
+  "posts/2020-10-10-vienna-elections-2020-age-profile/vienna-elections-2020-age-profile.qmd": {
+    "vienna-elections-2020-age-profile.html": "24110e4d"
+  },
+  "posts/2020-10-10-vienna-elections-2020-age-profile/index.qmd": {
+    "index.html": "9730c62e"
+  },
+  "posts/2021-04-20-extracting-speeches-held-at-austrias-parliament/index.qmd": {
+    "index.html": "9fdbb720"
+  },
+  "posts/2021-07-18-the-ibizia-inquiry-in-numbers/index.qmd": {
+    "index.html": "e000812e"
+  },
+  "posts/2021-03-10-covidsubmissionsnoauthor/index.qmd": {
+    "index.html": "b707eb29"
+  },
+  "posts/2021-01-22-covidconsultationduration/index.qmd": {
+    "index.html": "032642f2"
+  },
+  "posts/2020-12-22-submissionsepidemiclaw/index.qmd": {
+    "index.html": "657dc43f"
+  },
+  "posts/2020-11-18-recreating-nyt-election-map/index.qmd": {
+    "index.html": "206699df"
+  },
+  "posts/2020-07-21-attransperency/index.qmd": {
+    "index.html": "c8ded69f"
+  },
+  "posts/2020-06-08-update-on-mobility-patterns/index.qmd": {
+    "index.html": "152ad80a"
+  },
+  "posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i/index.rmarkdown": {
+    "index.html": "c18503ad"
+  },
+  "posts/2020-04-28-google-s-mobility-reportsmd/index.qmd": {
+    "index.html": "cbe89e6d"
+  },
+  "posts/2020-06-08-update-on-mobility-patterns/index.rmarkdown": {
+    "index.html": "73e89ed2"
+  },
+  "posts/2020-04-23-covid-19-corona-virus-quick-look-at-some-data/index.qmd": {
+    "index.html": "700f9f0b"
+  },
+  "posts/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/index.qmd": {
+    "index.html": "83e614be"
+  },
+  "posts/2019-11-20-vorzugsstimmen/index.qmd": {
+    "index.html": "6d58b141"
+  }
+}

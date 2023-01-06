@@ -1,0 +1,872 @@
+---
+title: "How often do Austria's Chancellors use the word 'I'"
+
+description: "In a previous post, I detailed how to extract statements given in Austria’s parliament from the sessions’ transcripts. In this post, I use the extracted text - in combination with an already existing database on earlier sessions - to compare chancellors’ engagement with parliament and …their use of the word 'I'."
+
+date: 11-21-2021
+
+categories: 
+  - Austria
+  - regex
+
+filters: 
+    - lightbox
+lightbox: auto
+
+image: preview - Copy_x.png
+---
+
+```{r setup, include=FALSE}
+library(tweetrmd)
+library(tidyverse)
+library(hrbrthemes)
+library(ragg)
+library(colorspace)
+library(gt)
+library(gtExtras)
+library(reactable)
+library(reactablefmtr)
+
+knitr::opts_chunk$set(echo = FALSE,
+                      knitr::opts_chunk$set(dev = "ragg_png"))
+
+plot_bg_color <- "white"
+
+
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() +
+    theme(
+      plot.background = element_rect(fill = plot_bg_color, color=NA),
+      panel.background = element_rect(fill = plot_bg_color, color=NA),
+      plot.margin = ggplot2::margin(l = 0, 
+                           t = 0.25,
+                           unit = "cm"),
+      plot.title = element_text(
+        color = "grey20",
+        face = "bold",
+        margin = ggplot2::margin(l = 0, unit = "cm"),
+        size = 13
+      ),
+      plot.title.position = "plot",
+      plot.subtitle = element_text(
+        color = "grey50",
+        margin = ggplot2::margin(t = 0.2, b = 0.3, unit = "cm"),
+        size = 11
+      ),
+      plot.caption = element_text(
+        color = "grey50",
+        size = 8,
+        hjust = c(0)
+      ),
+      plot.caption.position = "panel",
+      axis.title.x = element_text(
+        angle = 0,
+        color = "grey50",
+        hjust = 1
+      ),
+      axis.text.x = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      axis.title.y = element_text(
+        angle = 0,
+        color = "grey50",
+        hjust = 1),
+      axis.text.y = element_text(
+        size = 9,
+        color = "grey50"
+      ),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.spacing = unit(0.25, "cm"),
+      panel.spacing.y = unit(0.25, "cm"),
+      strip.text = element_text(
+        angle = 0,
+        size = 9,
+        vjust = 1,
+        face = "bold"
+      ),
+      legend.title = element_text(
+        color = "grey30",
+        face = "bold",
+        vjust = 1,
+        size = 9
+      ),
+      legend.text = element_text(
+        size = 9,
+        color = "grey30"
+      ),
+      legend.justification = "left",
+      legend.box = "horizontal", # arrangement of multiple legends
+      legend.direction = "vertical",
+      legend.margin = ggplot2::margin(l = 0, t = 0, unit = "cm"),
+      legend.spacing.y = unit(0.07, units = "cm"),
+      legend.text.align = 0,
+      legend.box.just = "top",
+      legend.key.height = unit(0.2, "line"),
+      legend.key.width = unit(0.5, "line"),
+      text = element_text(size = 5)
+    )
+}
+
+```
+
+# Just the results, please!
+
+*Plot version 1*
+
+![](how-often-do-austrias-chancellors-use-the-word-i_files/images/pl_search_term_total.png)
+
+*Plot version 2*
+
+![](preview%20-%20Copy.png)
+
+# Context
+
+This is another blog post which has populated my draft folder for much too long, and eventually got overtaken by reality. However, in light of the resignation of Austria's Chancellor Sebastian Kurz, I felt compelled to finalize it.
+
+The former chancellor is, so it is said, a man of many talents. Among them, and one in which he undoubtedly excels, is the ability to present himself in the most favorable light, catch the limelight, and take credit for positive developments (whether the latter are indeed always of his own making is another story). Within this context, former Neos boss Matthias Strolz posted a few months ago with tongue in cheek a tweet announcing that he had successfully enforced on a Friday that the weekend will start on the next day. Hashtag I, I, I (*"Ich, Ich, Ich"*).
+
+```{r,  echo=F, code_folding=NULL, cache=T}
+include_tweet("https://twitter.com/matstrolz/status/1383118975807188998")
+
+```
+
+This jokingly phrased tweet with its hashtag made me wonder whether there is actually any empirical evidence for Kurz using the word "I" (*ich*) more often than others. Around the same time as Strolz' tweet, I (!) coincidentally stumbled across a relatively new dataset by Christian Rau and Jan Schwalbach [@Rauh.2020]. The very impressive *ParlSpeech V2* dataset comprises the transcripts of parliamentary speeches of nine states, including Austria. In short, a wonderful source to check for Kurz's use of the word 'I' and contrast it with that of his peers, i.e. previous chancellors.[^1]
+
+[^1]: Obviously, a chancellor's speeches in Parliament are only one part of his/her overall corpus of statements. It could be that answers in Parliament are formulated differently than those outside when it comes to the use of the word 'I'.
+
+Unfortunately though, there's a catch. For Austria, the ParlSpeech dataset only covers statements made between 15 Jan 1996 and 13 Dec 2018. Consequently, it excludes chancellors prior to Franz Vranitzky, and also only covers a part of the latter's time in office. Furthermore, and more problematic, the dataset also does not cover the later part of Kurz's first government (18 Dec 2017 - 28 May 2019) and Kurz's latest (last?) government (7 Jan 2020 - 11 October 2021).
+
+In order to overcome the latter shortcoming, I digged into the transcripts as provided on the website of Austria's parliament and extracted all statements given in Parliament, including those of Kurz. While one may rightfully wonder whether the frequency of the word "I" has actually any instrumental, epistemological value, let alone taking it as an indicator for a personality feature, the work to extract all statements was too arduous to simply leave it unused. The instructions on how to extract the statements from Parliament's transcripts I detailed in this previous [post](https://werk.statt.codes//post/2021-04-20-extracting-speeches-held-at-austrias-parliament/){target="_blank"}.
+
+```{r}
+#| code-fold: show
+#| cache: true
+#| warning: false
+
+date_cut_off_max <- "2018-12-13"
+date_cut_off_min <- "1996-01-31"
+
+
+df_chancellors <- readr::read_delim(file="https://raw.githubusercontent.com/werkstattcodes/AT_gov_members/master/data/df_gov.csv",
+                            delim = ",") %>%
+  select(-ministry) %>% 
+  filter(str_detect(position, regex("^Bundeskanzler(in)?$"))) %>% 
+  rename(office_start=date_start,
+         office_end=date_end) %>% 
+ # mutate(across(contains("office"), .fns = function(x) lubridate::year(x))) %>% 
+  mutate(dataset=case_when
+         (date_cut_off_min < office_start & date_cut_off_max > office_end ~ "ParlSpeech",
+           date_cut_off_min>office_start & date_cut_off_min < office_end ~ "ParlSpeech partly",
+           date_cut_off_max >office_start & date_cut_off_max < office_end ~ "ParlSpeech partly & own data",
+           date_cut_off_max < office_start ~ "own data",
+           
+           TRUE ~ as.character("not included"))
+         ) %>%
+  mutate(scope=case_when(
+    office_start < as.Date("2020-01-08") & office_start >= as.Date("1996-03-12") ~ "included",
+    TRUE ~ as.character("not included"))) %>% 
+  #to show only from Vranitzky onwards
+  filter(office_start>as.Date("1990-12-16")) 
+
+df_chancellors %>% 
+  select(gov, office_start, office_end, dataset, scope) %>% 
+  gt::gt()  %>%
+  cols_label(
+    scope="scope of analysis"
+  ) %>% 
+  tab_style(
+        style = list(
+          # cell_fill(color = "red"),
+          cell_text(color = "darkgreen")
+          ),
+        locations = cells_body(
+      columns = scope,
+      rows = scope == "included")
+    ) %>% 
+    tab_style(
+        style = list(
+          # cell_fill(color = "red"),
+          cell_text(color = "orange")
+          ),
+        locations = cells_body(
+      columns = dataset,
+      rows = str_detect(dataset, regex("own data")))
+    ) %>% 
+    sub_missing(
+    columns = office_end,
+    missing_text = "ongoing") %>%
+  gt_theme_nytimes(., 
+    ) %>%
+  tab_options(
+    data_row.padding = px(0),
+    table.font.size=px(14)) %>% 
+  tab_header(title = "Speeches by chancellors covered by the ParlSpeech dataset and own data") %>%
+  as_raw_html()
+```
+
+To eventually obtain a consolidated dataset which also includes Kurz's statements up to his last day in office and be able to check for the presence of the word "I" the following steps were required:
+
+1.  Get data
+
+    1.  Load data from [@Rauh.2020] and keep only statements by chancellors
+    2.  Extract text from transcripts for missing periods and keep only statements by chancellors (Kurz, Bierlein)
+    3.  Combine both datasets and avoid overlaps/duplications
+    4.  Complement data with additional details for further analysis (number of words, time in office)
+
+2.  Analysis
+
+    1.  Get frequency of word "I"
+    2.  Control for total number of words spoken and/or time in office (relative frequency).
+    3.  Compare and plot
+
+Below the pertaining code with some comments added inline.
+
+# Getting the data
+
+## Import ParlSpeech datset
+
+```{r}
+#| include: false
+#| echo: false
+#| warning: false
+library(tidyverse)
+library(ggrepel)
+library(here)
+library(rvest)
+library(hrbrthemes)  
+library(xml2)
+```
+
+First, let's get the data contained in the ParlSpeech V2 dataset, which is on Harvard's dataverse [here](https://dataverse.harvard.edu/dataset.xhtml;jsessionid=9527732cd95a51862be5fc135568?persistentId=doi%3A10.7910%2FDVN%2FL4OAKN&version=&q=&fileAccess=&fileTag=&fileSortField=size&fileSortOrder=){target="_blank"}. As you'll see, there is a file for each of the nine parliaments. *Corp_Nationalrat_V2.rds* is the file on Austria we are looking for. The code chunk below makes use of the `dataverse` package which enables you to directly import files from Harvard's dataverse.
+
+```{r, include=F, eval=T}
+#import file from ParlSpeech, and select relevant columns;
+# df_parlspeech <- readr::read_rds(file=here::here("posts", "2021_4_chancellor_word_i", "Corp_Nationalrat_V2.rds")) %>% 
+#   select(date, speaker, text) %>% 
+#   mutate(date=lubridate::ymd(date)) %>% 
+#   mutate(text=str_trim(text, side="both"))
+
+#pre-filtered so that I do not have to re-import large parlspeech dataset
+#evertime I knit/run the document; takes a lot of ram
+df_parlspeech_chancellor <- readr::read_csv(file=here::here("posts","2021-04-22-how-often-do-austrias-chancellors-use-the-word-i","how-often-do-austrias-chancellors-use-the-word-i_files", "df_parlspeech_chancellor.csv")) %>% 
+  filter(str_detect(speaker, regex("^Bundeskanzler(in)?"))) %>%
+  mutate(name_family=str_extract(speaker, regex("\\w+$")))
+```
+
+```{r}
+#| eval: false
+
+library(dataverse)
+Sys.setenv("DATAVERSE_SERVER" = "dataverse.harvard.edu")
+
+li_parlspeech <- get_dataset("https://doi.org/10.7910/DVN/L4OAKN")
+df_parlspeech <- get_dataframe_by_id(fileid = 3758792,
+                                        .f=readr::read_rds) %>% 
+  select(date, speaker, text) %>% 
+  mutate(date=lubridate::ymd(date)) %>% 
+  mutate(text=str_trim(text, side="both"))
+```
+
+Let's only keep the statements by chancellors, and extract their family name.
+
+```{r, code_folding=NULL, echo=T, eval=F}
+df_parlspeech_chancellor <- df_parlspeech %>% 
+  filter(str_detect(speaker, regex("^Bundeskanzler(in)?\\b"))) %>% 
+  mutate(name_family=str_extract(speaker, regex("\\w+$")))
+
+```
+
+Here the first (truncated) statement of every chancellor contained in the ParlSpeech dataset.
+
+```{r}
+#| include: false
+
+df_parlspeech_chancellor %>% 
+  group_by(name_family) %>% 
+  arrange(date, .by_group = T) %>% 
+  slice_head(., n=1) %>% 
+  mutate(text=str_trunc(text, 
+                        width=200,
+                        side="right")) %>% 
+  ungroup() %>% 
+  relocate(., name_family, .after=date) %>% 
+  select(-speaker) %>% 
+  arrange(desc(date)) %>% 
+  reactable(.,
+            defaultColDef = colDef(
+              width=100),
+            columns = list(
+              text=colDef(
+                width=500
+              )
+            ),
+            theme=nytimes())
+```
+
+Before combining the data obtained from the ParlSpeech dataset, we've to make sure that there is no overlap in terms of time covered by the two datasets (what would result in duplicates). With a view to ensure this, I'll take the latest date in the ParlSpeech dataset as a cut-off date. Any observation contained in the data retrieved by me which precedes this cut-off date will be excluded.
+
+```{r, code_folding=NULL, echo=T}
+date_cut_off_max <- max(df_parlspeech_chancellor$date)
+date_cut_off_max
+```
+
+Furthermore, let's check the starting date of the ParlSpeech data.
+
+```{r, code_folding=NULL, echo=T}
+date_cut_off_min <- min(df_parlspeech_chancellor$date)
+date_cut_off_min
+```
+
+A look at chancellors' time in office reveals that the starting date of covered statements is at the end of Vranitzky's fourth term. Consequently, I only keep his fifth term, for which data on all statements is available. The data on chancellors' time in office is retrieved from a [repository](https://github.com/werkstattcodes/AT_gov_members){target="_blank"} which I had previously created, and based on data published on the parliament's website.
+
+```{r, echo=T, code_folding=NULL}
+#keep data only for Vranitzky's 5th term
+df_parlspeech_chancellor <- df_parlspeech_chancellor %>% 
+  filter(date >= as.Date("1996-03-12"))
+
+```
+
+## Add data extracted from transcripts
+
+Now let's add those statements which were given after the end of ParlSpeech's coverage (`r date_cut_off_max`). These statements were previously extracted [here](https://werk.statt.codes/post/2021-04-20-extracting-speeches-held-at-austrias-parliament/){target="_blank"} and are available for download [here](https://data.world/zoowalk/parlspeeches){target="_blank"}.
+
+```{r, code_folding="Get data extracted transcripts", echo=F, eval=T, include=F}
+# add data extracted from site (legis XXVI, XXVII) ------------------------
+#can be removed since importing from data.world
+
+df_XXVI_XXVII <- readr::read_csv2(file=here::here("posts", "2021-04-22-how-often-do-austrias-chancellors-use-the-word-i", "df_data.csv")) #%>% 
+  # select(date=date_first, speaker, text=statement, office_position)
+```
+
+To directly import the dataset from data.world, where I stored it, I'll use `data.world` package.
+
+```{r}
+#| cache: true
+#| eval: false
+#| echo: false
+#| warning: false
+
+library(data.world)
+dwapi::configure(auth_token=Sys.getenv("data_world_api"))
+df_XXVI_XXVII <- data.world::query(
+  qry_sql("SELECT * FROM df_data"),
+  dataset = "https://data.world/zoowalk/parlspeeches") 
+
+```
+
+## Combine
+
+Keep only statements by chancellors made after the end of ParlSpeech's coverage.
+
+```{r, code_folding=NULL, echo=T}
+df_additions <- df_XXVI_XXVII %>% 
+  select(date=date_first, speaker, text=statement, office_position) %>%
+  #remove statements preceding ParlSpeech's end date
+  filter(date > date_cut_off_max) %>% 
+  #keep only statements by chancellors
+  filter(str_detect(office_position, regex("Bundeskanzler(in)?\\b")))
+
+```
+
+Combine both datasets.
+
+```{r, code_folding=NULL, echo=T}
+df_all <- bind_rows(df_parlspeech_chancellor, df_additions) %>% 
+  as_tibble() %>% 
+  mutate(speaker_name_family=str_extract(speaker, regex("\\S*$"))) %>% 
+  mutate(text_length=str_count(text, regex("\\w+"))) #
+```
+
+Add details on chancellors' terms to the data:
+
+```{r}
+#| echo: false
+#| warning: false
+
+#filter out only chancellors
+df_chancellors_speeches <- df_chancellors %>% 
+  filter(scope=="included") %>% 
+  mutate(chancellor_name_family=str_extract(name_clean, regex("\\w+$"))) %>% 
+  ungroup() %>% 
+  left_join(., df_all,
+            by=c("chancellor_name_family"="speaker_name_family")) %>% 
+  #only those observations where speech date is within office period; 
+  #removes duplicates created by left_join; e.g. Kurz, Schüssel, Feaymann have two terms;
+  filter(date >= office_start) %>% 
+  filter(date <= office_end) %>% 
+  select(-scope, -contains("position"), -name_family) %>% 
+  mutate(office_duration=difftime(office_end, office_start, units=c("days")) %>% 
+           as.numeric()) %>%
+  distinct()
+```
+
+Add details on party affiliation:
+
+```{r, code_folding=NULL, echo=T}
+vec_color <- c("SPÖ"="red", "ÖVP"="black", "Neue ÖVP"="#62C3D0", "unabhängig"="grey30")  
+
+df_party<- tibble::tribble(
+          ~name, ~party,
+          "Vranitzky", "SPÖ",
+        "Klima",  "SPÖ",
+         "Kurz", "Neue ÖVP",
+     "Schüssel",  "ÖVP",
+     "Bierlein", "unabhängig",
+  "Gusenbauer",  "SPÖ",
+      "Faymann",  "SPÖ",
+         "Kern",  "SPÖ"
+  ) 
+
+df_chancellors_speeches <- df_chancellors_speeches %>% 
+  left_join(.,
+            df_party,
+            by=c("chancellor_name_family"="name"))
+
+```
+
+# Results
+
+## Some exploratory snapshots:
+
+### Number of days with at least one statement by a chancellor
+
+```{r}
+library(paletteer)
+df_statement_days <- df_chancellors_speeches %>% 
+  group_by(gov, office_duration) %>% 
+  summarise(n_days=length(unique(date))) %>% 
+  arrange(desc(n_days)) %>% 
+  ungroup() %>% 
+  mutate(n_days_rel=office_duration/n_days) %>% 
+  arrange(n_days_rel)
+
+df_statement_days %>%
+  mutate(chancellor_name=str_extract(gov, regex("^\\w+"))) %>% 
+  ggplot()+
+  labs(title="An wievielen Tagen sprach Kanzler/in im Parlament",
+       # subtitle="An wievielen Tagen gab der Kanzler/die Kanzlerin ein Statement im Parlament?",
+       caption=glue::glue("Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für {date_cut_off_min} bis {date_cut_off_max}; eigene Erhebung aus Protokollen des Parlaments \nfür {date_cut_off_max} bis {max(df_all$date)}. Keine vollständigen Daten für Zeit vor Vranitzky 5.\nAnalyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes"),
+       # x="Gesamtlänge aller Statements in Anzahl an Wörtern")+
+       x="Tage im Amt",
+       y="Tage mit Statements")+
+  geom_point(aes(
+    x=office_duration,
+    colour=chancellor_name,
+    y=n_days
+  ))+
+  geom_text_repel(aes(
+    x=office_duration,
+    y=n_days,
+    label=gov,
+    group=chancellor_name,
+    colour=chancellor_name))+
+  scale_y_continuous(label=scales::label_comma())+
+  scale_x_continuous(label=scales::label_comma())+
+  scale_color_paletteer_d("ggsci::dark_uchicago")+
+  theme_post()+
+  theme(
+    legend.position = "none",
+    plot.caption.position = "plot",
+    axis.title.y = element_text(angle=90,
+                                vjust=1,
+                                hjust=.9))
+
+
+```
+
+### Total number of words spoken by a chancellor
+
+```{r}
+df_statement_length <- df_chancellors_speeches %>% 
+  group_by(gov, office_duration) %>% 
+  summarise(text_length_total=sum(text_length, na.rm=T)) %>% 
+  ungroup() %>% 
+  mutate(text_length_day=text_length_total/office_duration)
+```
+
+```{r}
+df_statement_length %>%
+  mutate(chancellor_name=str_extract(gov, regex("^\\w+"))) %>% 
+  ggplot()+
+  labs(title="Wie lange haben Kanzler/in vor dem Parlament gesprochen?",
+       subtitle="Anzahl der insg. gesprochenen Worte im Parlament. Daten ab Vranitzky 5 (März 1996).",
+       caption=glue::glue("Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für {date_cut_off_min} bis {date_cut_off_max}; eigene Erhebung aus Protokollen des Parlaments \nfür {date_cut_off_max} bis {max(df_all$date)}.\nAnalyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes"),
+       # x="Gesamtlänge aller Statements in Anzahl an Wörtern")+
+       x="Tage im Amt",
+       y="Anzahl aller gesprochenen Worte")+
+  geom_point(aes(
+    x=office_duration,
+    y=text_length_total
+  ))+
+  geom_text_repel(aes(
+    x=office_duration,
+    y=text_length_total,
+    label=gov,
+    group=chancellor_name,
+    colour=chancellor_name))+
+  scale_color_paletteer_d("ggsci::dark_uchicago")+
+  scale_y_continuous(label=scales::label_comma())+
+  scale_x_continuous(label=scales::label_comma())+
+  # paletteer::scale_color_paletteer_d(palette = "dutchmasters::anatomy")+
+  theme_post()+
+  theme(
+    legend.position = "none",
+    plot.caption.position = "plot",
+    axis.title.y = element_text(angle=90,
+                                vjust=1,
+                                hjust=1)
+  )
+```
+
+```{r}
+df_statement_length %>% 
+  arrange(desc(text_length_day)) %>% 
+  reactable(.,
+            columns=list(
+              office_duration=colDef(
+                name="Tage im Amt"
+              ),
+              text_length_total=colDef(
+                name="Summe an insgesamt gesprochener Worte",
+                format=colFormat(separators = T)
+              ),
+              text_length_day=colDef(
+                name="Worte pro Tag",
+                format=colFormat(digits = 2),
+                style=color_scales(., 
+                                   colors=c("grey", "blue"))
+              )),
+            defaultPageSize =11,
+            theme=nytimes()) %>% 
+  add_title("Anzahl der gesprochenen Worte im Parlament pro Tag im Amt",
+            font_size=18) %>% 
+  add_subtitle("Daten ab Vranitzky 5 (März 1996).",
+               font_size=12,
+               font_weight="normal") %>% 
+  add_source(glue::glue("Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für {date_cut_off_min} bis {date_cut_off_max}; eigene Erhebung aus Protokollen des Parlaments \nfür {date_cut_off_max} bis {max(df_all$date)}. Daten zu Vranitzky beziehen sich nur auf seine 5. Amtsperiode (1996-03-12 bis 1997-01-18).
+                        Analyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes"),
+             font_size=11,
+             font_weight = "normal",
+             font_color = "#999999",
+             # font_family = "Helvetica",
+             align="left")
+```
+
+A few things stood out for me here: First, Chancellor Schüssel, who is occasionally remembered as the "Chancellor of Silence" ("Schweigekanzler") was actually quite talkative. In absolute numbers, no other chancellor in the dataset spoke more than Schüssel during his second term. And also his relative numbers are among the top figures. Admittedly, his nickname did not refer to the length of his statements, but rather - if I remember correctly - the (alleged) absence of statements when it came to controversial issues, i.e. statements by his extreme-right coalition partner.
+
+Second, and more related to my point of departure, chancellor Kurz features very low numbers. With the exception of the special case of chancellor Bierlein (caretaker/expert government) no other chancellor had fewer words spoken in parliament, if take the duration of his office into account.
+
+## Use of term "I"
+
+Now let's focus on the chancellors' usage of the word 'I' (*'ich'*). Below the code and comments.
+
+```{r}
+#| echo: false
+#| warning: false
+
+
+search_term="\\bich\\b"
+
+df_chancellors_speeches <- df_chancellors_speeches %>% 
+  mutate(search_term_n=str_count(text, regex(search_term, ignore_case = T))) 
+
+#search term in total per chancellor
+df_search_term_n<- df_chancellors_speeches %>% 
+  group_by(chancellor_name_family, party) %>% 
+  summarise(search_term_sum=sum(search_term_n),
+            text_length_total=sum(text_length)) %>% 
+  ungroup() %>% 
+  mutate(search_term_rel=search_term_sum/text_length_total) %>% 
+  mutate(search_term_rel_inv=1/search_term_rel)  %>% 
+  arrange(desc(search_term_rel))
+
+```
+
+For the sake of clarity, but mainly due to an inability to make up my mind, two plots which depict the same data. Again, with the exception of the special case of Bierlein, no other chancellor used the word 'I' more often than Kurz (however, the difference to Klima seems not considerable).
+
+### Plot version 1
+
+```{r}
+#| echo: false
+#| warning: false
+
+pl_df_search_term_total <- df_search_term_n %>% 
+  mutate(chancellor_name=fct_reorder(chancellor_name_family, search_term_rel_inv)) 
+
+hrbrthemes::update_geom_font_defaults(family="Roboto Condensed")
+
+library(ggtext)
+
+pl_search_term_total <- pl_df_search_term_total %>% 
+  ggplot()+
+ labs(title="Bundeskanzler/in und das Wort <span style='font-family:Caveat;color:black;font-size:30pt;'>'Ich'</span>",
+     #  x=c("<< häufiger",  "seltener >>"),
+       subtitle="Wie oft verwendete der Kanzler/die Kanzlerin durchschnittlich das Wort 'ich' in Statements vor dem Parlament?",
+       caption=glue::glue("Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für {date_cut_off_min} bis {date_cut_off_max}; eigene Erhebung aus Protokollen des Parlaments \nfür {date_cut_off_max} bis {max(df_all$date)}. Daten zu Vranitzky beziehen sich nur auf seine 5. Amtsperiode (1996-03-12 bis 1997-01-18).\nAnalyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes"))+
+  geom_segment(x=51, xend=109,
+               y=0, yend=0,
+               color="black",
+               linewidth=0.5,
+               linejoin = "mitre",
+               arrow=arrow(length=unit(0.3, "cm"),
+                           ends="both"))+
+  geom_label(x=53, #52
+            y=0,  #0
+            label="häufiger",
+            size=3,
+            color="black",
+            fill="white",
+            fontface="plain",
+            label.size=0,
+            hjust=0,
+            check_overlap = T)+
+    geom_label(x=107,
+            y=0,
+            label="seltener",
+            label.size=0,
+            size=3,
+            family="Roboto Condensed",
+            fontface="plain",
+            color="black",
+            fill="white",
+            hjust=1,
+            check_overlap = T
+            )+
+  ggrepel::geom_text_repel(
+    data=. %>% 
+      arrange(search_term_rel_inv) %>% 
+      filter(row_number()%%2==1),
+    aes(
+    y=0,
+    x=search_term_rel_inv,
+    color=party,
+    label=paste0(str_extract(chancellor_name, regex("\\w+$")), " (",
+                round(search_term_rel_inv, digits = 1),")")),
+    # nudge_y = 0.5,
+    hjust=0,
+    size=3,
+    nudge_y = -.1,
+    family="Roboto Condensed",
+    angle=0,
+    segment.color="grey70",
+    show.legend = F)+
+  ggrepel::geom_text_repel(
+    data=. %>% 
+      arrange(search_term_rel_inv) %>% 
+      filter(row_number()%%2==0),
+    aes(
+    y=0,
+    x=search_term_rel_inv,
+    color=party,
+    label=paste0(str_extract(chancellor_name, regex("\\w+$")), " (",
+                round(search_term_rel_inv, digits = 0),")")),
+    force_pull = 0,
+    nudge_y = .1,
+    family="Roboto Condensed",
+    hjust=0,
+    size=3,
+    angle=0,
+    segment.color="grey70",
+    show.legend = F
+    )+
+  geom_point(aes(
+    y=0,
+    x=search_term_rel_inv,
+    color=party,
+    fill=party),
+    stat="identity")+
+  scale_color_manual(values=vec_color)+
+  # scale_fill_viridis_d(option="D")+
+  scale_x_continuous(limits=c(50, 110),
+                     breaks=seq(60, 100, 20),
+                     expand=expansion(mult=c(0.00,0.01)),
+                     labels=function(x) glue::glue("jedes {x}. Wort"),
+                     position = "top")+
+  scale_y_continuous(limits=c(-.4,.4),
+                     expand=expansion(mult=0))+
+  # hrbrthemes::theme_ipsum_rc()+
+  theme_post()+
+  coord_cartesian(ylim=c(-.2,.2))+
+  guides(color=guide_legend(title=NULL,
+                            label.theme = element_text(size=8,
+                                                       margin=ggplot2::margin(l=0, unit="cm"),
+                                                       family="Roboto Condensed",
+                                                       color="grey50")),
+         fill=guide_none())+
+  theme(legend.position="top",
+        legend.direction = "horizontal",
+        legend.text.align = 0,
+        legend.justification = "left",
+        legend.margin = ggplot2::margin(l=0, t=0, unit="cm"),
+        legend.box.margin = ggplot2::margin(l=-0.3, t=0.25, unit = "cm"),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        # panel.grid.minor.x = element_blank(),
+        plot.title = element_markdown(),
+        plot.title.position = "plot",
+        plot.subtitle = element_text(size=rel(2),
+                                     family="Roboto Condensed",
+                                     margin=ggplot2::margin(b=0, unit="cm")),
+        plot.caption = element_text(face="plain",
+                                    family="Roboto Condensed",
+                                    hjust=0),
+        axis.ticks.length.x.bottom = unit(.3, units="cm"),
+        axis.text.x=element_text(size=8,
+                                 margin=ggplot2::margin(t=0, b=0, unit="cm")),
+        axis.title.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+
+```
+
+```{r}
+#| echo: false
+#| fig-height: 3
+#| column: body-outset-right
+
+
+pl_search_term_total
+```
+
+```{r, dev='ragg_png', eval=F, include=F}
+ggsave(filename=here::here("_post", 
+                           "2021-04-22-how-often-do-austrias-chancellors-use-the-word-i", 
+                           "how-often-do-austrias-chancellors-use-the-word-i_files",
+                           "images", 
+                           "pl_search_term_total.png"),
+       plot=pl_search_term_total,
+       width = 16,
+       height = 8,
+       units="cm")
+```
+
+### Plot version 2
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(ggtext)
+#vec_color %>% enframe(., name="party", value="party_color")
+
+df_pl_search_term_total_2<- pl_df_search_term_total %>% 
+  left_join(., vec_color %>% enframe(., name="party", value="party_color")) %>% 
+  mutate(chancellor_name_md=glue::glue("<span style='color:{party_color}'>{chancellor_name}</span>")) %>%
+  mutate(chancellor_name_md=fct_reorder(chancellor_name_md, search_term_rel_inv) %>% 
+           fct_rev()) 
+  # select(chancellor_name_md)
+  
+```
+
+```{r}
+#| include: false
+
+pl_search_term_total_2  <- df_pl_search_term_total_2%>%  
+  ggplot()+
+  labs(title="Bundeskanzler/in und das Wort <span style='font-family:Caveat;color:black;font-size:30pt;'>'Ich'</span>",
+     #  x=c("<< häufiger",  "seltener >>"),
+       subtitle="Wie oft verwendete der Kanzler/die Kanzlerin durchschnittlich das Wort 'ich' in Statements vor dem Parlament?",
+       caption=glue::glue("Daten: ParlSpeech V2 (Rauh und Schwalbach 2020) für {date_cut_off_min} bis {date_cut_off_max}; eigene Erhebung aus Protokollen des Parlaments \nfür {date_cut_off_max} bis {max(df_all$date)}. Daten zu Vranitzky beziehen sich nur auf seine 5. Amtsperiode (1996-03-12 bis 1997-01-18).\nAnalyse/Graphik: Roland Schmidt | @zoowalk | http://werk.statt.codes"))+
+  geom_segment(aes(
+    y=chancellor_name_md,
+    yend=chancellor_name_md,
+    x=0,
+    xend=search_term_rel_inv,
+    group=chancellor_name_md,
+    color=party
+    ),
+        linewidth=3,
+        # color="grey80"
+  )+
+  geom_text(data=. %>% filter(!str_detect(chancellor_name, "Kurz")),
+              aes(
+    y=chancellor_name_md,
+    x=search_term_rel_inv,
+    #color=search_term_rel_inv,
+    label=round(search_term_rel_inv, 0)),
+    nudge_x = 1,
+    size=3.5,
+    hjust=0,
+    face="bold"
+    )+
+  geom_text(data=. %>% filter(str_detect(chancellor_name, "Kurz")),
+              aes(
+    y=chancellor_name_md,
+    x=search_term_rel_inv,
+    label=glue::glue("im Durchschnitt jedes {round(search_term_rel_inv, 0)}. Wort")),
+    nudge_x = 1,
+    size=3.5,
+    hjust=0,
+    face="bold"
+    )+
+  #scale_y_discrete(label=function(x) stringr::str_extract(x, regex("\\S+$")))+
+  scale_x_continuous(expand=expansion(mult=c(0, 0.05)),
+                     breaks = seq(0, 100, 25),
+                     labels=c("                                   häufiger <<", seq(25,75,25) %>% paste0(., "."),">> seltener                                   "),
+                     position = "top",
+                     sec.axis = dup_axis()
+                     )+
+  scale_color_manual(values=vec_color)+
+  hrbrthemes::theme_ipsum_rc()+
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        plot.title = element_markdown(margin=ggplot2::margin(b=0),
+                                      size=13),
+        plot.title.position = "plot",
+        plot.subtitle = element_text(size=rel(.9),
+                                     margin = ggplot2::margin(
+                                       t=0,
+                                       b=0.3, unit="cm"),
+                                     color="grey10"),
+        plot.caption = element_text(color="grey30",
+                                    margin=ggplot2::margin(t=0, unit="cm"),
+                                    size=8,
+                                    hjust=0),
+        plot.caption.position = "plot",
+        axis.text.x.top = element_text(size=9,
+                                       color="grey30",
+                                       margin=ggplot2::margin(b=0,
+                                                       t=0, 
+                                                       unit="cm")),
+        axis.text.x.bottom = element_blank(),
+        axis.title.x.top = element_blank(),
+        axis.title.x.bottom = element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y = element_markdown(size=10, face="bold"),
+        legend.position="top",
+        legend.margin = ggplot2::margin(0, unit="cm"),
+        legend.title=element_blank(),
+        legend.justification=c(-.25, 0))+
+       guides(color=guide_legend(keywidth = 0.4))
+```
+
+```{r}
+#| fig-height: 4
+#| column: body-outset-right
+#| echo: false
+#| fig-align: left
+
+pl_search_term_total_2
+```
+
+```{r}
+#| include: false
+#| eval: true
+ggsave(filename=here::here("posts", 
+                           "2021-04-22-how-often-do-austrias-chancellors-use-the-word-i",
+                           "preview_thumbnail_2.svg"),
+      plot=pl_search_term_total_2,
+      # width = 150,
+      # height = 200,
+       units=c("px"))
+```
+
+# Wrap-up
+
+So that's it. If the above results are not profoundly meaningful (or maybe they are?), I found them at least somewhat entertaining. As always, if you spot any error, have a question etc. feel free to contact me, best via [twitter](https://twitter.com/zoowalk){target="_blank"} direct message.
