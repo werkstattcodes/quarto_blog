@@ -55,3 +55,4 @@ rsconnect/
 *.rds
 *.rda
 *.shp
+/.quarto/
