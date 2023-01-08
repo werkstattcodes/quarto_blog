@@ -12,9 +12,6 @@ image: map.png
 ---
 
 
-```{r include=FALSE}
-knitr::opts_chunk$set(echo = T)
-```
 
 # Context
 
@@ -24,9 +21,9 @@ The package is quite straightforward and not much to explain about. What caused 
 
 # SETUP
 
-<details closed>
-<summary>Code: Load packages </summary>
-```{r message=FALSE, warning=FALSE}
+```{r }
+#| code-summary: "Code: Load packages"
+
 library(snapbox)
 library(sf)
 library(tidyverse)
@@ -35,15 +32,16 @@ knitr::knit_hooks$set(crop = knitr::hook_pdfcrop) #allows to crop white frame fr
 #for details see https://bookdown.org/yihui/rmarkdown-cookbook/crop-plot.html
 plot_bg_color  <- "white"
 ```
-</details>
+
 
 # ELECTORAL DATA
 
 Get the election results from 2015 and 2020, retrieve the number of eligible voters per precinct (`wber``), and calculate the change.
 
-<details open>
-<summary>Code: Get electoral data + change in number of elegible voters </summary>
-```{r message=FALSE, warning=FALSE}
+```{r }
+#| code-summary: "Code: Get electoral data + change in number of elegible voters"
+#| cache: true
+
 # https://www.data.gv.at/katalog/dataset/stadt-wien_wahleninwiengemeinderatswahlen/resource/a526df98-c307-4dee-8233-43b02856d1d7
 # https://www.wien.gv.at/politik/wahlen/hilfetext/rohdaten.html
 res20 <- readr::read_csv2(file = "https://www.wien.gv.at/politik/wahlen/ogd/gr201_99999999_9999_spr.csv")
@@ -72,18 +70,17 @@ df_wber_diff <- res %>%
                                     wber_diff_rel<0 ~ "decrease",
                                     TRUE ~ as.character("stable")))
 ```
-</details>
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+```{r echo=FALSE, , paged.print=TRUE}
 df_wber_diff %>% 
   select(-election, -district_code, -wber, -c(t:spr))
 ```
 
 Let's have a quick look at the distribution of the change rates:
 
-<details closed>
-<summary>Code: Distribution of changes</summary>
-```{r message=FALSE, warning=FALSE}
+```{r }
+#| code-summary: "Code: Distribution of changes"
 library(ggridges)
 pl_dist <- df_wber_diff %>% 
   ggplot()+
@@ -95,9 +92,9 @@ table(df_wber_diff$change_indicator)
 
 
 ```
-</details>
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+```{r echo=FALSE, }
 table(df_wber_diff$change_indicator)
 
 pl_dist
@@ -111,9 +108,9 @@ So, while the purpose of this post is not to dig into substantive matters, I was
 
 Get the shapefile of the precincts' boundaries. 
 
-<details open>
-<summary>Code: Get shape with boundaries of precincts </summary>
 ```{r}
+#| code-summary: "Code: Get shape with boundaries of precincts"
+
 # https://www.data.gv.at/katalog/dataset/79c1030d-5cf6-4d58-ade6-02f66fb4dffb
 precincts <- st_read(here::here("posts","2020-11-25-static-maps-with-mapbox-background-images-snapbox","shapefile","WAHLSPRGR2020OGDPolygon.shp"),
               quiet=T) %>% 
@@ -123,14 +120,15 @@ precincts <- st_read(here::here("posts","2020-11-25-static-maps-with-mapbox-back
 ggplot()+
   geom_sf(data=precincts)
 ```
-</details>
+
 
 Now let's calculate the center of each precinct. Note that I transform the coordination projection from WGS84 to 3857. The latter is 'a Spherical Mercator projection coordinate system popularized by web services such as Google and later OpenStreetMap.'^[See [here](https://wiki.openstreetmap.org/wiki/EPSG:3857#:~:text=EPSG%3A3857%20is%20a%20Spherical,as%20Google%20and%20later%20OpenStreetMap.){target="_blank"}.] 
 After the transformation I take the x and y values from the centroids' geometry. The function `st_centroid` gives us the centre of each polygon.
 
-<details open>
-<summary>Code: Get centroids for precincts</summary>
-```{r message=FALSE, warning=FALSE}
+
+```{r }
+#| code-summary: "Code: Get centroids for precincts"
+
 st_crs(precincts)
 
 cent_precincts <- precincts %>% 
@@ -144,15 +142,16 @@ ggplot()+
   geom_sf(data=cent_precincts,
           size=0.1)
 ```
-</details>
+
 
 ## Add change indicators (arrows)
 
 Calculate the length of the arrow indicating the change: Here the arrows should have an angle of 20 degrees; positive changes point towards the right, negative changes towards the left. With the sin and cos function we calculate the horizontal and vertical distance from the centroids.  In addition, to make the arrows sufficiently long to be visible, I multiply them with a scale factor. Note that I add `coord_sf()` to the plot which 'ensures that all layers use a common CRS.'^[See [here.](https://ggplot2.tidyverse.org/reference/ggsf.html){target="_blank"}]
 
-<details open>
-<summary>Code: Calculate length of arrows indicating change </summary>
-```{r message=FALSE, warning=FALSE}
+
+```{r }
+#| code-summary: "Code: Calculate length of arrows indicating change"
+
 scale_factor <- 10^3
 
 df_change <- cent_precincts %>% 
@@ -186,7 +185,7 @@ pl_change <- ggplot()+
 
 
 ```
-</details>
+
 
 ```{r echo=FALSE}
 pl_change
@@ -198,9 +197,10 @@ Now, let's add a mapbox basemap by using the `layer_mapbox` function of `snapbox
 
 Et voila. 
 
-<details open>
-<summary>Code: Add mapbox basemap</summary>
-```{r message=FALSE, warning=FALSE}
+
+```{r }
+#| code-summary: "Code: Add mapbox basemap"
+
 #get boundaries of plot
 
 #map boundaries: get max/min x, y values
@@ -253,18 +253,18 @@ pl_combined <- ggplot()+
 
 
 ```
-</details>
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, crop=T}
+
+```{r echo=FALSE, , crop=T}
 pl_combined
 ```
 
 You can quickly change the background image by specifying a different `map_style` value, e.g. below 
 I use the *decimal style*. And also combine with a different aesthetic, e.g. using fill to color the precincts according to their respective change. 
 
-<details closed>
-<summary>Code: Gradient fill of precincts</summary>
-```{r message=FALSE, warning=FALSE, crop=T}
+```{r , crop=T}
+#| code-summary: "Code: Gradient fill of precincts"
+
 df_fill <- precincts %>% 
   left_join(., df_change %>% select(sprengel, wber_diff_rel) %>% as.data.frame(),
             by=c("sprengel"="sprengel"))
@@ -295,10 +295,10 @@ pl_combined2<- ggplot()+
         legend.justification = "left")+
   guides(fill = guide_colourbar(barwidth = 3, barheight = .2, title.position = "top"))
 ```
-</details>
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, crop=T, dpi=300, fig.align="left"}
+
+```{r echo=FALSE, , crop=T, dpi=300, fig.align="left"}
 pl_combined2
 ```
 

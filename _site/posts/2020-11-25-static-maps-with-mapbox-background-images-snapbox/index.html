@@ -261,13 +261,9 @@ cookieconsent.run({
 </section>
 <section id="setup" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> SETUP</h1>
-<details closed="">
-<summary>
-Code: Load packages
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Load packages</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(snapbox)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -277,18 +273,13 @@ Code: Load packages
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>plot_bg_color  <span class="ot">&lt;-</span> <span class="st">"white"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-</details>
 </section>
 <section id="electoral-data" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> ELECTORAL DATA</h1>
 <p>Get the election results from 2015 and 2020, retrieve the number of eligible voters per precinct (`wber``), and calculate the change.</p>
-<details open="">
-<summary>
-Code: Get electoral data + change in number of elegible voters
-</summary>
-<div class="cell">
+<div class="cell" data-hash="index_cache/html/unnamed-chunk-2_62e9348a9fc5fa99b75d30c41d3044b7">
 <details>
-<summary>Code</summary>
+<summary>Code: Get electoral data + change in number of elegible voters</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.data.gv.at/katalog/dataset/stadt-wien_wahleninwiengemeinderatswahlen/resource/a526df98-c307-4dee-8233-43b02856d1d7</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.wien.gv.at/politik/wahlen/hilfetext/rohdaten.html</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>res20 <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv2</span>(<span class="at">file =</span> <span class="st">"https://www.wien.gv.at/politik/wahlen/ogd/gr201_99999999_9999_spr.csv"</span>)</span>
@@ -318,7 +309,6 @@ Code: Get electoral data + change in number of elegible voters
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>                                    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.character</span>(<span class="st">"stable"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-</details>
 <div class="cell" data-paged.print="true">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,483 × 4
@@ -338,13 +328,9 @@ Code: Get electoral data + change in number of elegible voters
 </div>
 </div>
 <p>Let’s have a quick look at the distribution of the change rates:</p>
-<details closed="">
-<summary>
-Code: Distribution of changes
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Distribution of changes</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggridges)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>pl_dist <span class="ot">&lt;-</span> df_wber_diff <span class="sc">%&gt;%</span> </span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
@@ -360,7 +346,6 @@ decrease increase   stable
      978      451       54 </code></pre>
 </div>
 </div>
-</details>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -370,7 +355,7 @@ decrease increase   stable
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -382,13 +367,9 @@ decrease increase   stable
 <section id="get-boundaries-of-precincts" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="get-boundaries-of-precincts"><span class="header-section-number">4.1</span> Get boundaries of precincts</h2>
 <p>Get the shapefile of the precincts’ boundaries.</p>
-<details open="">
-<summary>
-Code: Get shape with boundaries of precincts
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Get shape with boundaries of precincts</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.data.gv.at/katalog/dataset/79c1030d-5cf6-4d58-ade6-02f66fb4dffb</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>precincts <span class="ot">&lt;-</span> <span class="fu">st_read</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"posts"</span>,<span class="st">"2020-11-25-static-maps-with-mapbox-background-images-snapbox"</span>,<span class="st">"shapefile"</span>,<span class="st">"WAHLSPRGR2020OGDPolygon.shp"</span>),</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">quiet=</span>T) <span class="sc">%&gt;%</span> </span>
@@ -401,20 +382,15 @@ Code: Get shape with boundaries of precincts
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
-</details>
 <p>Now let’s calculate the center of each precinct. Note that I transform the coordination projection from WGS84 to 3857. The latter is ‘a Spherical Mercator projection coordinate system popularized by web services such as Google and later OpenStreetMap.’<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> After the transformation I take the x and y values from the centroids’ geometry. The function <code>st_centroid</code> gives us the centre of each polygon.</p>
-<details open="">
-<summary>
-Code: Get centroids for precincts
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Get centroids for precincts</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(precincts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
@@ -438,7 +414,7 @@ GEOGCRS["WGS 84",
             ANGLEUNIT["degree",0.0174532925199433]]]</code></pre>
 </div>
 <details>
-<summary>Code</summary>
+<summary>Code: Get centroids for precincts</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>cent_precincts <span class="ot">&lt;-</span> precincts <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(., <span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_centroid</span>() <span class="sc">%&gt;%</span> </span>
@@ -453,23 +429,18 @@ GEOGCRS["WGS 84",
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
-</details>
 </section>
 <section id="add-change-indicators-arrows" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="add-change-indicators-arrows"><span class="header-section-number">4.2</span> Add change indicators (arrows)</h2>
 <p>Calculate the length of the arrow indicating the change: Here the arrows should have an angle of 20 degrees; positive changes point towards the right, negative changes towards the left. With the sin and cos function we calculate the horizontal and vertical distance from the centroids. In addition, to make the arrows sufficiently long to be visible, I multiply them with a scale factor. Note that I add <code>coord_sf()</code> to the plot which ‘ensures that all layers use a common CRS.’<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<details open="">
-<summary>
-Code: Calculate length of arrows indicating change
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Calculate length of arrows indicating change</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>scale_factor <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> cent_precincts <span class="sc">%&gt;%</span> </span>
@@ -502,12 +473,11 @@ Code: Calculate length of arrows indicating change
 <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-</details>
 <div class="cell">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-10-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -517,13 +487,9 @@ Code: Calculate length of arrows indicating change
 <h2 data-number="4.3" class="anchored" data-anchor-id="add-mapbox-basemap"><span class="header-section-number">4.3</span> Add mapbox basemap</h2>
 <p>Now, let’s add a mapbox basemap by using the <code>layer_mapbox</code> function of <code>snapbox</code>. To so, we first have to define the scope or boundary of the basemap. I do this by extracting the minimum and maximum x and y values from our map of the precincts. And then create a bbox object. Note that this boundary box is has the 4326 projection. The basemap for this boundary box is then added to the plot by using the layer_mapbox function. Note that you need an <a href="https://docs.mapbox.com/help/how-mapbox-works/access-tokens/" target="_blank">API-key</a> to access basemaps of mapbox.</p>
 <p>Et voila.</p>
-<details open="">
-<summary>
-Code: Add mapbox basemap
-</summary>
 <div class="cell">
 <details>
-<summary>Code</summary>
+<summary>Code: Add mapbox basemap</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get boundaries of plot</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#map boundaries: get max/min x, y values</span></span>
@@ -539,28 +505,28 @@ Code: Add mapbox basemap
 <pre><code>[1] 16.18183</code></pre>
 </div>
 <details>
-<summary>Code</summary>
+<summary>Code: Add mapbox basemap</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>my_ymin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 48.1179</code></pre>
 </div>
 <details>
-<summary>Code</summary>
+<summary>Code: Add mapbox basemap</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>my_xmax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 16.57751</code></pre>
 </div>
 <details>
-<summary>Code</summary>
+<summary>Code: Add mapbox basemap</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>my_ymax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 48.32267</code></pre>
 </div>
 <details>
-<summary>Code</summary>
+<summary>Code: Add mapbox basemap</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get basemap</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>background_image <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="at">xmin =</span> my_xmin, <span class="at">ymin =</span> my_ymin, <span class="at">xmax =</span> my_xmax, <span class="at">ymax =</span> my_ymax),</span>
@@ -598,24 +564,19 @@ Code: Add mapbox basemap
 <span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-</details>
 <div class="cell" data-crop="true">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-13-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 <p>You can quickly change the background image by specifying a different <code>map_style</code> value, e.g.&nbsp;below I use the <em>decimal style</em>. And also combine with a different aesthetic, e.g.&nbsp;using fill to color the precincts according to their respective change.</p>
-<details closed="">
-<summary>
-Code: Gradient fill of precincts
-</summary>
 <div class="cell" data-crop="true">
 <details>
-<summary>Code</summary>
+<summary>Code: Gradient fill of precincts</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_fill <span class="ot">&lt;-</span> precincts <span class="sc">%&gt;%</span> </span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(., df_change <span class="sc">%&gt;%</span> <span class="fu">select</span>(sprengel, wber_diff_rel) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>(),</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by=</span><span class="fu">c</span>(<span class="st">"sprengel"</span><span class="ot">=</span><span class="st">"sprengel"</span>))</span>
@@ -647,12 +608,11 @@ Code: Gradient fill of precincts
 <span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_colourbar</span>(<span class="at">barwidth =</span> <span class="dv">3</span>, <span class="at">barheight =</span> .<span class="dv">2</span>, <span class="at">title.position =</span> <span class="st">"top"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-</details>
 <div class="cell" data-layout-align="left" data-crop="true">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-15-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="2100"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="2100"></a></p>
 </figure>
 </div>
 </div>
@@ -856,7 +816,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","loop":true,"selector":".lightbox","descPosition":"bottom","openEffect":"zoom"});</script>
 
 
 
