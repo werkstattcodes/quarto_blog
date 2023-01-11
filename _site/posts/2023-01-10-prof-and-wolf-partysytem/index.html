@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.280">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Roland Schmidt">
+<meta name="dcterms.date" content="2023-01-10">
+<meta name="description" content="A quick look at the number of registered political parties in Austria, prompted by the podcast “The Professor and the Wolf”.">
+
+<title>werk.statt.codes - ‘The Professor and the Wolf’ - Number of parties in Austria</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/cookie-consent/cookie-consent.js"></script>
+<link href="../../site_libs/cookie-consent/cookie-consent.css" rel="stylesheet">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script type="text/plain" cookie-consent="tracking">
+
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-149910232-1', 'auto');
+
+ga('send', {
+  hitType: 'pageview',
+  'anonymizeIp': true,
+});
+</script>
+
+<script type="text/javascript" charset="UTF-8">
+document.addEventListener('DOMContentLoaded', function () {
+cookieconsent.run({
+  "notice_banner_type":"simple",
+  "consent_type":"implied",
+  "palette":"dark",
+  "language":"en",
+  "page_load_consent_levels":["strictly-necessary","functionality","tracking","targeting"],
+  "notice_banner_reject_button_hide":false,
+  "preferences_center_close_button_hide":false,
+  "website_name":""
+  });
+});
+</script> 
+  
+<style>html{ scroll-behavior: smooth; }</style>
+
+<script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+<script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+<script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+<script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">werk.statt.codes</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">more</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
+        <li>
+    <a class="dropdown-item" href="../../about.html">
+ <span class="dropdown-text">About</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">‘The Professor and the Wolf’ - Number of parties in Austria</h1>
+                  <div>
+        <div class="description">
+          A quick look at the number of registered political parties in Austria, prompted by the podcast “The Professor and the Wolf”.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">Austria</div>
+                <div class="quarto-category">parties</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Roland Schmidt </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">10 Jan 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#context" id="toc-context" class="nav-link active" data-scroll-target="#context"><span class="toc-section-number">1</span>  Context</a></li>
+  <li><a href="#getting-the-data" id="toc-getting-the-data" class="nav-link" data-scroll-target="#getting-the-data"><span class="toc-section-number">2</span>  Getting the data</a></li>
+  <li><a href="#distribution-over-years" id="toc-distribution-over-years" class="nav-link" data-scroll-target="#distribution-over-years"><span class="toc-section-number">3</span>  Distribution over years</a></li>
+  <li><a href="#keywords-in-party-names" id="toc-keywords-in-party-names" class="nav-link" data-scroll-target="#keywords-in-party-names"><span class="toc-section-number">4</span>  Keywords in party names</a></li>
+  <li><a href="#end" id="toc-end" class="nav-link" data-scroll-target="#end"><span class="toc-section-number">5</span>  End</a></li>
+  </ul>
+</nav>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+<section id="context" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Context</h1>
+<p>Here’s a quick (and admittedly somewhat crude) post on Austria’s party system, which was prompted by the relatively new podcast series <a href="https://fm4.orf.at/tags/derprofessorundderwolf/" target="_blank">“Der Professor und der Wolf”</a> <em>(The Professor and the Wolf, produced by Austria’s public broadcaster ORF)</em>. The show is hosted by Armin Wolf, one of Austria’s main news anchors and inter alia known for his resolute style of questioning guests (think of Stephen Sackur), and by PolSci Professor Peter Filzmaier, who embodies the rare combination of a scholar with an intimating intellect, razor-sharp rhetorical skills, and a good sense of humor. He’s quite a towering figure all in all, wouldn’t it for his FC Barcelona weakness….</p>
+<p>The show is mainly framed as a 101 on the Austrian Political System, but it is also worth listening to for those who feel like needing a refresher or are on the lookout for some intriguing details. In any case, an episode makes for an entertaining 20 minutes or so.</p>
+<p>A detail which struck me their episode focusing on the Austrian Party System was the actual number of political parties registered in Austria: 1258. While I always took it that there are more than those represented in the various assemblies on the federal, state, or municipal level, the number of 1258 exceeded by far my highest guess. Enough to have a look at them.</p>
+<p>A few caveats upfront: As I gather from the show, the number of registered parties is not equivalent to the number of active political parties in Austria. Some parties might have been simply vehicles for one specific electoral campaign and subsequently went dormant. So that’s something to bear in mind, when interpreting the numbers. Second, my last seminar on the Austrian Political System dates back almost two decades, so I don’t pretend to have any particularly robust understanding.</p>
+</section>
+<section id="getting-the-data" class="level1 page-columns page-full" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Getting the data</h1>
+<p>The list of registered parties is available on the <a href="https://www.bmi.gv.at/405/start.aspx" target="_blank">website</a> of the Ministry of Interior, and comes in a pdf. To retrieve the actual data, the mighty <code>tabulizer</code> package is our friend. Note that I keep the standard output format (list of character matrices), which enables us to correctly extract cells which have multiline entries. The raw result is subsequently brought into a more convenient format with <code>janitor</code>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>file_link <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"posts"</span>,<span class="st">"2023-01-10-prof-and-wolf-partysytem"</span>, <span class="st">"Parteienverzeichnis_gem_1_Abs_4_PartG_BF_20220906.pdf"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>li_res_raw <span class="ot">&lt;-</span> tabulizer<span class="sc">::</span><span class="fu">extract_tables</span>(<span class="at">file =</span> file_link)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>fn_convert <span class="ot">&lt;-</span> <span class="cf">function</span>(li_row) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  li_row <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    janitor<span class="sc">::</span><span class="fu">row_to_names</span>(<span class="at">row_number =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="at">.cols =</span> <span class="fu">everything</span>(), str_squish))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>df_res <span class="ot">&lt;-</span> li_res_raw <span class="sc">%&gt;%</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(., fn_convert) <span class="sc">%&gt;%</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">datum_der_hinterlegung =</span> lubridate<span class="sc">::</span><span class="fu">dmy</span>(datum_der_hinterlegung)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(datum_der_hinterlegung))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell page-columns page-full">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df_res <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(<span class="sc">-</span>nr, <span class="sc">-</span>year) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">reactable</span>(.,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">name_der_politischen_partei=</span><span class="fu">colDef</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">name=</span><span class="st">"Party"</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">width=</span><span class="dv">500</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">datum_der_hinterlegung=</span><span class="fu">colDef</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">name=</span><span class="st">"Registration Date"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">width=</span><span class="dv">100</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">filterable=</span>T,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="at">theme=</span><span class="fu">nytimes</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">add_title</span>(<span class="at">title=</span><span class="st">"Registered Political Parties"</span>, <span class="at">font_size=</span><span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display column-body-outset-right">
+
+<h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Registered Political Parties</h1>
+<div id="htmlwidget-64684843266ce268088d" class="reactable html-widget" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-64684843266ce268088d">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"name_der_politischen_partei":["\"1. Demokratische Partei Österreichs\"","\"5 Sterne für das Burgenland, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für das Burgenland\"","\"5 Sterne für die Steiermark, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für die Steiermark\"","\"5 Sterne für Kärnten, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Kärnten\"","\"5 Sterne für Niederösterreich, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Niederösterreich\"","\"5 Sterne für Oberösterreich, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Oberösterreich\"","\"5 Sterne für Österreich - Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"Die 5-Sterne-Partei\"","\"5 Sterne für Salzburg, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Salzburg\"","\"5 Sterne für Tirol, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Tirol\"","\"5 Sterne für Vorarlberg, Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Vorarlberg\"","\"5 Sterne für Wien - Partei für direkte Demokratie, nachhaltige Wirtschaft, saubere Politik, Gleichstellung sowie öffentliche und private Sicherheit\", Kurzbezeichnung: \"5 Sterne für Wien\"","\"9 Sterne Bewegung Österreich\", Kurzbezeichnung und Abkürzung \"9SBÖ\"","\"99\"","\"99-eins\", Kurzbezeichnung \"991\"","\"A.L.R. Partei für authentische Lebensräume\"","\"A.M.V ALLE MACHT DEM VOLKE\"","\"Abendländisch-National-Europäische Union (ANEU)\"","\"agendAVolk\", Kurzbezeichnung \"AV\"","\"AKTION CHRISTLICHES EUROPA (ACE)\"","\"Aktion für humanistische Medizin\", Abkürzung \"AFM\"","\"Aktion Neue Rechte - ANR\"","\"AKTION UMWELT SPIEGEL\"","\"Aktionistische Partei Ostösterreichs\" (A.P.O.)","\"AktionsGemeinschaft Kärntner Studenten\", abgekürzt \"AG\"","\"AL/VGÖ Wahlgemeinschaft Vorarlberg\", Abkürzung \"GRÜNE\"","\"ALLGEMEINE PARTEI ÖSTERREICHS\", kurz \"APÖ\"","\"Allianz der Patrioten\", Kurzbezeichnung \"AdP\"","\"Allianz für Österreichs Zukunft\"","\"Alpine Pogo Partei Österreich\", Kurzbezeichnung \"APPÖ\"","\"Alternative Basisliste\" (ALB)","\"ALTERNATIVE BEWEGUNG ÖSTERREICHS (ABÖ)\"","\"Alternative für Österreich - neu (AfÖn)\", Kurzbezeichnung \"AfÖn\"","\"Alternative für Österreich (AfÖ)\"","\"ALTERNATIVE LISTE (AL)\"","\"ALTERNATIVE LISTE BURGENLAND - FÜR DEMOKRATIE UND UMWELTSCHUTZ\" (AL - BGLD)","\"Alternative Liste Graz\"","\"Alternative Liste Heidenreichstein\" (ALH)","\"ALTERNATIVE LISTE KÄRNTEN FÜR DEMOKRATIE UND UMWELTSCHUTZ\"","\"Alternative Liste Linz (ALL)\"","\"ALTERNATIVE LISTE NIEDERÖSTERREICH - FÜR DEMOKRATIE UND UMWELTSCHUTZ\" (AL-NÖ)","\"Alternative Liste Oberösterreich\" (ALOÖ)","\"ALTERNATIVE LISTE ÖSTERREICH - DIE GRÜNEN ALTERNATIVEN (ALÖ)\"","\"ALTERNATIVE LISTE ÖSTERREICH - FÜR DEMOKRATIE UND UMWELTSCHUTZ (ALÖ)\"","\"ALTERNATIVE LISTE ÖSTERREICH (ALÖ)\"","\"Alternative Liste Österreichs - ALÖ\"","\"ALTERNATIVE LISTE ÖSTERREICHS\", Kurzbezeichnung \"ALÖ\"","\"Alternative Liste Salzburg - für Demokratie und Umweltschutz\" ALS","\"ALTERNATIVE LISTE SALZBURG\"","\"ALTERNATIVE LISTE STEIERMARK\"","\"Alternative Liste Tirol\"","\"Alternative Liste Vorarlberg (ALV)\"","\"Alternative Liste Vorarlberg (ALV)\"","\"Alternative Liste Wels (ALWE)\"","\"ALTERNATIVE LISTE WIEN - Für Demokratie und Umweltschutz\", Kurzform \"AL-Wien\"","\"ALTERNATIVE LISTE WIEN\" (ALW)","\"alternative liste wiener neustadt - für demokratie und umweltschutz\"","\"Alternative Sozialisten - Partei des sozialen und gesellschaftlichen Fortschritts\"","\"Alternatives Forum Pottendorf (AFP)\"","\"Alternativ-Grüne Initiative Luftenberg\", Kurzform \"AGIL\"","\"AMERIKANISCHE PARTEI\" in Österreich, Kurzbezeichnung \"APÖ\"","\"Anarchistische Aktionsgruppen\" (A.A.G.)","\"ANARCHISTISCHE PARTEI ÖSTERREICHS\" (APÖ)","\"Andas\"","\"Anti Aids Initiative (aAI)\"","\"Anti- Korruptions- Partei\", kurz \"AKP\"","\"ANTI-EG-LISTE Österreich muß Österreich bleiben\", Abkürzung \"ANTI\"","\"Anti-EG-Partei\"","\"Antiimperialistische Koordination (AIK)\"","\"ARBEIT. UMWELT. SAUBERKEIT.\" (AUS)","\"Arbeiter und Meister Partei Österreichs (AMPÖ)\"","\"Arbeiter.innen.kampf (ARKA)\"","\"ARBEITSGEMEINSCHAFT BESSER LEBEN Partei zur Verbreitung von humanökologischem Wissen\"","\"Arbeitsgemeinschaft bewußt gesund Partei für Gesundheit und Heilung\"","\"ARBEITSGEMEINSCHAFT ERHALTENSWERTER GEBÄUDE\" -ARGE ERGE-","\"Arbeitsgemeinschaft für demokratische Politik\", abgekürzt \"AFP\"","\"Arbeitsgemeinschaft Ja zur Umwelt, Nein zur Atomenergie\"","\"ARBEITSGEMEINSCHAFT MENSCH IN DER UMWELT\" -MIDU-, Kurzbezeichnung: MIDU","\"Arbeitsgemeinschaft Neue Lernkultur\", - Bewegung bildungsbewußter Bürger -, kurz \"Arge Lernkultur\"","\"ARBEITSGEMEINSCHAFT WORLDWIDE TECHNOLOGY EXCHANGE\" -WTX-, Kurzbezeichnung \"WTX\"","\"Arbeitsgemeinschaft zur Erhaltung schutzwürdiger Altbauten und Förderung der Altstadterhaltung\", Kurzbezeichnung \"AG ALTBAU\"","\"Arbeitsgemeinschaft zur Förderung der Sanierung von Altbauten zur Erhöhung der Wohnqualität und Neuschaffung von Wohnraum\", Kurzbezeichnung \"AG SANIERUNG\"","\"Arbeitsgruppe Marxismus\" (AGM)","\"ARGUS - Kinder- und Menschlichkeitspartei\", Kurzform \"ARGUS\"","\"ARTIKEL EINS\", angestrebte Kurzbezeichnung \"EINS\"","\"ASO AUTOFAHRER SCHUTZ OFFENSIV\"","\"ASVG-Aktionsgemeinschaft der Pensionisten Österreichs\"","\"Ausländer-Halt-Bewegung\"","\"Austria Allianz\"","\"Austria Beauty Party - Wir.Wollen.Fortschritt\", Kurzbezeichnung \"ABP\"","\"Autonom revolutionär subversiv chaotische Hackler Partei\" (A.R.S.C.H. Partei)","\"AUTONOME GRUPPE KOMMUNISTISCHE POLITIK (KOMPOL)\"","\"bad ischl SPEZIAL\" (BIZ)","\"Badai\" bzw \"die Badai\"","\"BADEN KREATIV\"","\"BASIS GRAZ\"","\"Basisdemokratische Liste (BDL)\"","\"Basisdemokratische Partei Österreich\", Kurzbezeichnung \"dieBasis/Basis\"","\"Basisinitiative Pharmazie\", Abkürzung \"BIP\"","\"Befreiung der Produktivkräfte\"","\"Bestes Österreich - BESTE\"","\"Bewegung 5. November\"","\"Bewegung Für die Familie BEFFÖ\", Kurzbezeichnung bei Wahlen: \"BEFFÖ\"","\"Bewegung für soziale Befreiung\"","\"Bewegung Neues Zeitalter\"","\"Bewegung WIR\"","\"Bewegung Zukunft Vorarlberg (BZV)\"","\"BGE - Bedingungslose-Grund-Einkommen\", Kurzbezeichnung: \"BGE\"","\"BIO\" Überparteiliche Bürgerinitiativen Organisation","\"BLA - Bürgerliste Lambach\"","\"BLOÖ - Bürgerlisten Oberösterreich\", in der Kurzbezeichnung \"BLOÖ\"","\"BRAVO ÖSTERREICH\"","\"Bruck 2001 (Grün-Soziale Stadtpartei)\"","\"Bund freier Menschen (BFM)\"","\"Bund freier Patienten (BFP) Bürgerinitiative für freie Heilkunde, freie Therapiewahl ua Patientengrundrechte\", Kurzbezeichnung \"Patientenbund\"","\"BUND GEGEN ANPASSUNG\"","\"BUND UNABHÄNGIGER STUDENTEN (BUS)\"","\"BÜNDNIS 2000\"","\"Bündnis '93\", Abkürzung \"B 93\"","\"Bündnis 94\", Abkürzung \"B 94\"","\"Bündnis 95\", Abkürzung \"B 95\"","\"Bündnis '96\", Abkürzung \"B 96\"","\"Bündnis für die Zukunft Österreichs (BZÖ)\"","\"Bündnis für Oberösterreich\"","\"Bündnis für Umwelt und Gemeinwohl\", Kurzbezeichnung \"BUG\"","\"Bündnis Grundeinkommen\", Kurzbezeichnung \"BGE\"","\"Bündnis Grundrechte - Menschen für Grund- und Freiheitsrechte\"","\"BÜNDNIS NEUTRALES FREIES ÖSTERREICH\", Kurzbezeichnung \"NFÖ\"","\"Bündnis radikaler Organisationen - (B.Ü.R.O.)\"","\"Bündnis Zukunft Österreich - Tirol (BZÖ-T)\"","\"Bündnis Zukunft Österreich - Vorarlberg (BZÖ - Vorarlberg)\"","\"Bündnis Zukunft Österreich (BZÖ)\", Kurzbezeichnung \"BZÖ\"","\"Bündnis Zukunft Österreich Landesgruppe Wien - Die Stadtpartei (Kurzbezeichnung: BZÖ Wien)\"","\"Bündnis Zukunft Österreich Salzburg (BZÖ Salzburg)\"","\"Bündnis Zukunft Wien (BZW) - Die Stadtpartei\"","\"bunte hilfe\"","\"BÜRGER UNION\"","\"BÜRGERAKTION '90 für mehr Gerechtigkeit\", Kurzbezeichnung \"B90\"","\"Bürgeranwaltschaft\"","\"Bürgerbewegung Österreich stoppt die Politiker\"","\"Bürgerbewegung Österreich\"","\"Bürgerbewegung Rettet Österreich\"","\"BÜRGERFORUM '90 für mehr Gerechtigkeit\", Kurzbezeichnung \"F90\"","\"Bürgerforum Österreich Liste Fritz Dinkhauser\"","\"Bürgerforum Sollenau\"","\"Bürgerforum Tirol - Liste Fritz\"","\"Bürgerforum Völkermarkt\", Kürzel \"BüFo\"","\"Bürgerforum\"","\"Bürgerinitiative Demokratisch Leben (B.D.L.)\"","\"Bürgerinitiative gegen den Verkauf Österreichs an die EG\" Partei zur Erhaltung der Selbständigkeit Österreichs","\"Bürgerinitiative 'Nein zu EWR & EG' Partei zur Verbreitung von kritischem EWR und EG Informationsmaterial\"","\"Bürgerinitiative Österreich\"","\"Bürgerinitiative Parlament\"","\"BÜRGERINITIATIVE ÜBERLEBEN\"","\"Bürgerinitiativen Österreichs\"","\"BÜRGERLICHE GRÜNE ÖSTERREICHS - LANDESVERBAND NIEDERÖSTERREICH\", Kurzbezeichnung \"BGÖ\"","\"BÜRGERLICHE GRÜNE ÖSTERREICHS (BGÖ)\"","\"Bürgerliche Grüne Österreichs (BGÖ), Landesverband Wien\", Kurzbezeichnung \"BGÖ\"","\"BÜRGERLISTE ENZESFELD-LINDABRUNN\"","\"Bürgerliste Krenglbach\", kurz \"BLiK\"","\"Bürgerliste Mensch & Natur\"","\"Bürgerliste Österreich\"","\"Bürgerliste Österreichs\", Abkürzung \"BLÖ\"","\"BÜRGERLISTE PETRONELL\"","\"Bürgerliste Rutzenham\"","\"BÜRGERLISTE SCHREINER\"","\"Bürgerliste Wels\", Kurzbezeichnung \"BLWE\"","\"Bürgerlisten Oberösterreich\", kurz \"BLOÖ\"","\"Bürgerlisten Österreich\", kurz \"BLÖ\"","\"Bürgernahe Partei Österreich - Landesgruppe Vorarlberg\"","\"BÜRGER-PARLAMENTS-BEWEGUNG\"","\"Bürgerpartei Jochberg\", Kurzbezeichnung \"BPJ\"","\"Bürgerpartei Österreichs\" (BPÖ)","\"BÜRGERPARTEI\" (BP)","\"Bürgerprotest & Nichtwähler\" (BPN)","\"Bürger-Rechts-Bewegung\"","\"BÜRGERSCHUTZ Österreich (BSÖ)\"","\"BZÖ - Bündnis Zukunft Niederösterreich\"","\"BZÖ - Bündnis Zukunft Steiermark\"","\"BZÖ Kärnten\", Kurzbezeichnung \"BZÖ\"","\"BZÖ Oberösterreich\", Kurzbezeichnung \"BZÖ\"","\"casework alternative liste\"","\"CASEWORK\"","\"Christdemokraten Österreichs\" - kurz: \"CDÖ\"","\"Christdemokratische Arbeitnehmer-Partei\"","\"CHRISTDEMOKRATISCHE PARTEI\", kurz \"CDP\"","\"Christdemokratische Union (CDU)\"","\"Christdemokratische Volksabstimmungspartei\", kurz \"CDVP\"","\"Christdemokratische Volkspartei\"","\"Christen-Allianz\"","\"Christlich Europäische Union (CEU)\"","\"Christlich soziale Allianz (CSA)\"","\"Christlich Soziale Allianz\", kurz \"CSA\"","\"Christlich Soziale Partei\"","\"Christlich-Demokratische Union Österreichs\", Kurzbezeichnung \"CDU-Ö\"","\"CHRISTLICHE - WÄHLER - GEMEINSCHAFT\" (CWG)","\"Christliche Allianz (CA)\"","\"Christliche Arbeitnehmer-Partei\"","\"Christliche Partei - Steiermark\"","\"Christliche Partei - Tirol\"","\"Christliche Partei Österreichs - Salzburg\" (CPÖ - Salzburg)","\"Christliche Partei Österreichs\"","\"Christliche Union\"","\"Christliche Volkspartei\"","\"CHRISTLICHES FORUM\"","\"Christlich-Soziale Arbeitnehmer-Partei\"","\"Christlich-Soziale Arbeitsgemeinschaft\" (CSA)","\"christlich-soziale Mitte Österreichs\", kurz \"CSMÖ\"","\"Christlich-soziale Union (CSU)\"","\"Christlich-Soziale Union Österreichs\", Kurzbezeichnung \"CSUÖ\"","\"Christlich-Soziale Union\". Kurzbezeichnung \"CSU\"","\"Christlich-Soziale Volkspartei\"","\"Club Soziale Aktion\", Kurzbezeichnung \"CSA\"","\"Congolesische Volkspartei in Österreich\"","\"Context - Initiative für freie Studien und brauchbare Information\"","\"CORONA-ALTERNATIVE\"","\"Dachverband der Ewiggestrigen\"","\"DAÖ - Die Allianz für Österreich, Landesgruppe Wien\"","\"DAS GRÜNE FORUM - DIE ÖSTERREICHISCHEN GRÜNEN (Wahlgemeinschaft von Atomgegner-, Natur- und Umweltschutzbürgerinitiativen, Behindertenselbsthilfegruppen und -organisationen, Sozial-, Frauen- und Jugendorganisationen sowie grüner Politiker und sonstiger Einzelpersonen etc)\"","\"DAS GRÜNE FORUM - WAHLGEMEINSCHAFT ÖSTERREICHISCHER GRÜNER\" (Wahlplattform von Atomgegner-, Natur- und Umweltschutzbürgerinitiativen, Behindertenselbsthilfegruppen und -organisationen, Sozial- , Frauen- und Jugendorganisationen sowie grüner Politiker und sonstiger Einzelpersonen etc)","\"DAS MODERNE ÖSTERREICH\", kurz \"DMÖ\"","\"DAS VOLK REGIERT SELBST\", kurz \"DVRS\"","\"DBM - Die Bürgerliche Mitte Österreich\", in der Kurzbezeichnung \"DBM\"","\"DEMO-Austria (Kurzname DEMO)\"","\"DEMOKRATEN (D)\"","\"Demokratie 92\"","\"Demokratie 99\"","\"Demokratie Bewegung Österreich\", kurz \"DBÖ\"","\"Demokratie für Menschen ÖSTERREICH\", genannt \"DfM AT\"","\"Demokratisch Frei Konstruktiv\", kurz \"DFK\"","\"Demokratische Alternative\"","\"Demokratische Arbeits-Gemeinschaft\" - DAG","\"Demokratische Familienpartei Österreich, Abkürzung: DFÖ\"","\"Demokratische liberal - nationale Aktivgruppe\"","\"Demokratische Liberale Partei Österreich - Liberaler Club (D.L.P.)\"","\"Demokratische Partei Österreich\"","\"Demokratische Partei Österreich\", kurz \"DPÖ\"","\"DEMOKRATISCHE PARTEI VORARLBERGS\", Kurzbezeichnung \"DPV\"","\"DEMOKRATISCHE REFORM-PARTEI ÖSTERREICHS\"","\"Demokratische Republikaner\" (Demo-Rep)","\"Demokratische Soziale Union\", Kurzform \"DSU\"","\"Demokratische Union- ÖSTERREICH\", kurz \"DU- ÖSTERREICH\" (DU- Ö)","\"Demokratische Union\"","\"Demokratische-Kärntner-Liste\"","\"demokratisches bündnis österreich\", Abkürzung \"dbö\"","\"Demokratisches Forum\" (abgekürzt DF)","\"DemokratischeUnion-MittelEuropa\", kurz \"DU-ME\" (ME)","\"demontage - Initiative zur Förderung des politikwissenschaftlichen Gegendiskurses\"","\"Denk Um\", Nebenbezeichnung \"Wirtschaftsliberale Sozialpartei\", Kurzbezeichnung \"DU\"","\"Der Norden\" - (Mühlviertel) Weinviertel (Waldviertel), Abkürzung \"Der Norden\" (M)W(W)","\"Der Perger\" - Club für aktive Freizeitgestaltung","\"DER WANDEL\", Kurzbezeichnung \"WANDL\"","\"DEUTSCH-VÖLKISCHE PARTEI\"","\"Die aktive liberale Partei Österreichs\", Abkürzung \"A.L.Ö.\"","\"Die Alternative für Österreich\"","\"Die ALTERNATIVE \", Kurzbezeichnung \"Die ALTERNATIVE \"","\"Die Alternativen Österreichs (AÖ)\"","\"Die Anderen - Libertäres Forum\", Kurzbezeichnung \"Die Anderen\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Alsergrund\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Hernals\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Mariahilf\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Neubau\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Ottakring\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Bezirksgruppe Wieden\", Abkürzung \"DALF\"","\"Die Anderen - Libertäres Forum/Regionalgruppe Wien\", Kurzbezeichnung \"Die Anderen\", Abkürzung \"DALF\"","\"DIE BASIS - Unabhängige Liste Hallein\", Kurzbezeichnung \"BASIS\"","\"Die beste Partei - DbP\"","\"DIE BESTE PARTEI - Die Partei für Frieden, Freiheit, Fröhlichkeit\"","\"Die Bewegung\"","\"Die Bewegung\"","\"Die Bierpartei\" - Kurzform: \"BIER\"","\"Die Bierpartei\", kurz \"BIER\"","\"DIE BUNTEN\"","\"Die Bürgerliche Partei Österreichs - BPÖ\"","\"Die Bürgerlich-Liberalen\"","\"Die Christen\"","\"Die ChristenPartei\" (DCP) Oberösterreich","\"Die Dekadenten\"","\"Die Direkte - Partei für Direkte Demokratie durch Volksentscheide\", Kurzbezeichnung \"Die Direkte\"","\"Die Eber\"","\"Die Ehrenamtlichen\"","\"DIE EMSIGEN\"","\"Die Freiheitlichen in Kärnten (FPÖ)\"","\"Die Freisinnigen Österreichs (FÖ)\"","\"Die Grauen Österreichs\"","\"Die Grauen Österreichs/Partei der Senioren\"","\"Die Grauen Panther Österreichs\"","\"DIE GRÜNALTERNATIVEN - BURGENLAND (GAL-Bgld)\"","\"Die Grünalternativen - Demokratische Liste\", kurz \"GAL\"","\"DIE GRÜNALTERNATIVEN - KÄRNTEN (GAL-Ktn)\"","\"Die Grünalternativen - Niederösterreich\", kurz \"GAL-NÖ\"","\"DIE GRÜNALTERNATIVEN - OBERÖSTERREICH (GAL-OÖ)\"","\"DIE GRÜNALTERNATIVEN - SALZBURG (GAL-Slzbg)\"","\"DIE GRÜNALTERNATIVEN - STEIERMARK (GAL-Stmk)\"","\"DIE GRÜNALTERNATIVEN - TIROL (GAL-Tir)\"","\"DIE GRÜNALTERNATIVEN - VORARLBERG (GAL-Vlbg)\"","\"DIE GRÜNALTERNATIVEN - WIEN (GAL-Wien)\"","\"Die Grüne Alternative (Grüne) Liste Freda Meissner-Blau (AL, BIP, VGÖ, GAL, GRAS, KEL, Unabhängige ...)\"","\"Die Grüne Alternative (Grüne) Liste Freda Meissner-Blau (AL, BIP, VGÖ, GAL, GRAS, KEL, VÖGA, Unabhängige ...)\"","\"Die Grüne Alternative Bezirk Neunkirchen\", kurz \"Grüne-Neunkirchen\"","\"DIE GRÜNE ALTERNATIVE GUNTRAMSDORF (GRÜNE)\"","\"Die Grüne Alternative Hernals\", Kurzbezeichnung \"GRÜNE\"","\"Die Grüne Alternative Krems\" (GRÜNE)","\"DIE GRÜNE BEWEGUNG\" (B)","\"DIE GRÜNE FRONT\" - Wählerpartei der Umweltschützer & Unabhängigen - W.d.U. -","\"Die Grünen - Alternative Liste Graz (GRÜNE)\"","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE - LINZ\" (GRÜNE)","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE - OBERÖSTERREICH\" (GRÜNE)","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE - WELS\" (GRÜNE WELS)","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE (Grüne)\"","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE (GRÜNE)\"","\"DIE GRÜNEN - Die Grüne Alternative Burgenland - zeleni - zöldek - selene (GRÜNE)\"","\"Die Grünen - Die Grüne Alternative Kärnten (GRÜNE)\"","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE NIEDERÖSTERREICH\", Kurzbezeichnung \"GRÜNE NÖ\"","\"DIE GRÜNEN - Die GRÜNE Alternative Salzburg\"","\"Die Grünen - Die Grüne Alternative Steiermark (Grüne)\"","\"DIE GRÜNEN - DIE GRÜNE ALTERNATIVE TIROL (GRÜNE)\" bzw \"die GRÜNEN Tirol\"","\"DIE GRÜNEN - Grüne Alternative Baden (Grüne)\"","\"DIE GRÜNEN - Grüne Alternative Bruck/Leitha (Grüne)\"","\"Die Grünen - Grüne Alternative Vorarlberg\", (Kurzbezeichnung: GRÜNE)","\"Die Grünen - Grüne Alternative Wien (GRÜNE)\"","\"Die Grünen - Partei für gesunde Umwelt und saubere Politik\"","\"DIE GRÜNEN (GRÜNE) - Die Grüne Alternative Bezirk Krems\", kurz \"Grüne Bezirk Krems\"","\"DIE GRÜNEN ALTERNATIVEN ÖSTERREICHS (GAÖ)\"","\"DIE GRÜNEN ALTERNATIVEN\" (GAL)","\"DIE GRÜNEN Amstetten\"","\"DIE GRÜNEN Brunn am Gebirge\"","\"Die Grünen Demokrat/inn/en\"","\"DIE GRÜNEN GUMPOLDSKIRCHEN\"","\"DIE GRÜNEN HOHE WAND\"","\"Die Grünen Klagenfurt/Zeleni v Celovcu\"","\"Die Grünen Leonding\", Abkürzung \"Die Grünen\"","\"DIE GRÜNEN Maria Enzersdorf\"","\"DIE GRÜNEN MÖDLING\"","\"DIE GRÜNEN ÖSTERREICHS - DIE NEUE GRÜNE ALTERNATIVE\"","\"DIE GRÜNEN ÖSTERREICHS\" - Vereinte Grüne Parteien - (GRÜNE)","\"DIE GRÜNEN ÖSTERREICHS\" (GRÜNE)","\"DIE GRÜNEN ÖSTERREICHS\" (Wahlgemeinschaft von Bürgerinitiativen, Atomgegnern, Natur-, Umweltschutz- und Behinderten-Gruppen und Organisationen, Frauen- und Jugend-Organisationen, sowie grüner Politiker und sonstiger Einzelpersonen, etc)","\"DIE GRÜNEN PERCHTOLDSDORF\"","\"Die Grünen St. Pölten\", kurz \"Die Grünen\", \"Grüne\"","\"DIE GRÜNEN Tulln - Ökologisches Bürgerforum (Grüne)\"","\"DIE GRÜNEN VILLACH\"","\"Die Grünen Wiener Neustadt\"","\"DIE GRÜNEN WIENERWALD\"","\"Die Grünen Zwettl\", kurz \"GrüZw\"","\"DIE GRÜNEN\"","\"DIE GRÜNEN\" (GRÜNE)","\"DIE GRÜNEN\", Kurzbezeichnung \"GRÜNE\"","\"DIE GRÜNEN, Landesverband Burgenland\"","\"DIE GRÜNEN, Landesverband Kärnten\"","\"DIE GRÜNEN, Landesverband Oberösterreich\"","\"DIE GRÜNEN, Landesverband Salzburg\"","\"DIE GRÜNEN, Landesverband Steiermark\"","\"DIE GRÜNEN, Landesverband Tirol\"","\"DIE GRÜNEN, Landesverband Vorarlberg\"","\"Die Hernalser Initiative\"","\"Die Jungen Liberalen Österreich\", kurz \"JuLis\"","\"DIE KLIMAPARTEI\"","\"DIE KUKE PARTEI\"","\"Die Liberale Alternative\"","\"Die Liberale Initiative\"","\"DIE LIBERALEN ÖSTERREICHS\"","\"DIE LIBERALEN\" (L)","\"DIE LINKE\"","\"Die LinksDemokraten (DLD)\"","\"DIE MAGDALENSBERGER kommunal & unabhängig\", Kurzbezeichnung \"MAG\"","\"Die Mitte\"","\"Die Neue Partei\"","\"Die ÖKOS - Die Ökosoziale Bewegung\", Kurzbezeichnung \"ÖKOS\"","\"Die Opposition - Bewegung überparteilicher Bürgerinitiativen\"","\"Die Österreicher - D05\"","\"Die österreichische Autofahrerpartei\"","\"Die Österreichische Volkspartei in der Steiermark\", kurz \"Steirische Volkspartei\"","\"DIE ÖSTERREICHISCHEN GRÜNEN - DIE NEUE GRÜNE ALTERNATIVE\"","\"Die Österreichischen Liberalen - Plattform liberaler Kräfte in Österreich\", Kurzbezeichnung \"Liberale\"","\"Die PARTY\"","\"Die Planetarier - die Partei der Menschlichkeit und der Mitte\", kurz \"Die Planetarier\"","\"Die Politische Palette Österreichs\"","\"Die Rebellen vom Liang Shan Po\" (\"D.R.V.L.S.P.\")","\"Die Reformkonservativen - REKOS\", Kurzbezeichnung REKOS\"","\"DIE REPUBLIKANER ÖSTERREICHS\" (REP)","\"DIE REPUBLIKANER\" (REP)","\"Die Sozialliberalen\"","\"Die Stadtpartei Wien 2001\"","\"Die Stimme des Volkes\" (DSDV)","\"Die Stimme\", Kurzbezeichnung \"DS\" oder \"Stimme\"","\"Die Templer - Patriotische Christen Österreichs\", Kurzbezeichnung \"TCÖ\"","\"Die Unabhängige Partei des Systems\", Kurzbezeichnung \"DUPDS\"","\"Die Unabhängigen Österreichs\", Kurzform \"DUO\"","\"DIE UNABHÄNGIGEN\"","\"Die Unabhängigkeitspartei\"","\"Die weiße Friedenspartei Österreich\", Kurzbezeichnung \"wFPÖ\"","\"Die Weiße Partei Österreich\" (WPÖ)","\"Die Weiße Partei Österreichs, Demokratische Wahlmonarchie (WPÖ/DWM)\"","\"Die weiße Rose\"","\"DIE WEISSEN - Das Recht geht vom Volk aus. Wir alle entscheiden in Österreich. Die Volksbewegung\"","\"DIE WEISSEN EUROPAS (WEISS)\"","\"DIE WEISSEN ÖSTERREICHS\" (unabhängige Bürgerbewegung)","\"Die Weißen\" (Die Weissen) Bewegung freier, initiativer Bürger zur Stärkung der kleinen Einheiten \"Small is beautiful\"","\"Die Weißen\" Bewegung überparteilicher Bürgerinitiativen","\"Die Weißen\" Bewegung überparteilicher Bürgerinitiativen","\"DIE WEISSEN\", Kurzbezeichnung \"WEISS\"","\"Die Welser Freiheitlichen\" (FPW)","\"DIE WIRTSCHAFTSPARTEI\"","\"Diener des Volkes (kurz: DdV)\"","\"Direkt-Demokratische Plattform Österreichs\", kurz \"DDP\"","\"DONAU - STADT - PARTEI\" (Abkürzung \"DSP\")","\"DONAUSTADT-PARTEI\"","\"d-vote. Herzlich willkommen in der bestmöglichen Zukunft.\", Kurzbezeichnung \"dvote\"","\"dynamik 5 - europäisch, solidarisch, ökologisch, spirituell, politisch\"","\"Ebreichsdorfer Wahlgemeinschaft (EWG)\"","\"ECHT Josefstadt - Liste Heribert Rahdjian\", Kurzbezeichnung \"ECHT\"","\"E-G-O\"","\"Ein Herz für Inländer\" (Herz)","\"EINE BESSERE WELT ÖSTERREICH\" -EBWÖ-, Kurzbezeichnung: \"EBWÖ\"","\"ENOTNA LISTA - EINHEITSLISTE (EL)\"","\"Ergokratische Partei Österreichs\", abgekürzt \"EPÖ\"","\"'Esobioterik'-Bewegung Europas (EBT)\"","\"Ethik-Partei-Europa\"; Kurzform: \"EtP-EU\" In Österreich: \"Ethik-Partei-Europa/AUT\"; Kurzform: EtP-EU/AUT\"","\"EU-Austrittspartei\"","\"EUGP - Europäische Generationen Partei\"","\"EUredo\"","\"EUROMED\"","\"Europäisch Asiatisch Arabische Union\" (EAAU)","\"EUROPÄISCHE BÜRGERNOTWEHR ZUR WAHRUNG DER WÄHRUNGSPOLITISCHEN EINHEIT (EBN)\"","\"EUROPÄISCHE FREIHEITS-BEWEGUNG (EFB)\"","\"EUROPÄISCHE LIBERALE\"","\"Europäische Partei LIEBE\", kurz \"LIEBE\"","\"Europäische Partei Ostara Bildungswerk\" (EPOBW)","\"Europäische Partei Österreichs\", kurz \"E.P.Ö.\"","\"Europäische Union - Nein\", Kurzbezeichnung \"EU-NEIN\"","\"Fachschaftsliste der Universität für Bodenkultur\"","\"Fachschaftsliste\"","\"Familienpartei Österreich\" (Kurzbezeichnung \"FAPÖ\")","\"Family - Die Österreichische Familienpartei\"","\"Family - Die Tiroler Familienpartei\"","\"FBS - Freie Bürger Salzburg - Die Unabhängigen\" (Kurzbezeichnung: \"FBS Salzburg\")","\"FMÖ-Freies Mandat Österreich\" (Kurzbezeichnung: \"FMÖ\")","\"FPÖ - die Tiroler Freiheitlichen\", kurz \"FPÖ - Tirol\"","\"Frankenburger Alternative\" (FAL)","\"FRAUENPARTEI\"","\"Freidemokraten (Freie)\"","\"Freie Bürgerpartei\", Kurzbezeichnung \"FBP\"","\"Freie Demokraten Salzburg\" (FDS)","\"Freie Demokratische Partei (FDP)\"","\"Freie Demokratische Partei Wien - Die Liberalen (F.D.P.)\"","\"Freie Heimatliche Bewegung\" (Kurzbezeichnung: \"FHB\")","\"Freie Humanistische Partei Österreichs\"","\"Freie Linke Österreich\" - Kurzform \"FLOE\"","\"Freie Liste Österreich (FLÖ)\"","\"FREIE MEDIEN, BADEN\"","\"Freie Partei Lichtenwörth\", Abkürzung \"FPL\"","\"Freie Partei Salzburg (FPS) - Liste Dr. Karl Schnell\"","\"Freie Partei Salzburg\"","\"Freie Partei Tirol\", Abkürzung \"FPT\"","\"FREIE PATIENTENKAMMER in Gr. Interessengemeinschaft für eigenverantwortliche Patienten und freie Therapiewahl in Österreich\"","\"FREIE SOZIALE DEMOKRATEN\", Kürzel \"FSD\"","\"Freie Wähler Salzburg\"","\"Freie Wiener Medien\" (FWM)","\"Freies Bündnis Zukunft - Wien\", Kurzbezeichnung \"FBZ - Wien\"","\"FREIES BÜRGERFORUM - Partei für direkte Demokratie\"","\"FREIES EUROPA\"","\"Freiheitliche Partei Österreichs (FPÖ) - Die Freiheitlichen\"","\"Freiheitliche Partei Österreichs (FPÖ) - Die Freiheitlichen, Landespartei Salzburg\"","\"Freiheitliche Partei Österreichs (FPÖ) - Landesgruppe Niederösterreich - Freiheitliche Partei Niederösterreichs - Freiheitlichen Niederösterreichs\"","\"Freiheitliche Partei Österreichs (FPÖ), Landesgruppe Kärnten\"","\"Freiheitliche Partei Österreichs (FPÖ), Landesgruppe Oberösterreich\"","\"Freiheitliche Partei Österreichs (FPÖ), Landesgruppe Vorarlberg\"","\"Freiheitliche Partei Österreichs (FPÖ), Landesgruppe Wien\"","\"Freiheitliche Partei Österreichs (FPÖ), Landespartei Burgenland\"","\"Freiheitliche Partei Österreichs (FPÖ), Landespartei Steiermark\"","\"Freiland\", Kurzbezeichnung \"FREI\"","\"Freisinnige\"","\"FÜR DIE BÜRGER\"","\"Für Leonding - Politik für eine lebenswerte Stadt\", Kurzbezeichnung \"FÜR\"","\"Für Österreich Partei (FÖP)\"","\"FÜR RAAB\"","\"Für Tirol - Partei der Mitte\"","\"G.U.T. Gemeinsam, Unabhängig, Transparent\", kurz \"G.U.T.\"","\"Gaddavista Partei Österreichs\"","\"GCA Global Change Alliance (Bündnis für globale Veränderung)\"","\"GELD und BÖRSE\"","\"Gemeinsam für Österreich / MFG\"","\"GEMEINSAM FÜR VANDANS\"","\"Gemeinsam leben\"","\"GEMEINSCHAFT DER BÜRGERINNEN (GDB)\"","\"GEMEINSCHAFTLICHES-ÖSTERREICH (G-05)\", Kurzbezeichnung \"G-05\"","\"GEMEINSCHAFTLICHE-TIROLER-INITIATIVE (G-T-I)\", Kurzbezeichnung \"G-T-I\"","\"Gemeinwohl, Hausverstand, Verantwortung\", Abkürzung \"GHV\"","\"Gerechtigkeit Partei Österreich GPÖ\"","\"Gerechtigkeits-Bewegung\"","\"GERECHTIGKEITSPARTEI\" Überparteiliche Sammelbewegung für Wahrheit, Gerechtigkeit und Freiheit","\"Gesamteuropäische Partei Österreichs (GEP)\"","\"GESAMTÖSTERREICHISCHE ALTERNATIVE LISTE (GAL)\"","\"Gesellschaftsdemokratische Partei Österreichs GPPÖ\"","\"Gesellschaftspolitische Vereinigung\"","\"GESTALTUNG für MENSCHEN (MENSCHEN ÖSTERREICH oder MENSCHEN)\"","\"GEWALTFREIE AKTION GLOBAL 2000\"","\"'GfÖ' Gemeinsam für Österreich\"","\"Gitarristenpartei Österreichs\"","\"GoldeneRegierungsPartei\", Kurzbezeichnung \"GRP\" oder \"Die Goldenen\"","\"GPO - Generationen Partei Oesterreich\"","\"GRAS - Grüne und Alternative Student_innen\", Kurzbezeichnung \"GRAS\"","\"Grazer Bürgerliste\", Kurzbezeichnung \"GBL\"","\"Grazer Verkehrspartei\"","\"GRÜN - ALTERNATIVEN (GAL OÖ)\"","\"GRÜN ALTERNATIVE LISTE KORNEUBURG\"","\"Grün Alternative Liste Linz\" (GALL)","\"GRÜN ALTERNATIVE STEIERMARK\"","\"GRÜNALGE\" (Grün-alternative Gemeindepolitik)","\"GRÜN-ALTERNATIVE BÜRGERLISTE Gmunden (GABL)\"","\"GRÜN-ALTERNATIVE BÜRGERLISTE LANGENZERSDORF (GABL)\"","\"GRÜN-ALTERNATIVE BÜRGERLISTE Linz\"","\"Grün-Alternative Bürgerliste\", kurz \"GABL\"","\"GRÜN-ALTERNATIVE LISTE GRAZ/Liste unabhängiger Grazerinnen und Grazer (ALG)\"","\"GRÜN-ALTERNATIVE LISTE GRAZ/Unabhängige (ALG)\"","\"GRÜN-ALTERNATIVE LISTE GRAZ/Unabhängige Bürgerlisten (ALG)\"","\"Grün-Alternative Liste Österreichs (GALÖ)\"","\"GRÜN-ALTERNATIVE LISTE STEIERMARK (GRÜNE)\", Kurzbezeichnung \"VGÖ - AL\"","\"Grün-Alternative Partei Österreichs\"","\"GRÜN-ALTERNATIVE SAMMLUNG STEIERMARK\", Kurzbezeichnung \"GRAS-STEIERMARK\"","\"GRÜN-ALTERNATIVE SAMMLUNG WIEN\", Kurzbezeichnung \"GRAS-WIEN\"","\"Grün-Alternative Steiermark (Grüne)\"","\"Grün-alternative-Bürgerliste-Bürmoos, GABL\"","\"Grün-Alternatives Graz (Grüne)\"","\"Grundrisse\"","\"Grüne Alternative Hernals\", Kurzbezeichnung \"GRÜNE\"","\"Grüne Alternative Klagenfurt/Zelena Alternativa Celovec (GA Klagenfurt/ZA Celovec)\"","\"Grüne Alternative Liste Schwechat\", Kurzbezeichnung \"Die Grünen Schwechat\"","\"Grüne Alternative Liste Steyr\", Kurzformen \"GAL-Steyr\" bzw \"Die Grünen Steyr (Grüne)\"","\"Grüne Alternative Sammlung Hernals\" (GRAS Hernals)","\"Grüne Alternative Waidhofen/Ybbs\", kurz \"GAL\"","\"GRÜNE ALTERNATIVE, DIE GRÜNEN DEUTSCH-WAGRAM\", kurz \"DIE GRÜNEN\"","\"GRÜNE ARBEITNEHMER - Grüne in der Arbeiterkammer\", Kurzbezeichnung \"GA\"","\"GRÜNE BEWEGUNG\"","\"GRÜNE FREIHEITSPARTEI\" (GRÜNE)","\"Grüne Liste Graz (Grüne)\"","\"Grüne Liste Kreuttal\" (Kurzbezeichnung GLIK)","\"GRÜNE LISTE Neukirchen-Zipf\"","\"Grüne Liste Österreich (GLÖ)\"","\"GRÜNE LISTE ÖSTERREICHS\", abgekürzt \"GLÖ\"","\"Grüne Liste Steiermark (Grüne)\"","\"Grüne Liste Wien\", Kurzbezeichnung \"GLW\"","\"Grüne Mitte Österreichs\"","\"Grüne Mitte\"","\"GRÜNE ÖSTERREICHS (GRÜNE)\"","\"GRÜNE ÖSTERREICHS (GRÜNE)\"","\"GRÜNE ÖSTERREICHS\" (GRÜNE) -Vereinte Grüne Parteien-","\"GRÜNE PARTEI ÖSTERREICHS\"","\"GRÜNE PLATTFORM\", Abkürzung \"GP\"","\"Grüne Steiermark (Grüne)\"","\"Grüne und Alternative Student/inn/enliste Uni Wien\", Kurzbezeichnung \"Grüne\", Abkürzung \"GRAS\"","\"Grüne Union Österreichs\"","\"GRÜNE\" (GRÜNE)","\"GRÜNES FORUM ÖSTERREICH - WAHLGEMEINSCHAFT ÖSTERREICHISCHER GRÜNER\" (Wahlplattform von Atomgegner-, Natur- und Umweltschutzbürgerinitiativen, Behindertenselbsthilfegruppen und -organisationen, Sozial-, Frauen und Jugendorganisationen sowie grüner Politiker und sonstiger Einzelpersonen etc)","\"Grünes Graz (Grüne)\"","\"Grünes Unabhängiges Österreich\", kurz \"Ö\"","\"Gruppe Arbeiterstandpunkt\"","\"Gruppe für revolutionäre Arbeiter/innen/politik (GRA)\"","\"Gruppe Internationalistische Kommunisten\"","\"Gruppe KLASSENKAMPF\"","\"GRUWI-Plenum\"","\"GUM - Gemeinschaft unabhängiger Menschen\", Kurzbezeichnung \"GUM\"","\"Gurgiser & Team - BürgerKlub Tirol\"","\"H.O.L.A.\"","\"HALT-BEWEGUNG\"","\"HAUSFRAUENKARTELL\"","\"Healing Power\" (HP)","\"Heimat aller Kulturen\"","\"Heimatpartei Österreich\", Kurzbezeichnung \"HPÖ\"","\"Heinzelmännchenpartei\"","\"HELP FOR YOU Plattform für spirituelle Lebenshilfe\"","\"Hennersdorfer Bürgerinitiative\", kurz \"HeBI\"","\"Herbert Starl - Alpenforum, der Tourismus\"","\"HERNALSER GRÜNE ALTERNATIVE\", Kurzbezeichnung \"GRÜNE\"","\"HIV (Haben Immer Vernunft)\"","\"hpö - die hausstöcke\"","\"HSÖBP (Heimatliche Sozialistische Österreichische Bundes Partei)\"","\"HuMan-Bewegung\", Abkürzung \"HMB\"","\"Humanistische Aktion Universität\", Abkürzung \"HAU\"","\"Humanistische Partei - Bezirksgruppe Alsergrund\", Abkürzung \"HP\"","\"Humanistische Partei - Bezirksgruppe Hernals\", Abkürzung \"HP\"","\"Humanistische Partei - Bezirksgruppe Währing\", Abkürzung \"HP\"","\"Humanistische Partei - Regionalsektion Wien\", Abkürzung \"HP\"","\"Humanistische Partei Österreichs\" (HPÖ)","\"Humanistische Partei\", Abkürzung \"HP\"","\"ICH WÄHLE NICHT\"","\"IDENTITÄRE BEWEGUNG\" - Kurzbezeichnung \"IB\"","\"Illuminare\"","\"impuls-tirol\"","\"IndianerInnenpartei mit Hausverstand Österreichs\", kurz \"IÖ\"","\"INITIATIVE 2000\"","\"Initiative für eine revolutionäre Organisation\"","\"INITIATIVE FÜR GAADENER LEBENSQUALITÄT (IGL)\"","\"Initiative für mehr direkte Demokratie\"","\"Initiative für Öffentlichkeit und Kommunikation\", Abkürzung \"IfÖK\"","\"Initiative Haschisch Legal\"","\"Initiative Heimat und Umwelt\", abgekürzt \"IHU\"","\"Initiative Lebenswertes Seekirchen\", Kurzbezeichnung \"LeSe\"","\"Initiative Neue Linke\", Kurzbezeichnung \"Neue Linke\", abgekürzt \"INL\" und \"NL\"","\"Initiative Ökologischer Demokraten\", kurz \"IÖD\"","\"Initiative Österreichischer Atomkraftwerksgegner\" (kurz \"IÖAG\")","\"Initiative zur Verbreitung unterbliebener Nachrichten - IVUN\"","\"Inn Piraten\"","\"Inovative Fraktion\"","\"INTERESSENVERBAND HANDEL-GEWERBE-INDUSTRIE INFORMATION FÜR WIRTSCHAFT UND HUMANITÄT\", Kurzbezeichnung \"IV-H.G.I.\"","\"Interkommunale Volkspartei\" - Kurzform: \"IVP\"","\"Internationales Rechtshilfeforum\", Kurzbezeichnung \"I.R.F.\"","\"IPA, IPÖ, Internet Party Austria, Internet Partei Österreich\"","\"ISLAMISCH SOZIALE UNION (ISU)\"","\"JA ZU Österreich\", Kurzbezeichnung \"JA\"","\"Jakobinerclub\"","\"Jede Stimme GILT\"","\"JETZT - Liste Pilz Oberösterreich\"","\"JETZT - Liste Pilz\"","\"JETZT Burgenland\"","\"JETZT Kärnten\"","\"Jetzt Oder Nie\"","\"JETZT Salzburg\"","\"JETZT STMK\"","\"JETZT Tirol\"","\"JETZT Vorarlberg\"","\"JETZT Wien\"","\"JETZT Wien\"","\"Junge Liberale\"","\"Kampuchea-Solidaritätskomitee\", abgekürzt \"KSK\"","\"Kärntner Bürgerliste\" (KBL)","\"Keine-Partei\"","\"Kern Gesundes Österreich\", kurz \"KGÖ\"","\"Kini vo Wös oder Kwini vo Wös\"","\"Klartext Burgenland\"","\"KOMitee zur Verteidiguing der Gesellschaft gegen den Staat\" (KVGS)","\"Kommunistische Organisation Wien\" (KOW)","\"Kommunistische Partei Österreichs (KPÖ)\"","\"Kommunistischer Bund Österreichs (KB)\"","\"Kommunistischer Bund Salzburg\" (KB Salzburg)","\"KONSERVATIVE PARTEI ÖSTERREICHS\" (K) - Die Konservativen -","\"Konservativ-liberale Partei Österreichs\"","\"KOROSKA ENOTNA LISTA - KÄRNTNER EINHEITSLISTE (KEL)\"","\"Kritische Autonome Zelle\"","\"KRITISCHE DEMOKRATEN - KD\"","\"Kritisch-Liberale Allianz der Republik\", Kurzbezeichnung \"K.L.A.R.\"","\"Kroatische Demokratische Union\", kurz \"KDU\"","\"KULTURVERBAND denkmalgeschützter Objekte\"","\"KURZ MUSS WEG\"","\"KURZ\" mit dem Beisatz \"Wir gegen Korruption\"","\"L.G.F., Liberales Golf Forum\"","\"L.U.S.T., Liberale Union Österreichs\"","\"Landesorganisation der ÖSTERREICHISCHEN VOLKSPARTEI (ÖVP) im Bundesland Salzburg\"","\"Landesorganisation Niederösterreich der Österreichischen Volkspartei\", \"Volkspartei Niederösterreich\" (abgek. \"VP Niederösterreich\" bzw. \"VP NÖ\")","\"Landesparteiorganisation der ÖVP-Burgenland\"","\"Leben ist eine bewegliche Einheit (L.i.e.b.E.)\"","\"LEBEN\"","\"Lebenswerte Partei Österreichs\", kurz \"LPÖ\"","\"Lebenswerte Stadt\"","\"Lebenswertes Guntramsdorf - Team Christian Höbart\"","\"LIBERALDEMOKRATISCHE PARTEI\" (LDP) - Die Liberalen -","\"liberaldemokratische Partei\", kurz \"LDP\"","\"Liberal-Demokratische Union\", Abkürzung \"LDU\"","\"Liberal-Demokratisches Forum\" (LDF)","\"LIBERALE BEWEGUNG ÖSTERREICHS\" (LBÖ)","\"Liberale Demokraten\", Abkürzung \"LD\"","\"LIBERALE EUROPA - UNION\"","\"LIBERALE PARTEI ÖSTERREICHS\" (LPÖ)","\"Liberale Stadtpartei\"","\"liberale Volksunion\"","\"Liberales Arbeitnehmerinnen und Arbeitnehmer Forum\", Abkürzung \"LIF\"","\"Liberales Forum (LIF)\"","\"Liberales Forum\" (LF)","\"LIBERALES FORUM\" Österreich (LFÖ)","\"Liberales Studentinnen und Studenten Forum - Unigruppe Wien\", Abkürzung \"LSF\"","\"Liberales Studentinnen und Studenten Forum - WU-Wien\", Abkürzung \"LSF - die Liberalen WU\" bzw \"LSFWU\"","\"Liberales Studentinnen und Studenten Forum Graz (LSFG)\"","\"Liberales Studentinnen und Studenten Forum Linz\", Kurzbezeichnung \"LSF-Linz\"","\"Liberales Studentinnen und Studenten Forum Salzburg\", Abkürzung \"LSF - die Liberalen\"","\"Liberales Uniforum\", Abkürzung \"LUF\"","\"Liberal-Fortschrittliche Partei - Pepi Wagner\" LFP","\"Liberal-Republikanische Partei (LRP)\"","\"LIBERAL-SOZIALE PARTEI\" (LSP)","\"LIBERTÄRE ASSOZIATION ÖSTERREICH-(LAÖ)\"","\"Libertäres Plenum Linz\"","\"Liga Freies Europa\" (Kurzbezeichnung LFE)","\"Linke Alternative Liste\" (LAL)","\"LINKS\"","\"Linksgemäßigter Flügel der Werte und humanistischer Tätigkeit Österreich\", Kurzbezeichnung \"LWHÖ\"","\"LINZ+\" (LINZ PLUS)","\"LINZER BÜRGERRAT\", Kurzform \"LBR\"","\"Liste Bürger & Umwelt (LBU)\"","\"Liste der EU-Opposition Gabriele Wladyka\", abgekürzt \"LEO\"","\"Liste Dr. Martin - Für Demokratie, Kontrolle, Gerechtigkeit\"","\"Liste für Weyregg\", in der Kurbezeichnung \"LFW\"","\"Liste gegen Ausländer\"","\"Liste HA-ZE\"","\"Liste HC\", Langbezeichnung \"Liste Heimat Centrum\"","\"Liste Hirschmann\"","\"LISTE KRITISCHER STUDENTEN\"","\"Liste Maria Lanzendorf\", kurz \"LiMaLa\"","\"Liste Niederösterreich\", abgekürzt \"Liste\" oder \"Partei\"","\"LISTE ÖSTERREICH\"","\"Liste Parndorf (LIPA)\"","\"Liste Steiermark\", Kurzbezeichnung \"Liste\"","\"Liste STRACHE\"","\"LISTE TIROL - Überparteiische Plattform für Tiroler Politik - (Kurzbezeichnung: TIROL)\"","\"Liste Unabhängiger MedizinerInnen\" (LUM)","\"Liste Unabhängiger Studierender\", Kurzbezeichnung \"LUST\"","\"Liste Unabhängiges Soziales Steinakirchen\"","\"LISTE VORCHDORF\", Kurzbezeichnung \"LV\"","\"LISTE VÖSENDORF 2000\"","\"LIVE - Liste visionäres Österreich\"","\"LM Arbeitsgemeinschaft für Medienproduktion\", Kurzbezeichnung \"LM\"","\"LP NÖ - Bewegung für Demokratie und Gerechtigkeit\"","\"LSF-Die Liberalen Linz\"","\"Manfred Bauer\"","\"Männerpartei\"","\"Marco Polo-Gesellschaft\", Untertitel \"Gesellschaft zur Förderung europäisch-chinesischer Kooperation\"","\"Marxistische Gruppe (MG)\"","\"Marxistisch-Leninistische Partei Österreichs (MLPÖ)\"","\"Medaillon\"","\"Mehrheitspartei\"","\"MEINE STIMME GILT\", Kurzbezeichnung: \"GILT\"","\"MENSCH UND GESELLSCHAFT\"","\"Menschenrechts-Partei\" (Kurzbezeichnung: \"MRP\", englisch \"human rights party\")","\"MFG - Österreich Menschen - Freiheit - Grundrechte\"","\"Milser Dorf Blatt\"","\"Mit Anstand\" (Anstaendig)","\"Mitte Österreich\"","\"Mitte-Partei Österreichs\", kurz \"MPÖ\"","\"MLQ\"","\"Mosaik\"","\"MUTBÜRGER\", kurz \"MUT\"","\"NACHBAR IN NOT\"","\"NATIONAL - FREIHEITLICHE\" (NF)","\"National Freiheitliche Aktion\", abgekürzt \"NFA\"","\"Nationaldemokratische Partei (NDP)\"","\"Nationale Errettungspartei\" (NEP)","\"NATIONALE FRONT\"","\"Nationale Rechtspartei - N.R.P.\"","\"NATIONALE VOLKS-PARTEI\" (N V P)","\"Nationale Volkspartei\", kurz \"NVP\"","\"National-Europäische-Partei-Österreich\", Kurzform N.E.P.Ö.","\"National-freiheitliche Aktion (NFA)\"","\"National-freiheitliche Partei (NFP)\"","\"National-freiheitliche Sammlung (NFS)\"","\"Nationalistische Befreiungs Front\" (NBF)","\"Nationalistischer Bund Nordland (NBN)\"","\"National-Konservative Union (NAKU)\"","\"Nationalliberale Partei Österreichs\" (Kurz: NLPÖ)","\"NATIONALREALISTISCHE ORDNUNGSPARTEI (NROP)\"","\"Naturschutz Aktiv\"","\"NBZ - Neue Bewegung für die Zukunft\", kurz \"Die Partei NBZ\"","\"NEIN zur Atom-EU Bürgerliste Neutrales Österreich\"","\"NEIN-Idee Österreich\", Kurzbezeichnung: NEIN!","\"NEOS - Das Neue Österreich und Liberales Forum\", in der Kurzbezeichnung \"NEOS\"","\"neu christliche Partei Österreich für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative\", Kurzbezeichnung \"NCPÖ\"","\"Neue Demokratie\" (\"nede\")","\"Neue Liste Baum - mit LINKS\"","\"Neue Männerpartei Österreichs (NMÖ)\"","\"NEUE MITTE\"","\"NEUE ORDNUNG (NO)\"","\"NEUE PARTEI ÖSTERREICH\"","\"NEUE VOLKSPARTEI\", kurz \"NVP\"","\"NEUES EUROPA\"","\"Neues Leben\"","\"Neusoziale demokratische Partei\" (NSDP)","\"Neutrales Österreich\"","\"Neutrales Österreich\", Kurzbezeichnung \"NEU\"","\"NICHT - Erste Österreichische Nicht-Partei\", Kurzfassung \"NICHT\"","\"NICHTWÄHLER\"","\"NOSMOKE - Mehr g'sunde Lebensjahre durch g'sunde Politik\", Kurzbezeichnung \"NOSMOKE\"","\"Notwehrgemeinschaft\"","\"NPÖ Nationaldemokratische Partei Österreichs\"","\"ÖBP\" Österreichische Bürger Partei","\"ÖBWP Österreichische Bürger und Wirtschaftspartei\"","\"ÖEP - Österreichische Ethikpartei\"","\"Offene Bürgerliste Dornbirn\"","\"Öffnen\"","\"ÖKAY\"","\"ÖKO-Liberale Partei (ÖLP)\"","\"Ökologisch-Demokratische Partei\", Abkürzung \"ÖDP\"","\"Ökologische Informationen (ÖI)\"","\"Ökologische Linke\" (ÖKOLI)","\"ÖPOD - Österreichische Partei für offene Demokratie\"","\"Organisation freier Staatsbürger Österreich\", Abkürzung \"OFÖST\"","\"Organisation für Atheismus und Aufklärung\", kurz \"OAA\"","\"Österreich 2000, Partei für Freiheit, Brüderlichkeit und Toleranz\"","\"ÖSTERREICH SOUVERÄN und FREI\" (ÖSF)","\"Österreich-Club\"","\"Österreichische aktive Partei\", Abkürzung \"Ö.A.P.\"","\"ÖSTERREICHISCHE ALLGEMEINE PARTEI\", Abkürzung \"ÖAP\"","\"Österreichische Arbeiterpartei\"","\"Österreichische Arbeiterpartei\" (ÖAP)","\"Österreichische Autofahrer- und Bürgerinteressen-Partei (ÖABP) Landesorganisation Steiermark\"","\"Österreichische Autofahrer- und Bürgerinteressen-Partei (ÖABP), Landesorganisation für Wien, Niederösterreich und Burgenland\"","\"Österreichische Autofahrer- und Bürgerinteressenspartei (ÖABP) - Landesorganisation Tirol\"","\"Österreichische Autofahrer- und Bürgerinteressens-Partei\" (ÖABP)","\"Österreichische Autofahrer- und Bürgerinteressens-Partei\" (ÖABP) - Landespartei Oberösterreich","\"Österreichische Autofahrer- und Bürgerinteressens-Partei\" (ÖABP) - Landespartei Salzburg","\"Österreichische Befehlsverweigerer Partei & Befehlsverweigerer Partei Österreichs\" ÖBP&BPÖ","\"Österreichische Bürger Partei (ÖBP)\"","\"Österreichische Bürger und Bewohnerinitiativen WOHNE\", Kurzbezeichnung \"WOHNE\"","\"Österreichische Bürgerbewegung\"","\"Österreichische Bürgerinitiative\", Kurzbezeichnung \"ÖBI\"","\"Österreichische Bürgerpartei Ö.B.P.\"","\"Österreichische Bürgerpartei\"","\"ÖSTERREICHISCHE BÜRGERPARTEI\", abgekürzt \"ÖBP\"","\"Österreichische demokratische Partei für Familienrechte und Frauenrechte\", kurz \"ÖDPF\"","\"Österreichische Demokratische Partei\", kurz \"ÖDP\"","\"ÖSTERREICHISCHE DEMOKRATISCHE PROPORTION\", Kurzbezeichnung \"ÖDP\"","\"Österreichische Fortschrittspartei\"","\"Österreichische Freiheitspartei\" (ÖFP)","\"ÖSTERREICHISCHE FRIEDENSPARTEI (ÖFPA)\"","\"Österreichische Gerechtigkeitspartei\", kurz \"ÖGP\"","\"ÖSTERREICHISCHE GESELLSCHAFT FÜR INTERMEDIALE ZUSAMMENARBEIT\", Kurzbezeichnung \"INTERMEDIA\"","\"Österreichische Gesellschaft für Konsumenteninformation\", Kurzbezeichnung \"ÖGK\"","\"Österreichische Gesellschaft für menschliches Recht (ÖGmR)\"","\"Österreichische Gesellschaft für Nahrungsinformation\", Kurzbezeichnung \"ÖGN\"","\"Österreichische Gesellschaft für Verbraucherinformation und Konsumentenschutz\", Kurzbezeichnung \"ÖGV\"","\"ÖSTERREICHISCHE GESELLSCHAFT FÜR VERBRAUCHERINFORMATION\", Kurzbezeichnung \"ÖGV\"","\"Österreichische Gesellschaft zur Altstadterhaltung\", Kurzbezeichnung \"ÖGA\"","\"Österreichische Hanf Partei (ÖHP)\"","\"ÖSTERREICHISCHE HOCHSCHULPARTEI (ÖHP)\"","\"Österreichische House Partei\" ÖHoP","\"Österreichische humanistische Partei (ÖHP)\"","\"Österreichische Individualisten-Partei\", \"ÖIP\"","\"Österreichische Initiative für Umwelt und Kultur (ÖIUK)\"","\"Österreichische Integrationspartei\"","\"Österreichische Kirchtagspartei\", Kurzbezeichnung \"ÖKiP\"","\"ÖSTERREICHISCHE KONSERVATIVE UNION, ÖKU\"","\"Österreichische Legalisierungs Partei\", Abkürzung \"ÖLP\"","\"Österreichische MigrantInnenpartei\", Kurzbezeichnung \"ÖMP\"","\"Österreichische Mittelstandspartei\", kurz \"OMP\"","\"Österreichische Naturgesetz-Partei (ÖNP)\"","\"Österreichische Neutralitätspartei ÖNP\"","\"Österreichische Partei für das Leben (ÖPL)\"","\"Österreichische Partei für Demokratie Recht und Ordnung\", Kurzbezeichnung \"DRO\" oder auch \"DRO-Österreich\"","\"Österreichische Partei für Jedermann\", abgekürzt \"ÖPJ\"","\"Österreichische Partei tatkräftiger umsichtiger toleranter ehrlicher Staatsbürger (ÖPTUTES)\"","\"Österreichische Protestpartei\", kurz \"PP\"","\"Österreichische Rechtsschutzorganisation\"","\"Österreichische Tierfreundebewegung\"","\"Österreichische Unabhängigkeitspartei\" (UP)","\"Österreichische und Europäische Tierrechtspartei und Tierschutzpartei Mensch-Umwelt-Tierschutz - Ökologisch Soziale Europa Partei\", die Kurzbezeichnung des Parteinamens lautet \"Österreichische und Europäische Tierrechtspartei\", \"Österreichische und Europäische Tierschutzpartei\", \"Österreichische Tierrechtspartei\", \"Österreichische Tierschutzpartei\", \"Europäische Tierrechtspartei\", \"Europäische Tierschutzpartei\", \"Tierrechtspartei\", \"Tierschutzpartei\", \"Die Tierrechtspartei\", \"Die Tierschutzpartei\", \"Mensch-Umwelt-Tierschutz- Partei\", \"MUT-Partei\", \"Ökologisch Soziale Europa Partei\", \"Ökosoziale Europa Partei\", \"Ökologisch Soziale Europa Bewegung\", \"Ökosoziale Europa Bewegung\", \"Ökologisch Soziale Partei Österreich\", \"Ökosoziale Partei Österreich\", abgekürzt \"Tier\", \"Tiere\", \"Tierr\", \"Tierre\", \"Tierrecht\", \"Tierechte\", \"Tierpartei\", \"Öko\", \"Ökoso\", \"Ökosoz\", \"Ökosozial\", akronymisch \"ÖTRP\", \"ÖTSP\", \"ETRP\", \"ETSP\", \"TRP\", \"TSP\", \"MUT\", \"ÖSEP\", \"ÖKSEP\", sowie \"ÖKOSEP\"","\"Österreichische Unruhestifterpartei\" (Ö.U.)","\"Österreichische Verkehrsteilnehmer - Partei\" mit dem Untertitel \"Autonome Partei für Österreich\"","\"Österreichische Volkspartei\" (ÖVP)","\"Österreichische Volksstimme\"","\"ÖSTERREICHISCHE VOLKSUNION\"","\"Österreichische Widerstandsbewegung\" (ÖWB)","\"Österreichische Zukunftspartei (ÖZP)\"","\"Österreichische-Gerechtigkeits-Partei (ÖGP)\"","\"Österreichische-Partei-für-alle-Nichtwähler\"","\"ÖSTERREICHISCHER HEIMATBUND (ÖHB)\"","\"Österreichischer Heimatdienst - ÖHD\"","\"Österreichischer Seniorenbund (ÖSB)\"","\"ÖSTERREICHISCHES AGRARUMWELTFORUM\"","\"Österreichisches Bürgerrechts-Service (ÖBS)\"","\"ÖSTERREICHISCHES WIRTSCHAFTSFORUM\"","\"Österreichisches Zukunfts Volk\", gekürzt \"ÖZV\"","\"ÖSTERREICHPARTEI DE MONTE DMO\"","\"ÖSTERREICH-PARTEI\"","\"Österreich-Partei\", kurz \"OP\"","\"ÖSTERREICHS ALTERNATIVE LISTE\", Kurzbezeichnung \"ÖAL\"","\"Österreichs Bürgerbewegung\"","\"Österreichs Demokratische Philosophen - Die Legitimisten\", Kurzbezeichnung \"ODP\"","\"ÖSTERREICHS GRÜNE (GRÜNE)\"","\"ÖSTERREICHS LIBERALE\"","\"ÖVP Oberösterreich (kurz: OÖVP)\"","\"ÖXIT - Sicherheit in Freiheit\", Kurzbezeichnung \"ÖXIT\"","\"padema partei der marken\"","\"Pan-Sozialistische Union (PSU)\"","\"Partei 2.0\"","\"PARTEI AUFRECHTER ÖSTERREICHER (PAÖ)\"","\"Partei demokratischer Sozialisten\", Abkürzung \"PDS\"","\"Partei der Arbeit Österreichs (PdA)\"","\"Partei der ASVG-Versicherten\"","\"PARTEI DER FAULEN UND FEIGEN\", abgekürzt \"PFF\"","\"Partei der freien Abgeordneten\" Kurzbezeichnung: \"PfA\"","\"Partei der Freiheit (PDF)\"","\"Partei der Hundefreunde Österreichs\"","\"Partei der kreativen Oliven\", Kurzbezeichnung \"Kreative Oliven\", Abkürzung \"PKO\"","\"Partei der Nichtwähler\" (PDN)","\"Partei der Nichtwähler\" (PDN)","\"Partei der Outsider\", kurz \"PDO\"","\"PARTEI DER REPUBLIKANER\" (REP)","\"Partei der Sozialversicherten Österreichs\"","\"Partei des angemessenen Fortschritts in maßvollen Grenzen\"","\"Partei des Volkes\"","\"Partei des Volkes\", Kurzbezeichnung \"PdV\"","\"Partei Freier Demokraten\", kurz \"PFD\"","\"Partei freies Österreich\"","\"Partei für Alpinismus, Realpolitik, Transparenz und Erfolg in Österreich\", Kurzbezeichnung \"Die Partei\", Abkürzung \"PARTEI\"","\"Partei für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative\", Kurzbezeichnung \"Die PARTEI\"","\"Partei für Bildung, Information, Kultur und Lebensqualität\", Kurzbezeichnung \"BIKUL\"","\"Partei für das Überleben der Menschheit\"","\"Partei für demokratischen und sozialen Fortschritt\"","\"Partei für den gemäßigten Fortschritt in den Grenzen des Gesetzes\" (P.f.d.g.F.i.d.G.d.G.)","\"Partei für den Libertären Kommunismus\" (PfdLK)","\"Partei für deutsche Sprache und Kultur\" (Kurzform \"Deutsche Sprache und Kultur\")","\"Partei für die Autonomie des Individuums\"","\"Partei für ein voluntaristisches Österreich\", Kürzel \"PVÖ\"","\"Partei für ganzheitliche Lebensauffassung - PGL\"","\"PARTEI für JUGEND UND VOLK\" (J + V) (NEUE JUGENDEBWEGUNG - SOZIALPOLITISCHE VOLKSPARTEI)","\"Partei für Kultur und Kritik\"","\"Partei für maßvollen Fortschritt im Rahmen der Gesetze\", Abkürzung \"PFG\"","\"Partei für Österreich\"","\"Partei für Österreich\", kurz \"PFÖ\"","\"Partei für Qualität, Information und Kultur\", Kurzbezeichnung \"QIK\"","\"Partei für Recht und Ordnung - PRO\"","\"Partei für Rechtssicherheit und Bürgernähe (RPÖ)\"","\"Partei für sexuelle Ausschweifungen\" (P.S.A.)","\"Partei für Sicherheit, Wohlstand und Gerechtigkeit\"","\"Partei für soziale Gerechtigkeit\"","\"Partei für Umwelt, Mensch und Arbeit\", mit dem Kürzel \"PUMA\"","\"Partei für Umweltschutz und Menschlichkeit\" (kurz \"PUM\")","\"Partei für Umweltschutz und Menschlichkeit\" (kurz \"PUM\")","\"PARTEI für VOLK und JUGEND (V + J)\" -VOLKSPARTEI und JUGENDBEWEGUNG-","\"Partei für Wirtschafts- und Umweltinformation\"","\"Partei gegen Mobbing\"","\"Partei gegen Rassismus\"","\"Partei gegen rassistische Diskriminierung\"","\"Partei glücklicher Österreicher\"","\"Partei mit Herz für Arbeiter, Angestellte, Arbeitslose - kurz APÖ\"","\"Partei Neue Ordnung (PNO)\"","\"Partei Neues Österreich\" (PNÖ)","\"Partei Österreich neu\"","\"Partei Österreichischer Arbeitssuchender PÖA\"","\"Partei Österreichischer Patrioten (PÖP)\"","\"Partei von, für und Mit-Menschen\"","\"Partei zur Förderung der Gesellschaft und Information im lokalen Raum\"","\"Partei zur Förderung der sozialen, lokalen, kulturellen und sportlichen Information in Wattens und Umgebung\"","\"Partei zur Förderung des Kultur- und Gesellschaftslebens\"","\"PARTEI ZUR FÖRDERUNG VON STADTTEILZENTREN\"","\"Partei zur Information von Hall und Umgebung und zur Förderung sportlicher kultureller und sozialer Kontakte\"","\"PARTEI ZUR REVITALISIERUNG ÖSTERREICHISCHER KULTURGÜTER\"","\"parteifrei\"","\"PATRIOTISCHE BEWEGUNG\" (P)","\"Patriotische Europäer gegen die Islamisierung des Abendlandes\", kurz \"PEGIDA\"","\"Patriotische Partei Österreichs\" (PPÖ)","\"Patriotische Sozialisten Europas\" (PSE)","\"PDDV - Partei für direkte Demokratie durch Volksabstimmungen\"","\"PeaceParty Österreich\"","\"Perchtoldsdorfer Bürgerliste Gabriele Wladyka\", Kurzbezeichnung \"PBL\"","\"Pharmazeutische Studenteninitiative\"","\"PHÖ - Partei Heimatverbundener Österreicher\"","\"Piraten Partei Tirol\", Kurzbezeichnung \"PPT\"","\"Piraten Seekirchen\"","\"Piratenpartei Oberösterreich\", Kurzbezeichnung und Abkürzung \"Piraten\" bzw \"die Piraten\", Kurzbezeichnung auf Wahlvorschlägen \"PIRAT\"","\"Piratenpartei Österreichs\", Kurzbezeichnung und Abkürzung \"Piraten\" bzw \"die Piraten\", Kurzbezeichnung auf Wahlvorschlägen \"PIRAT\"","\"Piratenpartei Steiermark\", Kurzbezeichnung und Abkürzung \"Piraten\" bzw \"die Piraten\", Kurzbezeichnung auf Wahlvorschlägen \"PIRAT\"","\"Piratenpartei Wien\", Kurzbezeichnung und Abkürzung \"Piraten\" bzw \"die Piraten\", Kurzbezeichnung auf Wahlvorschlägen \"PIRAT\"","\"Piratische Studentinnen und Studenten Österreichs\", Abkürzung \"(PiSt)\"","\"Plattform für Pluralismus und Hochschulpolitik\"","\"Plattform Linke und Unabhängige - Plattform für eine starke Linke in der Gesellschaft und im Parlament\", Kurzbezeichnung \"PLUS\"","\"Politik ohne Parteibuch\" POP","\"Pöltl für Österreich\", Kurzbezeichnung \"PfÖ\"","\"PRO 23- für ein lebenswertes und zukunftsfittes Liesing\"","\"PRO HETZENDORF (PH)\"","\"PRO Kematen\"","\"Pro Kottingbrunn - Verein zur Förderung und Unterstützung der wirtschaftlichen, kulturellen und sozialen Entwicklung der Gemeinde\"","\"PRO MAUERBACH\"","\"PRO ÖSTERREICH\" (unabhängige Bürgerbewegung)","\"PROGRESSIVE LINKE ÖSTERREICH\", Kurzbezeichnung \"PLÖ\"","\"progressive Partei\"","\"Progressive Patriotische Partei\" (PPP)","\"Projekt Demokratische Linke\"","\"Protestpartei\", kurz \"PP\"","\"PROTESTWÄHLER-PARTEI\"","\"Radikaldemokratische Innovationspartei Österreichs\", kurz \"RIO\"","\"RADIKALE PARTEI ÖSTERREICHS\" (RPÖ)","\"Radikal-Liberale Partei (RLP)\"","\"RealDemokraten Österreichs (RDÖ)\"","\"RECHTSBLOCK\"","\"Rechtsschutzforum unabhängige Bürgerhilfe in Zusammenarbeit von Vereinigungen Europäischer Bürgerinitiativen zum Schutze des Lebens und der Menschenwürde\", Kurzbezeichnung \"R.U.B.\"","\"RED LIONS AUSTRIA - Österreichische Gesellschaft für eine bessere Welt\"","\"Referendum - Partei für direkte Demokratie (Kurzform Referendum, Abkürzungen: R, Ref)\"","\"Reform Partei Österreich\"","\"REGION AUSTRIA\", Kurzbezeichnung \"RGA\"","\"REGNUM-DEI-RD\"","\"REICHSVOLKSFÜHRUNGSBEFEHLSMACHT\", Kurzbezeichnung \"RVFBM\"","\"REKO Rechtskonservative Partei\"","\"REP PÖ - Die Republikanische Partei Österreichs\", Kurzbezeichnung \"REP PÖ\"","\"REPUBLIKANISCHE BEWEGUNG\" (REP)","\"Republikanische Demokraten\" (Rep-Demo)","\"RETE\" bzw \"Rete\"","\"Retten wir Österreich\" (Kurzbezeichnung: \"RWÖ\")","\"Rettet Österreich\"","\"Revolutionär Sozialistische Organisation\" (RSO)","\"Revolutionär-Kommunistische Organisation zur Befreiung (RKOB)\"","\"Revolutionsbräuhof\"","\"RKL (Revolutionär Kommunistische Liga)\"","\"ROSA LISTE WIEN\"","\"ROSA LISTE\"","\"Rot Weiß Rote Partei Österreichs\", Kurzbezeichnung \"Rot Weiß Rote\", Abkürzung \"RWRPÖ\"","\"RSD (realpolitische Sozialdemokratie)\"","\"RumänInnen Partei Österreich\"","\"Salzburger Bürgergemeinschaft SBG - Hans Mayr\", kurz \"SBG\"","\"Salzburger Piratenpartei\", Kurzbezeichnung und Abkürzung \"Salzburger Piraten\" oder \"Piraten\", Kurzbezeichnung auf Wahlvorschlägen \"PIRAT\"","\"Salzburger Seniorenbund\", Kurzbezeichnung \"SSB\"","\"SAMMLUNG CHRISTLICHER ALTERNATIVEN IN ÖSTERREICH (SCA)\"","\"Schutzverband vereinigter Pensionisten Österreichs\"","\"Schwarz-Weiß Partei (SWP)\"","\"Senioren und Pensionisten Partei - Wien\", Kurzbezeichnung \"SEPP - Wien\", wahlweise der Zusatz \"die Seniorenpartei\"","\"Smart und Clever\"","\"Solidarische Kultur Österreich - SKÖ\"","\"Solidarität jetzt\", Kurzbezeichnung \"jetzt\"","\"Solidarität\"","\"Solidarität, Ökologie und Lebensstil\" (SOL)","\"Sozalistische Alternative (SOAL)\"","\"Sozial Demokratische Volkspartei Kurzform: SDVPartei\"","\"Sozial Gerechte Partei (SGP) Österreichs\"","\"Sozial Liberales Österreich\", Kurzbezeichnung \"SLÖ\"","\"Sozial Vereintes Österreich\", Kurzbezeichnung \"SVÖ\"","\"Sozialanarchistische Union\", Kurzbezeichnung \"SAU\"","\"Sozialdemokratische ArbeiterInnenpartei - SDAP\"","\"Sozialdemokratische Partei Österreichs (SPÖ)\"","\"Sozialdemokratische Partei Österreichs\" (SDPÖ)","\"Soziale Allianz Österreichs\", Kurzbezeichnung \"SAÖ\"","\"SOZIALE ARBEITERPARTEI ÖSTERREICHS\", abgekürzt \"SAÖ\"","\"Soziale Gerechtigkeitspartei Österreichs (SGÖ)\"","\"SOZIALE HEIMAT PARTEI ÖSTERREICH\"","\"Soziale Plattform Lichtenwörth\", Kurzbezeichnung \"SPL\", Abkürzung \"SP-Lichtenwörth\"","\"Soziale politische Österreichische Volkspartei (SPÖVP)\"","\"Soziale Volksbewegung\" (SVB)","\"Soziale Volkspartei (SVP)\"","\"Soziale Volksunion\"","\"Soziales Bürgerforum Österreich SBÖ\", Untertitel \"Partei der Mitte\"","\"SOZIALES ÖSTERREICH der ZUKUNFT\", Kurzbezeichnung \"SÖZ\"","\"Sozialisten\", abgekürzt \"SOZ\"","\"SOZIALISTISCHE ALTERNATIVE (SOAL) - Österreichische Sektion der IV. Internationale\"","\"SOZIALISTISCHE DEMOKRATIEPARTEI ÖSTERREICH\", kurz \"SDÖ\"","\"Sozialistische LinksPartei\" (SLP)","\"SOZIALISTISCHE PARTEI ÖSTERREICH-FRAKTION\", Kurzform \"SPÖ-FRAKTION\"","\"SOZIALISTISCHES PATIENTENKOLLEKTIV/PATIENTENFRONT (Österreich), SPK/PF (Ö)\"","\"Sozial-konservative monarchistische Partei Österreichs (S.K.M.P.Ö.)\"","\"Sozial-Liberale Allianz\", Kurzbezeichnung \"SLA\"","\"SOZIAL-LIBERALE PARTEI\" (SLP)","\"Sozial-Liberale Partei\", Kurzbezeichnung \"SLP\"","\"SOZIALLIBERALE-VOLKSPARTEI, (SLVP)\"","\"St.rach.e Partei\", Langbezeichnung \"Spekulativ-transnationale, relativistisch-anachronistische Endzeitapologeten Partei\"","\"Stattclub\"","\"STEIRISCHE BÜRGERRECHTLER (SBR)\"","\"Steirische Unabhängige Seniorenpartei\"","\"Steirischer Bauernbund\"","\"STEIRISCH-GRÜNE BÜRGERLISTE (SGB)\"","\"Strache Partei\"","\"Studenten für Bildung und Politik\"","\"Studenten für Medizinerausbildung und Gesundheitspolitik\"","\"Studentenprotest & Nichtwähler\" (SUN)","\"Team für Kärnten\"","\"Team HC Strache - Allianz für Österreich\", Kurzbezeichnung \"HC\"","\"Team HC\"","\"Team Kärnten - Liste Köfer\"","\"Team Kärnten\"","\"Team Klagenfurt - Liste Jandl\"","\"Team Niederösterreich, die im NÖ-Landtag vertretene Partei\", kurz \"Team Niederösterreich\" (TEAM)","\"Team Österreich\" (Langbezeichnung: \"Team für Österreich\")","\"Team STRACHE\"","\"Team Stronach für Burgenland\"","\"Team Stronach für Niederösterreich\"","\"Team Stronach für Oberösterreich\"","\"Team Stronach für Österreich\" (Kurzbezeichnung : \"Team Stronach\")","\"Team Stronach für Steiermark\"","\"Team Stronach für Tirol\"","\"Team Stronach für Vorarlberg\"","\"Team Stronach für Wien\"","\"Teuflische Aktion\" (T.A.)","\"TOP - Transparent.Offen.Parteiunabhängig\"","\"TRAEFFF\"","\"Transparente Partei Österreich\", Abkürzung \"TPÖ\"","\"Trauner Unabhängige\", kurz \"TU\"","\"Trotzkistische Gruppe Österreichs (Für den Wiederaufbau der IV. Internationale)\"","\"TuWas - Liste Helene Redhammer\", Kurzform TuWas","\"U.F.I. Union zur Förderung heimatlicher Interessen\"","\"Überparteiliche Burgenlandliste\"","\"Überparteiliche Bürgerinitiative\"","\"Überparteiliche Bürgerliste\"","\"UBLÖ Unabhängige Bürgerlisten Österreich\", Kurzbezeichnung \"UBLÖ\"","\"UBUNTU FREIHEITSBEWEGUNG ÖSTERREICH\", genannt \"Ubuntu AT\"","\"Umweltforum Wolkersdorf\"","\"Umweltliste Gerasdorf\" (ULI)","\"Umweltschutzpartei (Grüne)\"","\"Unabhängige Bürgerinitiative Gampern (b!g)\"","\"Unabhängige Bürgerinitiative 'Rettet Österreich'\"","\"UNABHÄNGIGE BÜRGERLISTE POTTENDORF\"","\"Unabhängige Dorfliste Radfeld\" (U-D-R)","\"Unabhängige Gemeinderatsfraktion ARBEITSKREIS MILS\"","\"Unabhängige Gemeinderatsfraktion DORFLISTE für ein lebenswertes NATTERS\"","\"Unabhängige Grüne Leonding\", \"Die unabhängigen Grünen Leonding\", Kurzbezeichnung \"UGL\"","\"Unabhängige Kulturoffensive\", Abkürzung \"UKO\"","\"UNABHÄNGIGE LISTE DER GEMEINDE WIENERWALD\"","\"Unabhängige Liste Hohenems\", kurz \"ULH\"","\"Unabhängige Liste liberaler Studierender\", Kurzbezeichnung \"ULLST\"","\"Unabhängige Partei für Fortschritt und Fremdenverkehr (Partei für volksnahe Information, Heimatpflege und Förderung des Zusammengehörigkeitsgefühles)\"","\"Unabhängige Partei Österreichs (UPÖ)\"","\"Unabhängige Seniorenpartei Österreichs\", kurz \"USenPÖ\"","\"Unabhängige VOLKSPARTEI\" (UVP) - Erste österreichische Partei für alle -","\"Unabhängiges Bündnis für St. Roman (UB)\"","\"Unabhängiges Neutrales Österreich (UNÖ) - Die Unabhängigen\"","\"Unbestechliche Partei Österreichs (UPÖ)\"","\"UngüLtiG\" (Union nicht genug überdachten Lächelns trotz innerer Genialität)","\"UNION 1989\"","\"UNION 1990\"","\"UNION 1991\"","\"UNION 1992\"","\"UNION 1993\"","\"UNION 1994\"","\"UNION 1995\"","\"UNION 1996\"","\"UNION 1997\"","\"UNION 1998\"","\"Union für objektive Information\" (UFOI)","\"Union zur Förderung bürgerlicher Meinungsäußerung\"","\"Union zur Förderung des Vereinsgeschehens und der Information der Gemeindebürger\"","\"Union zur Verbreitung von Information\" (UzVvI)","\"Unser Land Österreich\", Kurzbezeichnung \"LAND\"","\"Unser Land Tirol\" (Kurzbezeichnung: TIROL)","\"Unsre Heimat Österreich - Alternative für Freiheit und Demokratie\", Kurzbezeichnung \"AFD\"","\"UPÖ - Die Partei für uns Österreicher\"","\"VAU-HEUTE\"","\"Vegetarisch-Egalitäres Bündnis\", Kurzbezeichnung \"Die VegetarierInnen\", Abkürzung \"VEB\"","\"Verband der Sozialversicherten Burgenland\", Kurzbezeichnung \"VDS B\"","\"Verband der Sozialversicherten Kärnten\", Kurzbezeichnung \"VDS K\"","\"Verband der Sozialversicherten Niederösterreich\", Kurzbezeichnung \"VDS NÖ\"","\"Verband der Sozialversicherten Oberösterreich\", Kurzbezeichnung \"VDS OÖ\"","\"Verband der Sozialversicherten Salzburg\", Kurzbezeichnung \"VDS S\"","\"Verband der Sozialversicherten Steiermark\", Kurzbezeichnung \"VDS ST\"","\"Verband der Sozialversicherten Tirol\", Kurzbezeichnung \"VDS T\"","\"Verband der Sozialversicherten Vorarlberg\", Kurzbezeichnung \"VDS V\"","\"Verband der Sozialversicherten Wien\", Kurzbezeichnung \"VDS W\"","\"Verband der Sozialversicherten\" (VDS)","\"VERBAND der UMWELTSCHÜTZER - V.d.U.\" (\"AKTION GRÜNES LEBEN\")","\"Verein christlicher und demokratischer Studenten\" (VCDS)","\"Vereinigte Grüne Alternative\"","\"Vereinigte Grüne Burgenlandliste (GRÜNE)\"","\"Vereinigte Linke\" (VL)","\"VEREINIGTE ÖSTERREICHISCHE GRÜN-ALTERNATIVE (VÖGA), LANDESVERBAND WIEN\", Abkürzung \"VÖGA-Wien\"","\"VEREINIGTE ÖSTERREICHISCHE GRÜN-ALTERNATIVE LANDESVERBAND KÄRNTEN\", Abkürzung \"VÖGA- Kärnten\"","\"VEREINIGTE ÖSTERREICHISCHE GRÜN-ALTERNATIVE\", Abkürzung \"VÖGA\"","\"VEREINIGTE ÖSTERREICHISCHE GRÜNE\", Abkürzung \"VÖG\"","\"VEREINIGTE ÖSTERREICHISCHE GRÜNE, LANDESVERBAND WIEN\", Abkürzung \"VÖG-Wien\"","\"VEREINIGUNG DER EU-GEGNER ÖSTERREICHS\"","\"Vereinigung liberaldemokratisches Österreich\", kurz \"VLdO\"","\"Vereinigung liberaldemokratisches Österreich\", kurz \"VLO 2000\"","\"Vereinigung Österreichs Liberaler Grüner\", Kurzbezeichnung \"VOLG\"","\"Vereinigung Wiener Ärzte\"","\"VEREINTE ALTERNATIVE UND GRÜNE ÖSTERREICHS (VAGÖ)\"","\"Vereinte Grundsatztreue Ökologen (VGÖ)\"","\"Vereinte Grundsatztreue Ökologen, Landesverband Wien\" (VGÖ-Wien)","\"Vereinte Grüne Alternative\"","\"Vereinte Grüne Burgenlandliste (GRÜNE)\"","\"VEREINTE GRÜNE BÜRGERLISTE (VGB), LANDESVERBAND WIEN\", Abkürzung \"VGB-Wien\"","\"VEREINTE GRÜNE BÜRGERLISTE\", Abkürzung \"VGB\"","\"Vereinte Grüne Österreichs - Landesgruppe Kärnten\", abgekürzt \"VGÖ-Kärnten\"","\"Vereinte Grüne Österreichs - Landesverband Burgenland\", abgekürzt \"VGÖ-Burgenland\"","\"VEREINTE GRÜNE ÖSTERREICHS - Landesverband Steiermark\", Kurzbezeichnung \"VGÖ-Stmk.\"","\"Vereinte Grüne Österreichs - Liste Tollmann\", abgekürzt \"VGÖ - Liste Tollmann\"","\"Vereinte Grüne Österreichs\", abgekürzt \"VGÖ\"","\"Vereinte Grüne Österreichs/Landesverband Oberösterreich\" (VGOÖ)","\"Vereinte Grüne Österreichs/Landesverband Vorarlberg\", abgekürzt \"VGÖ-Vorarlberg\"","\"Vereinte Grüne Österreichs-Landesgruppe Tirol (VGÖ-Tirol)\"","\"VEREINTE GRÜNE ÖSTERREICHS-Landesverband Salzburg\" (Kurzbezeichnung: VGÖ/SBG.)","\"VEREINTE GRÜNE ÖSTERREICHS-Landesverband Steiermark\", Kurzbezeichnung \"VGÖ-Stmk\"","\"VEREINTE GRÜNE ÖSTERREICHS-Stadtgruppe-GRAZ\", Kurzbezeichnung \"VGÖ-GRAZ\"","\"VEREINTE GRÜNE UND ALTERNATIVE ÖSTERREICHS (VGAÖ)\"","\"VEREINTE GRÜNE\", abgekürzt \"VGR\"","\"Vereinte Österreichische Pensionisten\", Kurzbezeichnung \"V-Ö-P\"","\"Verkehrs- und Umweltforum Wolkersdorf\"","\"Vernünftig-Soziale-Volkspartei Österreichs\", abgekürzt \"VSVPÖ\"","\"Vernunftpartei (VP)\" - Kurzform: \"Die Vernunft\"","\"Villacher Liste Thaler - Für Villach\"","\"Violette Partei Österreichs (VPÖ)\"","\"VISION ÖSTERREICH\", Kurzbezeichnung \"VÖ\"","\"Visionär Integrale Partei\"","\"VOKSSOZIALISTISCHE FREIHEITS-BEWEGUNG (VFB)\"","\"Völkisch-Sozialer Aufbruch Europas\" V.S.A.E.","\"Volksbewegung\"","\"Volksparlament Österreich\", kurz: \"VPÖ\", Untertitel: \"Haus der neuen österreichischen Politik\"","\"VOLKSPARLAMENT\"","\"VOLKSPOLITIKER\"","\"VOLKSPOLITISCHE BEWEGUNG\" (VPB)","\"VOLKSPOLITISCHE PARTEI ÖSTERREICHS\" (VPÖ)","\"Volksrat Österreich\"","\"Volksrepublikaner\"","\"Volkssozialisten Österreichs\", abgekürzt \"VS\" bzw \"VS-Ö","\"VOLKSSOZIALISTISCHE BEWEGUNG\", abgekürzt \"VSB\"","\"Volkssozialistische Partei - VSP\"","\"Volkstreue Grüne Bewegung\", abgekürzt \"VGB\"","\"VOLKSUNION / Wahlpartei der Unabhängigen / Grüne Plattform\"","\"Volt Österreich\", Kurzbezeichnung \"Volt\"","\"Vorarlberger Freiheitliche - FPÖ\"","\"Vorarlberger Kulturunion\", Abkürzung \"VKU\"","\"Vorarlbergpartei\"","\"vorwärts tirol\"","\"VOX umwelt media - Initiative für brauchbare Umweltinformation\"","\"W.E.E.D-Wir ermöglichen echte Demokratie\"","\"Wahlbündnis Österreich\"","\"Wahlgemeinschaft für Bürgerinitiativen und Umweltschutz (WBU) - Grüne Liste\"","\"Wahlpartei der Unabhängigen/Die Grüne Union\"","\"WAHLPLATTFORM DER GRAUEN ÖSTERREICHS (WGÖ)\"","\"Waldviertelpartei\", Abkürzung \"WAP\"","\"Waldviertler Heimatliste\", Abkürzung \"WHL\"","\"WEEED - das mögliche Österreich\"","\"Weiße\" Bewegung überparteilicher Bürgerinitiativen","\"Welser Alternative Grünliste (WAGL)\"","\"Welser Alternative Liste (WAL)\"","\"Westösterreichische Ortsbild- und Landschaftsgestaltungspartei\" (WOP)","\"Wien anders\"","\"Wien anders\", Kurzbezeichnung \"Andas\"","\"Wien\", Abkürzung/Kürzel \"WIEN\"","\"Wiener Forum\", in Abkürzung: \"WiF\"","\"Wiener Gesellschaft für Touristeninformation\", Kurzbezeichnung \"WGT\"","\"Wiener Landespartei der Österreichischen Volkspartei\", kurz \"ÖVP Wien\"","\"Wir alle sind\", Kurzbezeichnung \"WAS\"","\"Wir Burgenländer\"","\"Wir für Burgenland\"","\"Wir für die Steiermark\"","\"WIR FÜR FLORIDSDORF\" (WIFF)","\"Wir für Freistadt\" (WIFF)","\"Wir für Kärnten\"","\"Wir für Niederösterreich\"","\"Wir für Oberösterreich\"","\"Wir für Österreich\"","\"Wir für Salzburg\"","\"Wir für Tirol\"","\"Wir für Vorarlberg\"","\"Wir für Wien\"","\"WIR Hietzing\"","\"Wir im Ersten - Die Stimme der BürgerInnen\"","\"Wir im Siebten - Die Stimme der BürgerInnen\"","\"Wir in Österreich - Die Stimme der BürgerInnen\"","\"Wir in Wien - Die Stimme der BürgerInnen\"","\"Wir Kärntner\"","\"Wir Niederösterreicher\"","\"Wir Oberösterreicher\"","\"Wir Österreicher\"","\"Wir Salzburger\"","\"Wir Steirer\"","\"Wir Tiroler\"","\"Wir Vorarlberger\"","\"Wir Wiener\"","\"WIR WIR-Gruppen Wende zum Inneren Reichtum\"","\"WIR\"","\"WIR2020 Österreich\", Kurzbezeichnung \"Wir2020-Ö\"","\"Wir-Gemeinsam für Graz\", Kurzbezeichnung \"WiR\"","\"WIR-GEMEINSAM\"","\"WirMenschen\"","\"Wirtschaftssozialistische Unternehmerpartei\"","\"WPÖ (Weiße Partei Österreichs)\"","\"WUI - Die Grünen\", Kurzbezeichnung \"WUI\"","\"WUMS - WIR UNTERNEHMER MACHEN STAAT\"","\"WWW - Bewegung WeltWeiter Wohlstand\"","\"www.frustig.at\", Kurzbezeichnung \"Frust\"","\"Xenopankratische Partei Österreichs - XPÖ\"","\"Xi - Chance Zukunft\"","\"Zeitgeist-Global-Österreich\", kurz \"ZPÖ\"","\"Zentrumpartei Austria\", Abkürzung: \"ZPA\", Kurzbezeichnung: \"die Zentristen\"","\"Zukunft Fussach - Fussach im Wandel\", Kurzbezeichnung \"Zukunft Fussach\"","\"ZURÜCK ZUM ERFOLG\"","\"ZUSAMMEN\""],"datum_der_hinterlegung":["1993-08-13","2017-09-06","2017-09-06","2017-09-06","2017-09-06","2017-09-06","2016-09-19","2017-09-06","2017-09-06","2017-09-06","2017-08-11","2019-07-12","2016-12-14","2013-05-08","2000-05-02","2020-07-15","1995-05-31","2014-10-22","1998-04-06","1993-11-09","1975-09-24","1992-05-25","1983-12-20","1995-09-13","1988-09-16","1983-02-08","2019-07-31","1990-04-27","2006-06-30","1986-06-19","1982-11-19","2013-09-16","2013-04-14","1982-11-19","1983-01-27","1988-02-15","1983-04-28","1983-01-17","1984-08-09","1982-10-21","1982-12-07","1982-11-19","1982-11-19","1982-11-10","1982-09-27","1982-11-08","1983-01-19","1982-04-07","1982-10-27","1983-01-21","1987-12-09","1987-12-22","1983-11-21","1983-02-03","1982-06-28","1983-02-10","1990-03-02","1994-07-20","1983-09-28","1980-06-24","1983-10-14","1982-06-14","2015-04-23","1987-04-14","2010-11-03","1994-03-04","1992-11-12","2004-09-28","1982-08-18","1980-02-29","2011-09-30","1982-03-03","1999-01-29","2004-06-30","1978-05-22","1991-02-19","2010-04-30","1995-05-29","2012-02-20","1989-08-21","1989-08-21","1994-11-16","2019-06-25","2020-06-16","2003-03-11","1989-08-28","1987-04-09","2013-05-14","2017-08-10","1986-07-23","1981-04-29","1991-06-28","2015-04-07","1993-12-06","2005-01-12","1986-12-24","2020-12-28","1991-03-25","1980-12-29","2018-11-12","1980-10-10","2016-08-03","2000-05-11","2019-05-28","2020-05-11","2005-04-14","2018-01-11","1994-06-21","1991-02-04","2022-01-14","1983-10-30","1990-01-18","2017-07-05","1995-10-11","1988-05-16","1982-05-12","1995-10-20","1992-11-13","1992-11-13","1992-11-13","1992-11-13","2005-04-04","2012-07-20","2019-08-20","2017-09-15","2021-12-28","2003-03-17","1992-11-26","2005-07-21","2005-07-25","2005-04-04","2005-04-07","2005-05-04","2017-02-06","1983-02-10","2014-01-20","1990-03-19","1997-06-04","2008-07-28","2008-07-28","2008-07-28","1990-03-19","2008-08-21","1989-12-13","2008-04-22","2014-08-07","1991-03-07","1991-03-22","1993-01-26","1993-10-01","2008-07-28","1985-12-05","1983-01-18","2008-07-28","1983-09-05","1993-11-22","1992-08-18","1990-04-23","2020-06-12","1994-09-28","2008-07-28","1986-06-18","1989-04-03","2021-12-16","1994-12-30","2014-01-30","2017-07-13","2020-07-25","2003-11-27","1985-03-19","2022-07-19","1998-07-29","1987-07-08","1987-07-08","1989-04-06","1994-03-14","2007-06-22","2005-06-30","2010-03-12","2022-04-08","1987-09-25","1987-03-11","2005-08-26","1997-12-12","1990-05-04","1997-12-12","2010-01-07","1997-12-12","2010-01-22","2003-12-04","1999-04-28","1999-04-16","1994-02-01","1999-03-02","1990-06-01","1991-09-25","1997-12-12","2012-01-13","2012-01-30","2010-10-21","2005-12-09","1997-12-12","1997-12-12","1994-03-29","1997-12-12","1978-02-08","1983-08-08","1997-12-12","1998-10-22","2001-02-12","1997-12-12","1987-02-05","1990-09-28","1992-01-13","2021-01-15","1983-10-14","2020-01-16","1982-01-14","1981-06-25","2014-02-24","2006-02-27","2022-02-20","2005-08-08","1992-03-17","1993-02-17","1998-09-14","2012-07-18","2017-01-05","2003-10-28","2014-12-31","1980-10-30","2021-02-23","1987-10-09","1993-01-13","2014-06-09","1983-11-10","1983-02-11","1987-11-26","1990-04-17","2010-11-02","2017-02-02","1997-07-17","1997-12-01","2016-03-01","2015-09-08","2022-02-02","1994-03-14","2010-05-05","1988-11-24","1991-07-11","2012-09-07","1983-11-15","1995-07-05","2015-09-21","2015-05-18","1982-11-19","1992-07-23","1992-08-25","1992-09-18","1992-09-18","1992-08-25","1992-09-18","1992-08-25","1992-08-25","2019-07-29","2018-12-12","1992-03-30","1991-12-10","2002-10-04","2015-07-28","2020-01-08","2022-01-13","1999-08-20","2009-09-09","2009-11-06","2010-01-20","2018-07-24","2021-01-16","2014-05-19","2011-03-31","1994-06-01","1977-04-15","1986-06-30","1989-08-02","1989-07-31","1989-08-28","1986-09-19","1986-09-19","1986-09-19","1986-06-30","1986-09-19","1986-09-19","1986-09-19","1986-09-19","1986-09-19","1986-09-19","1986-09-22","1986-09-22","1987-07-23","1989-11-02","1986-11-24","1987-06-15","1982-06-28","1981-03-11","1982-03-05","2005-06-02","1989-09-05","1985-11-05","1992-06-05","1986-09-22","1987-04-27","1987-11-30","1987-07-23","1983-10-21","1985-07-12","1989-09-13","1987-11-20","2002-12-20","1988-09-26","1990-11-26","1982-12-07","1998-08-07","1982-11-19","1982-11-19","2001-05-14","2000-11-07","1988-06-09","2004-02-20","2016-01-13","1998-11-04","2013-06-05","2016-08-17","1995-08-22","1982-02-28","1982-09-27","1984-11-26","1982-01-28","2003-04-03","1991-05-13","1995-08-10","1988-06-06","1988-07-20","2013-08-22","2001-11-07","1981-01-27","1986-06-12","1992-08-18","1992-08-18","1992-08-18","1992-08-18","1992-08-18","1992-08-18","1992-08-18","1992-08-18","2006-07-24","1993-02-08","2022-04-08","2019-11-26","1987-03-26","1987-03-25","1990-07-18","1990-07-18","2012-12-03","2015-12-21","2021-08-20","2006-03-23","2012-10-04","2015-08-10","1994-06-24","2021-02-10","1989-01-09","2022-06-22","1982-03-04","1988-05-30","2020-11-04","2017-02-20","1999-10-08","1983-03-04","2013-11-14","1989-10-12","1989-04-26","2002-03-06","1999-12-16","2016-08-27","2018-03-07","2011-12-14","2021-01-15","2022-05-17","1999-06-21","2014-10-02","2008-04-01","2006-09-25","1989-06-15","1988-05-13","2017-07-25","2014-01-08","2008-06-13","1994-07-06","1994-06-21","1994-06-28","2010-06-08","2005-10-05","1992-02-03","2021-03-09","2003-11-18","1997-09-30","1997-07-08","2019-07-09","2001-06-01","1990-10-08","2013-03-21","2022-01-27","1988-06-13","2005-09-07","1991-07-25","1978-03-03","2003-01-09","2005-08-17","2011-10-07","2008-02-22","2011-12-06","1997-02-21","2006-11-10","2012-09-10","1984-06-28","1990-07-18","2016-06-30","1984-06-13","1983-04-01","2019-01-24","1993-01-25","1987-05-06","2005-10-03","2017-12-13","2017-09-29","2020-03-10","2021-03-16","2003-05-06","1998-11-04","1995-10-25","2012-04-12","2020-05-29","2003-11-05","1986-06-30","1994-07-08","2016-06-14","1981-10-13","2022-07-15","2017-08-08","1996-03-27","2014-11-16","2015-06-22","2020-01-21","2005-11-30","1995-08-11","2014-03-27","2012-11-09","1997-07-04","2010-03-22","1983-02-08","1997-03-19","1977-04-15","1977-04-15","1984-09-18","1977-04-15","1977-04-15","2005-12-21","1977-04-15","1977-04-15","1977-04-15","2020-11-05","2022-03-02","2021-12-20","2020-10-29","2015-03-25","2021-11-29","2012-07-11","2019-07-15","2012-02-16","2011-12-06","1987-08-20","2021-11-02","2022-01-04","1990-03-26","2011-08-22","2012-10-16","2012-12-18","1994-05-04","2006-08-23","1980-06-23","1989-10-31","1976-06-15","1982-11-19","2006-09-26","2006-12-27","2005-04-05","1982-09-01","2018-09-19","2021-03-05","2019-04-25","2007-10-29","1992-12-28","1991-12-02","2001-02-06","1985-05-06","1990-06-20","1986-09-29","1985-07-12","1986-06-24","1985-08-26","1990-01-16","1985-05-22","1988-02-15","1987-01-09","1987-01-09","1987-01-09","1982-09-16","1987-03-13","1982-09-23","1986-06-26","1986-03-04","1988-02-15","1983-09-20","1988-02-15","2001-12-05","1986-11-24","1992-09-16","1989-04-19","1984-07-26","1986-05-07","1992-12-23","1995-10-25","2000-02-18","1982-04-09","2017-09-13","1988-02-15","1995-06-14","1985-08-01","1992-08-25","1983-05-17","1988-02-15","1992-08-25","1982-01-11","1981-06-05","1982-09-27","1984-11-26","1984-11-26","1980-05-07","1990-07-31","1988-02-15","1990-09-10","1982-02-18","1984-11-26","1983-02-22","1988-02-15","2003-03-18","1986-01-27","2004-09-08","1989-03-13","2022-07-13","1995-03-20","2021-03-17","2013-01-13","2000-07-17","1984-05-23","1995-04-04","1993-11-05","2019-02-04","2008-02-28","2012-09-10","2007-03-12","1989-12-18","1994-07-05","1986-11-24","1994-06-21","2003-02-03","2021-05-14","2016-04-05","1993-11-09","1993-11-09","1993-11-09","1993-11-09","1993-11-09","2006-01-18","1993-11-09","2008-05-05","2019-04-12","2016-12-15","2015-02-09","2012-11-10","2006-09-29","2001-05-02","1991-12-17","2002-02-08","1989-10-13","1982-04-05","1990-06-12","1994-12-12","1987-11-11","1997-08-22","1978-04-05","1986-02-20","2012-09-28","2009-01-07","1983-03-31","2022-01-11","1987-02-17","2018-01-16","2010-01-04","2021-10-27","2012-04-30","2019-07-02","2019-02-15","2017-07-26","2020-01-08","2019-06-04","1984-06-15","2020-01-08","2019-03-07","2020-01-08","2020-01-08","2019-10-17","2019-11-08","2000-01-28","1981-06-29","1987-08-28","2005-06-29","2009-04-16","2015-01-17","2022-08-30","1983-10-14","1981-04-07","1976-01-13","1977-06-20","1980-12-29","1988-07-11","1979-06-19","1987-09-30","1995-07-10","1990-11-09","2020-10-09","2008-07-06","1983-11-17","2021-06-04","2022-02-22","2010-02-12","2004-10-28","1995-02-06","2019-10-25","2015-11-17","1995-07-06","1996-03-18","2011-11-29","1990-09-11","2020-08-19","1986-04-25","2009-07-20","1992-08-25","1993-02-09","1990-07-18","1992-11-13","1990-07-18","1986-04-25","2002-06-19","2009-06-29","1999-11-11","1993-02-09","1993-02-09","1993-02-09","1995-01-24","1998-03-17","1997-02-28","1997-01-10","1998-04-15","1999-04-08","1996-04-15","1986-06-30","1986-02-25","1985-10-16","1988-10-27","2014-03-10","1986-06-12","2019-12-16","2017-05-18","2021-11-29","2012-01-02","1990-07-05","1994-01-18","2004-05-06","2021-12-23","1981-12-11","2019-10-25","2019-11-25","2005-06-10","1984-09-10","1990-06-28","2018-01-09","2012-12-18","1995-12-28","2010-06-21","1986-07-23","2007-07-07","1997-04-02","1995-02-27","2020-11-24","2021-11-16","1998-03-10","2021-02-26","1989-02-22","2018-10-23","2001-04-12","1992-08-04","2008-02-04","1981-03-30","1985-03-15","1983-08-05","1994-11-30","2000-07-17","2016-09-21","1990-03-28","2013-12-30","2021-02-18","1996-01-26","2011-12-07","2019-03-19","2012-06-18","2022-06-23","1988-06-16","2012-10-24","1995-11-10","1987-07-08","1984-04-20","1975-08-01","1983-10-14","1984-07-09","1977-09-07","2008-02-05","2007-11-08","1983-02-28","1984-05-17","1984-05-21","1984-05-21","1979-12-13","1979-06-18","1985-05-02","2019-04-10","1976-08-24","1984-06-15","2016-12-30","1994-03-15","2015-03-23","2012-08-10","2019-11-26","2021-11-23","1992-09-29","2009-04-20","1975-11-17","1987-05-04","1997-12-01","1989-06-15","1987-10-20","1982-09-22","1981-12-11","1996-04-10","1996-04-29","2014-12-03","2014-12-19","2019-02-26","2003-07-07","2002-04-08","2012-02-07","2004-08-11","2009-08-04","1993-01-21","2021-03-25","2017-09-25","1986-06-30","1992-08-25","1991-12-11","1998-12-01","2021-01-29","1983-05-30","1990-01-04","1990-01-30","2005-09-30","1997-03-27","1996-09-20","1982-08-10","1988-07-12","2021-07-07","1992-02-06","1993-01-12","1993-05-05","1991-11-05","1993-06-23","1992-10-27","2006-03-27","2004-12-30","2015-05-11","2008-07-28","1987-02-05","1995-11-14","1990-06-29","1982-11-12","2017-08-17","2020-11-26","1993-12-22","2020-01-01","1983-10-14","1985-11-20","1980-08-11","1987-02-24","1989-02-22","1983-08-22","1987-02-24","1989-08-21","1987-03-17","1989-08-21","2013-11-13","1986-05-23","2003-03-27","1981-03-13","2015-04-04","1995-08-10","2000-09-12","2014-07-16","1985-11-07","2021-12-20","2007-03-26","1978-12-04","1994-07-07","1988-08-22","1999-05-18","2016-07-19","2020-11-19","1995-11-13","1982-10-12","2021-11-24","1997-04-04","2004-06-29","2007-01-18","1983-10-14","1993-04-19","1975-11-14","2009-09-08","1986-01-21","1983-10-14","2003-12-23","1999-05-20","1978-11-10","1983-04-26","1981-06-02","1977-10-17","2004-03-12","1996-07-10","1997-12-19","2014-11-03","1993-04-24","2013-01-14","1982-12-14","1982-11-08","2008-07-28","2016-09-13","1984-11-26","1990-07-18","2020-10-02","2017-06-23","2010-04-16","1994-01-31","2012-01-30","2005-03-07","1992-09-30","2013-02-12","1990-04-02","1987-07-21","2017-11-10","2011-12-07","2000-08-08","2018-07-30","1979-02-23","1980-09-24","1990-09-20","1989-10-12","1989-09-26","2003-12-18","2008-06-27","2016-01-22","2003-04-30","2008-01-14","2012-09-04","2009-06-24","1997-09-08","2019-07-22","2012-02-22","1983-10-14","1990-04-26","2001-04-26","1987-01-23","2020-01-14","1988-01-04","1979-06-19","1989-05-02","1994-07-15","2012-09-04","1982-12-14","1995-01-18","1981-09-29","2000-12-06","1983-10-14","2017-04-11","2009-04-06","2010-05-10","1982-01-11","1984-02-28","1982-05-21","1993-02-17","2021-01-28","2006-12-04","2007-01-29","1998-01-08","2013-03-05","1995-04-06","1981-11-06","2012-04-27","2000-09-26","2011-03-24","1997-12-23","1985-09-12","1986-03-12","1983-08-29","1989-09-18","1985-10-10","1979-12-06","2005-07-25","1987-07-08","2015-03-26","1978-02-10","2001-11-09","2021-10-11","2015-12-22","2021-02-09","1990-10-17","2007-10-11","2012-02-08","2012-04-19","2014-05-15","2006-07-31","2014-08-28","2016-04-29","2010-09-23","1999-11-30","2020-02-19","1990-05-03","2008-10-24","2020-12-17","2013-03-08","2021-12-29","1998-01-12","2014-12-05","2009-11-09","2021-09-09","1980-10-10","2019-11-05","1991-03-12","1982-07-14","1992-02-20","2015-09-20","1982-06-14","1986-06-30","2012-08-17","1983-03-01","1986-03-03","1987-02-24","2021-07-07","2008-08-08","2019-12-30","1994-11-14","1994-05-24","2013-11-14","2017-02-01","1989-10-12","1990-04-17","2020-12-07","2016-01-25","2008-06-27","2007-05-24","2011-04-12","1987-03-20","1979-03-07","1991-03-19","1991-03-19","2016-11-28","2015-07-13","2014-10-22","2016-04-15","2013-01-28","2002-12-09","1986-07-14","1985-07-05","2016-02-02","2011-11-10","2020-12-02","2008-07-31","2015-04-27","1996-01-02","1990-03-26","1985-06-03","2022-03-11","2021-11-04","2013-05-27","2021-11-29","1992-09-29","2015-06-16","1975-08-19","1979-02-12","1990-12-13","1981-06-17","1980-05-14","2006-05-10","2014-09-30","2020-12-21","1983-05-13","1982-10-29","1993-04-21","2004-12-15","2019-02-25","1991-06-17","1978-01-10","2020-04-20","1996-06-12","1990-11-28","2000-04-20","1982-05-14","1990-12-13","1986-04-25","1990-12-13","1991-11-12","1986-07-23","1982-01-25","1979-02-21","1999-04-02","2018-12-13","1985-07-02","2019-11-06","1988-05-26","1991-01-18","1987-07-08","2014-01-21","2019-12-12","2019-12-02","2012-10-09","2014-01-09","2020-05-27","2013-12-03","2014-01-24","2019-12-02","2012-12-18","2012-10-12","2012-12-06","2012-09-25","2012-12-05","2012-11-06","2012-12-03","2013-01-28","1983-10-14","2021-07-21","2022-08-01","2020-09-12","2009-07-02","1986-04-18","2021-12-01","1979-12-06","1987-04-27","1999-01-04","1987-04-27","2015-06-25","2015-11-02","1992-04-14","1990-06-20","1988-02-15","2021-11-08","2008-07-30","1994-07-14","1991-07-04","1990-07-19","1990-12-21","2014-08-11","1983-01-11","1990-09-14","1996-04-17","1994-11-14","1987-09-30","2014-04-08","1999-04-02","1982-06-28","2016-03-30","2016-05-12","2020-03-01","1986-10-01","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1989-05-24","1986-11-20","1984-12-05","1984-12-27","1986-09-24","2016-05-12","2016-08-31","2016-11-29","2002-01-18","2000-12-06","1994-04-29","1990-10-22","1990-10-22","1990-10-22","1990-10-18","1990-10-22","1990-10-22","1990-10-22","1990-10-22","1990-10-22","1990-06-26","1979-01-17","1987-04-14","1987-04-27","1987-04-27","1995-10-16","1986-03-11","1986-11-07","1986-03-11","1986-03-17","1986-03-17","1994-06-14","2006-08-03","2001-03-12","2018-09-13","1991-07-01","1982-11-19","1983-07-15","1985-04-23","1987-04-27","1987-04-27","1987-03-23","1987-03-23","1984-01-31","1984-01-31","1987-03-06","1983-02-08","1982-03-09","1984-01-13","1985-12-09","1989-11-02","1984-01-18","1991-06-06","1991-04-19","1982-11-19","1983-05-02","1989-08-21","1991-03-12","1988-08-23","2022-02-22","1991-04-11","2006-07-24","2022-07-21","2006-03-16","1981-09-17","1986-11-11","1981-12-11","2015-10-05","1995-04-21","1990-12-28","1990-12-28","1990-12-28","2015-11-05","1990-04-17","1978-03-22","1979-05-16","1976-02-06","1985-01-17","1981-12-21","2018-10-12","1977-04-15","1977-11-29","1994-04-11","2013-01-16","1992-07-31","2019-10-03","2019-06-11","1980-02-18","1979-12-28","1990-07-26","1992-08-19","1992-08-19","2012-12-21","1994-06-21","1983-11-21","1983-11-21","1978-10-04","2015-03-20","2015-03-24","2019-10-15","2005-05-18","1989-08-21","2007-06-29","2018-12-17","2006-07-26","2017-11-07","2017-11-07","2010-07-27","2016-03-16","2017-11-07","2017-11-07","2017-11-07","2017-11-07","2017-11-07","2017-11-07","2017-11-07","2017-11-07","2015-08-17","2009-11-13","2012-04-12","2011-10-25","2011-10-25","2006-07-26","2006-07-26","2006-07-26","2006-07-26","2006-07-26","2006-07-26","2006-07-26","2006-07-26","2006-07-26","1994-07-28","2008-07-10","2020-12-22","2021-08-16","2009-10-20","2021-03-05","2002-04-05","2011-12-14","1993-04-07","2017-06-21","2014-12-31","2010-11-02","2004-05-13","2019-04-24","2013-02-01","2005-08-31","2021-03-11","2017-10-04","1990-04-27"]},"columns":[{"id":"name_der_politischen_partei","name":"Party","type":"character","width":500},{"id":"datum_der_hinterlegung","name":"Registration Date","type":"Date","width":100}],"filterable":true,"theme":{"color":"#333333","borderColor":"#e7e7e7","borderWidth":"1px","stripedColor":"#e7e7e7","highlightColor":"#eeeeee","cellPadding":5,"tableStyle":{"fontSize":13},"headerStyle":{"borderWidth":"0px","padding":"5px","background":"#ffffff","borderColor":"#ffffff","color":"#999999","fontWeight":"500","textTransform":"uppercase","fontSize":11},"groupHeaderStyle":{"&:not(:empty)":{"borderWidth":"0px","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":11,"borderColor":"#ffffff","color":"#333333"}},"rowSelectedStyle":{"backgroundColor":"#e9edf0"},"inputStyle":{"backgroundColor":"#ffffff","color":"#333333"},"searchInputStyle":{"color":"#333333","fontSize":"13px"},"selectStyle":{"color":"#333333"},"paginationStyle":{"color":"#333333","fontSize":"14px"},"pageButtonStyle":{"color":"#333333","fontSize":"14px"}},"dataKey":"11891ca36457f1e43c427cb4d58d1e8c"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="page-columns page-full"><p><br> Glancing through the list provides for some informative as well as entertaining names. Aside of those mentioned in the podcast (’A.R.S.C.H.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, Partei für sexuelle Ausschweifungen <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>), the party “KURZ. Wir gegen Korruption” and the “Identitäre Bewegung” caught my attention. The former one - I assume - is likely to be a tongue in cheek reference to the former chancellor who’s been confronted with various corruption allegations. The latter surprised me since I wasn’t aware that the extreme-right/nativist Identitären are actually a registered political party, and not merely a non-governmental “movement” as they like to present themselves.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> The entry is furthermore somewhat puzzling to me considering that - at least according to news reports - its symbols were declared illegal as of 2021.</p><div class="no-row-height column-margin column-container"><li id="fn1"><p><sup>1</sup>&nbsp;Autonomous revolutionary subversive chaotic worker party; the abbreviation means nothing less than butt.</p></li><li id="fn2"><p><sup>2</sup>&nbsp;Party for sexual debaucheries</p></li><li id="fn3"><p><sup>3</sup>&nbsp;I assume here that the party is indeed linked to the ‘movement’, but I didn’t check.</p></li></div></div>
+</section>
+<section id="distribution-over-years" class="level1 page-columns page-full" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Distribution over years</h1>
+<p>In a first step, let’s have a look at the annual number of newly registered parties.</p>
+<div class="cell page-columns page-full" data-layout-align="left">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>txt_caption <span class="ot">&lt;-</span> <span class="st">"Source: Austrian MoI Parteienverzeichnis gem 1 Abs 4 PartG; last update: 06 Sep 2022;&lt;br&gt;Graph: Roland Schmidt | @zoowalk | https:&amp;#47;&amp;#47;werk.statt.codes"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>fn_year_label  <span class="ot">&lt;-</span> <span class="cf">function</span>(x){</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>vec_start <span class="ot">&lt;-</span> <span class="fu">str_which</span>(x, <span class="st">"."</span>)[<span class="dv">1</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">str_replace</span>(x[(vec_start<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(x)], <span class="fu">regex</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">d{2}"</span>), <span class="st">"'"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="fu">c</span>(x[<span class="dv">1</span><span class="sc">:</span>vec_start],y)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">return</span>(z)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>df_res <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Number of newly registerd parties per year in Austria"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> txt_caption,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"number of parties"</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> year<span class="fl">+.5</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">stat =</span> <span class="st">"count"</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> df_res <span class="sc">%&gt;%</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(year, <span class="at">sort =</span> T) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(<span class="fu">row_number</span>() <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span> <span class="fu">row_number</span>() <span class="sc">==</span> <span class="fu">max</span>(<span class="fu">row_number</span>())),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> year<span class="fl">+.5</span>, </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> n<span class="sc">+</span><span class="dv">2</span>, </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> n),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill=</span><span class="st">"white"</span>,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">label.padding =</span> <span class="fu">unit</span>(<span class="dv">0</span>, <span class="st">"lines"</span>),</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">label.r=</span><span class="fu">unit</span>(<span class="dv">0</span>, <span class="st">"lines"</span>),</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">label.size=</span><span class="dv">0</span>,</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">color=</span><span class="st">"#9cd321"</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">fontface=</span><span class="st">"bold"</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels=</span>fn_year_label)<span class="sc">+</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand=</span><span class="fu">expansion</span>(<span class="at">mult=</span><span class="fu">c</span>(<span class="fl">0.02</span>,<span class="fl">0.1</span>))) <span class="sc">+</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  ggthemes<span class="sc">::</span><span class="fu">scale_fill_fivethirtyeight</span>() <span class="sc">+</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  ggthemes<span class="sc">::</span><span class="fu">theme_fivethirtyeight</span>() <span class="sc">+</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>),</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.y=</span><span class="fu">element_text</span>(<span class="at">hjust=</span><span class="dv">1</span>, <span class="at">size=</span><span class="dv">9</span>),</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.caption =</span> <span class="fu">element_markdown</span>(),</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.ticks.length.x.bottom =</span> ggplot2<span class="sc">::</span><span class="fu">unit</span>(<span class="dv">0</span>, <span class="st">"cm"</span>),</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">"white"</span>, <span class="at">color=</span><span class="st">"white"</span>),</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">"white"</span>, <span class="at">color=</span><span class="st">"white"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display column-body-outset-right">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>It seems that - within the period which is covered by the MoI’s directory - there was quite a flurry of party registrations in the 1980s and a peak value of 63 parties in 1990 alone. After that, there was some kind of downswing during the 1990s and 2000s, followed by a more recent upswing. I am not entirely sure what to make of this, but at least this was new to me.</p>
+</section>
+<section id="keywords-in-party-names" class="level1 page-columns page-full" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Keywords in party names</h1>
+<p>To get some (very) crude idea of political parties orientation, I checked newly registered parties’ names for the presence of some keywords.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>term1 <span class="ot">&lt;-</span> <span class="st">"volk"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>term2 <span class="ot">&lt;-</span> <span class="st">"sozial"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>term3 <span class="ot">&lt;-</span> <span class="st">"freiheit"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>term4 <span class="ot">&lt;-</span> <span class="st">"national"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>term5 <span class="ot">&lt;-</span> <span class="st">"grün"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>term6 <span class="ot">&lt;-</span> <span class="st">"links"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>term7 <span class="ot">&lt;-</span> <span class="st">"rechts"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>term8 <span class="ot">&lt;-</span> <span class="st">"Österreich"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>term9 <span class="ot">&lt;-</span> <span class="st">"liste"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>term10 <span class="ot">&lt;-</span> <span class="st">"Neos"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>term11 <span class="ot">&lt;-</span> <span class="st">"christ"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>vec_terms <span class="ot">&lt;-</span> <span class="fu">c</span>(term1, term2, term3, term4, term5, term6, term7, term8, term9, term10, term11)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>vec_terms</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "volk"       "sozial"     "freiheit"   "national"   "grün"      
+ [6] "links"      "rechts"     "Österreich" "liste"      "Neos"      
+[11] "christ"    </code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Define and apply plot function</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fn_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(search_term) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  df_res <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">indicator =</span> <span class="fu">str_detect</span>(name_der_politischen_partei, <span class="fu">regex</span>({{search_term}}, <span class="at">ignore_case =</span> T))) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"'{search_term}'"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> year<span class="fl">+.5</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill=</span>indicator),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stat =</span> <span class="st">"count"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">"TRUE"</span><span class="ot">=</span><span class="st">"#408080"</span>, <span class="st">"FALSE"</span><span class="ot">=</span><span class="st">"grey"</span>))<span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels=</span>fn_year_label)<span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ggthemes::scale_fill_fivethirtyeight() +</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  ggthemes<span class="sc">::</span><span class="fu">theme_fivethirtyeight</span>() <span class="sc">+</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title=</span><span class="fu">element_text</span>(<span class="at">size=</span><span class="fu">rel</span>(<span class="fl">0.8</span>)),</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>),</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.y=</span><span class="fu">element_text</span>(<span class="at">hjust=</span><span class="dv">1</span>, <span class="at">size=</span><span class="dv">9</span>),</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.caption =</span> <span class="fu">element_markdown</span>(),</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.position=</span><span class="st">"none"</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>li_plot <span class="ot">&lt;-</span> vec_terms <span class="sc">%&gt;%</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(., fn_plot)</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>pl_patch <span class="ot">&lt;-</span> patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(li_plot, </span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="at">ncol =</span> <span class="dv">3</span>)<span class="sc">+</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>patchwork<span class="sc">::</span><span class="fu">plot_annotation</span>(</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Number of newly registered parties with specific keywords in their name"</span>, </span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle=</span><span class="st">"Grey bars indicate total number of parties registerd per year."</span>,</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption=</span>txt_caption,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme=</span>ggthemes<span class="sc">::</span><span class="fu">theme_fivethirtyeight</span>()<span class="sc">+</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption=</span><span class="fu">element_markdown</span>(),</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position=</span><span class="st">"top"</span>,</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">"white"</span>)</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell page-columns page-full" data-layout-align="left" data-fig.format="svg">
+<div class="cell-output-display column-page-inset-right">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="960"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Again, bearing the caveat in mind that a party’s name is a pretty fragile proxy for its political orientation, I found it nevertheless interesting to see how much the emergence of “green” parties contributed to the wave of new parties in the 1980s. To put it differently, more than a quarter of all parties founded in the 80s were - at least in by their name - “Green”.</p>
+<div class="cell" data-hash="index_cache/html/unnamed-chunk-10_275b629026fde9272c8a88534a41a139">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_res <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="fu">between</span>(year, <span class="dv">1979</span>, <span class="dv">1990</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">green=</span><span class="fu">str_detect</span>(name_der_politischen_partei, <span class="fu">regex</span>(<span class="st">"grün"</span>, <span class="at">ignore_case =</span> T))) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(green, <span class="at">sort=</span>T) <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">rel=</span>n<span class="sc">/</span><span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">gt_theme_538</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_header</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title=</span><span class="st">"Paries with 'grün' in their name"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle=</span><span class="st">"Only parties registered in the 1980s."</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">fmt_percent</span>(</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns=</span>rel</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div id="pndsfenrkx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+html {
+  font-family: Chivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+:where(#pndsfenrkx) .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 300;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: none;
+  border-top-width: 3px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_heading {
+  background-color: #FFFFFF;
+  text-align: left;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:where(#pndsfenrkx) .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+:where(#pndsfenrkx) .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+:where(#pndsfenrkx) .gt_bottom_border {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_col_headings {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #000000;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 80%;
+  font-weight: normal;
+  text-transform: uppercase;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+:where(#pndsfenrkx) .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 80%;
+  font-weight: normal;
+  text-transform: uppercase;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:where(#pndsfenrkx) .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+:where(#pndsfenrkx) .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+:where(#pndsfenrkx) .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #000000;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+:where(#pndsfenrkx) .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 80%;
+  font-weight: bolder;
+  text-transform: uppercase;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #000000;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+:where(#pndsfenrkx) .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 80%;
+  font-weight: bolder;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #000000;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #FFFFFF;
+  vertical-align: middle;
+}
+
+:where(#pndsfenrkx) .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+:where(#pndsfenrkx) .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+:where(#pndsfenrkx) .gt_row {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+:where(#pndsfenrkx) .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 80%;
+  font-weight: bolder;
+  text-transform: uppercase;
+  border-right-style: solid;
+  border-right-width: 0px;
+  border-right-color: #FFFFFF;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#pndsfenrkx) .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+:where(#pndsfenrkx) .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+:where(#pndsfenrkx) .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#pndsfenrkx) .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+:where(#pndsfenrkx) .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#pndsfenrkx) .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+:where(#pndsfenrkx) .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#pndsfenrkx) .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#pndsfenrkx) .gt_sourcenote {
+  font-size: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#pndsfenrkx) .gt_left {
+  text-align: left;
+}
+
+:where(#pndsfenrkx) .gt_center {
+  text-align: center;
+}
+
+:where(#pndsfenrkx) .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(#pndsfenrkx) .gt_font_normal {
+  font-weight: normal;
+}
+
+:where(#pndsfenrkx) .gt_font_bold {
+  font-weight: bold;
+}
+
+:where(#pndsfenrkx) .gt_font_italic {
+  font-style: italic;
+}
+
+:where(#pndsfenrkx) .gt_super {
+  font-size: 65%;
+}
+
+:where(#pndsfenrkx) .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+:where(#pndsfenrkx) .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+:where(#pndsfenrkx) .gt_indent_1 {
+  text-indent: 5px;
+}
+
+:where(#pndsfenrkx) .gt_indent_2 {
+  text-indent: 10px;
+}
+
+:where(#pndsfenrkx) .gt_indent_3 {
+  text-indent: 15px;
+}
+
+:where(#pndsfenrkx) .gt_indent_4 {
+  text-indent: 20px;
+}
+
+:where(#pndsfenrkx) .gt_indent_5 {
+  text-indent: 25px;
+}
+
+tbody tr:last-child {
+  border-bottom: 2px solid #ffffff00;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="3" class="gt_heading gt_title gt_font_normal" style="">Paries with 'grün' in their name</td>
+    </tr>
+    <tr>
+      <td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Only parties registered in the 1980s.</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="green">green</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="n">n</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="rel">rel</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="green" class="gt_row gt_center">FALSE</td>
+<td headers="n" class="gt_row gt_right">315</td>
+<td headers="rel" class="gt_row gt_right">71.43%</td></tr>
+    <tr><td headers="green" class="gt_row gt_center">TRUE</td>
+<td headers="n" class="gt_row gt_right">126</td>
+<td headers="rel" class="gt_row gt_right">28.57%</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="end" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> End</h1>
+<p>That’s it for now. Again, this is just some superficial number crunching, and numerous refinements can be thought of, i.e.&nbsp;which parties comprise multiple registered e.g.&nbsp;regional entities; is there any regional concentration of party registrations etc. If time permits, I might revisit some of those….</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2023,
+  author = {Roland Schmidt},
+  title = {“{The} {Professor} and the {Wolf}” - {Number} of Parties in
+    {Austria}},
+  date = {2023-01-10},
+  url = {https://werk.statt.codes/posts/2023-01-10-prof-and-wolf-partysytem},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2023" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Roland Schmidt. 2023. <span>“<span>‘The Professor and the Wolf’</span> -
+Number of Parties in Austria.”</span> January 10, 2023. <a href="https://werk.statt.codes/posts/2023-01-10-prof-and-wolf-partysytem">https://werk.statt.codes/posts/2023-01-10-prof-and-wolf-partysytem</a>.
+</div></div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+      <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/werkstattcodes">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://mastodon.social/@zoowalk">
+      <i class="bi bi-mastodon" role="img" aria-label="mastodon">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/zoowalk">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml">
+      <i class="bi bi-rss" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="../../subscribe.html">
+      <i class="bi bi-envelope-plus" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"loop":true,"openEffect":"zoom","selector":".lightbox","closeEffect":"zoom","descPosition":"bottom"});</script>
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

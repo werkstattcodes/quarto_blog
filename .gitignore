@@ -55,6 +55,9 @@ rsconnect/
 *.rds
 *.rda
 *.shp
+*.pdf
+
 /.quarto/
 
 /.luarc.json
+

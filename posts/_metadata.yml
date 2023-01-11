@@ -7,10 +7,13 @@ freeze: true
 title-block-banner: true
 
 # Enable CC licence appendix
-license: "CC BY"
+license: "CC BY-NC"
 
 # Default fields for citation
 citation: true
+
+#all graphs are left aligned
+fig-align: "left"
 
 
 

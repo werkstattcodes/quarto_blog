@@ -153,7 +153,7 @@ div.listing-category{
     padding-left: 0.cm !important;
     font-size:.4rem !important;
     color: black;
-    background-color: white;
+    background-color: transparent;
     border: 1px solid grey !important;
     border-radius: 1px !important;
     margin-left: 0.1rem !important;
@@ -175,7 +175,7 @@ padding-top: 5px;
 
   
 .sidebar nav[role=doc-toc] ul>li>a.active {
-    border-left: 6px solid #9cd321;
+    border-left: 3px solid #9cd321;
     color: black !important;
     /* color: white !important; */
     /* background-color: lightgrey !important; */
@@ -185,7 +185,7 @@ padding-top: 5px;
 
 
 .sidebar nav[role=doc-toc] ul>li>ul>li>a.active {
-    border-left: 6px solid #9cd321;
+    border-left: 3px solid #9cd321;
     /* color: black !important; */
     color: black !important;
     /* background-color: lightgrey !important; */
@@ -279,9 +279,9 @@ border: 0px;
 } */
 
 .card:hover {
-    border-left: 10px solid;
-    /* border-color: #9cd321; */
+    border-left: 3px solid; 
     border-left-color: #9cd321;
-    /* background-color: gold; */
-    color: black;
+    /* background-color: rgb(99, 9, 9);
+    box-shadow: 5px 5px lightgrey;
+    color: white; */
 }

@@ -1,0 +1,253 @@
+---
+title: "'The Professor and the Wolf' - Number of parties in Austria"
+description: A quick look at the number of registered political parties in Austria, prompted by the podcast "The Professor and the Wolf".
+
+date: 01-10-2023
+
+categories:
+  - Austria
+  - parties
+
+reference-location: margin
+
+draft: false
+  
+---
+
+
+```{r, warnings=FALSE, message=FALSE, include=F}
+library(tidyverse)
+library(tabulizer)
+library(reactable)
+library(reactablefmtr)
+library(tictoc)
+library(ggthemes)
+library(ggtext)
+library(gt)
+library(gtExtras)
+library(fuzzyjoin)
+```
+
+# Context
+
+Here's a quick (and admittedly somewhat crude) post on Austria's party system, which was prompted by the relatively new podcast series ["Der Professor und der Wolf"](https://fm4.orf.at/tags/derprofessorundderwolf/){target="_blank"} *(The Professor and the Wolf, produced by Austria's public broadcaster ORF)*. The show is hosted by Armin Wolf, one of Austria's main news anchors and inter alia known for his resolute style of questioning guests (think of Stephen Sackur), and by PolSci Professor Peter Filzmaier, who embodies the rare combination of a scholar with an intimating intellect, razor-sharp rhetorical skills, and a good sense of humor. He's quite a towering figure all in all, wouldn't it for his FC Barcelona weakness....  
+
+The show is mainly framed as a 101 on the Austrian Political System, but it is also worth listening to for those who feel like needing a refresher or are on the lookout for some intriguing details. In any case, an episode makes for an entertaining 20 minutes or so. 
+
+A detail which struck me their episode focusing on the Austrian Party System was the actual number of political parties registered in Austria: 1258. While I always took it that there are more than those represented in the various assemblies on the federal, state, or municipal level, the number of 1258 exceeded by far my highest guess. Enough to have a look at them.
+
+A few caveats upfront:
+As I gather from the show, the number of registered parties is not equivalent to the number of active political parties in Austria. Some parties might have been simply vehicles for one specific electoral campaign and subsequently went dormant. So that's something to bear in mind, when interpreting the numbers. Second, my last seminar on the Austrian Political System dates back almost two decades, so I don't pretend to have any particularly robust understanding.
+
+
+# Getting the data
+
+The list of registered parties is available on the [website](https://www.bmi.gv.at/405/start.aspx){target="_blank"} of the Ministry of Interior, and comes in a pdf. To retrieve the actual data, the mighty `tabulizer` package is our friend. Note that I keep the standard output format (list of character matrices), which enables us to correctly extract cells which have multiline entries. The raw result is subsequently brought into a more convenient format with `janitor`.
+
+
+```{r}
+#| eval: false
+file_link <- here::here("posts","2023-01-10-prof-and-wolf-partysytem", "Parteienverzeichnis_gem_1_Abs_4_PartG_BF_20220906.pdf")
+
+li_res_raw <- tabulizer::extract_tables(file = file_link)
+
+fn_convert <- function(li_row) {
+  li_row %>%
+    as_tibble() %>%
+    janitor::row_to_names(row_number = 1) %>%
+    janitor::clean_names() %>%
+    mutate(across(.cols = everything(), str_squish))
+}
+
+df_res <- li_res_raw %>%
+  map_dfr(., fn_convert) %>%
+  mutate(datum_der_hinterlegung = lubridate::dmy(datum_der_hinterlegung)) %>%
+  mutate(year = lubridate::year(datum_der_hinterlegung))
+```
+
+```{r, include=F, eval=F}
+write_excel_csv2(df_res, file = here::here("posts","2023-01-10-prof-and-wolf-partysytem", "df_res.csv"))
+```
+
+```{r, include=F}
+df_res <- readr::read_csv2(file = here::here("posts", "2023-01-10-prof-and-wolf-partysytem", "df_res.csv")) 
+```
+
+```{r}
+#| column: body-outset-right
+
+df_res %>%
+select(-nr, -year) %>%
+reactable(.,
+columns = list(
+  name_der_politischen_partei=colDef(
+    name="Party",
+    width=500
+  ),
+  datum_der_hinterlegung=colDef(
+    name="Registration Date",
+    width=100
+  )
+),
+filterable=T,
+theme=nytimes()) %>%
+add_title(title="Registered Political Parties", font_size=12)
+```
+<br>
+Glancing through the list provides for some informative as well as entertaining names. Aside of those mentioned in the podcast ('A.R.S.C.H.^[Autonomous revolutionary subversive chaotic worker party; the abbreviation means nothing less than butt.], Partei für sexuelle Ausschweifungen ^[Party for sexual debaucheries]), the party "KURZ. Wir gegen Korruption " and the "Identitäre Bewegung" caught my attention. The first one - I assume - is likely to be a tongue in cheek reference to the former chancellor who's been confronted with various corruption allegations. The second surprised me since I wasn't aware that the extreme-right/nativist Identitären are actually a registered political party, and not merely a non-governmental "movement" as they like to present themselves.^[I assume here that the party is indeed linked to the 'movement', but I didn't check.] The entry is furthermore somewhat puzzling to me considering that - at least according to news reports - its symbols were declared illegal as of 2021. 
+
+# Distribution over years
+
+In a first step, let's have a look at the annual number of newly registered parties.
+
+```{r}
+#| column: body-outset-right
+#| fig-align: left
+
+txt_caption <- "Source: Austrian MoI Parteienverzeichnis gem 1 Abs 4 PartG; last update: 06 Sep 2022;<br>Graph: Roland Schmidt | @zoowalk | https:&#47;&#47;werk.statt.codes"
+
+fn_year_label  <- function(x){
+vec_start <- str_which(x, ".")[1]
+y <- str_replace(x[(vec_start+1):length(x)], regex("^\\d{2}"), "'")
+z <- c(x[1:vec_start],y)
+return(z)
+}
+
+df_res %>%
+  ggplot() +
+  labs(
+    title = "Number of newly registered parties per year in Austria",
+    caption = txt_caption,
+    y = "number of parties"
+  ) +
+  geom_bar(aes(x = year+.5),
+    stat = "count"
+  ) +
+  geom_label(
+    data = df_res %>%
+      count(year, sort = T) %>%
+      filter(row_number() == 1 | row_number() == max(row_number())),
+    aes(x = year+.5, 
+    y = n+2, 
+    label = n),
+    fill="white",
+    label.padding = unit(0, "lines"),
+    label.r=unit(0, "lines"),
+    label.size=0,
+    color="#9cd321",
+    fontface="bold"
+  ) +
+  scale_x_continuous(labels=fn_year_label)+
+  scale_y_continuous(expand=expansion(mult=c(0.02,0.1))) +
+  ggthemes::scale_fill_fivethirtyeight() +
+  ggthemes::theme_fivethirtyeight() +
+  theme(
+    axis.text.x = element_text(hjust = 0),
+  axis.title.x = element_blank(),
+  axis.title.y=element_text(hjust=1, size=9),
+  plot.caption = element_markdown(),
+  axis.ticks.length.x.bottom = ggplot2::unit(0, "cm"),
+  panel.background = element_rect(fill="white", color="white"),
+  plot.background = element_rect(fill="white", color="white"))
+```
+
+It seems that - within the period which is covered by the MoI's directory - there was quite a flurry of party registrations in the 1980s and a peak value of 63 parties in 1990 alone. After that, there was some kind of downswing during the 1990s and 2000s, followed by a more recent upswing. I am not entirely sure what to make of this, but at least this was new to me. 
+
+# Keywords in party names
+
+To get some (very) crude idea of political parties orientation, I checked newly registered parties' names for the presence of some keywords.
+```{r}
+term1 <- "volk"
+term2 <- "sozial"
+term3 <- "freiheit"
+term4 <- "national"
+term5 <- "grün"
+term6 <- "links"
+term7 <- "rechts"
+term8 <- "Österreich"
+term9 <- "liste"
+term10 <- "Neos"
+term11 <- "christ"
+
+vec_terms <- c(term1, term2, term3, term4, term5, term6, term7, term8, term9, term10, term11)
+vec_terms
+```
+
+```{r}
+#| code-summary: "Define and apply plot function"
+fn_plot <- function(search_term) {
+  df_res %>%
+    mutate(indicator = str_detect(name_der_politischen_partei, regex({{search_term}}, ignore_case = T))) %>%
+  ggplot() +
+  labs(
+    title = glue::glue("'{search_term}'")
+  ) +
+  geom_bar(aes(x = year+.5,
+  fill=indicator),
+    stat = "count"
+  ) +
+  scale_fill_manual(values=c("TRUE"="#408080", "FALSE"="grey"))+
+  scale_x_continuous(labels=fn_year_label)+
+  # ggthemes::scale_fill_fivethirtyeight() +
+  ggthemes::theme_fivethirtyeight() +
+  theme(
+    plot.title=element_text(size=rel(0.8)),
+  axis.text.x = element_text(hjust = 0),
+  axis.title.x = element_blank(),
+  axis.title.y=element_text(hjust=1, size=9),
+  plot.caption = element_markdown(),
+  legend.position="none"
+  )
+}
+
+li_plot <- vec_terms %>%
+  map(., fn_plot)
+
+pl_patch <- patchwork::wrap_plots(li_plot, 
+ncol = 3)+
+patchwork::plot_annotation(
+  title = "Number of newly registered parties with specific keywords in their name", 
+  subtitle="Grey bars indicate total number of parties registerd per year.",
+  caption=txt_caption,
+  theme=ggthemes::theme_fivethirtyeight()+
+  theme(
+    plot.caption=element_markdown(),
+    legend.position="top",
+    panel.background = element_rect(fill="white")
+  ))
+```
+
+```{r}
+#| fig-column: page-inset-right
+#| fig-align: left
+#| fig-format: svg
+#| fig-height: 10  # 600px
+#| fig-width: 10
+#| echo: false
+# #| out-with: 100%
+pl_patch
+```
+
+Again, bearing the caveat in mind that a party's name is a pretty fragile proxy for its political orientation, I found it nevertheless interesting to see how much the emergence of "green" parties contributed to the wave of new parties in the 1980s. To put it differently, more than a quarter of all parties founded in the 80s were - at least in by their name - "green".
+
+```{r}
+#| cache: true
+df_res %>%
+filter(between(year, 1979, 1990)) %>%
+mutate(green=str_detect(name_der_politischen_partei, regex("grün", ignore_case = T))) %>%
+count(green, sort=T) %>%
+mutate(rel=n/sum(n)) %>%
+gt() %>%
+gt_theme_538() %>%
+tab_header(
+  title="Paries with 'grün' in their name",
+  subtitle="Only parties registered in the 1980s."
+) %>%
+fmt_percent(
+  columns=rel
+)
+```
+
+# End
+
+That's it for now. Again, this is just some superficial number crunching, and numerous refinements can be thought of, i.e. which parties comprise multiple registered e.g. regional entities; is there any regional concentration of party registrations etc. If time permits, I might revisit some of those....

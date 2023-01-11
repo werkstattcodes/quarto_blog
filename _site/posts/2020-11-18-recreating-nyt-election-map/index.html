@@ -131,6 +131,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   }
 }</script>
 
+<script type="text/plain" cookie-consent="tracking">
+
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-149910232-1', 'auto');
+
+ga('send', {
+  hitType: 'pageview',
+  'anonymizeIp': true,
+});
+</script>
+
 <script type="text/javascript" charset="UTF-8">
 document.addEventListener('DOMContentLoaded', function () {
 cookieconsent.run({
@@ -261,7 +275,7 @@ cookieconsent.run({
 <section id="context" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> CONTEXT</h1>
 <p>While following the NYT’s coverage of the US presidential elections, I became once again intrigued by their data visualizations. One type of visualization which I found particularly remarkable was the map with arrows indicting how far a state’s counties shifted to democrats or republicans. See <a href="https://www.nytimes.com/interactive/2020/11/07/us/elections/pennsylvania-counties-battleground-state.html" target="_blank">here</a> on the NYT’s website.</p>
-<div class="quarto-figure quarto-figure-center">
+<div class="quarto-figure quarto-figure-left">
 <figure class="figure">
 <p><a href="Capture.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="Capture.PNG" class="img-fluid figure-img"></a></p>
 </figure>
@@ -646,7 +660,7 @@ Code: Combine plots
 </div>
 </div>
 <p>And here the original for comparison:</p>
-<div class="quarto-figure quarto-figure-center">
+<div class="quarto-figure quarto-figure-left">
 <figure class="figure">
 <p><a href="Capture.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="Capture.PNG" class="img-fluid figure-img"></a></p>
 </figure>
@@ -669,7 +683,7 @@ Code: Combine plots
 <ol>
 <li id="fn1"><p>In a previous version I used the googleway package. The opencage package allows to get geolocation without needing to access the google API.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2020,
+</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2020,
   author = {Roland Schmidt},
   title = {Recreating {NYT} Election Map},
   date = {2020-11-18},
@@ -856,7 +870,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":true,"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":true,"closeEffect":"zoom","descPosition":"bottom","selector":".lightbox"});</script>
 
 
 
