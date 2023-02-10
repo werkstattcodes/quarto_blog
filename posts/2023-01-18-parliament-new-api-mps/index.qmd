@@ -1,0 +1,1732 @@
+---
+title: "Parliament's new API - How to access data on MPs"
+description: "With the re-opening of Austria's parliament earlier this year not only came a renovate building, but also a new API. This post looks into one of its endpoints which facilitates accessing data on MPs. Who has been the longest serving MP and how did the gender composition change over time, are among the questions addressed."
+
+date: 02-10-2023
+
+categories:
+  - Austria
+  - API
+
+reference-location: margin
+
+draft: false
+---
+
+```{r}
+#| code-summary: "Code: Load packages"
+#| code-fold: true
+#| warning: false
+library(tidyverse)
+library(httr2)
+library(janitor)
+library(rvest)
+library(lubridate)
+library(reactable)
+library(reactablefmtr)
+library(htmltools)
+library(waffle)
+library(ggtext)
+library(gt)
+library(gtExtras)
+library(ggforce)
+library(ggdist)
+library(ggrepel)
+library(ggbeeswarm)
+```
+
+```{r}
+#| include: false
+knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
+```
+
+# Just the results, please.
+
+Note: For higher resolution images, please see plots in the blogpost.
+
+```{r}
+#| eval: true
+#| echo: false
+#| code-fold: false
+
+library(swipeR)
+library(htmltools)
+library(base64enc)
+
+mps_changing_names <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "mps_changing_names.PNG"), mime = "image/png")
+
+gender_waffle <- dataURI(
+  file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_waffle.png"), mime = "image/png")
+
+gender_legis_table <- dataURI(
+  file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_legis_table.png"), mime = "image/png")
+
+gender_legis_graph <- dataURI(
+  file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_legis_graph.png"), mime = "image/png")
+
+graph_fluctuation <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "graph_fluctuation.png"), mime = "image/png")
+
+table_top_10_longest_serving_mps <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "table_top_10_longest_serving_mps.png"), mime = "image/png")
+
+table_top_10_longest_serving_female_mps <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "table_top_10_longest_serving_female_mps.PNG"), mime = "image/png")
+
+table_currently_serving_mps <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "table_currently_serving_mps.PNG"), mime = "image/png")
+
+distribution_time_in_p <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "distribution_time_in_p.png"), mime = "image/png")
+
+gender_share_start <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_share_start.png"), mime = "image/png")
+
+
+wrapper <- swipeRwrapper(
+  tags$img(src = mps_changing_names, style="width:auto; height:300px; display:block; margin:auto;"),
+  
+  tags$img(src = gender_waffle, style="width:auto; height:400px; display:block; margin:auto;"),
+
+  tags$img(src = gender_legis_table, style="width:auto; height:400px; display:block; margin:auto;"),
+
+  tags$img(src = gender_legis_graph, style="width:auto; height:400px; display:block; margin:auto;"),
+
+  tags$img(src = graph_fluctuation, style="width:auto; height:400px; display:block; margin:auto;"),
+
+  tags$img(src = table_top_10_longest_serving_mps, style="width:500px; height:auto; display:block; margin:auto;"),
+
+  tags$img(src = table_top_10_longest_serving_female_mps, style="width:500px; height:auto; display:block; margin:auto;"),
+
+  tags$img(src = table_currently_serving_mps, style="width:500px; height:auto; display:block; margin:auto;"),
+
+  tags$img(src = distribution_time_in_p, style="width:500px; height:auto; display:block; margin:auto;"),
+
+  tags$img(src = gender_share_start, style="width:500px; height:auto; display:block; margin:auto;")  
+
+  )
+
+swipeR(
+wrapper, 
+navigationColor="grey",
+paginationColor="grey",
+height = "400px", 
+width = "100%", 
+zoom=TRUE,
+effect="slide",
+thumbs = FALSE,
+rewind=TRUE,
+scrollbar=FALSE)
+
+```
+
+# Context
+
+Austria's parliament was re-opened on 12 January after a few years of renovation. The works did not only entail a major revamp of the 19th century neo-classicist building at Vienna's Ringstraße, but also a substantial upgrade to its API. The latter was preceded by a public consultation process providing users the opportunity to file suggestions for improvement, and seems to be part of a conscious effort to strengthen the institution's open data offer. While I am only beginning to toy with the API, as far as I can tell, it considerably lowers the barrier to data on Parliament's work, not only by making it easier to access them, but also by broadening the offer. You can find information on the API [here](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html){target="_blank"} (unfortunately only in German), which provides an overview of the different endpoints/datasets. Most laudable, there are even some exemplary R script ["showcases"](https://www.parlament.gv.at/recherchieren/open-data/showcases/index.html){target="_blank"}!
+
+::: aside
+![Source:https://commons.wikimedia.org/](preview_parliament.jpg){width="2in"}
+:::
+
+In this post, I dig into one API endpoint, the [dataset on MPs since 1920](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/parlamentarierinnen/index.html){target="_blank"}, more precisely the members of the *Nationalrat (NR)*, parliament's lower house.
+
+ The questions I'll address include:
+
+1)  What's the Nationalrat's gender composition and how did it change over time?
+2)  Who are the longest serving MPs, overall, today and by gender?
+
+None of the related results are groundbreaking (although some details were new to me). The point is first and foremost to get at ease with the new API and to document the process leading to the results. As always, if you spot any error, have a question or suggestion, please don't hesitate to contact me via  [twitter](https://twitter.com/zoowalk){target="_blank"} or [mastadon](https://mastodon.social/@zoowalk){target="_blank"} DM.
+
+# Accessing the API with httr2
+
+```{r}
+#| code-summary: "Code: Load required packages"
+library(tidyverse)
+library(httr2)
+```
+
+To obtain the data, I use the httr2 package and wrap it into a function.\[\^For an excellent overview how to wrap API's see Hadley Wickham's pertaining post [here](https://httr2.r-lib.org/articles/wrapping-apis.html){target="_blank"}\]. I insert some comments directly into the code chunk, which hopefully make things sufficiently clear.
+
+## Define function
+
+```{r}
+#| code-summary: "Code: Function to access API"
+#| code-fold: show
+#| output: false
+get_mps <- function(Gremium = NULL,
+                    Gesetzgebungsperiode = NULL,
+                    Männlich = NULL,
+                    Weiblich = NULL,
+                    PraesidentInnen = NULL,
+                    Wahlpartei = NULL,
+                    Fraktion = NULL,
+                    Bundesland = NULL,
+                    Wahlkreis = NULL) {
+
+  base_url <- "https://www.parlament.gv.at/Filter/api/json/post"
+
+  params <- list(
+    `jsMode` = "EVAL",
+    `FBEZ` = "WFW_004",
+    `listeId` = "10004",
+    `pageNumber` = "1",
+    `ascDesc` = "ASC",
+    `showAll` = "true"
+  )
+
+  data <- list(
+    NRBR = {{ Gremium }},
+    GP = {{ Gesetzgebungsperiode }},
+    M = {{ Männlich }},
+    W = {{ Weiblich }},
+    PR = {{ PraesidentInnen }},
+    WP = {{ Wahlpartei }},
+    FR = {{ Fraktion }},
+    BL = {{ Bundesland }},
+    WK = {{ Wahlkreis }},
+    R_WF = NULL
+  ) %>% discard(., is.null)
+
+  print(data)
+
+  # run the actual request
+  res <- request(base_url) %>%
+    req_headers("Accept" = "application/json") %>%
+    req_url_query(!!!params) %>%
+    req_body_json(data = data, auto_unbox = F) %>%
+    req_perform()
+
+  # extract the column names
+  vec_headings <- res %>%
+    resp_body_json(., simplifyVector = T) %>%
+    pluck(., "header", "label") %>%
+    janitor::make_clean_names()
+  
+  # extract the actual substantive data
+  df_res <- res %>%
+    resp_body_json(., simplifyVector = T) %>%
+    pluck(., "rows") %>%
+    as.data.frame()
+
+  # asign the column names as names to the main dataframe
+  colnames(df_res) <- vec_headings
+
+  # some columns contain html tags; here I define and subsequently apply a function which removes them, rendering plain text.
+  fn_html_tags <- function(x) {
+    {{ x }} %>%
+      xml2::read_html() %>%
+      rvest::html_elements("span") %>%
+      rvest::html_attr("title")
+  }
+
+  df_res <- df_res %>%
+    mutate(across(.cols = c(klub, gesetzgebungsperioden, bundesland), \(x) map(x, \(y) fn_html_tags(y))))
+  return(df_res)
+}
+```
+
+## Apply function
+
+While the API parameters allow to specify MPs' gender in a search parameter, the subsequent results unfortunately do no include a gender indicator. Hence, I run two separate requests, one for male, one for female MPs and add a column specifying the gender.
+
+```{r}
+#| include: false
+df_res <- readr::read_rds(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_res.rds"))
+df_w <- readr::read_rds(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_w.rds"))
+df_m <- readr::read_rds(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_m.rds"))
+```
+
+```{r}
+#| code-summary: "Code: Apply function"
+#| code-fold: show
+#| output: false
+#| eval: true
+#| collapse: true
+
+df_m <- get_mps(Gremium = "NR", Männlich = "M", Gesetzgebungsperiode = "ALLE") %>%
+  mutate(gender = "male")
+
+df_w <- get_mps(Gremium = "NR", Männlich = "W", Gesetzgebungsperiode = "ALLE") %>%
+  mutate(gender = "female")
+
+# combine
+df_res <- dplyr::bind_rows(df_m, df_w)
+
+nrow(df_m)
+nrow(df_w)
+nrow(df_res)
+```
+
+The queries returned a combined dataframe with `r nrow(df_res)` rows in total. `r nrow(df_w)` rows for female MPs, `r nrow(df_m)` for male MPs. Does these results mean there were `r nrow(df_res)` MPs in total, out of which `r nrow(df_w)` were women and `r nrow(df_m)` were men? Nope. Why? Let's have a closer look the results.
+
+```{r}
+#| collapse: true
+#| code-fold: show
+glimpse(df_res)
+```
+
+As you'll gather from the output, there's a column called `pad_intern` which appears to be something like an MP's unique ID. When we check for the total number of unique `pad_intern`s, it turns out that there are actually fewer IDs then rows.
+
+```{r}
+#| collapse: true
+#| code-fold: show
+
+n_distinct(df_res$pad_intern)
+nrow(df_res)
+```
+
+## Taking care of name variants
+
+This difference is due to changing names of MPs. Let's have a look here:
+
+```{r}
+#| code-summary: "Code: Identify MPs with changing names"
+#| collapse: true
+#| code-fold: show
+#| column: body-outset-right
+
+df_dupes <- df_res %>%
+  get_dupes(., pad_intern) %>%
+  select(pad_intern, name) %>%
+  group_by(pad_intern) %>%
+  summarise(
+    number_variants = n(),
+    name_variants = paste(name, collapse = "<br>")
+  ) %>%
+  arrange(desc(number_variants))
+
+df_dupes %>%
+  reactable(.,
+    columns = list(
+      pad_intern = colDef(
+        width = 100,
+        align = "center",
+        show=F
+      ),
+      number_variants = colDef(
+        name = "Number of name variants",
+        width = 200,
+        align = "center"
+      ),
+      name_variants = colDef(
+        name = "Name variants",
+        html = T
+      )
+    ),
+    compact = TRUE, ,
+    defaultPageSize = 5, ,
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = "MPs with changing names", font_size = 15)
+```
+
+<br>
+
+::: aside
+![from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at](meissner_blau.jpg){width="2in"}
+:::
+
+There are in total `r n_distinct(df_dupes$pad_intern)` MPs whose names have undergone some changes. As the table above shows, two MPs changed their names more than once. Changes are mainly (and supposedly) due to marriage/divorce, and - Tu felix Austria - the addition of academic titles. Or, if you are [Sepp (Steinhuber)](https://www.parlament.gv.at/person/1846#:~:text=Lesezeichen-,Sepp%20Steinhuber,(bis%203.11.1971%3A%20Josef%20Steinhuber),-Biografie){target="_blank"}, and no longer want to be called 'Josef.' New to me: [Freda Meissner-Blau](https://www.parlament.gv.at/person/1130#:~:text=Lesezeichen-,Freda%20Meissner%2DBlau,(bis%2011.5.1988%3A%20Freda%20Blau%2DMeissner),-Biografie){target="_blank"}, icon of the early environmental movement and first chairperson of the Green party, had up until 1988 the family name Blau-Meissner.
+
+Since my interest is however not in an MP's names but the individual, distinct MP, the different name variants have to be nested within the unique `pad_intern` identifiers.
+
+```{r}
+#| collapse: true
+#| code-fold: show
+df_res <- df_res %>%
+  tidyr::chop(cols = c(sortier, name))
+
+nrow(df_res)
+n_distinct(df_res$pad_intern)
+```
+
+As you can see, the new dataframe has now one row per MP. The columns `name` and `sortiere` became list columns, containing the different name variations.
+
+(As a side note, I am by no means an expert on the design of APIs, but wouldn't it have been more efficient and convenient to simply return different names nested under one distinct `pad_intern`?)
+
+```{r}
+#| code-summary: "Code: Nested names"
+#| column: body-outset-right
+#| echo: true
+#| code-overflow: wrap
+#| code-fold: false
+#| collapse: true
+class(df_res$name)
+class(df_res$sortier)
+```
+
+```{r}
+#| code-summary: "Code: Nested names"
+#| column: body-outset-right
+#| echo: false
+#| code-overflow: wrap
+#| code-fold: false
+#| collapse: true
+df_res %>%
+  mutate(name = map(name, \(x) str_trim(x) %>% str_trunc(., width = 20, side = "right"))) %>%
+  select(pad_intern, name) %>%
+  semi_join(., df_dupes, by = "pad_intern") %>%
+  slice_head(., n = 5)
+```
+
+# Gender composition of the Nationalrat
+
+Now, with this issue taken care of, we can have a first, general look at the gender composition of MPs of the Nationalrat - in total, over all legislative periods.
+
+```{r}
+#| code-summary: "Code: Calculate gender share and create plot"
+#| code-fold: true
+#| fig-align: left
+#| fig-width: 4
+#| fig-asp: 1.2280945758
+#| collapse: true
+
+df_gender <- df_res %>%
+  count(gender) %>%
+  mutate(perc = n / sum(n))
+
+df_gender %>%
+  reactable(.,
+    columns = list(
+      gender = colDef(
+        name = "Gender",
+        footer = "Total of all MPs"
+      ),
+      n = colDef(
+        name = "number",
+        footer = sprintf("%i", sum(.$n))
+      ),
+      perc = colDef(
+        name = "%",
+        format = colFormat(
+          percent = T,
+          digits = 2
+        ),
+        footer = sprintf("%.2f%%", sum(.$perc) * 100)
+      ) # % before % to escape
+    ),
+    compact = T,
+    theme = fivethirtyeight()
+  )
+```
+
+<br> <br>
+
+```{r}
+#| include: false
+txt_caption <- "Data: parlament.gv.at.  Analysis & Graph: Roland Schmidt | @zoowalk | https:&#47;&#47;werk.statt.codes"
+```
+
+```{r}
+#| code-summary: "Code: Create waffle plot"
+#| code-fold: true
+#| fig-align: left
+#| fig-width: 4
+#| fig-asp: 1.2280945758
+#| crop: true
+
+df_gender %>%
+  select(-perc) %>%
+  ggplot() +
+  labs(
+    title = "Austrian Nationalrat:<br> Gender of MPs since 1918",
+    caption = txt_caption
+  ) +
+  geom_waffle(
+    aes(
+      fill = gender,
+      values = n
+    ),
+    n_rows = 30,
+    size = 0.3,
+    color = "white",
+    flip = TRUE
+  ) +
+  geom_label(
+    aes(
+      x = 30,
+      y = (n / 30) + .5,
+      label = glue::glue("{gender} {n} ({(n/nrow(df_res)) %>% scales::percent(., accuracy=1)})"),
+      group = gender,
+      color = gender
+    ),
+    fill = "transparent",
+    family = "sans",
+    size = rel(3),
+    label.r = unit(0, "lines"),
+    label.size = 0,
+    label.padding = unit(0, "lines"),
+    hjust = 1,
+    vjust = 0
+  ) +
+  geom_richtext(
+    data = tibble(gender = "female"),
+    label = "<span style='font-size:10pt; color:darkgrey;line-height:50%'>Austrian Nationalrat:</span><br> <span style='color:darkgrey;font-size:16pt'>Gender of MPs<br>since 1918</span>",
+    hjust = 0,
+    label.color = "white",
+    label.r = unit(0, "lines"),
+    label.padding = unit(0, "lines"),
+    label.margin=unit(0, "lines"),
+    label.size = 0,
+    size = rel(6),
+    fontface = "bold",
+    family = "sans",
+    lineheight = 0.2,
+    vjust = 1,
+    nudge_y = 2,
+    aes(
+      x = 0,
+      y = Inf
+    )
+  ) +
+  scale_fill_manual(values = c(
+    female = "#E6AF2E",
+    male = "#353A47"
+  )) +
+  scale_color_manual(values = c(
+    female = "#E6AF2E", 
+    male = "#353A47"
+  )) +
+  scale_x_discrete(expand = expansion(mult = c(0, 0))) +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.02))
+  ) +
+  coord_equal() +
+  ggthemes::theme_fivethirtyeight() +
+  theme_enhance_waffle() +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    strip.background = element_rect(fill = "transparent"),
+    strip.text = element_blank(),
+    legend.position = "none",
+    plot.title = element_blank(),
+    plot.caption = element_markdown(
+      hjust = 0, 
+      size = rel(0.5),
+      lineheight = 1.2),
+    plot.background = element_rect(fill = "transparent"),
+    panel.background = element_rect(fill = "transparent")
+  ) +
+  facet_wrap(vars(gender))
+```
+
+
+```{r}
+#| include: false
+ggsave(filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_waffle.png"))
+```
+
+
+The result above shows that out of the `r nrow(df_res) %>% scales::number(., big.mark=",")` individuals who held at one point a mandate in the Nationalrat, only `r nrow(df_res %>% filter(gender=="female"))` were women. That's less that a fifth....
+
+Note that this result provides only an aggregate overview of the assembly's gender composition over its entire existence, meaning from 1920 onwards. Its preceeding bodies, the "Provisorische Nationalversammlung" and the "Konstituierende Nationalversammlung", are not covered by the API call from above and would have required different search parameters.
+
+In order to get an idea for the development of the chamber's composition over the years, I am interested in the gender ratios at the beginnings of each legislative period.
+
+The column `gesetzgebungsperioden` in our API result is a list column, with each element being one legislative period in which an MP held her/his mandate. Below a sample to make this point clearer.
+
+```{r}
+#| echo: false
+
+df_res %>%
+  dplyr::select(pad_intern, gesetzgebungsperioden) %>%
+  slice_head(., n = 5) %>%
+  reactable(.,
+  compact=T,
+  theme=fivethirtyeight())
+```
+<br>
+To count the MPs (and their gender) per legislative period, this list has to be brought into a long format, so that we obtain one row per MP and legislative period.
+
+Below the code, plus a sample of the result.
+
+```{r}
+#| code-summary: "Code: Unnest list 'gesetzgebungsperiode'; obtain one row per MP and legislative period"
+
+df_res_long <- df_res %>%
+  distinct(pad_intern, gender, gesetzgebungsperioden) %>%
+  unnest_longer(col=gesetzgebungsperioden)
+
+head(df_res_long %>% select(-gender), n = 10) %>% reactable(., theme=fivethirtyeight(), compact=T)
+```
+<br>
+As you can see from the sample output, e.g. the MP with the ID 2003 had a mandates in the first, second, third, and the fourth legislative period; the MP with the id 577, was MP from the seventeenth to the twentieth.
+
+To make working with the legislative periods a bit easier, I convert the alphabetic version into a numeric one.
+
+::: {.callout-warning collapse="false" appearance="default" icon="true"}
+## Sequence of conditions of `case_when` arguments
+
+Critical for the proper working of the function is the sequence of conditions in the `case_when` function. E.g. if 'zwei' would preceed 'zweiundzwanzig', the latter would never be matched and would erroneously be asigned the numeric value "2" (since 'zwei' is also part of the word 'zweiundzwanzig').
+:::
+
+```{r}
+#| code-summary: "Code: Define and apply function to convert words to numbers"
+#| cache: true
+
+# order is critical
+
+word2num <- function(word) {
+  case_when(
+    str_detect(word, "einundzwanzig") ~ 21,
+    str_detect(word, "zweiundzwanzig") ~ 22,
+    str_detect(word, "dreiundzwanzig") ~ 23,
+    str_detect(word, "vierundzwanzig") ~ 24,
+    str_detect(word, "fünfundzwanzig") ~ 25,
+    str_detect(word, "sechsundzwanzig") ~ 26,
+    str_detect(word, "siebenundzwanzig") ~ 27,
+    str_detect(word, "dreizehn") ~ 13,
+    str_detect(word, "vierzehn") ~ 14,
+    str_detect(word, "fünfzehn") ~ 15,
+    str_detect(word, "sechzehn") ~ 16,
+    str_detect(word, "siebzehn") ~ 17,
+    str_detect(word, "achtzehn") ~ 18,
+    str_detect(word, "neunzehn") ~ 19,
+    str_detect(word, "zwanzig") ~ 20,
+    str_detect(word, "erst") ~ 1,
+    str_detect(word, "zwei") ~ 2,
+    str_detect(word, "dritte") ~ 3,
+    str_detect(word, "vier") ~ 4,
+    str_detect(word, "fünf") ~ 5,
+    str_detect(word, "sechs") ~ 6,
+    str_detect(word, "sieben") ~ 7,
+    str_detect(word, "acht") ~ 8,
+    str_detect(word, "neun") ~ 9,
+    str_detect(word, "zehn") ~ 10,
+    str_detect(word, "elf") ~ 11,
+    str_detect(word, "zwölf") ~ 12,
+    .default = NA
+  )
+}
+
+df_res_long <- df_res_long %>%
+  mutate(gesetzgebungsperioden_num = map_dbl(gesetzgebungsperioden, \(x) word2num(x), .progress = T))
+```
+
+After this step, we have all the data necessary to compile the gender composition per legislative period.
+
+```{r}
+#| include: false
+fn_label_unit <- function(x, unit) {
+  x <- as.character(x)
+  index_last_label <- max(which(!is.na(x)))
+  x[index_last_label] <- paste(x[index_last_label], {{unit}})
+  return(x)
+}
+```
+
+
+```{r}
+#| include: false
+#| echo: false
+#| cache: true
+#| eval: true
+
+url <- "https://de.wikipedia.org/wiki/Nationalrat_(%C3%96sterreich)"
+
+tbl_parl <- url %>%
+  xml2::read_html() %>%
+  rvest::html_table() %>%
+  .[[2]]
+
+df_parl <- tbl_parl %>%
+  janitor::clean_names() %>%
+  filter(!wahltag == "Wahltag") %>%
+  tidyr::separate(col = "zeitraumvon_bis", sep = "\\s\\p{Pd}\\s", into = c("date_start", "date_end")) %>%
+  mutate(across(contains("date"), \(x) lubridate::dmy(x))) %>%
+  mutate(gesetzgebungsperioden_num = str_extract(gesetzgebungsperiode_nationalversammlung, regex("^[^\\.]+(?=\\.\\sGesetzgebungs)"))) %>%
+  mutate(gesetzgebungsperioden_num = utils::as.roman(gesetzgebungsperioden_num) %>% as.numeric()) %>%
+  mutate(across(contains("date"), .fns = list(year = \(x) lubridate::year(x))))
+```
+
+```{r}
+#| include: false
+#| echo: false
+#| eval: false
+
+readr::write_excel_csv2(x = df_parl, file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_parl.csv"))
+df_parl <- readr::read_csv2(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_parl.csv"))
+```
+
+
+```{r}
+#| code-summary: "Code: Table on gender composition per legislative period"
+#| column: page-inset-right
+
+vec_color_gender=c(female = "#E6AF2E", male = "#353A47")
+
+df_pl_df_res_long <- df_res_long %>%
+  select(gesetzgebungsperioden_num, pad_intern, gender) %>%
+  count(gesetzgebungsperioden_num, gender) %>%
+  left_join(., df_parl, by="gesetzgebungsperioden_num") 
+
+df_pl_df_res_long %>%
+mutate(date_end_char=as.character(lubridate::year(date_end))) %>%
+mutate(date_end_char=if_else(is.na(date_end_char), "now", date_end_char)) %>%
+mutate(duration=glue::glue("{lubridate::year(date_start)}-{date_end_char}")) %>%
+pivot_wider(
+  id_cols=c(
+    gesetzgebungsperioden_num,
+    duration
+  ),
+  values_from=n,
+  names_from=gender
+) %>%
+mutate(gesetzgebungsperioden_num=as.character(as.roman(gesetzgebungsperioden_num))) %>%
+mutate(total_mp=female+male) %>%
+mutate(across(c("female", "male"), .fns=list(rel=\(x) x/total_mp))) %>%
+select(
+  gesetzgebungsperioden_num,
+  duration,
+  total_mp,
+  female_rel,
+  female,
+  male,
+  male_rel
+) %>%
+arrange(desc(gesetzgebungsperioden_num)) %>%
+reactable(.,
+columns=list(
+  gesetzgebungsperioden_num=colDef(
+    name="legisltiave period",
+    align="center"
+  ),
+  duration=colDef(
+    name="duration"
+  ),
+  total_mp=colDef(
+    name="total number of MPs",
+    align="center"
+  ),
+  female=colDef(
+    name="women",
+    align="right"
+  ),
+  male=colDef(
+    name="men",
+    align="right"
+  ),
+  female_rel=colDef(
+    name="women",
+    align="center",
+    cell=data_bars(
+      data=.,
+      text_position = "outside-end",
+      max_value=1,
+      fill_color="#E6AF2E",
+      number_fmt = scales::label_percent(accuracy=0.1))
+  ),
+  # female_rel=colDef(
+  #   name="women",
+  #   format=colFormat(
+  #     percent=T,
+  #     digits=2)
+  # ),
+  male_rel=colDef(
+    name="men",
+    show=F,
+    format=colFormat(
+      percent=T,
+      digits=2
+    )
+  )
+),
+  columnGroups=list(
+    colGroup(
+      name="absolute",
+      columns=c("female", "male")),
+    colGroup(
+      name="%",
+      columns=c("female_rel", "male_rel")
+    )  
+  ),
+compact=T,
+fullWidth=F,
+defaultPageSize=27,
+theme=fivethirtyeight()) %>%
+add_title(title = "Gender composition of the Nationalrat per legislative period", font_size = 19) %>%
+  add_subtitle(subtitle = "As of 20.1.2023.", font_size = 12) %>%
+  add_source(source = html("Data: parlament.gv.at<br>Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:bold'>https://werk.statt.codes</span>"), font_size = 10)
+```
+<br> 
+Below an alternative graphical representation of the same data.
+
+```{r}
+#| code-summary: "Code: Plot gender composition per legislative period plus available seats"
+
+df_pl_df_res_long %>%
+  ggplot() +
+  labs(
+    title="Austria's Nationalrat:<br> Number of <span style='color:#E6AF2E'>female</span> and <span style='color:#353A47'>male</span> MPs per legislative period",
+    y="Number of MPs",
+    x="Legislative period",
+    caption=txt_caption
+  )+
+  geom_bar(
+    aes(
+      x = gesetzgebungsperioden_num+.25,
+      y = n,
+      fill = gender
+    ),
+    stat = "identity"
+  ) +
+  geom_segment(aes(
+    x = 1 - .5+.25, xend = 1 + .5+.25,
+    y = 183, yend = 183,
+      color="green"
+  )) +
+  geom_segment(aes(
+    x = 2 - .5+.25, xend = 12 + .5+.25,
+    y = 165, yend = 165,
+    color="green")
+  ) +
+  geom_segment(aes(
+    x = 13 - .5+.25, xend = 27 + .5+.25,
+    y = 183, yend = 183,
+    color="green")#,
+    # color="green"
+  ) +
+  scale_color_manual(values="lightgrey", 
+  label="Number of available seas", name=NULL)+
+  scale_fill_manual(values=vec_color_gender,
+  name=NULL)+
+  scale_x_continuous(expand=expansion(mult=c(0,0)),
+  labels=\(x) as.roman(x)  %>% fn_label_unit(., unit="legislaitve period"),
+  breaks=c(1, seq(0,25, 5), 27))+
+  scale_y_continuous(
+    expand=expansion(mult=c(0,0.1)),
+    labels=\(x) fn_label_unit(x=x, unit="<br>MPs"),
+    breaks=c(seq(0,200, 50), 233),
+    sec.axis=sec_axis(
+      trans=\(x) x*1,
+      breaks=c(165, 183), 
+      labels=c("165", "183 seats available"),
+      name="Number of chamber's total seats")
+  )+
+  ggthemes::theme_fivethirtyeight()+
+  theme(
+  legend.position = "none",
+  legend.justification="left",
+  legend.direction ="horizontal",
+  legend.box="horizontal",
+  legend.background = element_rect(fill="transparent"),
+  legend.key=element_rect(fill="transparent"),
+  axis.text.y.left = element_markdown(),
+  axis.text.x.bottom = element_text(hjust=0),
+  plot.title=element_markdown(),
+  plot.caption = element_markdown(
+    hjust = 0,
+    size = rel(0.8),
+    lineheight = 1.2),
+  plot.background = element_rect(fill = "transparent"),
+  panel.background = element_rect(fill = "transparent"),
+  plot.title.position="plot",
+  plot.caption.position="plot",
+  panel.grid.major.y = element_blank(),
+  panel.grid.major.x = element_blank()
+)
+```
+
+```{r}
+#| include: false
+ggsave(
+  plot=last_plot(),
+  filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_legis_graph.png"))
+```
+
+
+The result above is already quite informative since it gives us the gender of all MPs who held a mandate during a specific legislative period. Substantively, it shows how the share of female MPs only started to grow gradually from the 1970s onwards.
+
+## MP fluctuation during legislative periods
+
+The data, however, also reveals that there was was some fluctuation of MPs during each legislative period, or to put it differently, that there were more MPs per legislative period than there are seats in the Nationalrat. The vertical bars in the plot above indicate the available number of seats in the Nationalrat. While this is not surprising as such, MPs may resign due to various reason (health, intra-party dynamics...), I find it interesting to see how little fluctuation there was prior to the 1970s, if compared to later periods. The plot below makes this point clearer.
+
+```{r}
+#| include: false
+#| echo: false
+
+df_seats <- data.frame(
+  stringsAsFactors = FALSE,
+  txt = c("1", "2 - 11", "13 - today (27)"),
+  legislative_period = c(1L, 2L, 13L),
+  seats = c(183L, 165L, 183L)
+) %>%
+  mutate(
+    legislative_period_end = lead(legislative_period - 1, default = 27)
+  )
+```
+
+```{r}
+#| echo: false
+df_seats %>%
+  select(txt, seats) %>%
+  gt() %>%
+  cols_label(
+    txt = "legislative periods",
+    seats = "Number of seats"
+  ) %>%
+  cols_align(
+    align = "center",
+    columns = "seats"
+  ) %>%
+  gt_theme_538() %>%
+  tab_header(title = "Number of seats in the Nationalrat")
+```
+
+```{r}
+#| code-summary: "Code: Calcualte and plot MP turnover by legislative period"
+#| column: body-outset-right
+
+
+df_res_long_seats <- df_res_long %>%
+  left_join(., df_seats, by = join_by(
+    between(gesetzgebungsperioden_num,
+      legislative_period,
+      legislative_period_end,
+      bounds = "[]"
+    )
+  ))
+
+df_mp_turnover <- df_res_long_seats %>%
+  count(gesetzgebungsperioden_num, seats, txt, name = "n_mps") %>%
+  mutate(turnover = (n_mps - seats) / seats) %>%
+  mutate(
+    seats_diff = n_mps - seats,
+    seats_stable = seats - seats_diff
+  )
+
+df_pl_mp_turnover <- df_mp_turnover %>%
+  pivot_longer(
+    cols = c(seats_stable, seats_diff),
+    names_to = "seats_type",
+    values_to = "seats_type_n"
+  ) %>%
+  left_join(., df_parl, by = c("gesetzgebungsperioden_num" = "gesetzgebungsperioden_num")) %>%
+  mutate(x_label = glue::glue("{date_start_year}\n{as.roman(gesetzgebungsperioden_num)}")) %>%
+  mutate(txt = forcats::fct_relevel(txt, levels = c("1", "2 - 11", "13 - today (27)"))) %>%
+  mutate(gesetzgebungsperioden_num = fct_inseq(as.character(gesetzgebungsperioden_num)))
+
+breaks_pos <- sort(c(1, seq(5,10,5), 13, 20, 27))
+
+label_sec <- df_pl_mp_turnover %>%
+filter(seats_type=="seats_diff")  %>%
+filter(row_number() %in% breaks_pos) %>%
+mutate(sec_label_end=if_else(is.na(date_end), "today", str_sub(date_end, 3,4))) %>%
+mutate(sec_label=glue::glue("{year(date_start)}/{sec_label_end}")) %>%
+pull(sec_label)
+
+df_pl_mp_turnover %>%
+filter(seats_type=="seats_diff") %>%
+mutate(gesetzgebungsperioden_num=as.numeric(gesetzgebungsperioden_num)) %>%
+ggplot()+
+labs(
+  title="Fluctuation of MPs per legislative period",
+  subtitle="How many % of all seats change mandate holder during a legislative period?",
+  # subtitle=expression(paste("How many % of all seats change mandate holder during a legislative period?", frac(N['MPs,Legis.Period']-N['Seats, Legis. Period'], N['Seats, Legis. Period']), sep="   ")),
+  caption=txt_caption
+)+
+geom_rect(aes(
+  xmin=1,
+  xmax=2,
+  ymin=0,
+  ymax=Inf
+),
+fill="#dfdfdf",
+alpha=.025)+
+geom_rect(aes(
+  xmin=13, #183 Mps form 13th legis period again
+  xmax=Inf,
+  ymin=0,
+  ymax=Inf
+),
+fill="#dfdfdf",
+alpha=0.02)+
+geom_point(aes(
+  x=gesetzgebungsperioden_num,
+  y=turnover
+),
+color="#9cd321")+
+geom_line(aes(
+  x=gesetzgebungsperioden_num,
+  y=turnover
+),
+color="#9cd321")+
+geom_text(aes(
+  x=2.5,
+  y=.33,
+  label="165 seats"
+),
+check_overlap=T,
+color="black",
+size=3,
+hjust=0
+)+
+geom_text(aes(
+  x=13.5,
+  y=.33,
+  label="183 seats"
+),
+check_overlap=T,
+hjust=0,
+color="black",
+size=3
+)+
+geom_text(aes(
+  x=16,
+  y=.05,
+  label=paste("Fluctuation[Legis.Period]==",'frac(N["MPs,Legis.Period"]-N["Seats, Legis.Period"], N["Seats, Legis.Period"])')
+),
+check_overlap=T,
+hjust=0,
+color="black",
+size=3,
+parse=T)+
+scale_x_continuous(
+  # labels=\(x) as.roman(x),
+  labels=\(x) glue::glue("{as.roman(x)}\n{label_sec}"),
+  breaks=breaks_pos,
+  position="top",
+  name=" Legislative period:",
+  # sec.axis=ggplot2::dup_axis(
+  #   labels=label_sec,
+  #   name="Legislative period - years"),
+  expand=expansion(mult=c(0.01,0.1))
+)+
+scale_y_continuous(
+  breaks=seq(0,.3, .1),
+  label=scales::percent,
+  expand=expansion(mult=c(0, 0.05)),
+  limits=c(0,.35)
+)+
+ggthemes::theme_fivethirtyeight()+
+ theme(
+  legend.position = "none",
+  legend.justification="left",
+  legend.direction ="horizontal",
+  legend.box="horizontal",
+  legend.background = element_rect(fill="transparent"),
+  legend.key=element_rect(fill="transparent"),
+  axis.title.x.top = element_text(hjust=0),
+  axis.title.x.bottom = element_text(hjust=0),
+  axis.text.y.left = element_markdown(),
+  axis.text.x.top = element_text(
+    hjust=0
+  ),
+  axis.line.x = element_line(color="lightgrey"),
+  plot.title=element_markdown(),
+  plot.subtitle=element_text(hjust=0),
+  plot.caption = element_markdown(
+    hjust = 0,
+    size = rel(0.8),
+    lineheight = 1.2),
+  plot.background = element_rect(fill = "transparent"),
+  panel.background = element_rect(fill = "transparent"),
+  plot.title.position="panel",
+  plot.caption.position="panel"
+)
+```
+<br>
+
+```{r}
+#| include: false
+ggsave(
+  plot=last_plot(),
+  filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "graph_fluctuation.png"))
+```
+
+
+There's quite a difference between the periods before and after the early 1970s. I wonder why, but that's only an observation on the side, and something for another time. Nevertheless, one important caveat here: At this point, our API result only indicates whether an MP had a mandate during a specific legislative period. What the data misses - when it comes to MP fluctuation - are MPs who have a mandate e.g. during legislative period X, leave, and then return within the same legislative period X again. The data underlying the the graph above doesn't capture the fluctuation due to the return to the NR within the same period. 
+
+## Composition at the start of the legislative period
+
+In the next step, I want to refine the calculation of the NR's gender composition by specifically looking at it at the start of each legislative session. So far we only had the aggregate number per legislative period. Given the demonstrated MP turnover, we have no exact picture of who was MP at the start of each legislative period and hence of the initial gender composition.
+
+The challenge here is that the results obtained by the API call above did provide us with information on whether an MP was member of the NR during a specific legislative period, but not the exact starting and ending dates of her/his political mandate. Unfortunately, as far as I can tell, this information is not (yet?) accessible via the API. However, the data is actually presented on the Parliament's homepage.
+
+Below a sample screenshot from the [bio-page](https://www.parlament.gv.at/person/65321){target="_blank"} of Sebastian Kurz (who was also an MP). The data of interest is highlighted.
+
+![](screenshot_kurz_mandates.PNG)
+
+## Getting details on MPs' political mandates
+
+To extract the relevant data, I define a function which scrapes the section on political mandates from the biography page. Subsequently, the various political mandates are filtered for membership in the Nationalrat. This function is than applied to the biography pages of all MPs. Once the start and end date of membership in parliament is available, we are also able to answer the question who was an MP at the beginning of which legislative period.
+
+```{r}
+#| code-summary: "Code: Define function to extract political mandates of each MPs"
+#| eval: false
+
+fn_get_mp_mandates <- function(url) {
+  # Scrape the section on political functions
+  txt_raw <- url %>%
+    xml2::read_html() %>%
+    rvest::html_elements("#biografie-tabs-tabpanel-BIO") %>%
+    rvest::html_elements("section") %>%
+    rvest::html_text2() %>%
+    .[[1]] %>%
+    enframe(name = NULL, value = "txt")
+
+  # create a table with the start and ending dates for each mandate
+  df_details <- txt_raw %>%
+    mutate(txt = str_remove(txt, regex("Politische Mandate/Funktionen\n"))) %>%
+    separate_rows(txt, sep = "\n") %>%
+    mutate(row_id = ifelse(
+      !str_detect(txt, regex("^\\d")), 1, 0
+    )) %>%
+    mutate(mandate_id = cumsum(row_id)) %>%
+    pivot_wider(id_cols = c("mandate_id"), names_from = "row_id", values_from = "txt") %>%
+    rename(
+      office = `1`,
+      period = `0`
+    ) %>%
+    select(
+      -mandate_id
+    ) %>%
+    separate(period, sep = "-", into = c("office_date_start", "office_date_end")) %>%
+    mutate(across(contains("date"), \(x) lubridate::dmy(x))) %>%
+    separate(office, sep = ", ", into = c("office", "party"))
+
+  return(df_details)
+}
+```
+
+```{r}
+#| code-summary: "Code: Apply function"
+#| eval: false
+df_details <- df_res %>%
+  select(pad_intern, gender, link) %>%
+  mutate(link = glue::glue("https://www.parlament.gv.at{link}?selectedtab=BIO")) %>%
+  mutate(mandates = purrr::map(link, \(x) fn_get_mp_mandates(x), .progress = T))
+```
+
+```{r}
+#| include: false
+
+df_details <- readr::read_rds(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "df_details.rds"))
+```
+
+```{r}
+#| code-summary: "Code: Unnest list with political mandates and filter"
+df_details_long <- df_details %>%
+  unnest_longer(mandates) %>%
+  unnest_wider(mandates) %>%
+  filter(str_detect(office, regex("Abgeordneter? zum Nationalrat")))
+```
+
+Below the results for the Kurz:
+
+```{r}
+#| code-fold: false
+#| echo: false
+df_details_long %>%
+  filter(pad_intern == 65321) %>%
+  select(pad_intern, contains("office"), party) %>%
+  unnest(party)
+```
+
+While glancing through the results, I noticed an unexpected increase in the number of rows. Checking for duplicates revealed that there were a few MPs who - for reasons unknown to me - featured two different party memberships during the same mandate period. Remarkably, they are all member of the KPÖ.
+
+
+
+```{r}
+#| code-summary: "Code: Control for MPs with multiple party affiliations during same mandate"
+#| collapse: true
+
+# check for dupes
+dupes <- df_details_long %>%
+  janitor::get_dupes("pad_intern", "office_date_start", "office_date_end")
+nrow(dupes) # KPÖ/LB duplicates
+
+dupes %>%
+group_by(across(.cols=-party)) %>%
+summarise(party=list(party)) %>%
+left_join(., df_res %>% select(pad_intern, name) %>%
+mutate(name=map_chr(name, 1))) %>%
+ungroup() %>%
+select(
+  name,
+  office,
+  office_date_start,
+  office_date_end,
+  party,
+  link
+) %>%
+reactable(.,
+columns=list(
+  office_date_start=colDef(
+    name="office start"
+  ),
+  office_date_end=colDef(
+    name="office end"
+  ),
+  party=colDef(
+    name="multiple parties",
+    style = list(background = "rgba(0, 0, 0, 0.03)")
+  ),
+  link=colDef(
+        name="Link to Biography",
+        align="center",
+        html=T,
+        cell=function(value, index) {
+                htmltools::tags$a(href=value,
+                                  target="_blank",
+                                  as.character("link"))  
+                  }
+              )
+  ),
+theme=fivethirtyeight(font_size=12),
+compact=T) %>%
+add_title(title="MPs with multiple party affiliations during the same period.", font_size=14)
+```
+<br>
+While I could imagine that this is a data entry error, I preferred to keep both parties and collapsed the character vector party into a list instead of deleting one. As the result, we have again one row per MPs and mandate, and a list containing all pertaining party affiliations during the period in question.
+
+```{r}
+#| code-summary: "Code: Collapse party into list"
+
+df_details_long <- df_details_long %>%
+  tidyr::chop(c(party))
+```
+
+
+## Duration of mandates
+
+Before checking for MPs' presence at the beginning of the legislative period, there's one additional aspect we can look into: The length of MPs' time in the Nationalrat. Who has been the longest serving MP in the Council's history as of the time of writing this post?
+
+### Longest serving MPs
+
+```{r}
+#| code-summary: "Code: Calculate duration of mandates"
+#| code-fold: show
+
+df_duration_mandate <- df_details_long %>%
+  mutate(office_date_end = case_when(
+    is.na(office_date_end) & str_detect(office, regex("XXVII. GP")) ~ Sys.Date(),
+    .default = office_date_end
+  )) %>%
+  mutate(duration = difftime(office_date_end, office_date_start, units = "days")) %>%
+  arrange(desc(duration)) %>%
+  left_join(., df_res %>% select(pad_intern, name)) %>%
+  unnest_wider(col = name, names_sep = "_") %>%
+  mutate(office_date_end = case_when(
+    office_date_end == Sys.Date() ~ "ongoing",
+    .default = as.character(office_date_end)
+  ))
+
+df_duration_mp <- df_duration_mandate %>%
+  group_by(pad_intern, gender, name_1) %>%
+  summarise(
+    duration_sum = sum(duration),
+    party = list(unique(party))
+  ) %>% # nest party; MPS can change party;
+  ungroup() %>%
+  arrange(desc(duration_sum))
+```
+
+Below the top 10 of the longest serving MPs.
+
+```{r}
+#| code-summary: "Code: Table top 10 MPs"
+#| column: body-outset-right
+
+df_duration_mp %>%
+  mutate(row_id = row_number()) %>%
+  select(row_id, name_1, party, duration_sum) %>%
+  slice_head(., n = 10) %>%
+  reactable(.,
+    columns = list(
+      row_id = colDef(
+        align = "center",
+        name = "Pos.",
+        width = 50
+      ),
+      name_1 = colDef(
+        name = "MP",
+        width = 250
+      ),
+      party = colDef(
+        name = "party",
+        width = 100
+      ),
+      duration_sum = colDef(
+        name = "Total number of days",
+        align = "center",
+        format = colFormat(
+          separators = T
+        )
+      )
+    ),
+    details = function(index) {
+      mandates <- filter(df_duration_mandate, pad_intern == df_duration_mp$pad_intern[index]) %>% select(-gender, -link)
+      tbl <- mandates %>%
+        select(-pad_intern, -contains("name")) %>%
+        reactable(., columns = list(
+          office = colDef(width = 150),
+          office_date_start = colDef(name = "start"),
+          office_date_end = colDef(name = "end"),
+          duration = colDef(name = "duration mandate", format = colFormat(separator = T))
+        ), outline = T, fullWidth = F, compact = T, theme = reactableTheme(backgroundColor = "lightgrey"))
+      htmltools::div(style = list(margin = "12 px 45px"), tbl)
+    },
+    compact=T,
+    onClick = "expand",
+    rowStyle = list(cursor = "pointer"),
+    fullWidth = FALSE,
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = html("Top 10: Austria's <span style='color:white; background-color:black;'>longest serving</span> MPs"), font_size = 17) %>%
+  add_subtitle(
+    subtitle = "Nationalrat only. As of 20.1.2023.", font_size = 12,
+    font_weight="normal",
+    margin=margin(t=8)) %>%
+  add_source(source = html("Data: parlament.gv.at. Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:bold'>https://werk.statt.codes</span>"), font_size = 10)
+```
+
+### Longest serving female MPs
+
+Note that there is not a single woman among the top 10 of the longest serving MPs. Let's have look at female MPs only.
+
+```{r}
+#| code-summary: "Code: Table top 10 female MPs"
+#| code-fold: true
+
+df_duration_mp_fem <- df_duration_mp %>%
+  filter(gender == "female")
+
+df_duration_mp_fem %>%
+  mutate(row_id = row_number()) %>%
+  select(row_id, name_1, party, duration_sum) %>%
+  slice_head(., n = 10) %>%
+  reactable(.,
+    columns = list(
+      row_id = colDef(
+        align = "center",
+        name = "Pos.",
+        width = 50
+      ),
+      name_1 = colDef(
+        name = "MP",
+        width = 250
+      ),
+      party = colDef(
+        name = "party",
+        width = 100
+      ),
+      duration_sum = colDef(
+        name = "Total number of days",
+        align = "center",
+        format = colFormat(
+          separators = T
+        )
+      )
+    ),
+    details = function(index) {
+      mandates <- df_duration_mandate %>%
+        filter(gender == "female") %>%
+        filter(pad_intern == df_duration_mp_fem$pad_intern[index]) %>%
+        select(-gender, -link)
+      tbl <- mandates %>%
+        select(-pad_intern, -contains("name")) %>%
+        arrange(desc(office_date_start)) %>%
+        reactable(., columns = list(
+          office = colDef(width = 150),
+          office_date_start = colDef(name = "start"),
+          office_date_end = colDef(name = "end"),
+          duration = colDef(name = "duration mandate", format = colFormat(separator = T))
+        ), outline = T, fullWidth = F, compact = T, theme = reactableTheme(backgroundColor = "lightgrey"))
+      htmltools::div(style = list(margin = "12 px 45px"), tbl)
+    },
+    onClick = "expand",
+    compact=T,
+    rowStyle = list(cursor = "pointer"),
+    fullWidth = FALSE,
+    filterable = FALSE,
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = html("Top 10: Austria's longest serving <span style='background-color:black; color:white;'>female</span> MPs"), font_size = 15) %>%
+  add_subtitle(
+    subtitle = "Nationalrat only. As of 20.1.2023.", font_size = 12,
+    font_weight="normal",
+    margin=margin(t=8)    
+    ) %>%
+  add_source(source = html("Data: parlament.gv.at.Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:bold'>https://werk.statt.codes</span>"), font_size = 10)
+```
+
+### Longest service active MPs
+
+Let's also check who is the longest serving MP among the currently serving MPs.
+
+```{r}
+#| code-summary: "Code: longest serving active MPs"
+
+# not only those which were continously persent
+df_current_mps <- df_duration_mandate %>%
+  filter(office_date_end == "ongoing")
+
+df_duration_mp_current <- df_duration_mp %>%
+  semi_join(.,
+    df_current_mps,
+    by = "pad_intern"
+  ) %>%
+  rename(party_all = party) %>%
+  left_join(., df_current_mps %>% select(pad_intern, party), by = "pad_intern") %>%
+  unnest(party)
+
+
+df_duration_mp_current %>%
+  mutate(row_id = row_number()) %>%
+  select(row_id, name_1, party, duration_sum) %>%
+  reactable(.,
+    columns = list(
+      row_id = colDef(
+        align = "center",
+        name = "Pos.",
+        width = 50
+      ),
+      name_1 = colDef(
+        name = "MP",
+        width = 250
+      ),
+      party = colDef(
+        name = "party",
+        width = 100
+      ),
+      duration_sum = colDef(
+        name = "Total number of days",
+        align = "center",
+        format = colFormat(
+          separators = T
+        )
+      )
+    ),
+    details = function(index) {
+      mandates <- df_duration_mandate %>%
+        filter(pad_intern == df_duration_mp_current$pad_intern[index]) %>%
+        select(-gender, -link)
+      tbl <- mandates %>%
+        select(-pad_intern, -contains("name")) %>%
+        arrange(desc(office_date_start)) %>%
+        reactable(., columns = list(
+          office = colDef(width = 150),
+          office_date_start = colDef(name = "start"),
+          office_date_end = colDef(name = "end"),
+          duration = colDef(name = "duration mandate", format = colFormat(separator = T))
+        ), outline = T, fullWidth = F, compact = T, theme = reactableTheme(backgroundColor = "lightgrey"))
+      htmltools::div(style = list(margin = "12 px 45px"), tbl)
+    },
+    compact=T,
+    onClick = "expand",
+    rowStyle = list(cursor = "pointer"),
+    fullWidth = FALSE,
+    filterable = T,
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = html("Time in Parliament by <span style='color:white; background-color:black;'>currently serving</span> MPs"), font_size = 15) %>%
+  add_subtitle(
+    subtitle = "Nationalrat only. As of 20.1.2023.", font_size = 12,
+    font_weight="normal",
+    margin=margin(t=8)    
+    ) %>%
+  add_source(source = html("Data: parlament.gv.at.Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:bold'>https://werk.statt.codes</span>"), font_size = 10)
+```
+
+### Distribution of time as MPs between parties as of today
+
+The result of above serves as the basis to display the distribution of MPs' time in the Nationalrat *per party*.
+
+```{r}
+#| code-summary: "Code: Calculate distribution of MPs' time in parliament and plot"
+
+vec_party_col <- c(
+  "FPÖ" = "#0056a2",
+  "ÖVP" = "#63c3d1",
+  "SPÖ" = "#ce000c",
+  "NEOS" = "#CB1967",
+  "GRÜNE" = "#73A303",
+  "ohne Klubzugehörigkeit" = "grey"
+)
+
+df_duration_mp_current %>%
+  mutate(party = fct_infreq(party)) %>%
+  mutate(duration_sum_num = (as.numeric(duration_sum, units = "days") / 365) %>% janitor::round_half_up(.)) %>%
+  # mutate(duration_sum_num=as.numeric(duration_sum)) %>%
+  ggplot() +
+  labs(
+    title = "Distribution of current MPs' time in parliament\nper party",
+    x = "Number of days as MP",
+    subtitle="NR only. As of 20.1.2023. Duration was rounded to full years ('half-up').",
+    caption=txt_caption
+  ) +
+  # ggdist::stat_dots(
+  #   aes(
+  #     color = party,
+  #     fill = party
+  #   ),
+  #   size = 3
+  # ) +
+  geom_bar(aes(
+    x = duration_sum_num,
+    group=pad_intern,
+    fill=party),
+    color="white",
+    stat="count"
+  )+
+  scale_color_manual(values = vec_party_col) +
+  scale_fill_manual(values = vec_party_col) +
+  # # scale_x_continuous(label=scales::label_number(big.mark=","))+
+  scale_x_continuous(labels = \(x)fn_label_unit(x, unit="years as MP") %>% str_wrap(., width=10), 
+  breaks = seq(0, 30, 5),
+  expand=expansion(mult=c(0, 0.25))) +
+  scale_y_continuous(
+    labels=\(x) fn_label_unit(x, unit="MPs"),
+    breaks=seq(0,30, 10),
+    expand=expansion(mult=c(0, 0.2)))+
+  # str_wrap(., width = 10)) +
+  ggthemes::theme_fivethirtyeight() +
+  theme(
+    panel.grid.minor.y = element_blank(),
+    strip.text.x=element_text(hjust=0, face="bold"),
+    strip.background.x = element_rect(fill="transparent"),
+    strip.placement = "left",
+    plot.caption = element_markdown(size=8),
+    legend.position = "none",
+    axis.text.x = element_text(hjust = 0),
+    # axis.title.y=element_text(
+    #   hjust=1,
+    #   face="bold",
+    #   size=9),
+    plot.background = element_rect(fill = "transparent"),
+    panel.background = element_rect(fill = "transparent")
+  )+
+  # facet_col(facet=vars(party))
+  facet_wrap(facet=vars(party),
+  ncol=2)
+```
+
+
+```{r}
+#| include: false
+ggsave(filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "distribution_time_in_p.png"))
+```
+
+
+
+The plot is rather self-explanatory, but some details were new to me. I didn't know that the Green's basically changed their entire group of MPs with the last elections. Only one MP is not new, that's Sigrid Maurer. 
+
+## Gender composition at the start of the legislative period
+
+Finally, with the start and end dates of MPs' mandates now available, we only have to match them with the start/end dates of legislative periods to see who was actually an MP at each period's beginning.
+
+### Identify MPs at beginning of legislative period
+
+To get the start/end dates of legislative periods, I scrape a pertaining table from [Wikipedia](https://de.wikipedia.org/wiki/Nationalrat_(%C3%96sterreich)){target="_blank"}.
+
+```{r}
+#| include: false
+
+# readr::write_excel_csv2(x = df_parl, file=here::here("posts", "2023-01-18-parliament-new-api-mps", "df_parl.csv"))
+
+# df_parl <- readr::read_csv2(file=here::here("posts", "2023-01-18-parliament-new-api-mps", "df_parl.csv"))
+```
+
+```{r}
+#| code-summary: "Code: Get data on start/end of legislative periods"
+
+url <- "https://de.wikipedia.org/wiki/Nationalrat_(%C3%96sterreich)"
+
+tbl_parl <- url %>%
+  xml2::read_html() %>%
+  rvest::html_table() %>%
+  .[[2]]
+
+df_parl <- tbl_parl %>%
+  janitor::clean_names() %>%
+  filter(!wahltag == "Wahltag") %>%
+  tidyr::separate(col = "zeitraumvon_bis", sep = "\\s\\p{Pd}\\s", into = c("date_start", "date_end")) %>%
+  mutate(across(contains("date"), \(x) lubridate::dmy(x))) %>%
+  mutate(gesetzgebungsperioden_num = str_extract(gesetzgebungsperiode_nationalversammlung, regex("^[^\\.]+(?=\\.\\sGesetzgebungs)"))) %>%
+  mutate(gesetzgebungsperioden_num = utils::as.roman(gesetzgebungsperioden_num) %>% as.numeric()) %>%
+  select(-wahltag, -wahl) %>%
+  filter(str_detect(gesetzgebungsperiode_nationalversammlung, regex("Gesetzgebungsperiode")))
+
+df_parl %>%
+select(
+gesetzgebungsperiode_nationalversammlung,
+date_start,
+date_end) %>%
+  reactable(.,
+    columns = list(
+      gesetzgebungsperiode_nationalversammlung = colDef(name = "Gesetzgebunsperiode",
+      width=250)
+    ),
+    compact=T,
+    theme=fivethirtyeight()
+  ) %>%
+  add_title(title="Start/end dates of legislative periods", font_size=12) %>%
+  add_source(source="Source: https://de.wikipedia.org/wiki/Nationalrat_(Österreich)", font_size=10)
+```
+<br>
+<br>
+If the start date of a new legislative period falls within an MP's mandate period, the MP must have formed part of the initial composition of the NR at the beginning of the legislative period. Dplyr's `between` join allows us to match the two dataframes accordingly.
+
+```{r}
+#| include: false
+df_details_long_na <- df_details_long %>%
+filter(is.na(office_date_end))
+```
+
+```{r}
+#| code-summary: "Code: Identify MPs at begining of legislative period"
+
+df_details_long <- df_details_long %>%
+mutate(office_date_end=case_when(
+  is.na(office_date_end) & str_detect(office, regex("XXVII")) ~ Sys.Date(),
+is.na(office_date_end) ~ office_date_start,
+.default=office_date_end))
+
+df_mps_gp_start <- df_parl %>%
+left_join(., df_details_long, by=
+join_by(between(date_start, office_date_start, office_date_end, bounds="[)"))) #bounds!
+
+df_mps_gp_start_n <- df_mps_gp_start %>%
+group_by(gesetzgebungsperioden_num) %>%
+summarise(n_row=n()) %>%
+arrange(desc(gesetzgebungsperioden_num))
+
+df_gp_start_gender <- df_mps_gp_start %>%
+group_by(gesetzgebungsperioden_num, gender) %>%
+summarise(n=n()) %>%
+mutate(rel=n/sum(n)) %>%
+ungroup()
+
+#add year
+df_gp_start_gender_x <- df_gp_start_gender %>%
+left_join(., df_parl %>% select(gesetzgebungsperioden_num, date_start) %>%
+mutate(year_start=lubridate::year(date_start))) %>%
+filter(gender=="female") %>%
+select(-date_start, -n, -gender)
+```
+ 
+### Add data from other parliaments (IPU data)
+
+To put the share of female MPs into perspective, I add data from the Interpaliamentarian Union (IPU) on other parliaments as of September 2019, i.e. the start of the NR's current legislative period. 
+
+```{r}
+#| code-summary: "Code: Get IPU data"
+
+df_ipu <- readr::read_csv(file="https://data.ipu.org/api/women-ranking.csv?load-entity-refs=taxonomy_term%2Cfield_collection_item&max-depth=2&langcode=en&month=10&year=2019", skip=4) %>%
+janitor::row_to_names(row_number=1) %>%
+janitor::clean_names() %>%
+select(country=na_2, percent_w) %>%
+mutate(percent_w=as.numeric(percent_w))
+```
+
+With this data available, we can finally produce our plot of interest.
+
+```{r}
+#| code-summary: "Code: Plot development of share & contrast"
+#| code-folding: true
+#| column: page-right
+
+pos <- position_jitter(width = 3, seed = 1) #define seed for positioning
+
+df_all <- df_gp_start_gender_x %>%
+mutate(country="Austria",
+percent_w=rel*100) %>%
+select(year=year_start, percent_w, country) %>%
+filter(year<2019) %>%
+bind_rows(df_ipu %>% mutate(year=2019))
+
+df_all %>%
+mutate(country_indicator=ifelse(country=="Austria", "red", "darkgrey")) %>%
+filter(year<2020) %>%
+ggplot()+
+labs(
+  title="Share of female MPs  in <span style='color:red'>Austria</span>'s Nationalrat <br>at the start of legislative periods.",
+  subtitle="2019 in comparison with other parliaments worldwide.",
+  caption="Souce: parlament.gv.at/ipu.org. Analysis & Graph: Roland Schmidt | @zoowalk | **https:&#47;&#47;werk.statt.codes**"
+)+
+# geom_point(aes(
+#   x=year,
+#   y=percent_w,
+#   color=country_indicator
+# ),
+#   position=pos
+# )+
+geom_quasirandom(aes(
+  x=year,
+  y=percent_w,
+  color=country_indicator,
+  ),
+  width = 2.5,
+  position=pos)+
+geom_text_repel(data=. %>%
+filter(year==2019) %>%
+filter(str_detect(country, regex("Cuba|Rwanda|Vanuatu|Kuwait|Germany|Switzerland"))),
+# slice_head(.,n=5),
+aes(
+  x=year,
+  y=percent_w,
+  label=glue::glue("{country} ({percent_w}%)")
+  ),
+size=2.75,
+color="black",
+hjust="left",
+direction="y",
+min.segment.length = 0,
+segment.size=.2,
+segment.color="lightgrey",
+nudge_x=10,
+xlim=c(2021, NA),
+ylim=c(0, NA)
+)+
+geom_text_repel(data=. %>%
+filter(year==2019) %>%
+filter(str_detect(country, regex("Austria"))),
+# slice_head(.,n=5),
+aes(
+  x=year,
+  y=percent_w,
+  label=glue::glue("{country} ({percent_w}%)")
+  ),
+size=2.75,
+color="red",
+hjust="left",
+direction="y",
+min.segment.length = 0,
+segment.size=.2,
+segment.color="lightgrey",
+nudge_x=10,
+xlim=c(2021, NA),
+ylim=c(0, NA)
+)+
+scale_color_manual(
+  values=c("red"="red", "darkgrey"="darkgrey")
+)+
+scale_x_continuous(
+  breaks=c(min(df_all$year), 1930, 1945, seq(1960, 2010, 10), max(df_all$year)),
+  expand=expansion(mult=c(0.05, .2))
+)+
+scale_y_continuous(label=scales::label_percent(scale=1))+
+ggthemes::theme_fivethirtyeight()+
+theme(
+  legend.position = "none",
+  plot.title=element_markdown(),
+  plot.caption = element_markdown(
+    hjust = 0,
+    size = rel(0.5),
+    lineheight = 1.2),
+  plot.background = element_rect(fill = "transparent"),
+  panel.background = element_rect(fill = "transparent"),
+  plot.title.position="plot",
+  plot.caption.position="plot"
+)
+```
+
+
+```{r}
+#| include: false
+ggsave(filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_share_start.png"))
+```
+
+
+
+
+# Fin
+
+Et Voilà. Another blog post where I digressed somewhat from the initial idea, but I think it was worthwile.
+If you see any errors, have suggestions etc. don't hesitate to contact me via [twitter](https://twitter.com/zoowalk){target="_blank"} or [mastadon](https://mastodon.social/@zoowalk){target="_blank"} DM.

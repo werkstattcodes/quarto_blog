@@ -69,7 +69,9 @@ date-format: D MMM YYYY
 
 filters:
   - lightbox
-lightbox: auto  
+lightbox: 
+  match: auto  
+  desc-position: bottom
 
 # Default knitr options
 execute:

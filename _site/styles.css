@@ -286,6 +286,7 @@ border: 0px;
     color: white; */
 }
 
+/* makes sure that about text is left aligned on mobile view */
 div.quarto-about-solana .about-entity {
     display: flex !important;
     align-items: flex-start !important;
@@ -299,3 +300,9 @@ div.quarto-about-solana .about-entity {
     text-align: left;
 }
 }
+
+/* image on about page should be rectangled; not with rounded corners; */
+.about-image.rounded {
+    border-radius: 0rem !important;
+}
+
