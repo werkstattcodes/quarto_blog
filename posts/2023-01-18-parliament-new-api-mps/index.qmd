@@ -42,7 +42,7 @@ knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
 
 # Just the results, please.
 
-Note: For higher resolution images, please see plots in the blogpost.
+Note: Best seen in landscape mode on mobile devices. For higher resolution images, please see plots in the blogpost.
 
 ```{r}
 #| eval: true
@@ -76,28 +76,18 @@ distribution_time_in_p <- dataURI(file = here::here("posts", "2023-01-18-parliam
 
 gender_share_start <- dataURI(file = here::here("posts", "2023-01-18-parliament-new-api-mps", "carousel", "gender_share_start.png"), mime = "image/png")
 
-
 wrapper <- swipeRwrapper(
   tags$img(src = mps_changing_names, style="width:auto; height:300px; display:block; margin:auto;"),
   
   tags$img(src = gender_waffle, style="width:auto; height:400px; display:block; margin:auto;"),
-
   tags$img(src = gender_legis_table, style="width:auto; height:400px; display:block; margin:auto;"),
-
   tags$img(src = gender_legis_graph, style="width:auto; height:400px; display:block; margin:auto;"),
-
   tags$img(src = graph_fluctuation, style="width:auto; height:400px; display:block; margin:auto;"),
-
   tags$img(src = table_top_10_longest_serving_mps, style="width:500px; height:auto; display:block; margin:auto;"),
-
   tags$img(src = table_top_10_longest_serving_female_mps, style="width:500px; height:auto; display:block; margin:auto;"),
-
   tags$img(src = table_currently_serving_mps, style="width:500px; height:auto; display:block; margin:auto;"),
-
   tags$img(src = distribution_time_in_p, style="width:500px; height:auto; display:block; margin:auto;"),
-
   tags$img(src = gender_share_start, style="width:500px; height:auto; display:block; margin:auto;")  
-
   )
 
 swipeR(
@@ -119,7 +109,7 @@ scrollbar=FALSE)
 Austria's parliament was re-opened on 12 January after a few years of renovation. The works did not only entail a major revamp of the 19th century neo-classicist building at Vienna's Ringstraße, but also a substantial upgrade to its API. The latter was preceded by a public consultation process providing users the opportunity to file suggestions for improvement, and seems to be part of a conscious effort to strengthen the institution's open data offer. While I am only beginning to toy with the API, as far as I can tell, it considerably lowers the barrier to data on Parliament's work, not only by making it easier to access them, but also by broadening the offer. You can find information on the API [here](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html){target="_blank"} (unfortunately only in German), which provides an overview of the different endpoints/datasets. Most laudable, there are even some exemplary R script ["showcases"](https://www.parlament.gv.at/recherchieren/open-data/showcases/index.html){target="_blank"}!
 
 ::: aside
-![Source:https://commons.wikimedia.org/](preview_parliament.jpg){width="2in"}
+![Source: https://commons.wikimedia.org/](preview_parliament.jpg){width="2in"}
 :::
 
 In this post, I dig into one API endpoint, the [dataset on MPs since 1920](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/parlamentarierinnen/index.html){target="_blank"}, more precisely the members of the *Nationalrat (NR)*, parliament's lower house.
@@ -455,7 +445,7 @@ df_gender %>%
   ) +
   geom_richtext(
     data = tibble(gender = "female"),
-    label = "<span style='font-size:10pt; color:darkgrey;line-height:50%'>Austrian Nationalrat:</span><br> <span style='color:darkgrey;font-size:16pt'>Gender of MPs<br>since 1918</span>",
+    label = "<span style='font-size:10pt; color:darkgrey;line-height:50%'>Austrian Nationalrat:</span><br> <span style='color:darkgrey;font-size:16pt'>Gender of MPs<br>since 1920</span>",
     hjust = 0,
     label.color = "white",
     label.r = unit(0, "lines"),
@@ -667,6 +657,7 @@ pivot_wider(
   values_from=n,
   names_from=gender
 ) %>%
+arrange(desc(gesetzgebungsperioden_num)) %>%
 mutate(gesetzgebungsperioden_num=as.character(as.roman(gesetzgebungsperioden_num))) %>%
 mutate(total_mp=female+male) %>%
 mutate(across(c("female", "male"), .fns=list(rel=\(x) x/total_mp))) %>%
@@ -679,7 +670,6 @@ select(
   male,
   male_rel
 ) %>%
-arrange(desc(gesetzgebungsperioden_num)) %>%
 reactable(.,
 columns=list(
   gesetzgebungsperioden_num=colDef(
@@ -1507,7 +1497,7 @@ ggsave(filename=here::here("posts", "2023-01-18-parliament-new-api-mps", "carous
 
 The plot is rather self-explanatory, but some details were new to me. I didn't know that the Green's basically changed their entire group of MPs with the last elections. Only one MP is not new, that's Sigrid Maurer. 
 
-## Gender composition at the start of the legislative period
+## Result
 
 Finally, with the start and end dates of MPs' mandates now available, we only have to match them with the start/end dates of legislative periods to see who was actually an MP at each period's beginning.
 
