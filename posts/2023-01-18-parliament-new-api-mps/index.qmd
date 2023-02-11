@@ -481,7 +481,7 @@ df_gender %>%
   theme(
     axis.text.y = element_blank(),
     panel.grid.major.y = element_blank(),
-    strip.background = element_rect(fill = "transparent"),
+    strip.background = element_rect(fill = "white"),
     strip.text = element_blank(),
     legend.position = "none",
     plot.title = element_blank(),
@@ -489,8 +489,8 @@ df_gender %>%
       hjust = 0, 
       size = rel(0.5),
       lineheight = 1.2),
-    plot.background = element_rect(fill = "transparent"),
-    panel.background = element_rect(fill = "transparent")
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "white")
   ) +
   facet_wrap(vars(gender))
 ```
@@ -794,8 +794,8 @@ df_pl_df_res_long %>%
   legend.justification="left",
   legend.direction ="horizontal",
   legend.box="horizontal",
-  legend.background = element_rect(fill="transparent"),
-  legend.key=element_rect(fill="transparent"),
+  legend.background = element_rect(fill="white"),
+  legend.key=element_rect(fill="white"),
   axis.text.y.left = element_markdown(),
   axis.text.x.bottom = element_text(hjust=0),
   plot.title=element_markdown(),
@@ -803,8 +803,8 @@ df_pl_df_res_long %>%
     hjust = 0,
     size = rel(0.8),
     lineheight = 1.2),
-  plot.background = element_rect(fill = "transparent"),
-  panel.background = element_rect(fill = "transparent"),
+  plot.background = element_rect(fill = "white"),
+  panel.background = element_rect(fill = "white"),
   plot.title.position="plot",
   plot.caption.position="plot",
   panel.grid.major.y = element_blank(),
@@ -989,8 +989,8 @@ ggthemes::theme_fivethirtyeight()+
   legend.justification="left",
   legend.direction ="horizontal",
   legend.box="horizontal",
-  legend.background = element_rect(fill="transparent"),
-  legend.key=element_rect(fill="transparent"),
+  legend.background = element_rect(fill="white"),
+  legend.key=element_rect(fill="white"),
   axis.title.x.top = element_text(hjust=0),
   axis.title.x.bottom = element_text(hjust=0),
   axis.text.y.left = element_markdown(),
@@ -1004,8 +1004,8 @@ ggthemes::theme_fivethirtyeight()+
     hjust = 0,
     size = rel(0.8),
     lineheight = 1.2),
-  plot.background = element_rect(fill = "transparent"),
-  panel.background = element_rect(fill = "transparent"),
+  plot.background = element_rect(fill = "white"),
+  panel.background = element_rect(fill = "white"),
   plot.title.position="panel",
   plot.caption.position="panel"
 )
@@ -1470,7 +1470,7 @@ df_duration_mp_current %>%
   theme(
     panel.grid.minor.y = element_blank(),
     strip.text.x=element_text(hjust=0, face="bold"),
-    strip.background.x = element_rect(fill="transparent"),
+    strip.background.x = element_rect(fill="white"),
     strip.placement = "left",
     plot.caption = element_markdown(size=8),
     legend.position = "none",
@@ -1479,8 +1479,8 @@ df_duration_mp_current %>%
     #   hjust=1,
     #   face="bold",
     #   size=9),
-    plot.background = element_rect(fill = "transparent"),
-    panel.background = element_rect(fill = "transparent")
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "white")
   )+
   # facet_col(facet=vars(party))
   facet_wrap(facet=vars(party),
@@ -1700,8 +1700,8 @@ theme(
     hjust = 0,
     size = rel(0.5),
     lineheight = 1.2),
-  plot.background = element_rect(fill = "transparent"),
-  panel.background = element_rect(fill = "transparent"),
+  plot.background = element_rect(fill = "white"),
+  panel.background = element_rect(fill = "white"),
   plot.title.position="plot",
   plot.caption.position="plot"
 )
