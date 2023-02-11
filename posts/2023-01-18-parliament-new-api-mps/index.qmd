@@ -1,6 +1,6 @@
 ---
 title: "Parliament's new API - How to access data on MPs"
-description: "With the re-opening of Austria's parliament earlier this year not only came a renovate building, but also a new API. This post looks into one of its endpoints which facilitates accessing data on MPs. Who has been the longest serving MP and how did the gender composition change over time, are among the questions addressed."
+description: "What is the gender composition of Austria's Nationalrat? How did it evolve over time? Who are the longest serving MPs? This post details how to answer these and similar questions by using parliament's new API."
 
 date: 02-10-2023
 
