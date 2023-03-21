@@ -12,9 +12,10 @@ listing:
   fields: [title, description, date, categories]
   feed:
     type: full
-    title: "ocr feed"
+    title: "feed"
     categories: [OCR, climate]
     description: "RSS feed to relevant posts"
+    items: 5
   image-height: 150px
   page-size: 20
   image-align: right
