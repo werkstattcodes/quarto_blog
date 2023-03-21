@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.280">
+<meta name="generator" content="quarto-1.3.269">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -20,9 +20,10 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -49,43 +50,13 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -189,24 +160,26 @@ cookieconsent.run({
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
+            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html">
+    <a class="dropdown-item" href="../../about.html" rel="" target="">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
-              <div id="quarto-search" class="" title="Search"></div>
+            <div class="quarto-navbar-tools">
+</div>
           </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
@@ -234,7 +207,7 @@ cookieconsent.run({
       <div>
       <div class="quarto-title-meta-heading">Author</div>
       <div class="quarto-title-meta-contents">
-               <p>Roland Schmidt </p>
+               <p><a href="https://werk.statt.codes">Roland Schmidt</a> </p>
             </div>
     </div>
       
@@ -251,41 +224,42 @@ cookieconsent.run({
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#just-the-results-please." id="toc-just-the-results-please." class="nav-link active" data-scroll-target="#just-the-results-please."><span class="toc-section-number">1</span>  Just the results, please.</a></li>
-  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context"><span class="toc-section-number">2</span>  Context</a></li>
-  <li><a href="#accessing-the-api-with-httr2" id="toc-accessing-the-api-with-httr2" class="nav-link" data-scroll-target="#accessing-the-api-with-httr2"><span class="toc-section-number">3</span>  Accessing the API with httr2</a>
+  <li><a href="#just-the-results-please." id="toc-just-the-results-please." class="nav-link active" data-scroll-target="#just-the-results-please."><span class="header-section-number">1</span> Just the results, please.</a></li>
+  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context"><span class="header-section-number">2</span> Context</a></li>
+  <li><a href="#accessing-the-api-with-httr2" id="toc-accessing-the-api-with-httr2" class="nav-link" data-scroll-target="#accessing-the-api-with-httr2"><span class="header-section-number">3</span> Accessing the API with httr2</a>
   <ul class="collapse">
-  <li><a href="#define-function" id="toc-define-function" class="nav-link" data-scroll-target="#define-function"><span class="toc-section-number">3.1</span>  Define function</a></li>
-  <li><a href="#apply-function" id="toc-apply-function" class="nav-link" data-scroll-target="#apply-function"><span class="toc-section-number">3.2</span>  Apply function</a></li>
-  <li><a href="#taking-care-of-name-variants" id="toc-taking-care-of-name-variants" class="nav-link" data-scroll-target="#taking-care-of-name-variants"><span class="toc-section-number">3.3</span>  Taking care of name variants</a></li>
+  <li><a href="#define-function" id="toc-define-function" class="nav-link" data-scroll-target="#define-function"><span class="header-section-number">3.1</span> Define function</a></li>
+  <li><a href="#apply-function" id="toc-apply-function" class="nav-link" data-scroll-target="#apply-function"><span class="header-section-number">3.2</span> Apply function</a></li>
+  <li><a href="#taking-care-of-name-variants" id="toc-taking-care-of-name-variants" class="nav-link" data-scroll-target="#taking-care-of-name-variants"><span class="header-section-number">3.3</span> Taking care of name variants</a></li>
   </ul></li>
-  <li><a href="#gender-composition-of-the-nationalrat" id="toc-gender-composition-of-the-nationalrat" class="nav-link" data-scroll-target="#gender-composition-of-the-nationalrat"><span class="toc-section-number">4</span>  Gender composition of the Nationalrat</a>
+  <li><a href="#gender-composition-of-the-nationalrat" id="toc-gender-composition-of-the-nationalrat" class="nav-link" data-scroll-target="#gender-composition-of-the-nationalrat"><span class="header-section-number">4</span> Gender composition of the Nationalrat</a>
   <ul class="collapse">
-  <li><a href="#mp-fluctuation-during-legislative-periods" id="toc-mp-fluctuation-during-legislative-periods" class="nav-link" data-scroll-target="#mp-fluctuation-during-legislative-periods"><span class="toc-section-number">4.1</span>  MP fluctuation during legislative periods</a></li>
-  <li><a href="#composition-at-the-start-of-the-legislative-period" id="toc-composition-at-the-start-of-the-legislative-period" class="nav-link" data-scroll-target="#composition-at-the-start-of-the-legislative-period"><span class="toc-section-number">4.2</span>  Composition at the start of the legislative period</a></li>
-  <li><a href="#getting-details-on-mps-political-mandates" id="toc-getting-details-on-mps-political-mandates" class="nav-link" data-scroll-target="#getting-details-on-mps-political-mandates"><span class="toc-section-number">4.3</span>  Getting details on MPs’ political mandates</a></li>
-  <li><a href="#duration-of-mandates" id="toc-duration-of-mandates" class="nav-link" data-scroll-target="#duration-of-mandates"><span class="toc-section-number">4.4</span>  Duration of mandates</a>
+  <li><a href="#mp-fluctuation-during-legislative-periods" id="toc-mp-fluctuation-during-legislative-periods" class="nav-link" data-scroll-target="#mp-fluctuation-during-legislative-periods"><span class="header-section-number">4.1</span> MP fluctuation during legislative periods</a></li>
+  <li><a href="#composition-at-the-start-of-the-legislative-period" id="toc-composition-at-the-start-of-the-legislative-period" class="nav-link" data-scroll-target="#composition-at-the-start-of-the-legislative-period"><span class="header-section-number">4.2</span> Composition at the start of the legislative period</a></li>
+  <li><a href="#getting-details-on-mps-political-mandates" id="toc-getting-details-on-mps-political-mandates" class="nav-link" data-scroll-target="#getting-details-on-mps-political-mandates"><span class="header-section-number">4.3</span> Getting details on MPs’ political mandates</a></li>
+  <li><a href="#duration-of-mandates" id="toc-duration-of-mandates" class="nav-link" data-scroll-target="#duration-of-mandates"><span class="header-section-number">4.4</span> Duration of mandates</a>
   <ul class="collapse">
-  <li><a href="#longest-serving-mps" id="toc-longest-serving-mps" class="nav-link" data-scroll-target="#longest-serving-mps"><span class="toc-section-number">4.4.1</span>  Longest serving MPs</a></li>
-  <li><a href="#longest-serving-female-mps" id="toc-longest-serving-female-mps" class="nav-link" data-scroll-target="#longest-serving-female-mps"><span class="toc-section-number">4.4.2</span>  Longest serving female MPs</a></li>
-  <li><a href="#longest-service-active-mps" id="toc-longest-service-active-mps" class="nav-link" data-scroll-target="#longest-service-active-mps"><span class="toc-section-number">4.4.3</span>  Longest service active MPs</a></li>
-  <li><a href="#distribution-of-time-as-mps-between-parties-as-of-today" id="toc-distribution-of-time-as-mps-between-parties-as-of-today" class="nav-link" data-scroll-target="#distribution-of-time-as-mps-between-parties-as-of-today"><span class="toc-section-number">4.4.4</span>  Distribution of time as MPs between parties as of today</a></li>
+  <li><a href="#longest-serving-mps" id="toc-longest-serving-mps" class="nav-link" data-scroll-target="#longest-serving-mps"><span class="header-section-number">4.4.1</span> Longest serving MPs</a></li>
+  <li><a href="#longest-serving-female-mps" id="toc-longest-serving-female-mps" class="nav-link" data-scroll-target="#longest-serving-female-mps"><span class="header-section-number">4.4.2</span> Longest serving female MPs</a></li>
+  <li><a href="#longest-service-active-mps" id="toc-longest-service-active-mps" class="nav-link" data-scroll-target="#longest-service-active-mps"><span class="header-section-number">4.4.3</span> Longest service active MPs</a></li>
+  <li><a href="#distribution-of-time-as-mps-between-parties-as-of-today" id="toc-distribution-of-time-as-mps-between-parties-as-of-today" class="nav-link" data-scroll-target="#distribution-of-time-as-mps-between-parties-as-of-today"><span class="header-section-number">4.4.4</span> Distribution of time as MPs between parties as of today</a></li>
   </ul></li>
-  <li><a href="#result" id="toc-result" class="nav-link" data-scroll-target="#result"><span class="toc-section-number">4.5</span>  Result</a>
+  <li><a href="#result" id="toc-result" class="nav-link" data-scroll-target="#result"><span class="header-section-number">4.5</span> Result</a>
   <ul class="collapse">
-  <li><a href="#identify-mps-at-beginning-of-legislative-period" id="toc-identify-mps-at-beginning-of-legislative-period" class="nav-link" data-scroll-target="#identify-mps-at-beginning-of-legislative-period"><span class="toc-section-number">4.5.1</span>  Identify MPs at beginning of legislative period</a></li>
-  <li><a href="#add-data-from-other-parliaments-ipu-data" id="toc-add-data-from-other-parliaments-ipu-data" class="nav-link" data-scroll-target="#add-data-from-other-parliaments-ipu-data"><span class="toc-section-number">4.5.2</span>  Add data from other parliaments (IPU data)</a></li>
+  <li><a href="#identify-mps-at-beginning-of-legislative-period" id="toc-identify-mps-at-beginning-of-legislative-period" class="nav-link" data-scroll-target="#identify-mps-at-beginning-of-legislative-period"><span class="header-section-number">4.5.1</span> Identify MPs at beginning of legislative period</a></li>
+  <li><a href="#add-data-from-other-parliaments-ipu-data" id="toc-add-data-from-other-parliaments-ipu-data" class="nav-link" data-scroll-target="#add-data-from-other-parliaments-ipu-data"><span class="header-section-number">4.5.2</span> Add data from other parliaments (IPU data)</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#fin" id="toc-fin" class="nav-link" data-scroll-target="#fin"><span class="toc-section-number">5</span>  Fin</a></li>
+  <li><a href="#fin" id="toc-fin" class="nav-link" data-scroll-target="#fin"><span class="header-section-number">5</span> Fin</a></li>
   </ul>
 </nav>
 </nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
     </div>
@@ -334,7 +308,7 @@ cookieconsent.run({
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
 <p></p><figcaption class="figure-caption">Source: https://commons.wikimedia.org/</figcaption><p></p>
-<p><a href="preview_parliament.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Source: https://commons.wikimedia.org/"><img src="preview_parliament.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
+<p><a href="preview_parliament.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Source: https://commons.wikimedia.org/"><img src="preview_parliament.jpg" class="quarto-discovered-preview-image img-fluid figure-img" style="width:2in"></a></p>
 </figure>
 </div>
 </div></div><p>In this post, I dig into one API endpoint, the <a href="https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/parlamentarierinnen/index.html" target="_blank">dataset on MPs since 1920</a>, more precisely the members of the <em>Nationalrat (NR)</em>, parliament’s lower house.</p>
@@ -737,12 +711,12 @@ cookieconsent.run({
 </div>
 <p><br> As you can see from the sample output, e.g.&nbsp;the MP with the ID 2003 had a mandates in the first, second, third, and the fourth legislative period; the MP with the id 577, was MP from the seventeenth to the twentieth.</p>
 <p>To make working with the legislative periods a bit easier, I convert the alphabetic version into a numeric one.</p>
-<div class="callout-warning callout callout-style-default callout-captioned">
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
+<div class="callout-title-container flex-fill">
 Sequence of conditions of <code>case_when</code> arguments
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
@@ -1000,7 +974,7 @@ html {
   font-family: Chivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-:where(#kraafasypg) .gt_table {
+#kraafasypg .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1025,7 +999,7 @@ html {
   border-left-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_heading {
+#kraafasypg .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -1037,12 +1011,12 @@ html {
   border-right-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_caption {
+#kraafasypg .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-:where(#kraafasypg) .gt_title {
+#kraafasypg .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1054,7 +1028,7 @@ html {
   border-bottom-width: 0;
 }
 
-:where(#kraafasypg) .gt_subtitle {
+#kraafasypg .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1066,13 +1040,13 @@ html {
   border-top-width: 0;
 }
 
-:where(#kraafasypg) .gt_bottom_border {
+#kraafasypg .gt_bottom_border {
   border-bottom-style: none;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_col_headings {
+#kraafasypg .gt_col_headings {
   border-top-style: none;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1087,7 +1061,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_col_heading {
+#kraafasypg .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1107,7 +1081,7 @@ html {
   overflow-x: hidden;
 }
 
-:where(#kraafasypg) .gt_column_spanner_outer {
+#kraafasypg .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1119,15 +1093,15 @@ html {
   padding-right: 4px;
 }
 
-:where(#kraafasypg) .gt_column_spanner_outer:first-child {
+#kraafasypg .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-:where(#kraafasypg) .gt_column_spanner_outer:last-child {
+#kraafasypg .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-:where(#kraafasypg) .gt_column_spanner {
+#kraafasypg .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #000000;
@@ -1139,7 +1113,7 @@ html {
   width: 100%;
 }
 
-:where(#kraafasypg) .gt_group_heading {
+#kraafasypg .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1165,7 +1139,7 @@ html {
   text-align: left;
 }
 
-:where(#kraafasypg) .gt_empty_group_heading {
+#kraafasypg .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1180,15 +1154,15 @@ html {
   vertical-align: middle;
 }
 
-:where(#kraafasypg) .gt_from_md > :first-child {
+#kraafasypg .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-:where(#kraafasypg) .gt_from_md > :last-child {
+#kraafasypg .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-:where(#kraafasypg) .gt_row {
+#kraafasypg .gt_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -1207,7 +1181,7 @@ html {
   overflow-x: hidden;
 }
 
-:where(#kraafasypg) .gt_stub {
+#kraafasypg .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1220,7 +1194,7 @@ html {
   padding-right: 5px;
 }
 
-:where(#kraafasypg) .gt_stub_row_group {
+#kraafasypg .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1234,11 +1208,11 @@ html {
   vertical-align: top;
 }
 
-:where(#kraafasypg) .gt_row_group_first td {
+#kraafasypg .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-:where(#kraafasypg) .gt_summary_row {
+#kraafasypg .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1248,16 +1222,16 @@ html {
   padding-right: 5px;
 }
 
-:where(#kraafasypg) .gt_first_summary_row {
+#kraafasypg .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_first_summary_row.thick {
+#kraafasypg .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-:where(#kraafasypg) .gt_last_summary_row {
+#kraafasypg .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1267,7 +1241,7 @@ html {
   border-bottom-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_grand_summary_row {
+#kraafasypg .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1277,7 +1251,7 @@ html {
   padding-right: 5px;
 }
 
-:where(#kraafasypg) .gt_first_grand_summary_row {
+#kraafasypg .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1287,11 +1261,11 @@ html {
   border-top-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_striped {
+#kraafasypg .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-:where(#kraafasypg) .gt_table_body {
+#kraafasypg .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1300,7 +1274,7 @@ html {
   border-bottom-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_footnotes {
+#kraafasypg .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1314,7 +1288,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_footnote {
+#kraafasypg .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -1323,7 +1297,7 @@ html {
   padding-right: 5px;
 }
 
-:where(#kraafasypg) .gt_sourcenotes {
+#kraafasypg .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1337,7 +1311,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-:where(#kraafasypg) .gt_sourcenote {
+#kraafasypg .gt_sourcenote {
   font-size: 12px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1345,64 +1319,64 @@ html {
   padding-right: 5px;
 }
 
-:where(#kraafasypg) .gt_left {
+#kraafasypg .gt_left {
   text-align: left;
 }
 
-:where(#kraafasypg) .gt_center {
+#kraafasypg .gt_center {
   text-align: center;
 }
 
-:where(#kraafasypg) .gt_right {
+#kraafasypg .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-:where(#kraafasypg) .gt_font_normal {
+#kraafasypg .gt_font_normal {
   font-weight: normal;
 }
 
-:where(#kraafasypg) .gt_font_bold {
+#kraafasypg .gt_font_bold {
   font-weight: bold;
 }
 
-:where(#kraafasypg) .gt_font_italic {
+#kraafasypg .gt_font_italic {
   font-style: italic;
 }
 
-:where(#kraafasypg) .gt_super {
+#kraafasypg .gt_super {
   font-size: 65%;
 }
 
-:where(#kraafasypg) .gt_footnote_marks {
+#kraafasypg .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-:where(#kraafasypg) .gt_asterisk {
+#kraafasypg .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-:where(#kraafasypg) .gt_indent_1 {
+#kraafasypg .gt_indent_1 {
   text-indent: 5px;
 }
 
-:where(#kraafasypg) .gt_indent_2 {
+#kraafasypg .gt_indent_2 {
   text-indent: 10px;
 }
 
-:where(#kraafasypg) .gt_indent_3 {
+#kraafasypg .gt_indent_3 {
   text-indent: 15px;
 }
 
-:where(#kraafasypg) .gt_indent_4 {
+#kraafasypg .gt_indent_4 {
   text-indent: 20px;
 }
 
-:where(#kraafasypg) .gt_indent_5 {
+#kraafasypg .gt_indent_5 {
   text-indent: 25px;
 }
 
@@ -1410,30 +1384,17 @@ tbody tr:last-child {
   border-bottom: 2px solid #ffffff00;
 }
 </style>
-<table class="gt_table">
-  <thead class="gt_header">
-    <tr>
-      <td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="">Number of seats in the Nationalrat</td>
-    </tr>
-    
-  </thead>
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="legislative periods">legislative periods</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Number of seats">Number of seats</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="txt" class="gt_row gt_left">1</td>
-<td headers="seats" class="gt_row gt_center">183</td></tr>
-    <tr><td headers="txt" class="gt_row gt_left">2 - 11</td>
-<td headers="seats" class="gt_row gt_center">165</td></tr>
-    <tr><td headers="txt" class="gt_row gt_left">13 - today (27)</td>
-<td headers="seats" class="gt_row gt_center">183</td></tr>
-  </tbody>
-  
-  
-</table>
+
+Number of seats in the Nationalrat
+legislative periods
+Number of seats
+1
+183
+2 - 11
+165
+13 - today (27)
+183
+
 </div>
 </div>
 </div>
@@ -2303,15 +2264,15 @@ tbody tr:last-child {
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2023,
-  author = {Roland Schmidt},
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2023,
+  author = {Schmidt, Roland},
   title = {Parliament’s New {API} - {How} to Access Data on {MPs}},
   date = {2023-02-10},
   url = {https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps},
   langid = {en}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2023" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
-Roland Schmidt. 2023. <span>“Parliament’s New API - How to Access Data
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2023" class="csl-entry quarto-appendix-citeas" role="listitem">
+Schmidt, Roland. 2023. <span>“Parliament’s New API - How to Access Data
 on MPs.”</span> February 10, 2023. <a href="https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps">https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -2341,9 +2302,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -2408,6 +2383,92 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -2450,7 +2511,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-      <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
@@ -2490,7 +2554,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":true,"descPosition":"bottom","openEffect":"zoom","closeEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","loop":true,"openEffect":"zoom","selector":".lightbox"});</script>
 
 
 

@@ -10,7 +10,11 @@ listing:
   filter-ui: false
   # fields: [image, date, title, description, categories]
   fields: [title, description, date, categories]
-  feed: true
+  feed:
+    type: full
+    title: "ocr feed"
+    categories: [OCR, climate]
+    description: "RSS feed to relevant posts"
   image-height: 150px
   page-size: 20
   image-align: right

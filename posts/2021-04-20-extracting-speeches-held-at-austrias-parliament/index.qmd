@@ -325,7 +325,10 @@ In the screen recording above we see that the statement by MP Drozda can be sele
 
 Let's define the function accordingly:
 
-```{r, eval=T, code_folding=FALSE, cache=F, cache.extra=Sys.Date()}
+```{r}
+
+#| code-folding: false
+
 fn_get_record_text <- function(link_to_text) {
   
 link_to_text %>% 

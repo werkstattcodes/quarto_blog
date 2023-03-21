@@ -1,0 +1,686 @@
+---
+title: "State legislature elections and vaccination rates"
+description: ""
+
+date: 03-17-2023
+
+categories:
+  - Austria
+  - COVID
+
+reference-location: margin
+
+draft: true
+---
+
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(sf)
+library(patchwork)
+library(reactable)
+library(reactablefmtr)
+library(ggpubr)
+library(ggh4x)
+library(biscale)
+library(ggtext)
+```
+
+# JUST THE RESULTS, PLEASE!
+
+# CONTEXT
+
+This post is a "quick" look at the most recent state-level elections in Austria, namely in Lower Austria and Carinthia. Following the publication of the results, polsci prof Laurenz Ennser-Jedenastik pointed out in a tweet the rather remarkable relation between municipalities' rates of COVID vaccinations and the performance of the extreme-right Freedom Party (FPÖ) in Lower Austria.
+
+This post adds little substantively new, but is rather an exercise in demonstrating
+
+a\) how to extract electoral data from the rather intricate formats they were published in by the electoral authorities. Here we're dealing with multi-column headers in an xlsx file and a nested html pages; @sec-getting-electoral-data
+
+b\) how to display bivariate data on a map, i.e. the relation between municipal vaccination rates and the municipal vote share change of a party, and
+
+c\) a few smaller side kicks along the way (e.g. extending the analysis to all parties).
+
+# GETTING ELECTORAL DATA {#sec-getting-electoral-data}
+
+Obtaining electoral data is not a big thing, as it should be. Getting them in a format, which is amenable to further analysis, e.g. in R, is another story. While there certainly has been some progress regarding Open Data, nevertheless, quite frequently, a considerable amount of data wrangling is necessary.
+
+## Lower Austria
+
+With the earlier elections in Lower Austria, the results came [inter alia](https://www.noe.gv.at/wahlen/L20231/Download.html){target="_blank"} as a standard xlsx file, however, with these column headers:
+
+![](img\noe_results.PNG)
+
+Below the necessary steps to eventually obtain a tidy dataframe. The [\`janitor\` package](https://cran.r-project.org/web/packages/janitor/vignettes/janitor.html%7Btarget=%22_blank%22%7D) once again turns out to be a very helpful tool.
+
+```{r}
+res_noe <- readxl::read_xls(path=here::here("posts","2023-03-17-state-elections-and-covid","data", "noe_lw23.xls"))
+
+#get party names
+vec_parties_noe <- res_noe %>% 
+  slice(2) %>% 
+  unlist(use.names=F) %>% 
+  na.omit() %>% as.character()
+```
+
+```{r}
+vec_parties_noe
+```
+
+```{r}
+#take body table
+df_res_noe_clean <- res_noe %>% 
+  janitor::find_header()
+
+#make row number 3 auxiliary column names
+df_res_noe_clean <- res_noe %>% 
+  janitor::row_to_names(., row_number=3, remove_rows_above = T) %>% 
+  clean_names() %>% 
+  pivot_longer(.,cols=matches("stimmen|ant_|diff_"))
+
+```
+
+Add party names.
+```{r}
+#Assign party names to columns
+df_res_noe_clean <- df_res_noe_clean %>% 
+  mutate(party=case_when(
+    str_detect(name, regex("^Stimmen$")) ~ vec_parties_noe[[1]],
+    str_detect(name, regex("^ant_percent$")) ~ vec_parties_noe[[1]],
+    str_detect(name, regex("^diff_percent$")) ~ vec_parties_noe[[1]],
+    str_detect(name, regex("_2$")) ~ vec_parties_noe[[2]],
+    str_detect(name, regex("_3$")) ~ vec_parties_noe[[3]],
+    str_detect(name, regex("_4$")) ~ vec_parties_noe[[4]],
+    str_detect(name, regex("_5$")) ~ vec_parties_noe[[5]],
+    str_detect(name, regex("_6$")) ~ vec_parties_noe[[6]],
+    str_detect(name, regex("_7$")) ~ vec_parties_noe[[7]],
+    str_detect(name, regex("_8$")) ~ vec_parties_noe[[8]],
+    .default = NA
+  ))
+```
+
+Keep only municipalities. Note that I limit my analysis here to the change of the electoral share on the municipal level. I don't consider here the mere vote share, but the analysis could be easily extended, if deemed relevant.
+
+```{r}
+df_res_noe_municip <- df_res_noe_clean %>% 
+  filter(str_detect(kenn_nr, regex("\\d{5}"))) %>% 
+  select(kenn_nr, bezeichnung, name, value, party) %>% 
+  filter(str_detect(name, regex("^diff_percent"))) %>% 
+  mutate(diff_percent=as.numeric(value)) %>% 
+  select(-name, -value)
+  
+n_distinct(df_res_noe_municip$kenn_nr) #573 OK
+```
+
+And with this we obtained a cleaned version of the election results for Lower Austria.
+
+```{r}
+df_res_noe_municip %>% 
+  reactable(
+    compact = TRUE, 
+    filterable=T,
+    defaultPageSize = 5, 
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = "Election Results Lower Austria 2023", font_size = 15) %>% 
+  add_subtitle(subtitle = "Only municipal level.")
+```
+
+## Carinthia
+
+Carinthia's election results are published on dedicated website by the state authorities. Have a look [here](https://www.ktn.gv.at/wahlen/ltwahl2023%7Btaget=%22_blank%22%7D). As you can see, the main page comprises a left-hand panel with links to each of the municipal results (and other categories). In turn, each of these municipal sub-pages contains a table with election results, the data in which I am actually interested in.
+
+To collect these data, let's take the following steps:
+
+1\) From left-hand panel on the overview page, extract all links leading to municipal subpages. The pertaining css-selector targets html elements of with the id 'gemeinde'. Since this selector also captures aggregate categories for wider electoral districts which we do not want, they have to be removed. Conveniently, they are all spelled in capital letter, what makes it easy to match via a regular expression and filter them out.
+
+Get links to sub/municipality-pages with results.
+
+```{r}
+link_overview <- "https://www.ktn.gv.at/wahlen/ltwahl2023"
+
+main <- rvest::session(link_overview)
+
+#get links
+res_links <- main %>% xml2::read_html() %>% 
+  rvest::html_elements("#gemeinde a") %>% 
+  rvest::html_attr("href")
+
+#get names
+res_names <- main %>% xml2::read_html() %>% 
+  rvest::html_elements("#gemeinde a") %>% 
+  rvest::html_text()
+
+#combine links and names to a tibble
+df_res <- tibble(links=res_links, names=res_names)
+
+df_res %>% 
+  filter(str_detect(links, regex("[A-Z]")))
+
+df_mun <- df_res %>% 
+  #remove aggregate categories
+  filter(!str_detect(links, regex("[A-Z]"))) %>% 
+  #complete links to get entire address
+  mutate(link_complete=glue::glue("https://www.ktn.gv.at/wahlen/ltwahl2023/{links}"))
+```
+
+Here the dataframe with all sub-page links.
+
+```{r}
+df_mun 
+```
+
+2\) With the links to all municipal pages now available, the next step is about extracting the table with the electoral data. To so, I define a function which is subsequently mapped to each subpage link. The css selector allowing us to capture the table is on each page class '.bausteinausw3_bo'.
+
+```{r}
+fn_get_res_municip <- function(link_municip) {
+  
+# link_municip <- "https://www.ktn.gv.at/wahlen/ltwahl2023/lt2023_20402.html"
+  
+#Extract table   
+df_res_municip <- link_municip %>% 
+  xml2::read_html() %>% 
+  rvest::html_elements(".bausteinausw3_bo") %>% 
+  rvest::html_table() %>% 
+  .[[1]] 
+
+#Filter the results    
+df_res_municip %>% 
+  janitor::clean_names() %>% 
+  filter(!str_detect(partei, regex("^Partei$|Gesamt|Ungültig|Gültig"))) %>% 
+  mutate(partei=str_remove(partei, regex("^.+?(?=[A-Z])"))) %>% 
+  rename_with(., .fn=\(x) str_replace(x, "_2", "_perc"), .cols=ends_with("_2")) %>% 
+  mutate(across(.cols=-partei, .fns=\(x) parse_number(x, locale=locale(decimal_mark=",")))) %>% 
+  mutate(link_municip=link_municip) %>% 
+  mutate(municip_id=str_extract(link_municip, regex("\\d+(?=\\.html$)")))
+
+}  
+
+```
+
+Apply the function
+```{r}
+#Map links
+df_res_ktn_municip<- df_mun %>% 
+  pull(link_complete) %>% 
+  map(., .f=\(x) fn_get_res_municip(link_municip = x), .progress=T) %>% 
+  purrr::list_rbind() 
+```
+
+Here the election results for Carinthia.
+```{r}
+df_res_ktn_municip %>% 
+    reactable(
+    compact = TRUE, 
+    filterable=T,
+    defaultPageSize = 5, 
+    theme = fivethirtyeight()
+  ) %>%
+  add_title(title = "Election Results Carinthia 2023", font_size = 15) %>% 
+  add_subtitle(subtitle = "Only municipal level.")
+```
+
+## Combine Data
+
+Finally, let's combine the results from Lower Austria and Carinthia into one single dataframe, and keep only the columns of interest. Note that I also standardize the party name of the ÖVP.
+
+```{r}
+df_res_municip <- bind_rows(
+  noe=df_res_noe_municip %>%
+    select(
+      municip_id=kenn_nr,
+      municip_name=bezeichnung,
+      party,
+      change_perc=diff_percent),
+  ktn=df_res_ktn_municip %>%
+    select(municip_id,
+           party=partei,
+           change_perc=differenz_perc),
+          .id = "state")
+
+# Standardize party name
+
+df_res_municip <- df_res_municip %>% 
+  mutate(party=case_when(
+    str_detect(party, regex("^VP$|vpnö", ignore_case=T)) ~ "ÖVP",
+    .default = party
+  ))
+
+
+```
+
+# COVID DATA
+
+With the electoral results now ready, let's add the data on Covid vaccination rates on the municipal level.
+
+```{r}
+#| cache: true
+df_covid <- readr::read_csv2(file="https://info.gesundheitsministerium.gv.at/data/COVID19_vaccination_municipalities_v202210.csv")
+
+df_covid_2 <- df_covid %>% 
+  mutate(across(.cols=contains("vaccination"), .fns=list(share=\(x) x/municipality_population))) %>% 
+  mutate(municipality_id=as.character(municipality_id))
+```
+
+```{r}
+df_res_municip_covid<- df_res_municip %>% 
+  left_join(., 
+            df_covid_2 %>% select((municipality_id), municipality_name, contains("share")),
+            by=c("municip_id"="municipality_id"))
+
+nrow(df_res_municip)==nrow(df_res_municip_covid)
+
+```
+
+# CORRELATION
+
+With this dataset we can already replicate the analysis tweeted by Ennser-Jedenastik, and extend it to other parties than the FPÖ.
+
+```{r}
+#| include: false
+txt_caption <- "Data: https:&#47;&#47;www.noe.gv.at&#47;wahlen, https:&#47;&#47;info.gesundheitsministerium.gv.at&#47;data&#47;<br>Analysis & Graph: Roland Schmidt | @zoowalk | https:&#47;&#47;werk.statt.codes"
+```
+
+
+```{r}
+#| code-summary: "Code: Create regression plots"
+#| code-fold: true
+#| column: body-outset-right
+#| fig-height: 6
+
+df_res_municip_covid %>% 
+  filter(!is.na(change_perc)) %>% 
+  filter(str_detect(party, regex("FPÖ|ÖVP"))) %>%
+  filter(state=="noe") %>%
+  ggplot(., aes(y=change_perc, 
+                x=vaccination_1_share))+
+  labs(
+    y="change of vote share in municipality",
+    x="vaccination rate in municipality (1st shot)",
+    title="STATE ELECTIONS 2023: \nCorrelation of electoral win/loss and COVID \nvaccination rate on municipal level",
+   # subtitle="Vaccination rate: % of municipality's population with at least one shot.",
+    caption=txt_caption
+  )+
+  geom_point()+
+  geom_smooth(method = "lm", color="orange")+
+  # stat_cor(aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")), # adds R^2 and p-value
+  stat_cor(aes(label = paste(after_stat(rr.label), after_stat(p.label), sep = "~`,`~")), # adds R^2 and p-value
+           r.accuracy = 0.01,
+           p.accuracy = 0.001,
+           color="black",
+          # fill="grey",
+           label.x = 0.45, 
+           label.y = -30, 
+           size = 3) +
+  stat_regline_equation(aes(label =after_stat(eq.label)), # adds equation to linear regression
+                        color="black",
+                        label.x = 0.45, 
+                        label.y = -34, 
+           #             fill="grey",
+                        size = 3)+
+  # scale_y_continuous(label=scales::label_percent(scale=1))+
+  scale_x_continuous(label=scales::label_percent(scale=100),
+  position = "bottom")+
+  scale_y_continuous(label=scales::label_percent(scale=1),
+                     expand=expansion(mult=c(0.2,0.05)),
+                     position="left")+
+  facet_grid2(
+    rows=vars(state),
+    cols=vars(party),
+    axes="x",
+    switch="y",
+    labeller = labeller(state=c(ktn="CARINTHIA", noe="LOWER AUSTRIA")))+
+  ggthemes::theme_fivethirtyeight()+
+  theme(
+    plot.subtitle = element_text(margin = ggplot2::margin(b=.5, unit="cm")),
+    panel.grid.minor.y = element_blank(),
+    strip.text.x = element_text(face="bold", hjust=0),
+    strip.text.y = element_text(face="bold", hjust=1),
+    axis.title.x.bottom = element_text(size=10, hjust=0, face = "plain"),
+    axis.title.y.left = element_text(size=10, hjust=1,
+    face="plain"),
+    plot.caption = element_markdown(
+    margin=ggplot2::margin(t=.5, unit="cm"),
+    hjust = 0,
+    size = rel(0.8),
+    lineheight = 1.2)
+  )
+
+```
+
+# BISCALE
+
+A while ago, I came across Chris Prener's [biscale](https://chris-prener.github.io/biscale/){target="_blank"}) package which allows you to put the interaction of two variables onto a map. So far I hadn't run into any analysis where I could have made use of it, but the present case - the interaction of vaccination rates and vote share change per municipality - seems to be a good fit to testdrive the package.
+
+## Importing map data
+
+Before doing so, however, we still need to combine our dataframe containing electoral and vaccination data with spatial data, allowing us to eventually plot the pertaining maps. The code chunk below does exactly this. The [source](https://www.data.gv.at/katalog/dataset/stat_gliederung-osterreichs-in-gemeinden14f53){target="_blank"} of the shapefiles for Lower Austria and Carinthia is Statistics Austria, the federal statistical office.
+
+When joining the two dataframes, there's one thing to bear in mind: Some parties did not compete in all municipalities of a state. The intended result, however, should not only display those municipalities where the parties actually competed, but the maps for the entire state. Hence, a simple left join doesn't work. Instead, I define a function which is joining the map data of all municipalities for each party.
+
+```{r}
+#| eval: true
+#| code-summary: "Code: Incorporate map data"
+#| code-fold: show
+
+#import map
+map_municips_all <- sf::read_sf(here::here("posts","2023-03-17-state-elections-and-covid","data","OGDEXT_GEM_1_STATISTIK_AUSTRIA_20230101","STATISTIK_AUSTRIA_GEM_20230101.shp"))
+
+#keep only municipalities in Carinthia and Lower Austria
+map_municips <- map_municips_all %>% filter(str_detect(g_id, regex("^2(0|1)|^3")))
+
+#nrow(map_municips) #705 ok 132 + 573
+
+#left-join with results for each party; ensures complete map/also where party didn't compete
+vec_parties <- df_res_municip_covid %>% 
+  filter(!is.na(change_perc)) %>% 
+  distinct(party) %>% 
+  pull()
+
+fn_match_map_res <- function(party) {
+  
+left_join(map_municips,
+          df_res_municip_covid %>% filter(party=={{party}}),
+          by=c("g_id"="municip_id")) %>% 
+    mutate(partei=party)
+
+  }
+
+df_map_res <- vec_parties %>% map(., fn_match_map_res, .progress=T) %>% 
+  purrr::list_rbind() %>% 
+  ungroup()
+
+```
+
+## Defining categories for biscale
+
+In order to project the interaction of two variables onto a map, biscale splits continuous variables into a maximum of 4 categories (*dims* attribute). For each variable, I decided that each category should span the same width (*style=equal*). 
+
+As for the vaccination ratio this is rather straight forward: Take the difference between the highest and the lowest ratio, and divide this space into four equally spaced intervals.
+
+When it comes to parties' change of vote share (gain/loss in percentage points), there's one thing to consider: Rather than taking the difference between the maximum gain and maximum loss across all parties, I decided to take on an 'intra-party intra-state view' and take the differences only between each party's maximum/minimum. The rational behind it is my interest in seeing how each party's strong and weak electoral performance tie with municipality's vaccination ratio. If I would calculate the interval across all parties, it's likely that the electoral results of a party with comparatively little change would end up all i.e. in one lump category.
+What this means in concrete terms will become clearer when showing the results. I just flag this already at this point, since its important when it comes to interpreting the eventual results.
+
+To calculate these 'intra-party' categories, I define again a function which is applied to each party separately (rather than across the entire dataset at once).
+
+```{r}
+my_dims=3
+my_pallette="BlueYl"
+my_style="equal"
+```
+
+```{r}
+#| eval: true
+#| code-summary: "Code: Calculate biscale categories."
+#| code-fold: show
+#| warning: false
+
+fn_bi_class <- function(party, state) {
+
+#take only the election results of one party in one state 
+    df_map_res_party_state <- df_map_res %>%
+       filter(party=={{party}}) %>%
+       filter(state=={{state}}) %>%
+    mutate(vaccination_1_share=vaccination_1_share*100)
+
+# calculate breaks to split election results and vaccination rates into 4 categories     
+    bi_break_vals <- bi_class_breaks(df_map_res_party_state,
+      x=change_perc,
+      y=vaccination_1_share,
+      style = my_style,
+      dim=my_dims,
+      dig_lab = 2,
+      split = FALSE)
+    #class(bi_break_vals)
+ 
+# assign each municipality to one election result - vaccination ratio category
+   bi_class(df_map_res_party_state, 
+            x=change_perc, 
+            y=vaccination_1_share, 
+            style = my_style, 
+            dim=my_dims) %>% 
+     mutate(bi_break_vals_vec=list(bi_break_vals))
+   
+    }
+
+# get unique combinations of state and party
+df_state_party <- df_map_res %>% 
+  distinct(party, state) %>% 
+  filter(!is.na(party))
+
+# apply function to all state - party combinations
+df_map_res_bi_intra <- map2(df_state_party %>% pluck("party"),
+       df_state_party %>% pluck("state"), 
+       purrr::possibly(.f=\(x,y) fn_bi_class(party=x, state=y), 
+                                  otherwise = NULL)) %>% 
+  purrr::list_rbind()
+
+
+```
+ 
+```{r}
+#| include: false
+#| eval: false
+#check
+df_map_res_bi_intra %>% 
+  count(party)
+
+#check
+check_intervals <- df_map_res_bi_intra %>% 
+  group_by(party, state) %>% 
+  slice_head(n=2) %>% 
+  select(municip_name, bi_break_vals_vec) %>% 
+  unnest_wider(bi_break_vals_vec) %>% 
+  unnest(starts_with("bi"))
+
+
+```
+
+### across all parties
+```{r}
+#| eval: true
+#| include: true
+
+## interval across all parties (but within states?)
+library(biscale)
+
+bi_break_vals <- bi_class_breaks(df_map_res, 
+    x=change_perc, y=vaccination_1_share, style = my_style, dim=my_dims, 
+    dig_lab=2,
+    split = FALSE)
+
+df_map_res_bi_accross <- bi_class(df_map_res, x=change_perc, y=vaccination_1_share, style = my_style, dim=my_dims) %>% 
+     mutate(bi_break_vals_vec=list(bi_break_vals))
+  
+```
+
+## Produce maps
+
+### define fn
+```{r}
+#| code-summary: "Code: Create biscale maps."
+#| code-fold: true
+
+#convert dataframe to sf object
+#IMPORTANT
+sf_map <- st_as_sf(df_map_res_bi_intra)
+#sf_map <- st_as_sf(df_map_res_bi_accross)
+
+#define function to plot each map
+fn_plot <- function(party, state) {
+  
+#each state/each party  
+#state <- "noe"
+#party <- "FPÖ"
+
+sf_plot_map<- sf_map %>% 
+  #filter(!is.na(change_perc)) %>% 
+  filter(state=={{state}}) %>% 
+  filter(party=={{party}}) 
+
+#create map
+plot_map <- sf_plot_map %>% 
+  ggplot() +
+  geom_sf(mapping = aes(fill = bi_class),
+          color = "black", 
+          size = 0.1, 
+          show.legend = F) +
+ bi_scale_fill(pal = my_pallette, 
+               dim = my_dims) +
+  labs(
+    title = glue::glue("{state}: {party}")
+  ) +
+  bi_theme()+
+    theme(plot.title=element_text(size=10))
+
+bi_break_vals_vec <- unique(sf_plot_map$bi_break_vals_vec)  
+flatten(bi_break_vals_vec)
+
+#create legend  
+plot_legend <- bi_legend(
+  pal = my_pallette,
+  dim=my_dims,
+  xlab="Increase vote share",
+  ylab="Increase vaccinatation share",
+  size=8,
+  breaks=flatten(bi_break_vals_vec),
+  arrows=T)
+
+df_legend_data <- sf_plot_map %>%
+as_tibble() %>%
+ungroup() %>%
+count(bi_class) %>%
+mutate(n_rel=n/sum(n)) %>%
+tidyr::separate_wider_delim(cols=c(bi_class), delim = "-", names=c("x", "y")) %>%
+mutate(across(.cols=c(x, y), as.numeric))
+
+
+plot_legend_2 <- plot_legend+
+labs(caption="Number of municipalities as labels")+
+geom_text(data=df_legend_data,
+  aes(x=x,
+  y=y,
+  label=n_rel %>% scales::percent(., accuracy=.1)))
+
+#combine map and legend into one plot with patchwork package
+plot_map+plot_legend_2+plot_layout(ncol=2, widths = c(3,1))
+
+  
+}
+
+```
+
+### apply fn
+
+```{r}
+#apply function
+li_plots <-  map2(df_state_party %>% pluck("party"),
+       df_state_party %>% pluck("state"), 
+       .f=\(x, y) fn_plot(party=x, state=y), 
+       .progress=T)
+```
+ 
+```{r}
+length(li_plots)
+
+df_plots <- li_plots %>% enframe() %>%
+dplyr::bind_cols(., df_state_party)
+
+df_plots_noe <- df_plots %>%
+filter(state=="noe") %>%
+select(-state, -name) %>%
+rename(plot=value)
+
+vec_party <- df_plots_noe %>% pull("party")
+class(vec_party)
+vec_plot <- df_plots_noe %>% pull("plot")
+class(vec_plot)
+
+```
+
+:::: {.column-body-outset-right}
+::: {.panel-tabset}
+```{r}
+#| results: asis
+
+walk2(.x=vec_party, .y=vec_plot, ~ {
+  cat('## ', .x, '\n\n')
+  
+  print(.y)
+
+  cat('\n\n')
+
+})
+
+```
+:::
+:::: 
+
+
+# BARGRAPH
+
+```{r}
+#| eval: true
+
+df_map_res_bi_intra_2<- df_map_res_bi_intra %>% 
+  separate_wider_delim(cols=bi_class, delim = "-", names = c("bi_class_x", "bi_class_y")) %>% 
+  mutate(bi_class_x=na_if(bi_class_x, "NA"))
+
+
+df_map_res_bi_intra_2 <- df_map_res_bi_intra_2 %>% 
+  mutate(cat_vac_low=case_when(
+    str_detect(bi_class_y, regex("[2-4]")) ~ "other",
+    .default="low"))
+
+library(ggh4x)
+
+df_map_res_bi_intra_2 %>% 
+ # filter(str_detect(party, regex("FPÖ|ÖVP"))) %>% 
+  ggplot(., aes(x=interaction(cat_vac_low, party), 
+                y=change_perc,
+                color=cat_vac_low))+
+  #geom_jitter()+
+  ggrain::geom_rain()+
+  scale_x_discrete(guide = guide_axis_nested(delim = "."), name = "Party")+
+  ggthemes::theme_fivethirtyeight() +
+  facet_wrap(vars(state), ncol=1)
+
+
+
+```
+
+# HEATMAPS
+
+```{r}
+#| eval: true
+
+df_n_class <- df_map_res_bi_intra_2 %>% 
+  filter(!is.na(bi_class_x)) %>%  #only in municipalities where party indeed ran
+  group_by(state, party, bi_class_x, bi_class_y) %>% 
+  summarise(bi_class_n=n()) %>% 
+  group_by(state, party) %>% 
+  mutate(bi_class_rel=bi_class_n/sum(bi_class_n))
+
+
+pl_n_class <- df_n_class %>% 
+ # filter(!is.na(bi_class_x)) %>%  #remove municipalities where party didn't compete
+  filter(state=="noe") %>% 
+ # filter(str_detect(party, regex("FPÖ|NEOS|ÖVP|GRÜNE"))) %>% 
+  ggplot()+
+  geom_raster(
+    aes(x=bi_class_x,
+        y=bi_class_y,
+        fill=bi_class_rel)
+  )+
+  geom_text(
+    aes(x=bi_class_x,
+    y=bi_class_y,
+    label=bi_class_rel %>% scales::percent(accuracy=.1))
+  )+
+  scale_fill_gradient(low="white", high="red")+
+  facet_grid(rows=vars(party),
+             cols=vars(state))
+
+
+
+```

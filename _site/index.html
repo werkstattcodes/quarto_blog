@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.280">
+<meta name="generator" content="quarto-1.3.269">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -18,7 +18,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 </style>
@@ -125,10 +125,11 @@ cookieconsent.run({
   
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="werk.statt.codes" href="index.xml"></head>
+<link rel="alternate" type="application/rss+xml" title="ocr feed" href="index.xml"></head>
 
 <body class="floating nav-fixed">
 
@@ -141,24 +142,26 @@ cookieconsent.run({
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
+            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="./about.html">
+    <a class="dropdown-item" href="./about.html" rel="" target="">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
-              <div id="quarto-search" class="" title="Search"></div>
+            <div class="quarto-navbar-tools">
+</div>
           </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
@@ -167,6 +170,7 @@ cookieconsent.run({
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
   
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
@@ -181,7 +185,7 @@ cookieconsent.run({
 
 <div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
 <div class="list grid quarto-listing-cols-4">
-<div class="g-col-1" data-index="0" data-categories="Austria,API" data-listing-date-sort="1675983600000" data-listing-file-modified-sort="1676108783263" data-listing-reading-time-sort="41.8">
+<div class="g-col-1" data-index="0" data-categories="Austria,API" data-listing-date-sort="1675983600000" data-listing-file-modified-sort="1676108783263" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="42">
 <a href="./posts/2023-01-18-parliament-new-api-mps/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -208,7 +212,7 @@ What is the gender composition of Austria’s Nationalrat? How did it evolve ove
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="1" data-categories="Austria,parties" data-listing-date-sort="1673305200000" data-listing-file-modified-sort="1673472868880" data-listing-reading-time-sort="6.545">
+<div class="g-col-1" data-index="1" data-categories="Austria,parties" data-listing-date-sort="1673305200000" data-listing-file-modified-sort="1673472868880" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7">
 <a href="./posts/2023-01-10-prof-and-wolf-partysytem/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -235,7 +239,7 @@ A quick look at the number of registered political parties in Austria, prompted 
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="2" data-categories="Austria,text analysis,web scraping,regex" data-listing-date-sort="1637535600000" data-listing-file-modified-sort="1672922049430" data-listing-reading-time-sort="43.365">
+<div class="g-col-1" data-index="2" data-categories="Austria,text analysis,web scraping,regex" data-listing-date-sort="1637535600000" data-listing-file-modified-sort="1676317729999" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="44">
 <a href="./posts/2021-04-20-extracting-speeches-held-at-austrias-parliament/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -268,7 +272,7 @@ The website of the Austrian parliament provides transcripts of its sessions. Thi
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="3" data-categories="Austria,regex" data-listing-date-sort="1637449200000" data-listing-file-modified-sort="1672998976641" data-listing-reading-time-sort="34.85">
+<div class="g-col-1" data-index="3" data-categories="Austria,regex" data-listing-date-sort="1637449200000" data-listing-file-modified-sort="1672998976641" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="35">
 <a href="./posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -295,7 +299,7 @@ In a previous post, I detailed how to extract statements given in Austria’s pa
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="4" data-categories="Austria,Parliament,web scraping" data-listing-date-sort="1633557600000" data-listing-file-modified-sort="1673010972468" data-listing-reading-time-sort="113.595">
+<div class="g-col-1" data-index="4" data-categories="Austria,Parliament,web scraping" data-listing-date-sort="1633557600000" data-listing-file-modified-sort="1673010972468" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="114">
 <a href="./posts/2021-07-18-the-ibizia-inquiry-in-numbers/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -325,7 +329,7 @@ In mid-June, the so-called ‘Ibiza Commission of Inquiry’ heard its last witn
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="5" data-categories="Austria,COVID" data-listing-date-sort="1615849200000" data-listing-file-modified-sort="1673013074635" data-listing-reading-time-sort="17.745">
+<div class="g-col-1" data-index="5" data-categories="Austria,COVID" data-listing-date-sort="1615849200000" data-listing-file-modified-sort="1673013074635" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18">
 <a href="./posts/2021-03-10-covidsubmissionsnoauthor/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -352,7 +356,7 @@ Austria’s legislative procedure provides for a consultative process which allo
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="6" data-categories="Austria,Corona,pdftools" data-listing-date-sort="1613775600000" data-listing-file-modified-sort="1672675738850" data-listing-reading-time-sort="70.355">
+<div class="g-col-1" data-index="6" data-categories="Austria,Corona,pdftools" data-listing-date-sort="1613775600000" data-listing-file-modified-sort="1672675738850" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="71">
 <a href="./posts/2021-01-22-covidconsultationduration/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -382,7 +386,7 @@ A (relative) deep dive into the length of the public consultation period for dra
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="7" data-categories="Austria,COVID,OCR,stringr,web scraping" data-listing-date-sort="1608591600000" data-listing-file-modified-sort="1672773572183" data-listing-reading-time-sort="50.625">
+<div class="g-col-1" data-index="7" data-categories="Austria,COVID,OCR,stringr,web scraping" data-listing-date-sort="1608591600000" data-listing-file-modified-sort="1672773572183" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="51">
 <a href="./posts/2020-12-22-submissionsepidemiclaw/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -418,7 +422,7 @@ An analysis of public submissions to bill seeking to amend Austria’s epidemic 
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="8" data-categories="Austria,social media,elections" data-listing-date-sort="1608332400000" data-listing-file-modified-sort="1672335267718" data-listing-reading-time-sort="115.505">
+<div class="g-col-1" data-index="8" data-categories="Austria,social media,elections" data-listing-date-sort="1608332400000" data-listing-file-modified-sort="1672335267718" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="116">
 <a href="./posts/2020-12-19-vienna-elections-2020-analysis-of-parties-ads-on-facebook/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -448,7 +452,7 @@ Analysis of the facebook ads placed in the run-up to the 2020 Vienna city electi
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="9" data-categories="maps,Austria,sf,snapbox,mapbox" data-listing-date-sort="1606258800000" data-listing-file-modified-sort="1673116087195" data-listing-reading-time-sort="9.63">
+<div class="g-col-1" data-index="9" data-categories="maps,Austria,sf,snapbox,mapbox" data-listing-date-sort="1606258800000" data-listing-file-modified-sort="1673116087195" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10">
 <a href="./posts/2020-11-25-static-maps-with-mapbox-background-images-snapbox/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -484,7 +488,7 @@ How to create ggplot maps with mapbox images as background.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="10" data-categories="Austria,COVID,OCRh,stringr,web scraping" data-listing-date-sort="1605654000000" data-listing-file-modified-sort="1672841955671" data-listing-reading-time-sort="14.425">
+<div class="g-col-1" data-index="10" data-categories="Austria,COVID,OCRh,stringr,web scraping" data-listing-date-sort="1605654000000" data-listing-file-modified-sort="1672841955671" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="15">
 <a href="./posts/2020-11-18-recreating-nyt-election-map/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -520,7 +524,7 @@ How to re-create election maps by the NYT with ggplot.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="11" data-categories="Austria,elections,OCR,regex,reactable,gt" data-listing-date-sort="1602280800000" data-listing-file-modified-sort="1672138171942" data-listing-reading-time-sort="77.405">
+<div class="g-col-1" data-index="11" data-categories="Austria,elections,OCR,regex,reactable,gt" data-listing-date-sort="1602280800000" data-listing-file-modified-sort="1676365685560" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="78">
 <a href="./posts/2020-10-10-vienna-elections-2020-age-profile/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -559,7 +563,7 @@ An empirical look at candidates’ age.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="12" data-categories="Austria,OCR,web scraping" data-listing-date-sort="1595282400000" data-listing-file-modified-sort="1672783072728" data-listing-reading-time-sort="62.17">
+<div class="g-col-1" data-index="12" data-categories="Austria,OCR,web scraping" data-listing-date-sort="1595282400000" data-listing-file-modified-sort="1672783072728" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="63">
 <a href="./posts/2020-07-21-attransperency/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -589,7 +593,7 @@ Analysis of Austria MP’s transparency reports.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="13" data-categories="Austria,climate,COVID,shiny" data-listing-date-sort="1591567200000" data-listing-file-modified-sort="1672840667723" data-listing-reading-time-sort="24.73">
+<div class="g-col-1" data-index="13" data-categories="Austria,climate,COVID,shiny" data-listing-date-sort="1591567200000" data-listing-file-modified-sort="1672840667723" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="25">
 <a href="./posts/2020-06-08-update-on-mobility-patterns/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -622,7 +626,7 @@ This is a short update on my previous post dealing with Google’s mobility repo
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="14" data-categories="COVID,Austria" data-listing-date-sort="1588024800000" data-listing-file-modified-sort="1672839668874" data-listing-reading-time-sort="19.42">
+<div class="g-col-1" data-index="14" data-categories="COVID,Austria" data-listing-date-sort="1588024800000" data-listing-file-modified-sort="1672839668874" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="20">
 <a href="./posts/2020-04-28-google-s-mobility-reportsmd/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -649,7 +653,7 @@ Analysis of Google’s mobility reports following introduction of Covid lockdown
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="15" data-categories="Austria,COVID" data-listing-date-sort="1587592800000" data-listing-file-modified-sort="1673010464630" data-listing-reading-time-sort="27.98">
+<div class="g-col-1" data-index="15" data-categories="Austria,COVID" data-listing-date-sort="1587592800000" data-listing-file-modified-sort="1673010464630" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="28">
 <a href="./posts/2020-04-23-covid-19-corona-virus-quick-look-at-some-data/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -676,7 +680,7 @@ Preliminary look at the COVID data on Austria.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="16" data-categories="Austria,plotly,crosstalk" data-listing-date-sort="1583103600000" data-listing-file-modified-sort="1672862970853" data-listing-reading-time-sort="25.115">
+<div class="g-col-1" data-index="16" data-categories="Austria,plotly,crosstalk" data-listing-date-sort="1583103600000" data-listing-file-modified-sort="1672862970853" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="26">
 <a href="./posts/2020-03-02-primary-schools-in-vienna/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -706,7 +710,7 @@ Drawing on public data from Vienna’s school administration I look at how many 
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="17" data-categories="Bosnia,OCR,web scraping" data-listing-date-sort="1581030000000" data-listing-file-modified-sort="1672915248666" data-listing-reading-time-sort="66.09">
+<div class="g-col-1" data-index="17" data-categories="Bosnia,OCR,web scraping" data-listing-date-sort="1581030000000" data-listing-file-modified-sort="1672915248666" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="67">
 <a href="./posts/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -736,7 +740,7 @@ Creating and analyzing a new dataset on the voting behavior of BiH’s members o
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="18" data-categories="elections,stringr,tidyr::pivot,Austria" data-listing-date-sort="1574204400000" data-listing-file-modified-sort="1672930494614" data-listing-reading-time-sort="82.05">
+<div class="g-col-1" data-index="18" data-categories="elections,stringr,tidyr::pivot,Austria" data-listing-date-sort="1574204400000" data-listing-file-modified-sort="1672930494614" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="83">
 <a href="./posts/2019-11-20-vorzugsstimmen/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -769,7 +773,7 @@ A look at the distribution of preference votes casted in the 2019 general electi
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="19" data-categories="women" data-listing-date-sort="1571868000000" data-listing-file-modified-sort="1672759857163" data-listing-reading-time-sort="6.885">
+<div class="g-col-1" data-index="19" data-categories="women" data-listing-date-sort="1571868000000" data-listing-file-modified-sort="1672759857163" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7">
 <a href="./posts/2019-10-24-women-in-parliament/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <div class="card-body post-contents">
@@ -825,9 +829,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -892,6 +910,92 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return note.innerHTML;
     });
   }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -934,7 +1038,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-      <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
