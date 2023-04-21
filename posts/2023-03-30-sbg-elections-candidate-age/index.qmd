@@ -2,7 +2,7 @@
 title: "2023 State Elections in Salzburg - A look at data extracted from the electoral lists"
 description: "How to to scrape content from the electoral lists, and analyze data pertaining to age, regional and gender composition."
 
-date: 03-30-2023
+date: 04-21-2023
 
 categories:
   - Austria
