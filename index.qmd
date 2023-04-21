@@ -13,7 +13,7 @@ listing:
   feed:
     type: full
     title: "werk.statt.codes feed"
-    categories: [OCR, climate]
+    categories: [r]
     description: "RSS feed to relevant posts"
     items: 2
   image-height: 150px

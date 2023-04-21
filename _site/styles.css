@@ -11,7 +11,7 @@ padding-right: 0.3cm;
 
 .navbar-brand-container {
 color: black;
-background-color: black;
+background-color: white;
 }
 
 .navbar {
@@ -51,11 +51,15 @@ border: 0px;
     color:#000000 !important;
 }
 
+
+
 .menu-text {
 color: grey;
 font-size:0.7rem;
 
 }
+
+
 
 /* category labels on article page */
 .quarto-category {
@@ -98,6 +102,12 @@ div.quarto-post .metadata {
     color: white;
 }
 
+a.nav-link.dropdown-toggle:hover {
+    background-color: black;
+    color: white;    
+}
+
+
 h1.title {
 font-size: 2.1em;
 }
@@ -126,6 +136,11 @@ h3 {
 svg.aa-SubmitIcon  {
     width: 15px !important;
     height: 15px !important;
+}
+
+
+::selection {
+  background: lightgrey;
 }
 
 .quarto-color-scheme-toggle {
@@ -172,6 +187,13 @@ padding-top: 5px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-size: 0.9rem;
   }
+
+/*change color when hovering over table of contents*/
+#TOC a:hover {
+    border-left: 2px solid darkgrey;
+    color: black !important;
+}
+
 
   
 .sidebar nav[role=doc-toc] ul>li>a.active {
@@ -257,7 +279,8 @@ a {
     text-decoration: dotted;
 }
 
-a:hover[target] {
+/* removed [target] */
+p a:hover {
     color:#9cd321;
     background-color: black;
     /* text-decoration-line: underline;

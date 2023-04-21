@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.269">
+<meta name="generator" content="quarto-1.3.321">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -489,7 +489,7 @@ not public     public
 <p>Now let’s use the links to the submissions’ sub-pages and search in each sub-page for a link which leads to the actual pdf document of the submission. By using the browser’s developer tools (F12 key), we can see the html code behind the page. Clicking on the link of one submission reveals that the link contains the word ‘imfname’. I use this string to identify the links to the submissions’ pdfs and neglect all other links and pdfs which are also on the site.</p>
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><a href="identify_link.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="identify_link.gif" class="quarto-discovered-preview-image img-fluid figure-img"></a></p>
+<p><a href="identify_link.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="identify_link.gif" class="img-fluid figure-img"></a></p>
 </figure>
 </div>
 <p>To do so, below the function which is applied to all (!) links leading to the sub-pages with the individual submissions. It reads the html code, extracts the links (href), converts the results into a dataframe, and subsequently filters out the links which include ‘imfname’. I then complement the extracted link with the missing part of the web address (www.parlament….). Since there are several submission (sub-pages) which state that the text is not public, and don’t include a link to a pdf, I insert in these cases a ‘missing’ instead of the link. To accelerate the process I apply the function in parallel by using `furrr::future_map`.</p>
@@ -728,7 +728,7 @@ not public     public
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#kwfawfaujb .gt_table {
+:where(#kwfawfaujb) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -753,7 +753,7 @@ not public     public
   border-left-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_heading {
+:where(#kwfawfaujb) .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -765,12 +765,12 @@ not public     public
   border-right-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_caption {
+:where(#kwfawfaujb) .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#kwfawfaujb .gt_title {
+:where(#kwfawfaujb) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -782,7 +782,7 @@ not public     public
   border-bottom-width: 0;
 }
 
-#kwfawfaujb .gt_subtitle {
+:where(#kwfawfaujb) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -794,13 +794,13 @@ not public     public
   border-top-width: 0;
 }
 
-#kwfawfaujb .gt_bottom_border {
+:where(#kwfawfaujb) .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_col_headings {
+:where(#kwfawfaujb) .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -815,7 +815,7 @@ not public     public
   border-right-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_col_heading {
+:where(#kwfawfaujb) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -835,7 +835,7 @@ not public     public
   overflow-x: hidden;
 }
 
-#kwfawfaujb .gt_column_spanner_outer {
+:where(#kwfawfaujb) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -847,15 +847,15 @@ not public     public
   padding-right: 4px;
 }
 
-#kwfawfaujb .gt_column_spanner_outer:first-child {
+:where(#kwfawfaujb) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#kwfawfaujb .gt_column_spanner_outer:last-child {
+:where(#kwfawfaujb) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#kwfawfaujb .gt_column_spanner {
+:where(#kwfawfaujb) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -867,7 +867,7 @@ not public     public
   width: 100%;
 }
 
-#kwfawfaujb .gt_group_heading {
+:where(#kwfawfaujb) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -893,7 +893,7 @@ not public     public
   text-align: left;
 }
 
-#kwfawfaujb .gt_empty_group_heading {
+:where(#kwfawfaujb) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -908,15 +908,15 @@ not public     public
   vertical-align: middle;
 }
 
-#kwfawfaujb .gt_from_md > :first-child {
+:where(#kwfawfaujb) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#kwfawfaujb .gt_from_md > :last-child {
+:where(#kwfawfaujb) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#kwfawfaujb .gt_row {
+:where(#kwfawfaujb) .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -935,7 +935,7 @@ not public     public
   overflow-x: hidden;
 }
 
-#kwfawfaujb .gt_stub {
+:where(#kwfawfaujb) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -948,7 +948,7 @@ not public     public
   padding-right: 5px;
 }
 
-#kwfawfaujb .gt_stub_row_group {
+:where(#kwfawfaujb) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -962,11 +962,11 @@ not public     public
   vertical-align: top;
 }
 
-#kwfawfaujb .gt_row_group_first td {
+:where(#kwfawfaujb) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#kwfawfaujb .gt_summary_row {
+:where(#kwfawfaujb) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -976,16 +976,16 @@ not public     public
   padding-right: 5px;
 }
 
-#kwfawfaujb .gt_first_summary_row {
+:where(#kwfawfaujb) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_first_summary_row.thick {
+:where(#kwfawfaujb) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#kwfawfaujb .gt_last_summary_row {
+:where(#kwfawfaujb) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -995,7 +995,7 @@ not public     public
   border-bottom-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_grand_summary_row {
+:where(#kwfawfaujb) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1005,7 +1005,7 @@ not public     public
   padding-right: 5px;
 }
 
-#kwfawfaujb .gt_first_grand_summary_row {
+:where(#kwfawfaujb) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1015,11 +1015,11 @@ not public     public
   border-top-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_striped {
+:where(#kwfawfaujb) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#kwfawfaujb .gt_table_body {
+:where(#kwfawfaujb) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1028,7 +1028,7 @@ not public     public
   border-bottom-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_footnotes {
+:where(#kwfawfaujb) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1042,7 +1042,7 @@ not public     public
   border-right-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_footnote {
+:where(#kwfawfaujb) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -1051,7 +1051,7 @@ not public     public
   padding-right: 5px;
 }
 
-#kwfawfaujb .gt_sourcenotes {
+:where(#kwfawfaujb) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1065,7 +1065,7 @@ not public     public
   border-right-color: #D3D3D3;
 }
 
-#kwfawfaujb .gt_sourcenote {
+:where(#kwfawfaujb) .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1073,89 +1073,105 @@ not public     public
   padding-right: 5px;
 }
 
-#kwfawfaujb .gt_left {
+:where(#kwfawfaujb) .gt_left {
   text-align: left;
 }
 
-#kwfawfaujb .gt_center {
+:where(#kwfawfaujb) .gt_center {
   text-align: center;
 }
 
-#kwfawfaujb .gt_right {
+:where(#kwfawfaujb) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#kwfawfaujb .gt_font_normal {
+:where(#kwfawfaujb) .gt_font_normal {
   font-weight: normal;
 }
 
-#kwfawfaujb .gt_font_bold {
+:where(#kwfawfaujb) .gt_font_bold {
   font-weight: bold;
 }
 
-#kwfawfaujb .gt_font_italic {
+:where(#kwfawfaujb) .gt_font_italic {
   font-style: italic;
 }
 
-#kwfawfaujb .gt_super {
+:where(#kwfawfaujb) .gt_super {
   font-size: 65%;
 }
 
-#kwfawfaujb .gt_footnote_marks {
+:where(#kwfawfaujb) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#kwfawfaujb .gt_asterisk {
+:where(#kwfawfaujb) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#kwfawfaujb .gt_indent_1 {
+:where(#kwfawfaujb) .gt_indent_1 {
   text-indent: 5px;
 }
 
-#kwfawfaujb .gt_indent_2 {
+:where(#kwfawfaujb) .gt_indent_2 {
   text-indent: 10px;
 }
 
-#kwfawfaujb .gt_indent_3 {
+:where(#kwfawfaujb) .gt_indent_3 {
   text-indent: 15px;
 }
 
-#kwfawfaujb .gt_indent_4 {
+:where(#kwfawfaujb) .gt_indent_4 {
   text-indent: 20px;
 }
 
-#kwfawfaujb .gt_indent_5 {
+:where(#kwfawfaujb) .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
-
-<strong>Stellungnahmen zur Novelle des Epidemiegesetzes</strong>
-Von den 3,762 Stellungnahmen von denen der Text öffentlich ist enthalten rund 62% die Formulierung <em>'Tür und Tor'</em>.
-Stellungnahme
-Anzahl
-Anteil alle St.
-Anteil öff. St.
-Keine öffentliche Stellungnahmen
-2,861
-43.2%
-–
-enthalten Formulierung 'Tür und Tor'
-2,341
-35.3%
-62.2%
-andere öffentliche Stellungnahmen
-1,421
-21.5%
-37.8%
-data: www.parlament.gv.at, 'Ministerialentwurf betreffend Bundesgesetz, mit dem das Epidemiegesetz 1950, das Tuberkulosegesetz und das COVID-19-Maßnahmengesetz geändert werden.'<br>
-analysis: Roland Schmidt | @zoowalk | https://werk.statt.codes
-
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="4" class="gt_heading gt_title gt_font_normal" style=""><strong>Stellungnahmen zur Novelle des Epidemiegesetzes</strong></td>
+    </tr>
+    <tr>
+      <td colspan="4" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Von den 3,762 Stellungnahmen von denen der Text öffentlich ist enthalten rund 62% die Formulierung <em>'Tür und Tor'</em>.</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Stellungnahme">Stellungnahme</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Anzahl">Anzahl</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Anteil alle St.">Anteil alle St.</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Anteil öff. St.">Anteil öff. St.</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="indicator_tbl" class="gt_row gt_left">Keine öffentliche Stellungnahmen</td>
+<td headers="n_abs" class="gt_row gt_right">2,861</td>
+<td headers="n_rel" class="gt_row gt_right">43.2%</td>
+<td headers="n_rel_public" class="gt_row gt_right">–</td></tr>
+    <tr><td headers="indicator_tbl" class="gt_row gt_left">enthalten Formulierung 'Tür und Tor'</td>
+<td headers="n_abs" class="gt_row gt_right" style="background-color: #FFA500; font-weight: bold;">2,341</td>
+<td headers="n_rel" class="gt_row gt_right" style="background-color: #FFA500; font-weight: bold;">35.3%</td>
+<td headers="n_rel_public" class="gt_row gt_right" style="background-color: #FFA500; font-weight: bold;">62.2%</td></tr>
+    <tr><td headers="indicator_tbl" class="gt_row gt_left">andere öffentliche Stellungnahmen</td>
+<td headers="n_abs" class="gt_row gt_right">1,421</td>
+<td headers="n_rel" class="gt_row gt_right">21.5%</td>
+<td headers="n_rel_public" class="gt_row gt_right">37.8%</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="4">data: www.parlament.gv.at, 'Ministerialentwurf betreffend Bundesgesetz, mit dem das Epidemiegesetz 1950, das Tuberkulosegesetz und das COVID-19-Maßnahmengesetz geändert werden.'<br>analysis: Roland Schmidt | @zoowalk | https://werk.statt.codes</td>
+    </tr>
+  </tfoot>
+  
+</table>
 </div>
 </div>
 </div>
@@ -2047,7 +2063,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","loop":true,"descPosition":"bottom","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"loop":true,"descPosition":"bottom","openEffect":"zoom","closeEffect":"zoom","selector":".lightbox"});</script>
 
 
 

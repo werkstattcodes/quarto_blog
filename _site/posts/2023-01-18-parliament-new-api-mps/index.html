@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.269">
+<meta name="generator" content="quarto-1.3.321">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -308,7 +308,7 @@ cookieconsent.run({
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
 <p></p><figcaption class="figure-caption">Source: https://commons.wikimedia.org/</figcaption><p></p>
-<p><a href="preview_parliament.jpg" class="lightbox" title="Source: https://commons.wikimedia.org/" data-gallery="quarto-lightbox-gallery-1"><img src="preview_parliament.jpg" class="quarto-discovered-preview-image img-fluid figure-img" style="width:2in"></a></p>
+<p><a href="preview_parliament.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Source: https://commons.wikimedia.org/"><img src="preview_parliament.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
 </figure>
 </div>
 </div></div><p>In this post, I dig into one API endpoint, the <a href="https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/parlamentarierinnen/index.html" target="_blank">dataset on MPs since 1920</a>, more precisely the members of the <em>Nationalrat (NR)</em>, parliament’s lower house.</p>
@@ -509,7 +509,7 @@ cookieconsent.run({
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
 <p></p><figcaption class="figure-caption">from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at</figcaption><p></p>
-<p><a href="meissner_blau.jpg" class="lightbox" title="from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at" data-gallery="quarto-lightbox-gallery-2"><img src="meissner_blau.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
+<p><a href="meissner_blau.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at"><img src="meissner_blau.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
 </figure>
 </div>
 </div></div><p>There are in total 33 MPs whose names have undergone some changes. As the table above shows, two MPs changed their names more than once. Changes are mainly (and supposedly) due to marriage/divorce, and - Tu felix Austria - the addition of academic titles. Or, if you are <a href="https://www.parlament.gv.at/person/1846#:~:text=Lesezeichen-,Sepp%20Steinhuber,(bis%203.11.1971%3A%20Josef%20Steinhuber),-Biografie" target="_blank">Sepp (Steinhuber)</a>, and no longer want to be called ‘Josef.’ New to me: <a href="https://www.parlament.gv.at/person/1130#:~:text=Lesezeichen-,Freda%20Meissner%2DBlau,(bis%2011.5.1988%3A%20Freda%20Blau%2DMeissner),-Biografie" target="_blank">Freda Meissner-Blau</a>, icon of the early environmental movement and first chairperson of the Green party, had up until 1988 the family name Blau-Meissner.</p>
@@ -974,7 +974,7 @@ html {
   font-family: Chivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#kraafasypg .gt_table {
+:where(#kraafasypg) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -999,7 +999,7 @@ html {
   border-left-color: #D3D3D3;
 }
 
-#kraafasypg .gt_heading {
+:where(#kraafasypg) .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -1011,12 +1011,12 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#kraafasypg .gt_caption {
+:where(#kraafasypg) .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#kraafasypg .gt_title {
+:where(#kraafasypg) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1028,7 +1028,7 @@ html {
   border-bottom-width: 0;
 }
 
-#kraafasypg .gt_subtitle {
+:where(#kraafasypg) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1040,13 +1040,13 @@ html {
   border-top-width: 0;
 }
 
-#kraafasypg .gt_bottom_border {
+:where(#kraafasypg) .gt_bottom_border {
   border-bottom-style: none;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#kraafasypg .gt_col_headings {
+:where(#kraafasypg) .gt_col_headings {
   border-top-style: none;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1061,7 +1061,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#kraafasypg .gt_col_heading {
+:where(#kraafasypg) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1081,7 +1081,7 @@ html {
   overflow-x: hidden;
 }
 
-#kraafasypg .gt_column_spanner_outer {
+:where(#kraafasypg) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1093,15 +1093,15 @@ html {
   padding-right: 4px;
 }
 
-#kraafasypg .gt_column_spanner_outer:first-child {
+:where(#kraafasypg) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#kraafasypg .gt_column_spanner_outer:last-child {
+:where(#kraafasypg) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#kraafasypg .gt_column_spanner {
+:where(#kraafasypg) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #000000;
@@ -1113,7 +1113,7 @@ html {
   width: 100%;
 }
 
-#kraafasypg .gt_group_heading {
+:where(#kraafasypg) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1139,7 +1139,7 @@ html {
   text-align: left;
 }
 
-#kraafasypg .gt_empty_group_heading {
+:where(#kraafasypg) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1154,15 +1154,15 @@ html {
   vertical-align: middle;
 }
 
-#kraafasypg .gt_from_md > :first-child {
+:where(#kraafasypg) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#kraafasypg .gt_from_md > :last-child {
+:where(#kraafasypg) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#kraafasypg .gt_row {
+:where(#kraafasypg) .gt_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -1181,7 +1181,7 @@ html {
   overflow-x: hidden;
 }
 
-#kraafasypg .gt_stub {
+:where(#kraafasypg) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 80%;
@@ -1194,7 +1194,7 @@ html {
   padding-right: 5px;
 }
 
-#kraafasypg .gt_stub_row_group {
+:where(#kraafasypg) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1208,11 +1208,11 @@ html {
   vertical-align: top;
 }
 
-#kraafasypg .gt_row_group_first td {
+:where(#kraafasypg) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#kraafasypg .gt_summary_row {
+:where(#kraafasypg) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1222,16 +1222,16 @@ html {
   padding-right: 5px;
 }
 
-#kraafasypg .gt_first_summary_row {
+:where(#kraafasypg) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#kraafasypg .gt_first_summary_row.thick {
+:where(#kraafasypg) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#kraafasypg .gt_last_summary_row {
+:where(#kraafasypg) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1241,7 +1241,7 @@ html {
   border-bottom-color: #D3D3D3;
 }
 
-#kraafasypg .gt_grand_summary_row {
+:where(#kraafasypg) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1251,7 +1251,7 @@ html {
   padding-right: 5px;
 }
 
-#kraafasypg .gt_first_grand_summary_row {
+:where(#kraafasypg) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1261,11 +1261,11 @@ html {
   border-top-color: #D3D3D3;
 }
 
-#kraafasypg .gt_striped {
+:where(#kraafasypg) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#kraafasypg .gt_table_body {
+:where(#kraafasypg) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1274,7 +1274,7 @@ html {
   border-bottom-color: #D3D3D3;
 }
 
-#kraafasypg .gt_footnotes {
+:where(#kraafasypg) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1288,7 +1288,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#kraafasypg .gt_footnote {
+:where(#kraafasypg) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -1297,7 +1297,7 @@ html {
   padding-right: 5px;
 }
 
-#kraafasypg .gt_sourcenotes {
+:where(#kraafasypg) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1311,7 +1311,7 @@ html {
   border-right-color: #D3D3D3;
 }
 
-#kraafasypg .gt_sourcenote {
+:where(#kraafasypg) .gt_sourcenote {
   font-size: 12px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1319,64 +1319,64 @@ html {
   padding-right: 5px;
 }
 
-#kraafasypg .gt_left {
+:where(#kraafasypg) .gt_left {
   text-align: left;
 }
 
-#kraafasypg .gt_center {
+:where(#kraafasypg) .gt_center {
   text-align: center;
 }
 
-#kraafasypg .gt_right {
+:where(#kraafasypg) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#kraafasypg .gt_font_normal {
+:where(#kraafasypg) .gt_font_normal {
   font-weight: normal;
 }
 
-#kraafasypg .gt_font_bold {
+:where(#kraafasypg) .gt_font_bold {
   font-weight: bold;
 }
 
-#kraafasypg .gt_font_italic {
+:where(#kraafasypg) .gt_font_italic {
   font-style: italic;
 }
 
-#kraafasypg .gt_super {
+:where(#kraafasypg) .gt_super {
   font-size: 65%;
 }
 
-#kraafasypg .gt_footnote_marks {
+:where(#kraafasypg) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#kraafasypg .gt_asterisk {
+:where(#kraafasypg) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#kraafasypg .gt_indent_1 {
+:where(#kraafasypg) .gt_indent_1 {
   text-indent: 5px;
 }
 
-#kraafasypg .gt_indent_2 {
+:where(#kraafasypg) .gt_indent_2 {
   text-indent: 10px;
 }
 
-#kraafasypg .gt_indent_3 {
+:where(#kraafasypg) .gt_indent_3 {
   text-indent: 15px;
 }
 
-#kraafasypg .gt_indent_4 {
+:where(#kraafasypg) .gt_indent_4 {
   text-indent: 20px;
 }
 
-#kraafasypg .gt_indent_5 {
+:where(#kraafasypg) .gt_indent_5 {
   text-indent: 25px;
 }
 
@@ -1384,17 +1384,30 @@ tbody tr:last-child {
   border-bottom: 2px solid #ffffff00;
 }
 </style>
-
-Number of seats in the Nationalrat
-legislative periods
-Number of seats
-1
-183
-2 - 11
-165
-13 - today (27)
-183
-
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="">Number of seats in the Nationalrat</td>
+    </tr>
+    
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="legislative periods">legislative periods</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Number of seats">Number of seats</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="txt" class="gt_row gt_left">1</td>
+<td headers="seats" class="gt_row gt_center">183</td></tr>
+    <tr><td headers="txt" class="gt_row gt_left">2 - 11</td>
+<td headers="seats" class="gt_row gt_center">165</td></tr>
+    <tr><td headers="txt" class="gt_row gt_left">13 - today (27)</td>
+<td headers="seats" class="gt_row gt_center">183</td></tr>
+  </tbody>
+  
+  
+</table>
 </div>
 </div>
 </div>
@@ -2554,7 +2567,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom","loop":true,"selector":".lightbox"});</script>
 
 
 
