@@ -14,7 +14,7 @@ reference-location: margin
 draft: false
 ---
 
-# Just the results, please! (preview)
+# Preview: Just the results, please! 
 Note: Best seen in landscape mode on mobile devices. For complete and high resolution images, please see plots in the blogpost.
 <br>
 
@@ -48,7 +48,7 @@ wrapper <- swipeRwrapper(
   tags$img(src = base64imgs[[2]], 
     style=df_style),
   tags$img(src = base64imgs[[3]], 
-    style=df_style),
+    style="width:600px; object-fit: scale-down; object-position: top; display:block; margin:auto;"),
   tags$img(src = base64imgs[[4]],
     style=df_style),
   tags$img(src = base64imgs[[5]], 
@@ -78,7 +78,11 @@ scrollbar=FALSE)
 Here's a purely descriptive blog post on the data contained in the electoral lists for the 2023 State elections in Salzburg, Austria.
 The code below shows how to download the electoral lists, extract the data of interest, and subsequently look at some hopefully 
 interesting aspects. These include, among others, regional, age, and gender composition of the lists/candidates. I think the 
-graphs speak largely for themselves, so I won't dig into them at great length.
+graphs speak largely for themselves, so I won't dig into them at great length. 
+
+If you seen any error, have any question etc. don't hesitate to contact me (best via dm on [Twitter](https://twitter.com/zoowalk){target="_blank"} or [Mastadon](https://mastodon.social/@zoowalk){target="_blank"}).
+
+Fyi - I previously did a similar post for the 2020 elections in Vienna. See [here](https://werk.statt.codes/posts/2020-10-10-vienna-elections-2020-age-profile/).
 
 
 # Get data from electoral lists
@@ -574,6 +578,10 @@ cols_label(
 fmt_number(
   columns=gini,
   decimals=2
+) %>%
+cols_align(
+  align="center",
+  columns="gini"
 ) %>%
 tab_source_note(
   source_note=html(txt_caption_table)) %>%
