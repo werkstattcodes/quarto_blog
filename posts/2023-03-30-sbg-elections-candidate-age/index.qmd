@@ -14,9 +14,9 @@ reference-location: margin
 draft: false
 ---
 
-# Preview: Just the results, please! 
-Note: Best seen in landscape mode on mobile devices. For complete and high resolution images, please see plots in the blogpost.
-<br>
+# Preview: Just the results, please!
+
+Note: Best seen in landscape mode on mobile devices. For complete and high resolution images, please see plots in the blogpost. <br>
 
 ```{r}
 #| echo: false
@@ -73,17 +73,13 @@ rewind=TRUE,
 scrollbar=FALSE)
 ```
 
-
 # Context
-Here's a purely descriptive blog post on the data contained in the electoral lists for the 2023 State elections in Salzburg, Austria.
-The code below shows how to download the electoral lists, extract the data of interest, and subsequently look at some hopefully 
-interesting aspects. These include, among others, regional, age, and gender composition of the lists/candidates. I think the 
-graphs speak largely for themselves, so I won't dig into them at great length. 
+
+Here's a purely descriptive blog post on the data contained in the electoral lists for the 2023 State elections in Salzburg, Austria. The code below shows how to download the electoral lists, extract the data of interest, and subsequently look at some hopefully interesting aspects. These include, among others, regional, age, and gender composition of the lists/candidates. I think the graphs speak largely for themselves, so I won't dig into them at great length.
 
 If you seen any error, have any question etc. don't hesitate to contact me (best via dm on [Twitter](https://twitter.com/zoowalk){target="_blank"} or [Mastadon](https://mastodon.social/@zoowalk){target="_blank"}).
 
 Fyi - I previously did a similar post for the 2020 elections in Vienna. See [here](https://werk.statt.codes/posts/2020-10-10-vienna-elections-2020-age-profile/).
-
 
 # Get data from electoral lists
 
@@ -104,7 +100,6 @@ library(hrbrthemes)
 library(gt)
 library(gtExtras)
 ```
-
 
 The different electoral lists are published on the State of Salzburg's official website [here](https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien){target="_blank"}. First, I'll **get the links for each list**.
 
@@ -129,15 +124,13 @@ mutate(links=glue::glue("https://www.salzburg.gv.at{links}"))
 ```
 
 Here's the result:
+
 ```{r}
 #| echo: false
 df_links_list
 ```
 
-Now, let's **define a scraping function** extracting the data from each link/list.
-Note the `\p{C}`expression in one of the regex pattern. As it turns out, the websites' content
-contains some non-visible characters/signs. The expression matches them. To identify invisible characters in
-the first place, use `stringi::stri_escape_unicode`.
+Now, let's **define a scraping function** extracting the data from each link/list. Note the `\p{C}`expression in one of the regex pattern. As it turns out, the websites' content contains some non-visible characters/signs. The expression matches them. To identify invisible characters in the first place, use `stringi::stri_escape_unicode`.
 
 ```{r}
 #| code-summary: "Code: Define function extracting data from electoral list"
@@ -187,8 +180,7 @@ mutate(raw=str_trim(raw)) %>%
 filter(!str_detect(raw, regex("^Liste\\s\\d+")))
 ```
 
-Below some sample rows of the obtained dataframe. As you can see, the column `raw` contains all the data from the electoral list, however,
-in one single string. Candidates' names, years of birth, places of residence, professions are all lumped together into one cell.
+Below some sample rows of the obtained dataframe. As you can see, the column `raw` contains all the data from the electoral list, however, in one single string. Candidates' names, years of birth, places of residence, professions are all lumped together into one cell.
 
 ```{r}
 #| echo: false
@@ -220,8 +212,6 @@ mutate(name_clean=str_remove_all(name, regex("\\S+\\.")) %>% str_trim(., side="b
 ```
 
 Once the code above is executed, we get a tidy dataframe with the data of interest in separate columns for all candidates. If you want to know e.g. on which lists a specific candidate runs, the table below has you covered.
-
-
 
 ```{r}
 #| include: false
@@ -282,12 +272,11 @@ reactable(,
           add_source(source=html("<p style='font-size:8pt; line-height:100%; font-family:Segoe UI;'>Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien;<br>Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:500'>https://werk.statt.codes</span></p>"))
 ```
 
-
 <br>
 
 # Number of candidates etc
 
-With the data now in the proper format, we can check a few aspects, i.e. the number of candidates per party and list. 
+With the data now in the proper format, we can check a few aspects, i.e. the number of candidates per party and list.
 
 ```{r}
 #| code-summary: "Code: Create table"
@@ -429,15 +418,13 @@ gtsave(pl_df_comb, filename= "1_NumberCandPartyList.png",
 path = here::here("posts", "2023-03-30-sbg-elections-candidate-age", "carousel"))
 ```
 
-
 In practical terms, it won't make any difference, but I found it at least noteworthy that the SPÖ filed a smaller list of candidates on the regional lists for Pongau and Lungau when compared to the ÖVP or the FPÖ. Is this indicative of a recruitment problem?
 
 ## List-hopping candiates
 
 Furthermore, the table also suggests that most parties feature candidates which run on more than one regional list. Let's make this point more clear.
 
-The table below shows for each list and party, and the share of candidates who run exclusively on only one regional electoral list.
-As it turns out the ÖVP is the only party which maintains a 100 % record across all districts. Also WIRS shows remarkably high numbers. On the other extreme, the MFG has only one single candidate who runs exclusively on one regional list. All other MFG candidates put their names on multiple lists. To a lesser degree, but rather striking, also NEOS features relatively low rates for exclusive candidates (with 50 % in the city of Salzburg being the maximum).
+The table below shows for each list and party, and the share of candidates who run exclusively on only one regional electoral list. As it turns out the ÖVP is the only party which maintains a 100 % record across all districts. Also WIRS shows remarkably high numbers. On the other extreme, the MFG has only one single candidate who runs exclusively on one regional list. All other MFG candidates put their names on multiple lists. To a lesser degree, but rather striking, also NEOS features relatively low rates for exclusive candidates (with 50 % in the city of Salzburg being the maximum).
 
 ```{r}
 #| code-fold: true
@@ -545,6 +532,7 @@ Related, but conceptually distinct, is the question how concentrated are list po
 To shed light on this aspect, let's get the [Gini coefficients](https://en.wikipedia.org/wiki/Gini_coefficient){target="_blank"} and [Lorenz curves](https://en.wikipedia.org/wiki/Lorenz_curve){target="_blank"}.
 
 ### Gini coefficient
+
 ```{r}
 #| code-summary: "Code: Calculate Gini coefficient, create table"
 #| code-fold: true
@@ -598,23 +586,23 @@ tb_df_districts
 gtsave(tb_df_districts, filename= "3_tb_df_districts.png", 
 path = here::here("posts", "2023-03-30-sbg-elections-candidate-age", "carousel"))
 ```
-As expected, the table below shows that the list positions are equally distributed among running ÖVP candidates. It's Gini coefficient is 0. On the other end of the scale, NEOS with a Gini of 0.42 stands out. Hence, a comparably small group of NEOS candidates accounts for a considerable number of their  positions put on the electoral lists.
+
+As expected, the table below shows that the list positions are equally distributed among running ÖVP candidates. It's Gini coefficient is 0. On the other end of the scale, NEOS with a Gini of 0.42 stands out. Hence, a comparably small group of NEOS candidates accounts for a considerable number of their positions put on the electoral lists.
 
 To get a more nuanced and visual representation, below the Lorenz curves as concentration indicators.
 
 ### Lorenz curves
 
-::: {.callout-note collapse='true' appearance='default' icon='true'}
+::: {.callout-note collapse="true" appearance="default" icon="true"}
 ## Details on the graph
+
 There are a few things going on in the code which might be worth highlighting for the sake of clarity.
 
 For a better contrast, each facet not only contains the curve of the party in question, but also the Lorenz curves of the other parties. The latter are kept in grey. To achieve this, I used the `expand_grid` function which returns all combinations nested under a new dummy variable (`facet_dummy`).
 
 To add the absolute numbers of list positions and candidates to the axis labels, I created two separate labeling functions, which multiply the percentages with the total absolute number of each category. At least to me, this adds some additional perspective/clarity to the graph.
 
-Finally, the axis breaks are defined in such a way, that
-they highlight the position where the Lorenz curve has the
-greatest change in its slope. This is taken as an indicator to identify sub-groups with a particularly large share of list positions.
+Finally, the axis breaks are defined in such a way, that they highlight the position where the Lorenz curve has the greatest change in its slope. This is taken as an indicator to identify sub-groups with a particularly large share of list positions.
 :::
 
 ```{r}
@@ -675,7 +663,6 @@ df_combined <- df_combined %>%
 left_join(., df_party_positions_N, by="party") %>%
 left_join(., df_party_candidates_N, by="party") 
 ```
-
 
 ```{r}
 #| code-summary: "Code: Plot curves"
@@ -827,9 +814,7 @@ plot_layout(ncol=2)
 pl_all
 ```
 
-The table and graphs above reveal a considerable concentration of places on the electoral lists among NEOS candidates. As highlighted in the graph, 32 % of all (unique) NEOS candidates across all regional lists cover 74 % of their total regional list positions. For the Greens, 5 candidates (9 %) account for 33 % of all their regional list positions.
-<br>
-<br>
+The table and graphs above reveal a considerable concentration of places on the electoral lists among NEOS candidates. As highlighted in the graph, 32 % of all (unique) NEOS candidates across all regional lists cover 74 % of their total regional list positions. For the Greens, 5 candidates (9 %) account for 33 % of all their regional list positions. <br> <br>
 
 # Regional Composition of State Electoral list *(Landesliste)*
 
@@ -837,9 +822,9 @@ In addition to the regional lists, candidates can also run on the state list. On
 
 A few things which I noticed:
 
-+ The sequence of candidates on the state lists of ÖVP, SPÖ, and FPÖ is rather balanced when it comes to the positioning of candidates from the different regional lists. There are only a few instances where candidates running also on the same regional list are positioned next to each other. 
-+ With the exception of the current governor (*Landeshauptmann*), Wilfried Haslauer (ÖVP), all leading candidates on the state's electoral list run also on multiple (!) regional electoral lists. 
-+ KPÖ: There is a clear dominance of candidates running also in the city of Salzburg.
+-   The sequence of candidates on the state lists of ÖVP, SPÖ, and FPÖ is rather balanced when it comes to the positioning of candidates from the different regional lists. There are only a few instances where candidates running also on the same regional list are positioned next to each other.
+-   With the exception of the current governor (*Landeshauptmann*), Wilfried Haslauer (ÖVP), all leading candidates on the state's electoral list run also on multiple (!) regional electoral lists.
+-   KPÖ: There is a clear dominance of candidates running also in the city of Salzburg.
 
 ```{r}
 #| include: false
@@ -952,6 +937,7 @@ theme(
     face="plain")
 )
 ```
+
 <br>
 
 # Gender
@@ -967,6 +953,7 @@ One further aspect I wanted to look into is lists' gender composition. While not
 df_table_all_wide <- df_table_all_wide %>%
 mutate(name_first=str_extract(name, regex("[^\\s]+$")) %>% str_extract(., regex("^\\p{L}+")))
 ```
+
 ```{r}
 #| eval: false
 #| code-summary: "Code: Get gender"
@@ -975,7 +962,7 @@ df_name_first <- df_table_all_wide %>%
 distinct(name_first) %>%
 mutate(gender=gender(name_first, method="genderize"))
 ```
- 
+
 ```{r}
 #| include: false
 
@@ -1129,11 +1116,11 @@ theme(
   )
 ```
 
-Taking candidates across all lists, ÖVP and Greens have essentially gender parity among their candidates. The FPÖ with only `r df_df_gender_label %>% filter(party=="FPÖ") %>% filter(list_fct=="Gesamt") %>% pull(rel_gender_list) %>% scales::percent(., accuracy=.1)` female candidates is a stark contrast to its female frontrunner, Marlene Svazek. Somewhat surprising, at least to me, are also NEOS with only `r df_df_gender_label %>% filter(party=="NEOS") %>% filter(list_fct=="Gesamt") %>% pull(rel_gender_list) %>% scales::percent(., accuracy=.1)` female candidates. 
+Taking candidates across all lists, ÖVP and Greens have essentially gender parity among their candidates. The FPÖ with only `r df_df_gender_label %>% filter(party=="FPÖ") %>% filter(list_fct=="Gesamt") %>% pull(rel_gender_list) %>% scales::percent(., accuracy=.1)` female candidates is a stark contrast to its female frontrunner, Marlene Svazek. Somewhat surprising, at least to me, are also NEOS with only `r df_df_gender_label %>% filter(party=="NEOS") %>% filter(list_fct=="Gesamt") %>% pull(rel_gender_list) %>% scales::percent(., accuracy=.1)` female candidates.
 
 ## Gender & list position
 
-Taking it one step further, the graph below depicts the position of female candidates on the various electoral lists. ÖVP, SPÖ, and Greens have - with minor exceptions - a zipper system when it comes to placing male and female candidates. Out of the eight parties, three feature a female leading candidate on the state list. 
+Taking it one step further, the graph below depicts the position of female candidates on the various electoral lists. ÖVP, SPÖ, and Greens have - with minor exceptions - a zipper system when it comes to placing male and female candidates. Out of the eight parties, three feature a female leading candidate on the state list.
 
 ```{r}
 #| fig-height: 15
@@ -1210,7 +1197,6 @@ ncol=1, axes="all")
 # Age
 
 The electoral list also contain candidates' year of birth. Let's use this as a (not perfect) indicator for age.
-
 
 ## Median age per party across all districts
 
@@ -1340,19 +1326,18 @@ giraph_options=list(opts_hover(css =
 giraph_height=4
 ```
 
-
 ```{r}
 #| echo: false
 girafe(ggobj=pl_age,
        options=giraph_options,
        height_svg=giraph_height)
 ```
-<br>
-The high median age of Green candidates was quite a surprise to me. Hover over the dots to get details on each candidate.
+
+<br> The high median age of Green candidates was quite a surprise to me. Hover over the dots to get details on each candidate.
 
 ## youngest & oldest candidates
 
-Finally, to wrap it up, here are the 10 youngest  and oldest candidates (since there are ties, the result contains more than 10 individuals.)
+Finally, to wrap it up, here are the 10 youngest and oldest candidates (since there are ties, the result contains more than 10 individuals.)
 
 ```{r}
 df_young <- df_table_all_wide %>% 
@@ -1403,7 +1388,6 @@ candidacy  <-  filter(df_table_all_wide, name==df_young$name[index]) %>%
   add_source(html(glue::glue("<span style='font-style: Roboto Condensed;'>{txt_caption_table}</span>")), font_size=10)
 ```
 
-
 ```{r}
 df_oldest <- df_table_all_wide %>% 
   ungroup() %>%
@@ -1451,7 +1435,7 @@ candidacy  <-  filter(df_table_all_wide, name==df_oldest$name[index]) %>%
     font_size=11) %>%
   add_source(html(glue::glue("<span style='font-style: Roboto Condensed;'>{txt_caption_table}</span>")), font_size=10)
 ```
-<br>
-# Fin
+
+<br> \# Fin
 
 So that's it. As always, if you spot any error, have a question etc, don't hesitate to contact me (best via dm on [Twitter](https://twitter.com/zoowalk){target="_blank"} or [Mastadon](https://mastodon.social/@zoowalk){target="_blank"}).
