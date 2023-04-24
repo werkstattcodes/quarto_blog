@@ -2,7 +2,7 @@
 title: "State legislature elections and vaccination rates"
 description: ""
 
-date: 03-17-2023
+date: 04-24-2023
 
 categories:
   - Austria
