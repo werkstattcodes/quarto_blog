@@ -1,17 +1,18 @@
 ---
-title: "State legislature elections and vaccination rates"
-description: ""
+title: "Electoral performance and vaccination rates"
+description: "How do the electoral performance of parties and the COVID vaccination status on the municipal level correlate? A look at the three most recent state elections in Austria."
 
 date: 04-24-2023
 
 categories:
   - Austria
   - COVID
+  - elections
   - R
 
 reference-location: margin
 
-draft: true
+draft: false
 ---
 
 
