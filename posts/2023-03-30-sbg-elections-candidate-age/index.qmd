@@ -1436,6 +1436,7 @@ candidacy  <-  filter(df_table_all_wide, name==df_oldest$name[index]) %>%
   add_source(html(glue::glue("<span style='font-style: Roboto Condensed;'>{txt_caption_table}</span>")), font_size=10)
 ```
 
-<br> \# Fin
+<br> 
+# Fin
 
 So that's it. As always, if you spot any error, have a question etc, don't hesitate to contact me (best via dm on [Twitter](https://twitter.com/zoowalk){target="_blank"} or [Mastadon](https://mastodon.social/@zoowalk){target="_blank"}).

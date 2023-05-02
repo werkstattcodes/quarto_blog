@@ -51,7 +51,7 @@ format:
       # dark: slate
     css: styles.css
     code-copy: true
-    highlight-style: github
+    highlight-style: nord
     fontsize: 16px
     # fontcolor: red
     toc: true
