@@ -1,6 +1,6 @@
 ---
-title: "Electoral performance and vaccination rates"
-description: "How do the electoral performance of parties and the COVID vaccination status on the municipal level correlate? A look at the three most recent state elections in Austria."
+title: "State Elections 2023: Municipal electoral performance and vaccination rates"
+description: "How does the electoral performance of parties and the COVID vaccination status on the municipal level correlate? A look at the three most recent state elections in Austria."
 
 date: 04-24-2023
 
@@ -49,7 +49,7 @@ library(gt)
 
 # Preview: Just (some of) the results, please!
 
-Note: Best seen in landscape mode on mobile devices. For complete and high resolution images, please see plots in the blogpost. <br>
+Note: On mobile devices best seen in landscape mode. For complete and high resolution images, please see graphs in the blogpost.<br>
 
 ```{r}
 #| echo: false
@@ -59,8 +59,7 @@ library(htmltools)
 library(base64enc)
 
 vec_files <- list.files(path = here::here("posts", "2023-03-17-state-elections-and-covid", "carousel"), 
-full.names=T) %>%
-sort()
+full.names=T) %>% sort()
 
 # vec_files <- file.info(vec_files)
 # vec_files = vec_files[with(vec_files, order(as.POSIXct(mtime))), ]
@@ -77,7 +76,7 @@ df_style <-"width:600px; object-fit: scale-down; object-position: top center; di
 
 wrapper <- swipeRwrapper(
   tags$img(src = base64imgs[[1]], 
-    style="width:600px; object-fit: scale-down; object-position: top; display:block; margin:auto;"),
+    style="width:400px; object-fit: scale-down; object-position: top; display:block; margin:auto;"),
   tags$img(src = base64imgs[[2]], 
     style=df_style),
   tags$img(src = base64imgs[[3]], 
@@ -105,20 +104,19 @@ scrollbar=FALSE)
 
 
 
-
 # CONTEXT
 
-This post is a "quick" look at the most recent state-level elections in Austria, namely in Lower Austria, Carinthia, and Salzburg. More precisely, it's  a replication and extension of a graph [tweeted](https://twitter.com/laurenzennser/status/1620149912704024577){target="_blank"} by University of Vienna PolSci Prof Laurenz Ennser-Jedensastik in which he highlighted the rather remarkable relation between municipalities' rates of COVID vaccinations and the performance of the extreme-right Freedom Party (FPÖ) in Lower Austria.
+This post is a ~~"quick"~~ look at the most recent state-level elections in Austria, namely in Lower Austria, Carinthia, and Salzburg. More precisely, it's  a replication and extension of a graph [tweeted](https://twitter.com/laurenzennser/status/1620149912704024577){target="_blank"} by University of Vienna PolSci Prof Laurenz Ennser-Jedensastik in which he highlighted the rather remarkable relation between municipalities' rates of COVID vaccinations and the performance of the extreme-right Freedom Party (FPÖ) in Lower Austria.
 
-This post adds little substantively new, but is rather an exercise in demonstrating
+With this as the background, the post is an exercise in demonstrating
 
 a\) how to extract electoral data from the rather intricate formats they were published in by the electoral authorities (@sec-getting-electoral-data).
 
-b\) how to replicate the original graph highlighting the bivariate relationship between parties's vote share win/loss and COVID vaccination ratios on the municipal level (@sec-correlation). Upfront, to state the obvious, the results are not meant to imply any direct causality between vaccination rates and vote results, but are only highlighting mere correlations.
+b\) how to replicate the original graph highlighting the bivariate relationship between parties's vote share win/loss and COVID vaccination ratios on the municipal level (@sec-correlation). The results will be more comprehensive in the sense that they cover (almost) all parties and state elections. Upfront, to state the obvious, the results are not meant to imply any direct causality between vaccination rates and vote results, but are only highlighting mere correlations.
 
-c\) how to visualize bivariate relationships on a map with the {biscale} package (@sec-biscale); and
+c\) how to visualize bivariate relationships on a map with the {biscale} package (@sec-biscale). Biscale maps are a neat tool to visualize the interaction of two variables on a geographical unit by blending two distinct color scales. Electoral results and Covid vaccination ratios on the municipal level seem like a fitting use-case; and
 
-d\) a few smaller side kicks along the way, including an alternative form of visualization with a combination of dot- and box-plots (@sec-dotplots).
+d\) a few smaller side kicks along the way, including an alternative form of visualization with a combination of dot- and box-plots (similar to a rainplot)(@sec-dotplots), or how to create a large number of tabsets without coding each individually. 
 
 <br>
 <br>
@@ -250,7 +248,7 @@ df_mun <- df_res %>%
   mutate(link_complete=glue::glue("https://www.ktn.gv.at/wahlen/ltwahl2023/{links}"))
 ```
 
-Here the first few rows of obtained dataframe with all sub-page links.
+Here the first few rows of the obtained dataframe with all sub-page links.
 
 ```{r}
 #| echo: false
@@ -315,9 +313,9 @@ d <- df_res_ktn_municip %>%
 group_by(municip_id) %>%
 summarise(sum_dif=sum(differenz_perc, na.rm=T))
 ```
-Below, the obtained election results for Carinthia.
+Below the obtained election results for Carinthia.
 ```{r}
-#| code-fold: false
+#| code-fold: true
 #| code-summary: "Code: Table election results Carinthia"
 df_res_ktn_municip %>% 
 select(municip_id, everything()) %>%
@@ -344,7 +342,7 @@ select(municip_id, everything()) %>%
 
 ## Salzburg
 
-Data for Salzburg are available at the State's official website. Again, with somewhat inconvenient headers. Additionally, to get the changes between the 2023 and preceding 2018 elections, both results have to be downloaded (xlsx files) and the differences calculated.
+Data for Salzburg are available at the State's official website. Again, with somewhat inconvenient headers. Additionally, to get the changes between the 2023 and preceding 2018 elections, results for both years have to be downloaded (xlsx files) and the differences calculated.
 
 ```{r}
 #| code-summary: "Code: Get results for Salzburg 2018"
@@ -457,6 +455,9 @@ filter(value_type=="rel")
 
 
 ```{r}
+#| code-summary: "Code: Create table"
+#| code-fold: true
+
 df_res_sbg_municip_23 %>%
 select(-state, -year, -value_18, -value_type, -votes_invalid_abs) %>%
 reactable(.,
@@ -554,6 +555,10 @@ df_res_municip <- df_res_municip %>%
 # COVID DATA
 
 With the electoral results now ready, let's add the data on Covid vaccination rates on the municipal level.
+Here one qualification: The vaccination status for all states are dated with early May. Ideally, I should use
+the vaccination ratios for each election date. However, since there have been basically no meaningful development,
+particularly when it comes to the ratio pertaining to "at least 1 vaccination", I take this imprecision as negligible.
+
 
 ```{r}
 #| code-summary: "Code: Import Covid vaccination data and add to electoral data"
@@ -576,7 +581,11 @@ df_res_municip_covid<- df_res_municip %>%
 
 # CORRELATION {#sec-correlation}
 
-With this dataset we can already replicate the analysis tweeted by Ennser-Jedenastik, and extend it to other selected parties.
+With the required data now available and in the proper format, we can start looking into it in earnest.
+Below the correlation of parties' electoral gains/loss and vaccination ratios on the municipal level. The graph
+is inspired by Ennser-Jedenastik's tweet, but goes beyond it in terms of elections and parties. Note the graphs
+pertaining to the ÖVP and FPÖ.
+
 
 ```{r}
 #| include: false
@@ -874,13 +883,13 @@ count(state)
 
 ## Defining categories for biscale
 
-In order to project the interaction of two variables onto a map, `biscale::bi_class_breaks` splits continuous variables into a maximum of 4 categories (*dims* attribute). For each variable, I decided that each category should span the same width (*style=equal*). ^[Other style options are "quantile" (default), "fisher", and "jenks".]
+In order to project the interaction of two variables onto a map, `biscale::bi_class_breaks` splits continuous variables into a maximum of four categories (*dims* attribute). 
 
-As for the vaccination ratio this is rather straight forward: Take the difference between the highest and the lowest ratio, and divide this distance into four equally spaced intervals.
+For each variable, I decided that each category should span the same width (*style=equal*). ^[Other style options are "quantile" (default), "fisher", and "jenks".] As for the vaccination ratio this is rather straight forward: Take the difference between the highest and the lowest ratio, and divide this distance into four equally spaced intervals.
 
-When it comes to parties' change of vote share (gain/loss in percentage points), there's one thing to consider: Rather than taking the difference between the maximum gain and maximum loss across *all* parties, I decided to take on an *'intra-party view'*, i.e. use the differences only between each party's maximum and minimum value. The rational behind it is my interest in seeing how each party's strong and weak electoral performance tie with municipalities vaccination ratios. If I would calculate the interval across all parties, it's likely that the electoral results of a party with e.g. comparatively little variation in its electoral performance would end up all i.e. in one lump category. What this means in concrete terms will become clearer when showing the results. I just flag this already at this point, since its important when it comes to interpreting the eventual results.
+When it comes to parties' changes of vote share (gain/loss in percentage points), there's one thing to consider: Rather than taking the difference between the maximum gain and maximum loss across *all* parties, I decided to take on an *'intra-party view'*, i.e. use the differences only between each party's maximum and minimum value. The rational behind it is my interest in seeing how each party's strong and weak electoral performance ties with municipalities vaccination ratios. If I would calculate the interval across all parties, it's likely that the electoral results of a party with e.g. comparatively little variation in its electoral performance would end up all i.e. in one lump category. What this means in concrete terms will become clearer when showing the results. I just flag it already at this point, since its important when it comes to interpreting the eventual results.
 
-To calculate these 'intra-party' categories, I define again a function which is applied to each party separately (per state; rather than across the entire dataset at once).
+To calculate the 'intra-party' categories, I define again a function which is applied to each party separately (per state; rather than across the entire dataset at once).
 
 ```{r}
 #| eval: true
@@ -991,11 +1000,6 @@ sf_map <- st_as_sf(df_map_res_bi_intra)
 #define function to plot each map
 fn_plot <- function(party, state) {
   
-# party <- "ÖVP"
-# state <- "sbg"  
-# print(party)
-# print(state)
-
 sf_plot_map<- sf_map %>% 
   #filter(!is.na(change_perc)) %>% 
   filter(state=={{state}}) %>% 
@@ -1171,7 +1175,7 @@ pl_1 <- ((plot_map+(plot_legend_2/plot_spacer()+plot_layout(ncol=1, nrow=2, heig
     plot.caption=element_markdown(
       size=rel(.5),
       hjust=0),
-    plot.subtitle=element_markdown(size=rel(.9)),
+    plot.subtitle=element_markdown(size=rel(.8)),
     plot.title=element_markdown(size=rel(1.1)),
     plot.margin=ggplot2::margin(0, unit="cm"))
 )
@@ -1182,7 +1186,7 @@ pl_1# li_res <- list(pl_comb, tb_marginal)
 
 ```
 
-Now, let's apply the function. As a result, I obtain two vectors for each state: One with the names of the state and the party; and one with the pertaining plot. 
+Now, let's apply the function. As a result, I obtain two vectors for each state: One with the names of the state and the party; and one with the pertaining plots. 
 
 ```{r}
 #| code-summary: "Code: Apply function to produce maps in tabsets"
@@ -1204,8 +1208,8 @@ vec_plot_noe <- df_plots %>% filter(state=="noe")  %>% pull("plot")
 vec_plot_ktn <- df_plots %>% filter(state=="ktn")  %>% pull("plot")
 vec_plot_sbg <- df_plots %>% filter(state=="sbg")  %>% pull("plot")
 ```
-
-For each state, these two vectors are now 'printed' into tab-sets. I also show the otherwise not visible code with the `asis` chunk option, which allows us to create multiple tabsets on the fly, rather than typing them out manually. In other words, the code example below produces 'automatically' a tab including a map for every party in e.g. Lower Austria.^[To display such code chunks, including the opening and closing colons, wrap the code starting with '\`\`\`\` markdown' and closing with another four backticks (\`\`\`\`\)].
+For each state, these two vectors are now 'printed' into tab-sets. I also show the otherwise not visible code with the `asis` chunk option, which allows us to create multiple tabsets on the fly, rather than typing them out manually.^[Credit goes to Shafee with his related [answer](https://stackoverflow.com/users/10858321/shafee){target="_blank"} on stackoverflow.
+] In other words, the code example below produces 'automatically' a tab including a map for every party in e.g. Lower Austria.^[To display such code chunks, including the opening and closing colons, wrap the code starting with '\`\`\`\` markdown' and closing with another four backticks (\`\`\`\`\)].
 
 ```` markdown
 :::: {.column-body-outset-right}
@@ -1228,6 +1232,7 @@ walk2(.x=vec_party_noe, .y=vec_plot_noe, ~ {
 :::
 :::: 
 ````
+Below the maps for all three states and the parties.
 
 ## Maps Lower Austria
 :::: {.column-body-outset-right}
@@ -1252,14 +1257,16 @@ walk2(.x=vec_party_noe, .y=vec_plot_noe, ~ {
 :::
 :::: 
 
-Click the "FPÖ" tab to get the pertaining results. The map reveals some regional difference.
+Click e.g. the "FPÖ" tab to get the pertaining results. The map reveals some regional differences.
 There are quite some 'blue-ish' municipalities around Vienna. These are
-municipalities in which vaccination ratios are comparably high and the FPÖ, compared to its results 
+municipalities in which vaccination ratios are comparably high and where the FPÖ, compared to its results 
 in other muncipalties, performed *relatively* weak (but still with impressive 1.3 % to 9 % vote share increase).
-On the other hand, in the west/south-west, yellow and some green is the prevalent color. Here, vaccination ratios are rather
-low, but the FPÖ securred some its best results. The table makes this 'dynamic' clearer: Of the 27 municipalities in the
+On the other hand, in the west/south-west, yellow and some light green is the prevalent color. Here, vaccination ratios are rather
+low, but the FPÖ securred some its best results. The table on the bottom makes this 'dynamic' clearer: Of the 27 municipalities in the
 lowest vaccination interval, 70.4 % feature top election results for the FPÖ. In contrast, only 0.6 % of the 174 municipalities
-with high vaccination ratios exhibit such strong results. The top-left to bottom-right diagonal shaded in orange reflects this. To contrast, the pertaining diagonal for the ÖVP runs (somewhat) from bottom-left to top-right.
+with high vaccination ratios exhibit such strong results. The top-left to bottom-right diagonal shaded in orange reflects the wider dynamic. To contrast, the pertaining diagonal for the ÖVP runs (somewhat) from bottom-left to top-right.  Maybe with the exception of MFG, other parties don't feature such distributions at all, or at least not in such clarity.
+
+I think the maps/graphs speak largely for themselves, and reveal some interesting aspects.
 
 ## Maps Carinthia
 :::: {.column-body-outset-right}
@@ -1282,8 +1289,6 @@ walk2(.x=vec_party_ktn, .y=vec_plot_ktn, ~ {
 ```
 :::
 :::: 
-
-Click on 
 
 
 ## Maps Salzburg
@@ -1329,16 +1334,20 @@ df_map_res_bi_intra_2 <- df_map_res_bi_intra_2 %>%
 
 # DOT-PLOT {#sec-dotplots}
 
-Finally, another visualisation version, this time using a combination of dot and box-whisker plots (). Let's divide municipalities into a category with low and high vaccination ratios and contrast the electoral performance of parties' between these groups. The 'low' category covers the lowest quarter of the vaccination ratios. (To be clear, I am not using quantiles here).
+Finally, as an alterantive, another visualisation version, this time using a combination of dot and box-whisker plots (something resembling a rainplot). Let's divide municipalities into a category with 'low' and 'other' vaccination ratios and contrast the electoral performance of parties' between these groups. The 'low' category covers the lowest quarter of the vaccination ratios, i.e. take the difference between the maximum and mimum vaccination ratios, and divide it into four evenly spaced intervals. The bottom quarter is taken as the 'low' categor. (To be clear, I am not using quartiles here).
+
 
 ```{r}
 #| code-summary: "Code: Create 'low' vaccination ratio category"
 df_res_municip_covid_cut <- df_res_municip_covid %>%
+group_by(state) %>%
 mutate(cat_vac_interval=cut(vaccination_1_share, 
-breaks=4, include.lowest=T)) %>%
-arrange(vaccination_1_share) %>%
-group_by(cat_vac_interval) %>%
-mutate(cat_vac=cur_group_id()) %>%
+breaks=4, include.lowest=T))  %>%
+ungroup() %>%
+group_split(state) %>%
+map(., .f=\(x) x %>% group_by(cat_vac_interval) %>% arrange(vaccination_1_share, .by_group=T) %>%
+mutate(cat_vac=cur_group_id())) %>%
+purrr::list_rbind() %>%
 mutate(cat_vac_low=case_when(
   cat_vac>1 ~ "other",
   .default = "low"
@@ -1433,7 +1442,7 @@ mutate(state=case_when(
 )) %>%
 mutate(plots=map2(.x=data, .y=state, .f=\(x, y) fn_rain_plot(df=x, title=y)))
 
-txt_subtitle="The plot contrasts parties' electoral performance in municipalities with high and low vaccination ratios. Each dot represents the <br>electoral performance (change of vote share in % points) of a party in a specific municipality. Municipalities are grouped according the COVID vaccination ratio <br>(first shot) of their population: Municipalities within *the lowest 25 % of COVID vaccination ratios are in the category 'low'*, all others <br>are assigned to the group 'other'. Boxplot-halfs were added as summary indicators. Generally, the FPÖ performed stronger in <br>municipalities with low vaccination ratios than in other municipalities."
+txt_subtitle="The plot contrasts parties' electoral performance with high and low vaccination ratios in municipalities. Each dot represents the <br>electoral performance (change of vote share in % points) of a party in a specific municipality. Municipalities are grouped according<br>the COVID vaccination ratio (first shot) of their population: Municipalities within *the lowest 25 % of COVID vaccination ratios are in the category 'low'*, all others <br>are assigned to the group 'other'. Boxplot-halfs were added as summary indicators. Generally, the FPÖ performed stronger in <br>municipalities with low vaccination ratios than in other municipalities."
 
 df_plots %>%
 pull(plots) %>%

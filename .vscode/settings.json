@@ -1,3 +1,6 @@
 {
-    "r.session.useWebServer": true
+    "r.session.useWebServer": false,
+    "r.plot.useHttpgd": true,
+    "r.session.emulateRStudioAPI": true,
+    "r.lsp.enabled": true
 }
