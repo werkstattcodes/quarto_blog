@@ -1442,7 +1442,7 @@ mutate(state=case_when(
 )) %>%
 mutate(plots=map2(.x=data, .y=state, .f=\(x, y) fn_rain_plot(df=x, title=y)))
 
-txt_subtitle="The plot contrasts parties' electoral performance with high and low vaccination ratios in municipalities. Each dot represents the <br>electoral performance (change of vote share in % points) of a party in a specific municipality. Municipalities are grouped according<br>the COVID vaccination ratio (first shot) of their population: Municipalities within *the lowest 25 % of COVID vaccination ratios are in the category 'low'*, all others <br>are assigned to the group 'other'. Boxplot-halfs were added as summary indicators. Generally, the FPÖ performed stronger in <br>municipalities with low vaccination ratios than in other municipalities."
+txt_subtitle="The plot contrasts parties' electoral performance with high and low vaccination ratios in municipalities. Each dot represents the <br>electoral performance (change of vote share in % points) of a party in a specific municipality. Municipalities are grouped according<br>to the COVID vaccination ratio (first shot) of their population: Municipalities within *the lowest 25 % of COVID vaccination ratios are<br>in the category 'low'*, all others are assigned to the group 'other'. Boxplot-halves were added as summary indicators. <br>Generally, the FPÖ performed stronger in municipalities with low vaccination ratios than in other municipalities."
 
 df_plots %>%
 pull(plots) %>%
