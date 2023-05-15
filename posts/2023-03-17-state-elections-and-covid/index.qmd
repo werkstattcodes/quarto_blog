@@ -1,5 +1,5 @@
 ---
-title: "State Elections 2023: Municipal electoral performance and vaccination rates"
+title: "State Elections 2023: Municipal electoral performance and COVID vaccination rates"
 description: "How does the electoral performance of parties and the COVID vaccination status on the municipal level correlate? A look at the three most recent state elections in Austria."
 
 date: 04-24-2023
