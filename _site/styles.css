@@ -108,6 +108,21 @@ a.nav-link.dropdown-toggle:hover {
 }
 
 
+a.page-link {
+    color: lightgrey;
+}
+
+.page-link:hover{
+
+    color:darkgrey;
+
+}
+
+.page-item.active .page-link  {
+    color: black;
+    background-color: white;
+}
+
 h1.title {
 font-size: 2.1em;
 }
