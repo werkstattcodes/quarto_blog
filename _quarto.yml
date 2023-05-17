@@ -7,7 +7,7 @@ website:
   cookie-consent:
       palette: dark
   google-analytics: UA-149910232-1
-  back-to-top-navigation: true
+  back-to-top-navigation: false
 
   reader-mode: false
   

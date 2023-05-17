@@ -114,13 +114,14 @@ a.page-link {
 
 .page-link:hover{
 
-    color:darkgrey;
+    color: black;
 
 }
 
 .page-item.active .page-link  {
     color: black;
     background-color: white;
+    border-color: #dee2e6;
 }
 
 h1.title {
