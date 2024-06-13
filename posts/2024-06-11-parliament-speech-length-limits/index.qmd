@@ -11,7 +11,7 @@ categories:
 
 reference-location: margin
 
-draft: false  
+draft: true  
 ---
 
 # Context
@@ -1091,6 +1091,12 @@ df_session <- df_session %>%
     session_url == "/gegenstand/XVIII/NRSITZ/3" ~ as.Date("1990-11-22"),
     .default = session_date
   ))
+```
+
+#### Number of sessions relative to duration of period
+
+```{r}
+
 ```
 
 ## Data on MPs
@@ -2831,14 +2837,10 @@ Furthermore, and more importantly, since the founding of the 2nd Republic (legis
 When it comes to the number of speeches made during a
 legislative period, our analysis is somewhat limited due to the lack of data on individual speeches prior to legislative period XIX. (I have been working already on creating such a dataset, and if time/funding permits hope to finalize it soon). Remarkably, though, with the data available, we can see that during the hight of the pandemic the National Chamber was in no way stymied in its deliberations as the high number of speeches by MPs and others demonstrates.
 
-When it comes to initial interest of this post, speech limits, we saw that th vast majority of speeches are governed by voluntary time limit. 
-
-The vast majority of speeches is subject to voluntary time limits. However, only a minority, around 36 % of all relevant speeches, de facto respect this limit. In other words, exceeding these limits and having a speech overtime is a rather prevalent. 
-
+When it comes to the initial interest of this post, speech limits, we saw that th vast majority of speeches are governed by voluntary time limit. 
+However, only a minority, around 36 % of all relevant speeches, de facto respect this limit. In other words, exceeding these limits and having a speech overtime is rather prevalent. 
 
 MPs of the FPÖ stand out for their aggregated overtime. Among the five speeches with the longest overtime, three are from FPÖ members.
 
 The larger the overtime, the more likely it becomes that the speech originates from an FPÖ MP.
 
-Does it matter? Respect for procedural rules. After all voluntary
-limits. When are speech limits exceeded? On which occasions, which topic, in response to which preceding speaker? Non-respect of parliamentary norms; a party which is against the system; would be curious to compare it parties similar to the FPÖ in other parliaments;
