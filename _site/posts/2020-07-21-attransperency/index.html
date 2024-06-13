@@ -2,15 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.321">
+<meta name="generator" content="quarto-1.5.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Roland Schmidt">
 <meta name="dcterms.date" content="2020-07-21">
 <meta name="description" content="Analysis of Austria MP’s transparency reports.">
 
-<title>werk.statt.codes - Austrian Parliament: MPs transparency and conflict of interest report</title>
+<title>werk.statt.codes – Austrian Parliament: MPs transparency and conflict of interest report</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -36,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -77,18 +76,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -97,8 +101,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -127,38 +133,65 @@ cookieconsent.run({
   "notice_banner_reject_button_hide":false,
   "preferences_center_close_button_hide":false,
   "website_name":""
+  ,
+"language":"en"
   });
 });
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
-
 <script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+
 <link href="../../site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+
 <script src="../../site_libs/datatables-binding-0.26/datatables.js"></script>
+
 <script src="../../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+
 <link href="../../site_libs/dt-core-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+
 <link href="../../site_libs/dt-core-1.12.1/css/jquery.dataTables.extra.css" rel="stylesheet">
+
 <script src="../../site_libs/dt-core-1.12.1/js/jquery.dataTables.min.js"></script>
+
 <link href="../../site_libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+
 <script src="../../site_libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
+
 <link href="../../site_libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+
 <script src="../../site_libs/selectize-0.12.0/selectize.min.js"></script>
+
 <link href="../../site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
+
 <script src="../../site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+
 <script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+
 <script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+
 <link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+
 <script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+
 <script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+
 <script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+
 <script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+
 <script src="../../site_libs/flatbush-4.0.0/flatbush.min.js"></script>
+
 <link href="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.css" rel="stylesheet">
+
 <script src="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.js"></script>
+
 <script src="../../site_libs/girafe-binding-0.8.5/girafe.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -168,79 +201,41 @@ cookieconsent.run({
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html" rel="" target="">
+    <a class="dropdown-item" href="../../about.html">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body">
-      <h1 class="title">Austrian Parliament: MPs transparency and conflict of interest report</h1>
-                  <div>
-        <div class="description">
-          Analysis of Austria MP’s transparency reports.
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">Austria</div>
-                <div class="quarto-category">OCR</div>
-                <div class="quarto-category">web scraping</div>
-              </div>
-                  </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta">
-
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p><a href="https://werk.statt.codes">Roland Schmidt</a> </p>
-            </div>
-    </div>
-      
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">21 Jul 2020</p>
-      </div>
-    </div>
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -275,14 +270,46 @@ cookieconsent.run({
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Austrian Parliament: MPs transparency and conflict of interest report</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Austria</div>
+    <div class="quarto-category">OCR</div>
+    <div class="quarto-category">web scraping</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Analysis of Austria MP’s transparency reports.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">21 Jul 2020</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 <section id="context" class="level1" data-number="1">
@@ -298,7 +325,7 @@ cookieconsent.run({
 Code: Load packages
 </summary>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
@@ -327,7 +354,7 @@ Code: Load packages
 Code: Define rmarkdown options
 </summary>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># knit_hooks$set(wrap = function(before, options, envir) {</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   if (before) {</span></span>
@@ -360,16 +387,11 @@ Code: Define plot theme
 <section id="data-extraction" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Data extraction</h1>
 <p>As so often, one of the main challenges to actually analyze available data is to ‘liberate’ the information of interest from the format in which they are provided. The Parliament’s report comes as a pretty ‘untidy’ pdf with subheadings etc., a format hardly conducive for further analysis. Here’s one MP’s declaration from the report:</p>
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="list_example - Copy.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="list_example - Copy.PNG" class="img-fluid figure-img" style="width:100.0%"></a></p>
-</figure>
-</div>
+<p><a href="list_example - Copy.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="list_example - Copy.PNG" class="img-fluid" style="width:100.0%"></a></p>
 <p>Essentially, the table provides four relevant pieces of information: <em>1) an income category</em>, which groups MPs’ additional income (which is within the scope of the legal reporting obligations and in addition to their salary as an MP) according to their average monthly income in 2019;</p>
 <p>The income categories are:</p>
 <div class="cell">
 <div class="cell-output-display">
-
 <div id="zbniqstolg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
@@ -782,7 +804,7 @@ Code: Define plot theme
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead class="gt_col_headings">
 <tr class="header">
 <th id="<strong>category</strong>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col"><strong>category</strong></th>
@@ -820,7 +842,7 @@ Code: Define plot theme
 <p>Extracting data from pdfs has been the topic of at least one of my previous posts (see <a href="https://werk.statt.codes/post/bih-voting-behavior-of-mps-in-house-of-representatives/" target="_blank">here</a>), and again the primary tool for the job is the wonderful <code>pdftools</code> package. Rather than seeking to extract tables from the pdf (e.g.&nbsp;with <code>tabulizer</code> ), I convert the content of each page of the report to a long text string and subsequently extract the parts of interest by means of <code>stringr</code> and regex. However, as I’ll explain below, this approach was only suited to do some part of the task at hand.</p>
 <p>Let’s start by retrieving the raw text.</p>
 <div class="cell" data-code_folding="Code: Extract text from pdfs">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>my_path <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"posts"</span>, <span class="st">"2020-07-21-attransperency"</span>, <span class="st">"BezBegrBVGPar9-NR.pdf"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -843,7 +865,7 @@ Code: Define plot theme
 <h2 data-number="3.1" class="anchored" data-anchor-id="get-income-category"><span class="header-section-number">3.1</span> Get income category</h2>
 <p>As a first step, let’s extract the name of the MPs and the income category from the raw strings obtained above. The code chunk below is the pertaining code, making use of <code>stringr</code> and <code>regex</code>. Note the <code>(?s)</code> term in the regex expressions. While <code>.</code> would match any pattern but not line breaks, the <code>(?s)</code> alters this limitation and forces <code>.</code> to match also <code>\n</code> and <code>\r</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <div class="cell" data-code_folding="false">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> df_all <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">str_extract</span>(text_raw, <span class="fu">regex</span>(<span class="st">"(?&lt;=Einkommenskategorie)(?s).*(?=für das Jahr)"</span>, <span class="at">ignore_case =</span> T)) <span class="sc">%&gt;%</span></span>
@@ -859,7 +881,7 @@ Code: Define plot theme
 </div>
 <p>As already highlighted, since the declarations of some MPs run over multiple pages and are hence included several times in the above output, we have to limit the result to one row per MP. This is what <code>distinct()</code> does in the code chunk below.</p>
 <div class="cell" data-code_folding="false">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_income <span class="ot">&lt;-</span> df_all <span class="sc">%&gt;%</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, income_category_19) <span class="sc">%&gt;%</span></span>
@@ -870,7 +892,7 @@ Code: Define plot theme
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 186</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(df_income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -883,7 +905,7 @@ Code: Define plot theme
 <h2 data-number="3.2" class="anchored" data-anchor-id="missing-income-data"><span class="header-section-number">3.2</span> Missing income data</h2>
 <p>Let’s have a first, quick look at the information obtained so far:</p>
 <div class="cell" data-code_folding="Code: Number of MPs per income bracket">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tbl_income <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(income_category_19) <span class="sc">%&gt;%</span> </span>
@@ -894,7 +916,6 @@ Code: Define plot theme
 </div>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-
 <div id="zkdfwetnwv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
@@ -1307,7 +1328,7 @@ Code: Define plot theme
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead class="gt_col_headings">
 <tr class="header">
 <th id="<strong>income category</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>income category</strong></th>
@@ -1351,7 +1372,7 @@ Code: Define plot theme
 </div>
 <p>Before digging into frequencies of the income categories etc, a note on the missing observations. In ten instances, MPs did not report their income for 2019. Here are the ten MPs with missing income data.</p>
 <div class="cell" data-code_folding="Code: MPs with with missing income data">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_income_missing <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(income_category_19<span class="sc">==</span><span class="st">"missing"</span>) <span class="sc">%&gt;%</span> </span>
@@ -1369,7 +1390,6 @@ Code: Define plot theme
 </div>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-
 <div id="dgwhbrlfnv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
@@ -1782,7 +1802,7 @@ Code: Define plot theme
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead class="gt_col_headings">
 <tr class="header">
 <th id="<strong>MP</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>MP</strong></th>
@@ -1839,7 +1859,7 @@ Code: Define plot theme
 <p>One possible explanation for missing income data could be that these MPs have joined parliament only after the reporting period, i.e.&nbsp;in 2020 (I mean, there couldn’t be any other possibility, no?). To check this, we need to obtain the dates of each MP’s entry to parliament. Initially, I expected that such data should be readily available, but I must have been looking at the wrong places… Anyway, never waste an opportunity to scrap data.</p>
 <p>The website of the Austrian Parliament provides a list of all (current and previous) MPs. This list is provided in an xml format from which we can obtain the links to each MP’s individual biographical page. From these bios, we can subsequently extract the data when MP’s entered the parliament. Not a bad detour…or, as a saying in German goes, Umwege erhöhen die Ortskenntnisse…(something like ‘detours increase your local knowledge’.)</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xml2)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest)</span>
@@ -1890,7 +1910,6 @@ Code: Define plot theme
 </div>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-
 <div id="fqgfajrfjt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
@@ -2303,7 +2322,7 @@ Code: Define plot theme
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead class="gt_col_headings">
 <tr class="header">
 <th id="<strong>MP</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>MP</strong></th>
@@ -2359,14 +2378,14 @@ Code: Define plot theme
 </div>
 <p>And indeed. From the result above, we see that all those MPs who haven’t submitted any income information were not MPs in 2019 <em>for a full month</em> (this is the requirement stipulated in the pertaining regulation). Hence, for the subsequent analysis on income data, when can safely disregard these MPs.</p>
 <div class="cell" data-code_folding="Code: Remove MPs joining outside of reporting period">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(df_income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 183</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df_income <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>name <span class="sc">%in%</span> df_income_missing<span class="sc">$</span>name)</span>
@@ -2382,7 +2401,7 @@ Code: Define plot theme
 <h1 data-number="4"><span class="header-section-number">4</span> MPs’ gender</h1>
 <p>Let’s have a gender-sensitive look at the income data. With the <code>gender</code>package we are able to infer with some acceptable margin of error MPs’ gender from their first names. Names which were not (properly) recognized by the package I corrected manually in the code chunk below.</p>
 <div class="cell" data-code_folding="false">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get a clean name, without any academic or prefessional titles</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_income <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
@@ -2425,7 +2444,7 @@ Code: Define plot theme
 <h2 data-number="4.1" class="anchored" data-anchor-id="female-share-per-income-group"><span class="header-section-number">4.1</span> Female share per income group</h2>
 <p>What the subsequent analysis reveals is that the share of women per income category decreases the further we move up the income ladder. While there is almost gender parity in the income category 0, womens’ shares decrease continuously up to category 4.</p>
 <div class="cell" data-code_folding="true">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df_gender <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(income_category_19, gender) <span class="sc">%&gt;%</span> </span>
@@ -2486,7 +2505,7 @@ Code: Define plot theme
 </div>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
@@ -2502,7 +2521,7 @@ Code: Define plot theme
 Code: graph intra-gender distribution
 </summary>
 <div class="cell" data-code_folding="false">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>pl_gender_intra_dist <span class="ot">&lt;-</span> df_gender <span class="sc">%&gt;%</span> </span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
@@ -2537,7 +2556,7 @@ Code: graph intra-gender distribution
 </details>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-22-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -2552,7 +2571,7 @@ Code: graph intra-gender distribution
 <h2 data-number="5.1" class="anchored" data-anchor-id="get-mps-party-membership"><span class="header-section-number">5.1</span> Get MPs’ party membership</h2>
 <p>As the next step to facilitate the analysis of the data, let’s add MPs’ party affiliation. I do this by importing the pertaining data from wikipedia’s entry on Austria’s current MP (the parliament’s website was simply to messy for my liking). Here, the <code>rvest</code> package is our friend. Once the data on MP membership is retrieved, I merge it with MPs’ income/transparency data. The key/identifier to merge both sets of data is an MP’s name. To make this work, I had first to remove all academic/professional titles (it’s Austria after all) and harmonize the sequence of first and family names.</p>
 <div class="cell" data-code_folding="Code: Get party affiliation">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>wiki_link <span class="ot">&lt;-</span> <span class="st">"https://de.wikipedia.org/wiki/Liste_der_Abgeordneten_zum_%C3%96sterreichischen_Nationalrat_(XXVII._Gesetzgebungsperiode)"</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2602,7 +2621,6 @@ Code: graph intra-gender distribution
 <p>Below the result with all MPs, their party affiliation, and income data.</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-
 <div id="htmlwidget-d0ca144a12919ed395a7" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-d0ca144a12919ed395a7">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;ÖVP&quot;,&quot;SPÖ&quot;,&quot;FPÖ&quot;,&quot;GRÜNE&quot;,&quot;NEOS&quot;,&quot;independent&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","data":[["Mag. Hannes Amesbauer, BA","Erwin Angerer","Angela Baumgartner","Petra Bayr, MA MLS","Mag. Ruth Becher","Dr. Dagmar Belakowitsch","Dipl.-Ing. Nikolaus Berlakovich","Michael Bernhard","Mag. Eva Blimlinger","Dr. Reinhard Eugen Bösch","Dr. Helmut Brandstätter","Henrike Brandstötter","Lukas Brandweiner","Hermann Brückl, MA","Doris Bures","Dipl.-Ing. Gerhard Deimek","Martina Diesner-Wais","Mag. Meri Disoski","Dipl.-Ing. Karin Doppelbauer","Mag. Christian Drobits","Mag. Thomas Drozda","Cornelia Ecker","Rosa Ecker, MBA","Ing. Reinhold Einwallner","Mag. Faika El-Nagashi","Mag. Martin Engelberg","Dr. Ewa Ernst-Dziedzic","Franz Leonhard Eßl","Mag. Felix Eypeltauer","Fiona Fiedler, BEd","Mag. Ulrike Fischer","MMag. DDr. Hubert Fuchs","Mag. Klaus Fürlinger","Dr. Susanne Fürst","Hermann Gahr","Mag. Wolfgang Gerstl","Mag. Ernst Gödl","Dr. Elisabeth Götze","Mag. Dr. Martin Graf","Tanja Graf","Mag. Karin Greiner","Maria Großbauer","Kira Grünberg","Christian Hafenecker, MA","Mag. Sibylle Hamann","Lukas Hammer","Mag. Michael Hammer","Mag. Dr. Sonja Hammerschmid","Mag. Andreas Hanger","Peter Haubner","Mag. Gerald Hauser","Ing. Josef Hechenberger","Gabriele Heinisch-Hosek","Julia Elisabeth Herr","Eva-Maria Himmelbauer, BSc","Hans Stefan Hintner","Ing. Norbert Hofer","Ing. Manfred Hofinger","Johann Höfinger","Eva Maria Holzleitner, BSc","Franz Hörl","Douglas Hoyos-Trauttmansdorff","Mag. Johanna Jachs","Mag. Carmen Jeitler-Cincelli, BA","Alois Kainz","Mag. Gerhard Kaniak","MMMag. Dr. Axel Kassegger","Martina Kaufmann, MMSc BA","Dietmar Keck","Herbert Kickl","Rebecca Kirchbaumer","Klaus Köchl","Maximilian Köllner, MA","Andreas Kollross","Karlheinz Kopf","Mag. Markus Koza","Kai Jan Krainer","Dr. Stephanie Krisper","Katharina Kucharowits","Philip Kucher","Dr. Gudrun Kugler","Andreas Kühberger","Mag. Martina Künsberg Sarre","Mag. Andrea Kuntzl","Robert Laimer","Christian Lausch","Mag. Jörg Leichtfried","Maximilian Lercher","Ing. Klaus Lindinger, BSc","Ing. Martin Litschauer","Mag. Gerald Loacker","Dr. Reinhold Lopatka","Karl Mahrer","Nico Marchetti","Dr. Johannes Margreiter","Dr. Christoph Matznetter","Sigrid Maurer, BA","Mag. Beate Meinl-Reisinger, MES","Alexander Melchior","Andreas Minnich","Josef Muchitsch","Edith Mühlberghuber","Barbara Neßler","Mag. Dr. Maria Theresia Niss, MBA","Mag. Verena Nussbaum","Gabriel Obernosterer","Mag. Dr. Petra Oberrauner","Mag. Friedrich Ofenauer","Andreas Ottenschläger","Dipl.-Kffr. (FH) Elisabeth Pfurtscheller","Claudia Plakolm","Laurenz Pöttinger","Nikolaus Prinz","Mag. Christian Ragger","Walter Rauch","Ing. Mag. Volker Reifenberger","Michel Reimon, MBA","Carina Reiter","Dr. Pamela Rendi-Wagner, MSc","Bedrana Ribo, MA","Christian Ries","Dr. Astrid Rössler","MMMag. Gertraud Salzmann","Ralph Schallmeiner","Mag. Corinna Scharzenberger","Sabine Schatz","Josef Schellhorn","Dr. Nikolaus Scherak, MA","Mag. Elisabeth Scheucher-Pichler","Karl Schmidhofer","Peter Schmiedlechner","Johannes Schmuckenschlager","Joachim Schnabel","Michael Schnedlitz","Mag. Philipp Schrangl","Alois Schroll","Gabriela Schwarz","Mag. Dr. Jakob Schwarz, BA","Michael Seemayer","Yannick Shetty","Norbert Sieber","Rudolf Silvan","Johann Singer","Mag. Maria Smodics-Neumann","Mag. Wolfgang Sobotka","Christoph Stark","Mag. Harald Stefan","Petra Steger","Mag. Michaela Steinacker","Dr. Christian Stocker","Alois Stöger, diplômé","David Stögmüller","Pia Philippa Strache","Dipl.-Ing. Georg Strasser","Mag. Dr. Rudolf Taschner","Mag. Nina Tomaselli","MMag. Dr. Agnes Totter, BEd","Dr. Harald Troch","Ing. Markus Vogl","Dipl.-Ing. Olga Voglauer","Petra Vorderwinkler","Ing. Johann Weber","Hermann Weratschnig, MBA MSc","Petra Wimmer","Rainer Wimmer","August Wöginger","Peter Wurm","Mag. Selma Yildirim","Nurten Yılmaz","Wolfgang Zanger","Christoph Zarits","Bettina Zopf","Süleyman Zorba"],["FPÖ","FPÖ","ÖVP","SPÖ","SPÖ","FPÖ","ÖVP","NEOS","GRÜNE","FPÖ","NEOS","NEOS","ÖVP","FPÖ","SPÖ","FPÖ","ÖVP","GRÜNE","NEOS","SPÖ","SPÖ","SPÖ","FPÖ","SPÖ","GRÜNE","ÖVP","GRÜNE","ÖVP","NEOS","NEOS","GRÜNE","FPÖ","ÖVP","FPÖ","ÖVP","ÖVP","ÖVP","GRÜNE","FPÖ","ÖVP","SPÖ","ÖVP","ÖVP","FPÖ","GRÜNE","GRÜNE","ÖVP","SPÖ","ÖVP","ÖVP","FPÖ","ÖVP","SPÖ","SPÖ","ÖVP","ÖVP","FPÖ","ÖVP","ÖVP","SPÖ","ÖVP","NEOS","ÖVP","ÖVP","FPÖ","FPÖ","FPÖ","ÖVP","SPÖ","FPÖ","ÖVP","SPÖ","SPÖ","SPÖ","ÖVP","GRÜNE","SPÖ","NEOS","SPÖ","SPÖ","ÖVP","ÖVP","NEOS","SPÖ","SPÖ","FPÖ","SPÖ","SPÖ","ÖVP","GRÜNE","NEOS","ÖVP","ÖVP","ÖVP","NEOS","SPÖ","GRÜNE","NEOS","ÖVP","ÖVP","SPÖ","FPÖ","GRÜNE","ÖVP","SPÖ","ÖVP","SPÖ","ÖVP","ÖVP","ÖVP","ÖVP","ÖVP","ÖVP","FPÖ","FPÖ","FPÖ","GRÜNE","ÖVP","SPÖ","GRÜNE","FPÖ","GRÜNE","ÖVP","GRÜNE","ÖVP","SPÖ","NEOS","NEOS","ÖVP","ÖVP","FPÖ","ÖVP","ÖVP","FPÖ","FPÖ","SPÖ","ÖVP","GRÜNE","SPÖ","NEOS","ÖVP","SPÖ","ÖVP","ÖVP","ÖVP","ÖVP","FPÖ","FPÖ","ÖVP","ÖVP","SPÖ","GRÜNE","independent","ÖVP","ÖVP","GRÜNE","ÖVP","SPÖ","SPÖ","GRÜNE","SPÖ","ÖVP","GRÜNE","SPÖ","SPÖ","ÖVP","FPÖ","SPÖ",null,"FPÖ","ÖVP","ÖVP","GRÜNE"],["male","male","female","female","female","female","male","male","female","male","male","female","male","male","female","male","female","female","female","male","male","female","female","male","female","male","female","male","male","female","female","male","male","female","male","male","male","female","male","female","female","female","female","male","female","male","male","female","male","male","male","male","female","female","female","male","male","male","male","female","male","male","female","female","male","male","male","female","male","male","female","male","male","male","male","male","male","female","female","male","female","male","female","female","male","male","male","male","male","male","male","male","male","male","male","male","female","female","male","male","male","female","female","female","female","male","female","male","male","female","female","male","male","male","male","male","male","female","female","female","male","female","female","male","female","female","male","male","female","male","male","male","male","male","male","male","female","male","male","male","male","male","male","female","male","male","male","female","female","male","male","male","female","male","male","female","female","male","male","female","female","male","male","female","male","male","male","female","female","male","male","female","male"],["2","2","3","2","0","0","1","2","0","0","5","2","2","1","0","1","2","0","5","3","0","2","1","2","0","5","0","1","2","0","2","5","3","2","3","3","2","2","3","4","2","1","2","3","2","0","2","0","2","5","0","3","2","0","0","5","0","2","1","1","3","0","1","2","2","5","2","1","3","0","5","3","1","3","5","0","0","0","0","0","1","3","0","0","0","1","0","2","1","3","1","3","2","1","3","4","0","0","4","3","4","0","0","3","3","0","2","2","4","1","1","4","2","5","2","4","0","2","0","2","2","2","3","1","2","1","3","0","1","2","2","3","3","3","2","3","1","0","3","1","3","4","3","1","0","4","5","0","3","5","3","1","0","2","4","1","2","2","3","2","3","1","2","0","4","0","3","2","0","0","3","2","1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>MP name<\/th>\n      <th>party<\/th>\n      <th>gender<\/th>\n      <th>income category<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-center","targets":[1,2,3],"searchable":true}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
 </div>
@@ -2612,7 +2630,7 @@ Code: graph intra-gender distribution
 <h2 data-number="5.2" class="anchored" data-anchor-id="mps-income-category-by-party"><span class="header-section-number">5.2</span> MPs’ income category by party</h2>
 <p>With data on each MP’s income category and party membership available, let’s aggregate the data by parties. The graph below show the distribution of MPs over income categories per party in relative (and absolute) terms.</p>
 <div class="cell" data-code_folding="Code: plots on income categories">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_agg <span class="ot">&lt;-</span> df_income <span class="sc">%&gt;%</span> </span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
@@ -2670,10 +2688,10 @@ Code: graph intra-gender distribution
 </details>
 </div>
 <div class="cell page-columns page-full">
-<div class="cell-output-display column-page-right">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-27-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></a></p>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/unnamed-chunk-27-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img column-page-right" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -2690,7 +2708,6 @@ Code: graph intra-gender distribution
 <p>The answer to this challenge is provided by the <code>pdf_data</code> function, also from the <code>pdftools</code> package. As the output below shows, the function provides you with x and y coordinates for the actual, physical location of each textbox (for details see <a href="https://ropensci.org/technotes/2018/12/14/pdftools-20/" target="_blank">here</a>).</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-
 <div id="htmlwidget-d4bfea04c5fb1ff4e77c" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-d4bfea04c5fb1ff4e77c">{"x":{"filter":"none","vertical":false,"data":[[32,45,7,7,171,62,3,6,26,50,75,21,63,21,70,21,68,38,6,6,101,21,114,27,59,58,79,128,6,13,17,21,25,5,19,5,12,25,24,25,43,25,13,50,49,53,10,120,80,17,83,51,50,28,62,3,5,5,21,5,6,5,6,38,16,22,37,23,83,6,29,18,18,25,3,73,61,41,39,13,30,65,46,28,14,46,42,50,3,51,27,33,68,56,16,61,3,51,69,21,35,115,41,44,3,5,5,21,5,6,5,6,189,11,5,5,62,10,86,3,74,105,41,42,39,13,28,16,53,3,36,98,23,49,86,66,28,93,3,5,5,21,5,6,5,6,61,75,41,41,28,14,46,93,50,66,77,54,68,30,54,79,90,48,82,10,51,62,81,16,100,49,62,47,83,51,56,7,30,12,48,11,16,24,4,4,47,5],[12,12,12,12,12,11,11,6,9,9,11,11,11,11,11,11,11,11,11,11,11,11,11,9,13,13,13,9,6,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,6,9,9,9,9,9,9,6,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,6,9,9,9,6,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,6,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,7,7,7,7,7,7,7,7,7,7,9],[285,321,370,382,394,693,759,568,693,721,84,163,188,254,280,354,378,450,492,502,512,617,642,394,31,94,156,433,563,433,449,469,500,528,536,558,567,582,610,500,528,574,602,618,66,118,175,188,311,394,414,501,555,608,640,705,711,719,728,752,761,769,776,207,248,267,292,333,360,444,451,484,505,526,554,560,190,580,624,27,43,76,144,346,377,394,430,443,475,27,80,110,27,430,488,507,574,187,241,313,337,375,493,537,584,591,599,607,632,640,649,657,126,25,25,30,430,495,508,597,48,125,601,430,475,517,533,565,583,640,646,685,408,216,268,358,427,459,555,561,569,578,602,611,619,627,190,27,579,623,346,377,394,430,443,526,27,107,430,27,60,430,27,120,172,257,270,430,27,111,130,233,430,27,77,164,430,20,30,62,78,129,142,162,189,195,202,816],[31,31,31,31,31,23,23,28,38,38,60,60,60,60,60,60,60,60,60,60,60,60,60,88,99,99,99,89,88,102,102,102,102,102,102,102,102,102,102,118,118,118,118,118,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,148,161,161,161,161,161,161,159,161,161,161,161,161,161,175,175,175,192,192,192,192,192,192,192,192,192,192,208,208,208,224,224,224,224,224,239,239,239,239,239,239,239,239,239,239,239,239,239,239,238,265,267,282,281,208,208,208,208,282,282,265,279,279,279,279,279,279,279,279,279,282,304,304,304,304,304,304,304,304,304,304,304,304,303,330,347,330,330,347,347,347,347,347,347,363,363,363,379,379,379,395,395,395,395,395,395,411,411,411,411,411,427,427,427,427,562,564,564,564,564,564,564,564,564,564,565],[true,true,true,true,false,true,false,false,true,false,true,true,true,true,true,true,true,true,true,true,true,true,false,false,true,true,false,true,false,true,true,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,false,false,true,false,true,true,true,false,true,true,false,false,false,false,true,true,false,false,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,false,false,false,false,true,true,true,false,true,false,false,false,false,false,false,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true,true,true,true,false,false,false,true,false,true,true,false,false,false,false,true,false,false,true,false,false,true,true,true,true,false,false,true,true,true,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true,false,false],["Liste","gemäß","§","9","Bezügebegrenzungs-BVG","Nationalrat","-","(i)","Stand","30.06.2020","Bekanntgabe","von","Tätigkeiten","und","Offenlegung","von","Einkommen","gemäß","§","6","Unvereinbarkeits-","und","Transparenz-Gesetz","52688","Dipl.-Ing.","Nikolaus","Berlakovich","EINKOMMENSKATEGORIE","(i)","für","das","Jahr","2019:","1","(von","1","bis","1.000","Euro)","2020:","Meldefrist","endet","am","30.06.2021","LEITENDE","STELLUNG","IN","AKTIENGESELLSCHAFT,","GESELLSCHAFT","MIT","BESCHRÄNKTER","HAFTUNG,","STIFTUNG","ODER","SPARKASSE","-","§","6","Abs.","2","Z","1","(i)","(Werden","aus","einer","Tätigkeit","keine","Vermögensvorteile","(i)","erzielt,","wird","dies","durch","*","gekennzeichnet)","Rechtsträger","Leitende","Stellung","Dr.","Lorenz","Karall-Stiftung,","Eisenstadt","Ablauf","der","Meldefrist:","Präsident","23.11.2019","*","Margaretha","Lupac","Stiftung","Polster-Stiftung","Vorsitzender","des","Stiftungsrates","*","SONSTIGE","TÄTIGKEITEN,","AUS","DENEN","VERMÖGENSVORTEILE","ERZIELT","WERDEN","-","§","6","Abs.","2","Z","2","(i)","Dienstgeber/Rechtsträger/Unternehmen","lit.","d","(i)","Ersatzmitglied","im","Stiftungskuratorium","*","Burgenländische","Landwirtschaftskammer","Tätigkeit","Präsident","(Verzicht","auf","Bezug","des","Präsidenten","-","lediglich","Reisegebührenersatz)","keine","LEITENDE","EHRENAMTLICHE","TÄTIGKEITEN","(keine","Vermögensvorteile)","-","§","6","Abs.","2","Z","3","(i)","Rechtsträger","ÖVP-Burgenland","Leitende","Tätigkeit","Ablauf","der","Meldefrist:","Bezirksparteiobmann","23.11.2019","Oberpullendorf","Burgenländischer","Bauernbund","Landesobmann","Österr.","Bauernbund","Vorstandsmitglied","Arbeitsgemeinschaft","kroatischer","Kommunalpolitiker","im","Burgenland","Ehrenobmann","Fremdenverkehrs-","und","Verschönerungsverein","Nebersdorf","Ehrenobmann","Ländliches","Fortbildungsinstitut","Burgenland","Vorsitzender","(i)","Näheres","bei:","Informationen","zur","Liste","gemäß","§","9","BezBegrBVG","8"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>width<\/th>\n      <th>height<\/th>\n      <th>x<\/th>\n      <th>y<\/th>\n      <th>space<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-center","targets":[0,1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
@@ -2698,7 +2715,7 @@ Code: graph intra-gender distribution
 <p>Taking a closer look at the rows in the results, I noticed that the difference in y values for linebreaks within a cell (long position name) is different than that between cells (different position). While ‘normal’ line breaks result in a y value change of 11, new cells result in a higher change of the y value. Hence, the difference in y values can be used as an indicator for a new cell and hence a different professional position.</p>
 <p>To make use of this difference, I first calculate the difference of y values per row (<code>line_diff</code>), and subsequently and indicator which turns 1 if the y difference exceeds 11 (<code>row_jump</code>). Finally, I accumulate the value of the indicator to get an indicator for each row (<code>row_indicator</code>). For an example see the output below.</p>
 <div class="cell" data-code_folding="Code: identifying new positions">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_linebreaks <span class="ot">&lt;-</span> pdf_file[[<span class="dv">8</span>]] <span class="sc">%&gt;%</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(y, text) <span class="sc">%&gt;%</span> </span>
@@ -2713,14 +2730,13 @@ Code: graph intra-gender distribution
 </div>
 <div class="cell">
 <div class="cell-output-display">
-
 <div id="htmlwidget-d6a54c33823488849b81" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-d6a54c33823488849b81">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"y":[23,23,28,31,31,31,31,31,38,38,60,60,60,60,60,60,60,60,60,60,60,60,60,88,88,89,99,99,99,102,102,102,102,102,102,102,102,102,102,118,118,118,118,118,148,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,149,159,161,161,161,161,161,161,161,161,161,161,161,161,175,175,175,192,192,192,192,192,192,192,192,192,192,208,208,208,208,208,208,208,224,224,224,224,224,238,239,239,239,239,239,239,239,239,239,239,239,239,239,239,265,265,267,279,279,279,279,279,279,279,279,279,281,282,282,282,282,303,304,304,304,304,304,304,304,304,304,304,304,304,330,330,330,347,347,347,347,347,347,347,363,363,363,379,379,379,395,395,395,395,395,395,411,411,411,411,411,427,427,427,427,562,564,564,564,564,564,564,564,564,564,565],"text":["Nationalrat","-","(i)","Liste","gemäß","§","9","Bezügebegrenzungs-BVG","Stand","30.06.2020","Bekanntgabe","von","Tätigkeiten","und","Offenlegung","von","Einkommen","gemäß","§","6","Unvereinbarkeits-","und","Transparenz-Gesetz","52688","(i)","EINKOMMENSKATEGORIE","Dipl.-Ing.","Nikolaus","Berlakovich","für","das","Jahr","2019:","1","(von","1","bis","1.000","Euro)","2020:","Meldefrist","endet","am","30.06.2021","(i)","LEITENDE","STELLUNG","IN","AKTIENGESELLSCHAFT,","GESELLSCHAFT","MIT","BESCHRÄNKTER","HAFTUNG,","STIFTUNG","ODER","SPARKASSE","-","§","6","Abs.","2","Z","1","(i)","(Werden","aus","einer","Tätigkeit","keine","Vermögensvorteile","erzielt,","wird","dies","durch","*","gekennzeichnet)","Rechtsträger","Leitende","Stellung","Dr.","Lorenz","Karall-Stiftung,","Eisenstadt","Ablauf","der","Meldefrist:","Präsident","23.11.2019","*","Margaretha","Lupac","Stiftung","Ersatzmitglied","im","Stiftungskuratorium","*","Polster-Stiftung","Vorsitzender","des","Stiftungsrates","*","(i)","SONSTIGE","TÄTIGKEITEN,","AUS","DENEN","VERMÖGENSVORTEILE","ERZIELT","WERDEN","-","§","6","Abs.","2","Z","2","Dienstgeber/Rechtsträger/Unternehmen","Tätigkeit","lit.","Präsident","(Verzicht","auf","Bezug","des","Präsidenten","-","lediglich","Reisegebührenersatz)","(i)","d","Burgenländische","Landwirtschaftskammer","keine","(i)","LEITENDE","EHRENAMTLICHE","TÄTIGKEITEN","(keine","Vermögensvorteile)","-","§","6","Abs.","2","Z","3","Rechtsträger","Leitende","Tätigkeit","ÖVP-Burgenland","Ablauf","der","Meldefrist:","Bezirksparteiobmann","23.11.2019","Oberpullendorf","Burgenländischer","Bauernbund","Landesobmann","Österr.","Bauernbund","Vorstandsmitglied","Arbeitsgemeinschaft","kroatischer","Kommunalpolitiker","im","Burgenland","Ehrenobmann","Fremdenverkehrs-","und","Verschönerungsverein","Nebersdorf","Ehrenobmann","Ländliches","Fortbildungsinstitut","Burgenland","Vorsitzender","(i)","Näheres","bei:","Informationen","zur","Liste","gemäß","§","9","BezBegrBVG","8"],"line_diff":[23,0,5,3,0,0,0,0,7,0,22,0,0,0,0,0,0,0,0,0,0,0,0,28,0,1,10,0,0,3,0,0,0,0,0,0,0,0,0,16,0,0,0,0,30,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,2,0,0,0,0,0,0,0,0,0,0,0,14,0,0,17,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,16,0,0,0,0,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,26,0,2,12,0,0,0,0,0,0,0,0,2,1,0,0,0,21,1,0,0,0,0,0,0,0,0,0,0,0,26,0,0,17,0,0,0,0,0,0,16,0,0,16,0,0,16,0,0,0,0,0,16,0,0,0,0,16,0,0,0,135,2,0,0,0,0,0,0,0,0,1],"row_jump":[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0],"row_indicator":[1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,7,7,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,11,11,11,12,12,12,12,12,12,12,12,12,12,12,12,12,12,13,13,13,13,13,13,13,13,13,13,13,13,13,14,14,14,15,15,15,15,15,15,15,16,16,16,17,17,17,18,18,18,18,18,18,19,19,19,19,19,20,20,20,20,21,21,21,21,21,21,21,21,21,21,21]},"columns":[{"id":"y","name":"y","type":"numeric"},{"id":"text","name":"text","type":"character"},{"id":"line_diff","name":"line_diff","type":"numeric"},{"id":"row_jump","name":"row_jump","type":"numeric"},{"id":"row_indicator","name":"row_indicator","type":"numeric"}],"theme":{"color":"#333333","borderColor":"#e7e7e7","borderWidth":"1px","stripedColor":"#e7e7e7","highlightColor":"#eeeeee","cellPadding":5,"tableStyle":{"fontSize":13},"headerStyle":{"borderWidth":"0px","padding":"5px","background":"#ffffff","borderColor":"#ffffff","color":"#999999","fontWeight":"500","textTransform":"uppercase","fontSize":11},"groupHeaderStyle":{"&:not(:empty)":{"borderWidth":"0px","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":11,"borderColor":"#ffffff","color":"#333333"}},"rowSelectedStyle":{"backgroundColor":"#e9edf0"},"inputStyle":{"backgroundColor":"#ffffff","color":"#333333"},"searchInputStyle":{"color":"#333333","fontSize":"13px"},"selectStyle":{"color":"#333333"},"paginationStyle":{"color":"#333333","fontSize":"14px"},"pageButtonStyle":{"color":"#333333","fontSize":"14px"}},"dataKey":"2cedec902a2afc0f89bdbc7f3f4084b9"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>In the next step, I group the data by the <code>row_indicator</code> and combine the different text parts with the same row indicator into one string. As a result, we get a dataframe where each row contains one row of the table (including those parts after the line break). Hooray!</p>
 <div class="cell" data-paged.print="true" data-code_folding="Code: Table with one row per position">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df_rows <span class="ot">&lt;-</span> df_linebreaks <span class="sc">%&gt;%</span> </span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(row_indicator) <span class="sc">%&gt;%</span></span>
@@ -2729,7 +2745,7 @@ Code: graph intra-gender distribution
 </details>
 </div>
 <div class="cell" data-ech="false" data-code_folding="{}">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>df_rows</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -2752,7 +2768,7 @@ Code: graph intra-gender distribution
 </div>
 <p>From this new dataframe we have to filter out those rows which contain the different professional positions we are interested in. To do this, I first extract the row number of those rows which contain the subheading of each nested table (on executive, other, and honorary positions). With row number values of these rows, I can subsequently filter out those rows which are located between the headings (= professional positions).</p>
 <div class="cell" data-code_folding="Code: row numbers of sub-headings">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># headings</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>heading_executive <span class="ot">&lt;-</span> df_rows <span class="sc">%&gt;%</span></span>
@@ -2772,14 +2788,14 @@ Code: graph intra-gender distribution
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 5</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>heading_other</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 10</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>heading_honorary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -2792,7 +2808,7 @@ Code: graph intra-gender distribution
 <h2 data-number="6.2" class="anchored" data-anchor-id="putting-it-all-into-a-function"><span class="header-section-number">6.2</span> Putting it all into a function</h2>
 <p>I put all the above outlined (and subsequent) steps into a function which provides me with the number of positions per category for each MP. Have a look in the code chunk below. In a sense, it’s the key element of the overall analysis.</p>
 <div class="cell" data-code_folding="Code: Function to extract positions">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>fn_get_positions <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> x <span class="sc">%&gt;%</span></span>
@@ -2899,7 +2915,7 @@ Code: graph intra-gender distribution
 </div>
 <p>This function is applied to our previous results of the <code>pdf_data</code> function. At the end, I combine these results with MPs’ names and aggregate those reports of MPs which run over multiple pages. Et voila! You can use the arrows to sort the table and get e.g the top-10 MPs as to their number of executive positions.</p>
 <div class="cell" data-code_folding="Code: Apply function">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>df_data <span class="ot">&lt;-</span> pdf_file <span class="sc">%&gt;%</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(., fn_get_positions)</span>
@@ -2915,7 +2931,7 @@ Code: graph intra-gender distribution
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df_count <span class="sc">%&gt;%</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">reactable</span>(.,</span>
@@ -2930,7 +2946,6 @@ Code: graph intra-gender distribution
 <span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="htmlwidget-dadbc16f4b44d82f30f0" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-dadbc16f4b44d82f30f0">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"name":["Alexander Melchior","Alois Kainz","Alois Schroll","Alois Stöger, diplômé","Andreas Kollross","Andreas Kühberger","Andreas Minnich","Andreas Ottenschläger","Angela Baumgartner","August Wöginger","Barbara Neßler","Bedrana Ribo, MA","Bettina Zopf","Carina Reiter","Christian Hafenecker, MA","Christian Lausch","Christian Ries","Christoph Stark","Christoph Zarits","Claudia Plakolm","Clemens Stammler","Cornelia Ecker","David Stögmüller","Dietmar Keck","Dipl.-Ing. Georg Strasser","Dipl.-Ing. Gerhard Deimek","Dipl.-Ing. Karin Doppelbauer","Dipl.-Ing. Nikolaus Berlakovich","Dipl.-Ing. Olga Voglauer","Dipl.-Kffr. (FH) Elisabeth Pfurtscheller","Doris Bures","Douglas Hoyos-Trauttmansdorff","Dr. Astrid Rössler","Dr. Christian Stocker","Dr. Christoph Matznetter","Dr. Dagmar Belakowitsch","Dr. Elisabeth Götze","Dr. Ewa Ernst-Dziedzic","Dr. Gudrun Kugler","Dr. Harald Troch","Dr. Helmut Brandstätter","Dr. Johannes Margreiter","Dr. Josef Smolle","Dr. Nikolaus Scherak, MA","Dr. Pamela Rendi-Wagner, MSc","Dr. Reinhard Eugen Bösch","Dr. Reinhold Lopatka","Dr. Stephanie Krisper","Dr. Susanne Fürst","Dr. Werner Saxinger, MSc","Edith Mühlberghuber","Erwin Angerer","Eva Maria Holzleitner, BSc","Eva-Maria Himmelbauer, BSc","Fiona Fiedler, BEd","Franz Hörl","Franz Leonhard Eßl","Gabriel Obernosterer","Gabriela Schwarz","Gabriele Heinisch-Hosek","Hans Stefan Hintner","Heike Grebien","Henrike Brandstötter","Herbert Kickl","Hermann Brückl, MA","Hermann Gahr","Hermann Weratschnig, MBA MSc","Ing. Johann Weber","Ing. Josef Hechenberger","Ing. Klaus Lindinger, BSc","Ing. Mag. (FH) Alexandra Tanda","Ing. Mag. Volker Reifenberger","Ing. Manfred Hofinger","Ing. Markus Vogl","Ing. Martin Litschauer","Ing. Norbert Hofer","Ing. Reinhold Einwallner","Irene Neumann-Hartberger","Joachim Schnabel","Johann Höfinger","Johann Singer","Johannes Schmuckenschlager","Josef Muchitsch","Josef Schellhorn","Julia Elisabeth Herr","Kai Jan Krainer","Karl Mahrer","Karl Schmidhofer","Karlheinz Kopf","Katharina Kucharowits","Kira Grünberg","Klaus Köchl","Laurenz Pöttinger","Lukas Brandweiner","Lukas Hammer","MMMag. Dr. Axel Kassegger","MMMag. Gertraud Salzmann","MMag. DDr. Hubert Fuchs","MMag. Dr. Agnes Totter, BEd","Mag. Agnes Sirkka Prammer","Mag. Andrea Kuntzl","Mag. Andreas Hanger","Mag. Beate Meinl-Reisinger, MES","Mag. Carmen Jeitler-Cincelli, BA","Mag. Christian Drobits","Mag. Christian Ragger","Mag. Corinna Scharzenberger","Mag. Dr. Jakob Schwarz, BA","Mag. Dr. Maria Theresia Niss, MBA","Mag. Dr. Martin Graf","Mag. Dr. Petra Oberrauner","Mag. Dr. Rudolf Taschner","Mag. Dr. Sonja Hammerschmid","Mag. Elisabeth Scheucher-Pichler","Mag. Ernst Gödl","Mag. Eva Blimlinger","Mag. Faika El-Nagashi","Mag. Felix Eypeltauer","Mag. Friedrich Ofenauer","Mag. Georg Bürstmayr","Mag. Gerald Hauser","Mag. Gerald Loacker","Mag. Gerhard Kaniak","Mag. Hannes Amesbauer, BA","Mag. Harald Stefan","Mag. Johanna Jachs","Mag. Jörg Leichtfried","Mag. Karin Greiner","Mag. Klaus Fürlinger","Mag. Maria Smodics-Neumann","Mag. Markus Koza","Mag. Martin Engelberg","Mag. Martina Künsberg Sarre","Mag. Meri Disoski","Mag. Michael Hammer","Mag. Michaela Steinacker","Mag. Nina Tomaselli","Mag. Peter Weidinger","Mag. Philipp Schrangl","Mag. Romana Deckenbacher","Mag. Ruth Becher","Mag. Selma Yildirim","Mag. Sibylle Hamann","Mag. Thomas Drozda","Mag. Ulrike Fischer","Mag. Verena Nussbaum","Mag. Wolfgang Gerstl","Mag. Wolfgang Sobotka","Maria Großbauer","Martina Diesner-Wais","Martina Kaufmann, MMSc BA","Maximilian Köllner, MA","Maximilian Lercher","Michael Bernhard","Michael Schnedlitz","Michael Seemayer","Michel Reimon, MBA","Nico Marchetti","Nikolaus Prinz","Norbert Sieber","Nurten Yılmaz","Peter Haubner","Peter Schmiedlechner","Peter Wurm","Petra Bayr, MA MLS","Petra Steger","Petra Vorderwinkler","Petra Wimmer","Philip Kucher","Pia Philippa Strache","Rainer Wimmer","Ralph Schallmeiner","Rebecca Kirchbaumer","Robert Laimer","Rosa Ecker, MBA","Rudolf Silvan","Sabine Schatz","Sigrid Maurer, BA","Süleyman Zorba","Tanja Graf","Walter Rauch","Wolfgang Zanger","Yannick Shetty"],"executive_n":[0,0,0,0,1,0,2,5,0,0,0,0,0,0,0,0,0,3,1,0,0,2,0,0,0,0,0,3,0,2,0,1,0,3,2,0,0,1,0,0,1,1,0,2,0,0,0,0,0,0,0,0,0,1,0,6,0,2,0,1,0,0,0,0,1,0,4,0,0,0,2,0,0,3,0,0,1,1,0,0,0,1,0,2,0,0,0,1,3,0,0,0,3,0,0,3,0,0,0,0,0,6,0,3,0,2,0,0,4,2,1,0,0,9,0,3,0,0,0,0,0,1,9,0,0,0,0,0,1,0,0,3,1,0,0,0,1,2,0,0,0,1,0,1,0,0,1,0,0,0,3,0,2,2,2,0,0,0,0,0,0,0,0,3,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,0,0],"executive_non_remunerated_n":[0,0,0,0,1,0,0,4,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,3,0,1,0,0,0,3,0,0,0,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,4,0,2,0,1,0,0,0,0,1,0,0,0,0,0,2,0,0,3,0,0,1,0,0,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,4,0,2,0,1,0,0,2,1,1,0,0,9,0,3,0,0,0,0,0,1,9,0,0,0,0,0,0,0,0,0,1,0,0,0,1,2,0,0,0,1,0,1,0,0,1,0,0,0,1,0,1,0,2,0,0,0,0,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],"other_n":[2,2,1,1,3,2,3,0,1,0,0,2,4,3,3,2,2,2,2,1,2,0,1,1,2,2,2,1,3,0,0,0,3,2,2,0,3,0,1,1,2,1,1,0,0,0,2,0,1,2,0,1,1,0,0,1,1,0,2,1,2,0,1,0,1,1,3,1,2,2,1,3,1,2,4,0,3,2,1,1,1,4,2,2,0,0,1,0,2,0,2,2,1,2,0,6,2,4,2,2,0,1,0,2,1,1,1,0,0,1,1,2,0,2,3,0,0,1,1,1,0,1,2,1,2,1,0,1,1,2,2,1,0,2,4,3,2,1,1,2,0,3,1,0,2,1,1,0,1,2,1,1,0,0,3,1,0,1,2,1,0,2,4,1,1,0,2,0,0,0,1,1,3,0,2,1,1,0,1,1,1,0,3],"honorary_n":[3,3,12,8,10,7,5,6,1,5,2,1,4,18,5,2,6,7,5,5,4,9,6,9,2,3,0,6,2,3,8,2,0,6,4,4,4,5,2,6,1,2,4,4,2,1,4,1,0,2,3,2,8,6,0,3,9,0,1,7,6,0,1,6,7,3,3,2,3,4,1,7,0,9,4,3,3,4,11,11,11,11,2,2,4,1,3,6,9,8,0,4,5,9,0,3,6,1,6,3,6,5,2,3,7,1,2,0,0,6,6,0,0,13,4,1,3,0,5,0,3,0,5,5,4,4,6,5,4,1,2,2,0,0,6,5,2,4,2,1,8,7,0,0,1,4,4,6,1,6,3,3,4,1,5,7,0,5,5,4,6,3,3,4,16,2,3,7,4,0,12,1,4,7,6,4,12,0,1,5,4,7,1],"total_n":[5,5,13,9,14,9,10,11,2,5,2,3,8,21,8,4,8,12,8,6,6,11,7,10,4,5,2,10,5,5,8,3,3,11,8,4,7,6,3,7,4,4,5,6,2,1,6,1,1,4,3,3,9,7,0,10,10,2,3,9,8,0,2,6,9,4,10,3,5,6,4,10,1,14,8,3,7,7,12,12,12,16,4,6,4,1,4,7,14,8,2,6,9,11,0,12,8,5,8,5,6,12,2,8,8,4,3,0,4,9,8,2,0,24,7,4,3,1,6,1,3,2,16,6,6,5,6,6,6,3,4,6,1,2,10,8,5,7,3,3,8,11,1,1,3,5,6,6,2,8,7,4,6,3,10,8,0,6,7,5,6,5,7,8,17,2,5,7,5,0,13,2,7,7,8,5,13,0,2,8,5,7,4]},"columns":[{"id":"name","name":"MP name","type":"character"},{"id":"executive_n","name":"# executive pos (total)","type":"numeric"},{"id":"executive_non_remunerated_n","name":"# executive pos not remunerated","type":"numeric"},{"id":"other_n","name":"other_n","type":"numeric"},{"id":"honorary_n","name":"# honorary pos","type":"numeric"},{"id":"total_n","name":"total # pos","type":"numeric"}],"theme":{"color":"#333333","borderColor":"#e7e7e7","borderWidth":"1px","stripedColor":"#e7e7e7","highlightColor":"#eeeeee","cellPadding":5,"tableStyle":{"fontSize":13},"headerStyle":{"borderWidth":"0px","padding":"5px","background":"#ffffff","borderColor":"#ffffff","color":"#999999","fontWeight":"500","textTransform":"uppercase","fontSize":11},"groupHeaderStyle":{"&:not(:empty)":{"borderWidth":"0px","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":11,"borderColor":"#ffffff","color":"#333333"}},"rowSelectedStyle":{"backgroundColor":"#e9edf0"},"inputStyle":{"backgroundColor":"#ffffff","color":"#333333"},"searchInputStyle":{"color":"#333333","fontSize":"13px"},"selectStyle":{"color":"#333333"},"paginationStyle":{"color":"#333333","fontSize":"14px"},"pageButtonStyle":{"color":"#333333","fontSize":"14px"}},"dataKey":"48765aa7a7bee5d59497a06eb531e711"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
@@ -2943,7 +2958,7 @@ Code: graph intra-gender distribution
 <p>Paid are the positions stated in the category ‘other positions’ and ‘executive position’. As for the latter, however, the list also includes unpaid executive positions which are marked with an asterisk (*). Hence these positions have to be removed when calculating the total number of paid positions. For details see <a href="#unpaid_executive">below</a>.</p>
 <p>Hover over the points in the plot below to get details on each individual MP. Note that the points are located randomly <em>within</em> each square to avoid overplotting.</p>
 <div class="cell" data-code_folding="Code: Number of paid positions and income category">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>df_income_positions <span class="ot">&lt;-</span> df_count2 <span class="sc">%&gt;%</span> </span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(., df_income <span class="sc">%&gt;%</span> <span class="fu">select</span>(gender, income_category_19, name),</span>
@@ -2999,7 +3014,7 @@ Code: graph intra-gender distribution
 </details>
 </div>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">girafe</span>(<span class="at">ggobj =</span> pl_income_positions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -3011,7 +3026,7 @@ Code: graph intra-gender distribution
 <p>Overall, there seems to be a positive association between the number of positions and income category. However, bear in mind that we do not know how much income is generate from each specific position. We only know about the sum and shouldn’t be tempted to infer any average salaries per position. E.g. while Herbert Fuchs’ four paid positions yield in sum an income of more than 10,000 Euros per average month (income category 5), it could be that the bulk of the income sum originates from one particularly position only. This is particularly relevant if we think about comparing MPs within the same income category but different number of paid positions.</p>
 <p>A further qualifying note on the lower end of the income scale: Note that there are five curious cases of MPs having at least one paid position, but zero additional income. How can that be? Let’s look at these five cases more closely.</p>
 <div class="cell" data-code_folding="Code: MPs with no income but paid positions">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>df_mp5 <span class="ot">&lt;-</span> df_income_positions <span class="sc">%&gt;%</span> </span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(income_category_19<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
@@ -3042,7 +3057,6 @@ Code: graph intra-gender distribution
 </div>
 <div class="cell">
 <div class="cell-output-display">
-
 <div id="uksrtvhuke" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
@@ -3512,7 +3526,7 @@ Code: graph intra-gender distribution
 <h2 data-number="6.4" class="anchored" data-anchor-id="share-of-mps-with-at-least-one-additional-position"><span class="header-section-number">6.4</span> Share of MPs with at least one additional position</h2>
 <p>To move on and, to get some contrast between parties, the barplot below indicates the percentage of MPs per party which do have at least one additional professional position.</p>
 <div class="cell" data-code_folding=">Code: MP share w at least one add. position">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>df_bar_position <span class="ot">&lt;-</span> df_position_long <span class="sc">%&gt;%</span> </span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>position <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"executive_non_remunerated_n"</span>,</span>
@@ -3557,14 +3571,14 @@ Code: graph intra-gender distribution
 </details>
 </div>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pl_bar_position</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display column-page-right">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-45-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid figure-img" width="672"></a></p>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/unnamed-chunk-45-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid figure-img column-page-right" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3576,7 +3590,7 @@ Code: graph intra-gender distribution
 <h2 data-number="6.5" class="anchored" data-anchor-id="unpaid_executive"><span class="header-section-number">6.5</span> Executive positions</h2>
 <p>Below I further disaggregate executive positions into those which entail a salary and those which don’t. In the parliament’s report, executive positions without salary were marked with an asterisk (*). When retrieving the data above, I already accounted for this difference (<code>str_detect(., "\\*")</code>). The graph below now shows the percentage of MPs per party without executive positions, those with at least one executive position without salary (and no position with salary), and those with at least one remunerated executive position.</p>
 <div class="cell" data-code_folding="Code: different types of executive positions">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>df_executive <span class="ot">&lt;-</span> df_count2 <span class="sc">%&gt;%</span> </span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(party, <span class="fu">contains</span>(<span class="st">"executive"</span>)) <span class="sc">%&gt;%</span> </span>
@@ -3599,7 +3613,7 @@ Code: graph intra-gender distribution
 <span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">str_detect</span>(remunerated, <span class="fu">regex</span>( <span class="st">"remunerated_yes"</span>))<span class="sc">==</span><span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"% MPs with remunerated executive positions"</span>,</span>
 <span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>                               <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.character</span>(remunerated))) <span class="sc">%&gt;%</span> </span>
 <span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">remunerated=</span><span class="fu">fct_relevel</span>(remunerated,</span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"% MPs with non-remunerated executive positions"</span>, <span class="at">after =</span> 1L) <span class="sc">%&gt;%</span> fct_rev) <span class="sc">%&gt;%</span></span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"% MPs with non-remunerated executive positions"</span>, <span class="at">after =</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span> fct_rev) <span class="sc">%&gt;%</span></span>
 <span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
 <span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Austrian Nationalrat: Percentage of MPs with different executive positions per party"</span>,</span>
 <span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle=</span><span class="fu">str_wrap</span>(<span class="st">"Percentages are shares of each party's total number of members. Absolute numbers in brackets. Lower chamber only (Nationalrat). Data for 2019."</span>, <span class="dv">105</span>),</span>
@@ -3632,7 +3646,7 @@ Code: graph intra-gender distribution
 </div>
 <div class="cell">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-47-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-47-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -3649,7 +3663,7 @@ Code: graph intra-gender distribution
 Code: boxplots
 </summary>
 <div class="cell" data-code_folding="false">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>df_position_labels <span class="ot">&lt;-</span> df_position_long <span class="sc">%&gt;%</span> </span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>position <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"executive_non_remunerated_n"</span>,</span>
@@ -3727,7 +3741,7 @@ Code: boxplots
 </details>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-49-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/unnamed-chunk-49-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
@@ -3744,7 +3758,7 @@ Code: boxplots
 </section>
 
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
 <ol>
 <li id="fn1"><p>For details see <a href="https://www.parlament.gv.at//POOL/SWBRETT/25020/0010/BezBegrBVGPar9Erkl-NR.pdf#page=1" target="_blank">here.</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
@@ -3752,17 +3766,17 @@ Code: boxplots
 <li id="fn3"><p>I am grateful to the respondents to my pertaining question on <a href="https://stackoverflow.com/questions/62678640/stringr-remove-multiple-spaces-but-keep-linebreaks-n-r/62679016#62679016" target="_blank">stackoverflow</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>See <a href="https://stackoverflow.com/questions/159118/how-do-i-match-any-character-across-multiple-lines-in-a-regular-expression/45981809#45981809" target="_blank">here</a> for a very helpful answer on SO.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2020,
-  author = {Schmidt, Roland},
+</section><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{2020,
+  author = {},
   title = {Austrian {Parliament:} {MPs} Transparency and Conflict of
     Interest Report},
   date = {2020-07-21},
   url = {https://werk.statt.codes/posts/2020-07-21-attransperency},
   langid = {en}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2020" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland. 2020. <span>“Austrian Parliament: MPs Transparency and
-Conflict of Interest Report.”</span> July 21, 2020. <a href="https://werk.statt.codes/posts/2020-07-21-attransperency">https://werk.statt.codes/posts/2020-07-21-attransperency</a>.
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-2020" class="csl-entry quarto-appendix-citeas" role="listitem">
+<span>“Austrian Parliament: MPs Transparency and Conflict of Interest
+Report.”</span> 2020. July 21, 2020. <a href="https://werk.statt.codes/posts/2020-07-21-attransperency">https://werk.statt.codes/posts/2020-07-21-attransperency</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -3799,18 +3813,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -3842,11 +3845,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/werk\.statt\.codes");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -3856,8 +3898,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -3869,7 +3920,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -3913,6 +4087,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -3938,6 +4113,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -4003,11 +4204,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-center">
+
+<div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
-    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693">
+<p><i class="fa-brands fa-orcid" aria-label="orcid"></i></p>
+</a>
   </li>  
     <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/werkstattcodes">
@@ -4043,7 +4248,39 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","descPosition":"bottom","openEffect":"zoom","closeEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","openEffect":"zoom","descPosition":"bottom","selector":".lightbox","loop":false});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
 
 
 

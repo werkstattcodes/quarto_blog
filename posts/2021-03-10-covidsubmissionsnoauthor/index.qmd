@@ -128,7 +128,10 @@ This is just a blog post and not rigorously thought through, but I found the que
 
 Unfold the snippet below to get the code for the analysis. I inserted comments where I thought they might be helpful.
 
-```{r, eval=F, code_folding="Code: get overview of all bills"}
+```{r}
+#| eval: false
+#| code-summary: "Code: get overview of all bills"
+
 # packages ----------------------------------------------------------------
 library(tidyverse)
 library(rvest)

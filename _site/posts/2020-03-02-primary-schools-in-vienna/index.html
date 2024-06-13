@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.321">
+<meta name="generator" content="quarto-1.5.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Roland Schmidt">
 <meta name="description" content="Drawing on public data from Vienna’s school administration I look at how many percentages of pupils in each primary school subsequently leave for schools offering eventually a higher education entrance qualification (Matura). The main interest is in contrasting these ratios between closely (geo-)located schools.">
 
-<title>werk.statt.codes - Segregation in Vienna’s primary schools?</title>
+<title>werk.statt.codes – Segregation in Vienna’s primary schools?</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -35,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -76,9 +76,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
-<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -87,7 +84,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -96,8 +98,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -126,28 +130,47 @@ cookieconsent.run({
   "notice_banner_reject_button_hide":false,
   "preferences_center_close_button_hide":false,
   "website_name":""
+  ,
+"language":"en"
   });
 });
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
 <script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+
 <script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+
 <script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+
 <script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+
 <script src="../../site_libs/flatbush-4.0.0/flatbush.min.js"></script>
+
 <link href="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.css" rel="stylesheet">
+
 <script src="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.js"></script>
+
 <script src="../../site_libs/girafe-binding-0.8.5/girafe.js"></script>
+
 <script src="../../site_libs/plotly-binding-4.10.1/plotly.js"></script>
+
 <script src="../../site_libs/typedarray-0.1/typedarray.min.js"></script>
+
 <script src="../../site_libs/jquery-3.5.1/jquery.min.js"></script>
+
 <link href="../../site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
+
 <script src="../../site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+
 <link href="../../site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+
 <script src="../../site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <link href="../../site_libs/bootstrap-grid-3.4.1/bootstrap-grid.min.css" rel="stylesheet">
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -157,79 +180,41 @@ cookieconsent.run({
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html" rel="" target="">
+    <a class="dropdown-item" href="../../about.html">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body">
-      <h1 class="title">Segregation in Vienna’s primary schools?</h1>
-                  <div>
-        <div class="description">
-          <p>Drawing on public data from Vienna’s school administration I look at how many percentages of pupils in each primary school subsequently leave for schools offering eventually a higher education entrance qualification (Matura). The main interest is in contrasting these ratios between closely (geo-)located schools.</p>
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">Austria</div>
-                <div class="quarto-category">plotly</div>
-                <div class="quarto-category">crosstalk</div>
-              </div>
-                  </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta">
-
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p>Roland Schmidt </p>
-            </div>
-    </div>
-      
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">2 Mar 2020</p>
-      </div>
-    </div>
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -244,14 +229,52 @@ cookieconsent.run({
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Segregation in Vienna’s primary schools?</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Austria</div>
+    <div class="quarto-category">plotly</div>
+    <div class="quarto-category">crosstalk</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Drawing on public data from Vienna’s school administration I look at how many percentages of pupils in each primary school subsequently leave for schools offering eventually a higher education entrance qualification (Matura). The main interest is in contrasting these ratios between closely (geo-)located schools.</p>
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Roland Schmidt </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2 Mar 2020</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 <section id="context" class="level1" data-number="1">
@@ -262,14 +285,14 @@ cookieconsent.run({
 <section id="analysis" class="level1 page-columns page-full" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Analysis</h1>
 <p>So, triggered by this ‘hearsay’ (and, guilty as charged, by my affinity with R), I wanted to dig a bit deeper and see whether ‘the data’ has anything pertaining to say. The straightforward approach would be simply to look at the share of kids with first languages other than German in each school and compare them. While this data is certainly collected (when enrolling your kid), as far as I can tell, it is not made publicly available on an individual school level (and maybe that’s actually good). However, during our school search I came across a rather informative map provided by Austria’s statistical office (see <a href="https://www.statistik.at/atlas/schulen/#" target="”_blank”">here</a>). The map presents not only the location for every (primary) school in Austria, but also data on the school subsequently attended by its pupils once they finished the fourth grade. See e.g.&nbsp;the image below. <br></p>
-<p><a href="vienna_schools_table.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Example of table of 4th graders’ school destination"><img src="vienna_schools_table.PNG" style="width:50.0%;height:100.0%" alt="Example of table of 4th graders’ school destination"></a> <br></p>
+<p><img src="vienna_schools_table.PNG" style="width:50.0%;height:100.0%" alt="Example of table of 4th graders’ school destination"> <br></p>
 <p>In short, with this data we know how many % of all pupils ‘graduating’ from a primary school’s 4th grade subsequently attended either a AHS (or equivalent; a high school/gymnasium) or an NMS (or equivalent; ‘new secondary school’). Critically, an AHS offers a direct trajectory to a school leaving examination after eight years which is required to attend university. In contrast, an NMS lasts only for four years after which kids either go for an apprenticeship, start to work, or if their school record was good enough, switch for another four to five years to an AHS or similar school type which offers a school leaving exam. To (over)simplify, leaving for an AHS is by and large considered to be better for the future educational and professional development. I will subsequently call the % of kids per school leaving for an AHS (or equivalent) the <strong>AHS ratio</strong>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <section id="differences-between-districts" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="differences-between-districts"><span class="header-section-number">2.1</span> Differences between districts</h2>
 <p>In an ‘ideal-typical’ world, without any non-randomly distributed confounding factors, the rates of pupils leaving for an AHS should be rather similar across the board. That this is not the case, however, doesn’t come at a surprise. Socio-economic factors of all kinds influence a school’s as well as a kid’s ability to educationally prosper. These factors are frequently geographically clustered and hence can account for different school-leaving ratios between schools.</p>
 <p>To see this in the context in Vienna, I downloaded the data (2018/2019) for every Viennese primary school from the above-mentioned map of Statistik Austria and calculated the ratio of kids leaving for an AHS (or equivalent school). If we separate the result of schools by district and whether they are privately or publicly run, we get the graph below. Hover-over each dot/school to get details.</p>
 <div class="cell" data-layout-align="center" data-hash="index_cache/html/unnamed-chunk-3_16fa24b71820fc3801759f681a11eecc">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get link to json file with data embedded in the website</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data_link <span class="ot">&lt;-</span> <span class="st">"https://www.statistik.at/gs-atlas/ATLAS_SCHULE_WFS/ows?service=WFS&amp;version=1.0.0&amp;request=GetFeature&amp;typeName=ATLAS_SCHULE_WFS:ATLAS_SCHULE&amp;outputFormat=application%2Fjson&amp;srsname=EPSG:3857&amp;"</span></span>
@@ -300,7 +323,7 @@ cookieconsent.run({
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># link to on pupils' destinations combined with each primary school's ID</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># gives vector for all destination tables</span></span>
@@ -312,7 +335,7 @@ cookieconsent.run({
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 263</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># define function to get pupils' destinatino data for one school</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>fn_get_destination_data <span class="ot">&lt;-</span> <span class="cf">function</span>(school_link) {</span>
@@ -340,7 +363,7 @@ cookieconsent.run({
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 260</code></pre>
 </div>
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_destination_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -364,7 +387,7 @@ cookieconsent.run({
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># take the destination data and create school-type indicator for schools which provide</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># a direct trajectory to a school leaving exam;</span></span>
@@ -416,7 +439,7 @@ cookieconsent.run({
 </details>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>my_caption <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Data: Statistik Austria, statistik.at/atlas/schulen/"</span>, <span class="st">"Analysis: Roland Schmidt | @zoowalk | &lt;span style='color:black'&gt;**werk.statt.codes**&lt;/span&gt;"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -512,7 +535,7 @@ cookieconsent.run({
 <h2 data-number="2.2" class="anchored" data-anchor-id="role-of-pupils-vernacular"><span class="header-section-number">2.2</span> Role of pupils’ vernacular</h2>
 <p>To get an idea on any association between schools’ AHS ratio and pupils’ language skills, I added district level data on pupils’ vernacular. The available data (2017!) presents the % of primary school pupils whose vernacular is not German per district. <a href="https://kurier.at/politik/inland/schule-in-not-wo-deutsch-eine-fremdsprache-ist/400134818" target="_blank">Source</a>. So to be clear, the data is district level data and not school level data and inferences from any association might suffer from an <a href="https://en.wikipedia.org/wiki/Ecological_fallacy" target="_blank">ecological fallacy</a>. But in the absence of any better data, and bearing this caveat in mind, it seems worth looking into it. The graph below depicts each primary school’s AHS-ratio (y axis) and the pertaining district’s ratio of primary school kids with non-German vernacular (x axis). What becomes apparent is that there is quite a strong association between the two factors: The higher the ratio of kids with non-German vernacular, the lower the AHS ratio (a correlation coefficient of - .44). While this is largely in line with what is generally suggested, it is still rather sobering and highlights a pretty significant shortcoming of the educational system. Again, since we do not have individual/school level data on pupils’ language one has to be cautious and not jump to far fetched conclusions. But the data, in my view, would strongly suggest that non-native German speaking kids are let down by the school system (in the sense that their needs are not adequately addressed).</p>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the data on districts' german/non-german vernacular ratio (source in text),</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># recode name of districts to postal codes</span></span>
@@ -666,7 +689,7 @@ cookieconsent.run({
 <h2 data-number="2.3" class="anchored" data-anchor-id="same-neighbourhood-different-school-results"><span class="header-section-number">2.3</span> Same neighbourhood, different school results?</h2>
 <p>But to come back to my original point of departure, the two graphs above also show that there is significant variation within districts. While Vienna’s districts are frequently perceived as homogeneous subunits, there is considerable variation within these units which may obscure what we are interested in. To account for these differences and seeking to compare like for like schools as far as their neighbourhood is concerned, I retrieved the <em>GPS position of every primary school and subsequently calculated the geographical distance between them</em>. Have a look at the annotated code (that’s where most of the work went in).</p>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># apply function google_geocode to each address</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># use map (not map_chr) since you'll get a bunch of geographic details</span></span>
@@ -692,7 +715,7 @@ cookieconsent.run({
 </details>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># take only AHS-ratios</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df_diff <span class="ot">&lt;-</span> df_share <span class="sc">%&gt;%</span></span>
@@ -749,7 +772,7 @@ cookieconsent.run({
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add details of schools to dataframe containing all combinations of schools (nested);</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># first for 1st school in pair, then for 2nd school in pair;</span></span>
@@ -805,7 +828,7 @@ cookieconsent.run({
 </details>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a tooltip for the graphic</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_main <span class="ot">&lt;-</span> df_main <span class="sc">%&gt;%</span></span>
@@ -837,7 +860,7 @@ cookieconsent.run({
 </details>
 </div>
 <div class="cell" data-layout-align="center" data-paged.print="true">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Here the full table with the data</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>df_main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -863,7 +886,7 @@ cookieconsent.run({
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># to map the distm function to the four geo-location data points (lat &amp; lon for school 1 and lat &amp; long</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for school 2 use the pmap function from the purrr package)</span></span>
@@ -908,7 +931,7 @@ cookieconsent.run({
 <p>Complementing the absolute difference of the AHS ratios, I also divided the AHS ratios of boths schools, resulting in what I call here (for the lack of a better idea) AHS factor. If school A has a ratio of 10 % and the school B has a ratio of 40 %, the corresponding AHS factor is 4. In other words, the factor indicates how much more likely it is for a kid from one school to ‘graduate’ to an AHS than it is for a kid from the other school. The factor is calculated in such a way that it always takes the ratio of the school with the higher AHS ratio as the numerator and the school with the lower ratio as the denominator. The factor is stated in the tooltip when clicking on the dot (school pair) in the graph.</p>
 <p>Both graphs are produced with <a href="https://github.com/ropensci/plotly" target="”_blank”">plotly</a>. Their interaction is facilitated by the <a href="https://rstudio.github.io/crosstalk/" target="”_blank”">crosstalk</a> package. Note that when using crosstalk in blogdown (which produces this blog), corsstalk messes up you css styling because it injects bootstrap css. To take care of this, see the unstrap function which I - afer some considerable googeling - found here. It basically removes all bootstrap css tags from the shared/crosstalk object and keeps your own blog style in order.</p>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># take only those schools located within 500 m vicincity;</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and only public school dyads</span></span>
@@ -1059,21 +1082,21 @@ cookieconsent.run({
 </section>
 
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
 <ol>
 <li id="fn1"><p>To be clear, first: this blog does not intend to convey that a kid attending a middle school rather than a high school is on an individual or school level some sort of a failure. Definitely not. Kids can develop at different pace, have different needs and abilities at different times. An NMS might be just the right fit. While I am not ignorant to the particular challenges NMS entail, they should be an environment in which kids can prosper and life chances be seized. That this is not always the reality is a different story. Second: This post also does not mean to say that schools with higher AHS ratios are ‘better’ schools. Better, in my understanding, is based on schools ability to educationally and socially develop kids from where they stand when they enter school to the point when they leave. And in this regard, schools are hardly served with a clean slate (kids have different starting positions).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2020,
-  author = {Schmidt, Roland and Schmidt, Roland},
+</section><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2020,
+  author = {Schmidt, Roland},
   title = {Segregation in {Vienna’s} Primary Schools?},
   date = {2020-03-02},
   url = {https://werk.statt.codes/posts/2020-03-02-primary-schools-in-vienna},
   langid = {en}
 }
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2020" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland, and Roland Schmidt. 2020. <span>“Segregation in
-Vienna’s Primary Schools?”</span> March 2, 2020. <a href="https://werk.statt.codes/posts/2020-03-02-primary-schools-in-vienna">https://werk.statt.codes/posts/2020-03-02-primary-schools-in-vienna</a>.
+Schmidt, Roland. 2020. <span>“Segregation in Vienna’s Primary
+Schools?”</span> March 2, 2020. <a href="https://werk.statt.codes/posts/2020-03-02-primary-schools-in-vienna">https://werk.statt.codes/posts/2020-03-02-primary-schools-in-vienna</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -1110,18 +1133,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1153,11 +1165,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/werk\.statt\.codes");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1167,8 +1218,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1180,7 +1240,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1224,6 +1407,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1249,6 +1433,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1314,11 +1524,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-center">
+
+<div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
-    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693">
+<p><i class="fa-brands fa-orcid" aria-label="orcid"></i></p>
+</a>
   </li>  
     <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/werkstattcodes">
@@ -1354,7 +1568,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"loop":true,"closeEffect":"zoom","openEffect":"zoom","selector":".lightbox","descPosition":"bottom"});</script>
+
 
 
 

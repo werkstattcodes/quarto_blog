@@ -2,15 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.321">
+<meta name="generator" content="quarto-1.5.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Roland Schmidt">
 <meta name="dcterms.date" content="2019-11-20">
 <meta name="description" content="A look at the distribution of preference votes casted in the 2019 general elections.">
 
-<title>werk.statt.codes - Austrian General Elections 2019: Preference votes</title>
+<title>werk.statt.codes – Austrian General Elections 2019: Preference votes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -36,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -77,18 +76,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -97,8 +101,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -127,19 +133,29 @@ cookieconsent.run({
   "notice_banner_reject_button_hide":false,
   "preferences_center_close_button_hide":false,
   "website_name":""
+  ,
+"language":"en"
   });
 });
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
 <script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+
 <script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+
 <script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+
 <script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+
 <script src="../../site_libs/flatbush-4.0.0/flatbush.min.js"></script>
+
 <link href="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.css" rel="stylesheet">
+
 <script src="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.js"></script>
+
 <script src="../../site_libs/girafe-binding-0.8.5/girafe.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -149,80 +165,41 @@ cookieconsent.run({
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html" rel="" target="">
+    <a class="dropdown-item" href="../../about.html">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body">
-      <h1 class="title">Austrian General Elections 2019: Preference votes</h1>
-                  <div>
-        <div class="description">
-          A look at the distribution of preference votes casted in the 2019 general elections.
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">elections</div>
-                <div class="quarto-category">stringr</div>
-                <div class="quarto-category">tidyr::pivot</div>
-                <div class="quarto-category">Austria</div>
-              </div>
-                  </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta">
-
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p><a href="https://werk.statt.codes">Roland Schmidt</a> </p>
-            </div>
-    </div>
-      
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">20 Nov 2019</p>
-      </div>
-    </div>
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -258,14 +235,47 @@ cookieconsent.run({
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Austrian General Elections 2019: Preference votes</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">elections</div>
+    <div class="quarto-category">stringr</div>
+    <div class="quarto-category">tidyr::pivot</div>
+    <div class="quarto-category">Austria</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A look at the distribution of preference votes casted in the 2019 general elections.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">20 Nov 2019</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 <section id="context" class="level1" data-number="1">
@@ -280,7 +290,7 @@ cookieconsent.run({
 <p>Overall, there were 1,8 million preference votes cast. The largest part (more than 60 %) were cast for candidates running on regional district lists. Probably this could be read as voters been particularly keen to support ‘their’ local/regional candidates to make it into the new parliament. Ties between voters and regional candidates are likely to be different than those between voters and candidates running on the more ‘removed’ federal or state constituency list.</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
@@ -293,7 +303,7 @@ cookieconsent.run({
 <p>If we further disaggregate these numbers and differentiate between parties, we see that preference votes obtained on the regional level accounted for the majority of preference votes for all parties. However, there is a noticeable difference between the comparable low 55.9 % of the Freedom Party (FPÖ) and e.g.&nbsp;the 65.7 % of the Social Democrats (SPÖ) or the 64.1 % of the NEOS. Or put differently, with 34.1 % the share of preference votes obtained on the federal level, the Freedom Party stands out. As for the underlying reasons, I can only speculate. One reading could be that voters of the FPÖ have weaker ties to their candidates on the regional or state level and hence felt less inclined to cast a preference vote for them. Another one could be that the relation among FPÖ’s candidates on the federal list were particularly competitive and hence a disproportionate high number of voters were mobilized to cast their preference votes on the federal list. Considering the exit of former party leader HC Strache (<a href="https://www.theguardian.com/world/2019/may/20/austria-ibiza-scandal-sting-operation-what-happened-why-does-it-matter" target="_blank">Ibiza</a>…) and the subsequent (not yet consolidated?) change in the leadership, this seems plausible (see below). It however does not explain why FPÖ voters did not cast preference votes for candidates on state or regional lists.</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-25-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -306,7 +316,7 @@ cookieconsent.run({
 <p>If we are interested in candidates, which candidates were particularly successful in securing preference votes?</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-26-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
@@ -365,7 +375,7 @@ cookieconsent.run({
 <h3 data-number="2.5.2" class="anchored" data-anchor-id="candidates-preference-votes-and-electoral-number"><span class="header-section-number">2.5.2</span> Candidates’ preference votes and electoral number</h3>
 <p>Aside from candidates’ preference-vote party-vote ratio, candidates have one further avenue to be promoted. See point two of the conditions listed above. On the state constituency level, candidates can move up the ladder not only if they crossed the 10 % threshold, but also if they would have reached more preference votes than the electoral number. The graph below presents the pertaining figures. In short, none of the candidates succeeded in doing so in these elections. In fact, candidates are pretty far from this threshold.</p>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>state_electoral_number_plot_interactive</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -377,7 +387,7 @@ cookieconsent.run({
 <p>With the above, we know by now who was able to muster sufficient preference votes to cross the relevant thresholds. However, when aggregating, it makes sense to differentiate between list leaders and those of lower ranks.</p>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-31-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -415,7 +425,7 @@ cookieconsent.run({
 <h2 data-number="3.1" class="anchored" data-anchor-id="obtaining-the-preference-vote-results"><span class="header-section-number">3.1</span> Obtaining the preference vote results</h2>
 <p>The first potential hurdle is to virtually ‘liberate’ the results pertaining to the preference vote. Just have a look a the format of the data <a href="https://www.bmi.gv.at/412/Nationalratswahlen/Nationalratswahl_2019/files/NRW19_Vorzugsstimmen_Landes_Regionalparteiliste_16102019.pdf" target="_blank">here</a> and <a href="https://www.bmi.gv.at/412/Nationalratswahlen/Nationalratswahl_2019/files/NRW19_Vorzugsstimmen_bundesweit_16102019.pdf" target="_blank">here</a>. Particularly the results for the state and regional electoral district lists are not what a follower of ‘<a href="https://vita.had.co.nz/papers/tidy-data.pdf" target="_blank">tidy data</a>’ would hope for. So let’s start wrangling:</p>
 <div class="cell" data-code_folding="Code: Extract data">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get state and regional list--------------------------------------</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -555,7 +565,7 @@ cookieconsent.run({
 <span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_to_title</span>()</span>
 <span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a>  initals <span class="ot">&lt;-</span> <span class="fu">str_split</span>(first_name, <span class="st">"</span><span class="sc">\\</span><span class="st">s"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(., str_sub, <span class="at">start =</span> 1L, <span class="at">end =</span> 1L) <span class="sc">%&gt;%</span></span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(., str_sub, <span class="at">start =</span> <span class="dv">1</span>L, <span class="at">end =</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span></span>
 <span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map_chr</span>(., str_c, <span class="at">collapse =</span> <span class="st">"."</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(., <span class="st">"."</span>)</span>
 <span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a></span>
@@ -583,7 +593,7 @@ cookieconsent.run({
 <span id="cb2-164"><a href="#cb2-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">map_chr</span>(name_orig, fn_remove_titles)) <span class="sc">%&gt;%</span></span>
 <span id="cb2-165"><a href="#cb2-165" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name_short =</span> <span class="fu">map_chr</span>(name, fn_short_name)) <span class="sc">%&gt;%</span></span>
 <span id="cb2-166"><a href="#cb2-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">state =</span> <span class="fu">case_when</span>(</span>
-<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(district, <span class="st">"^[0-9].*"</span>) <span class="sc">~</span> <span class="fu">str_sub</span>(district, <span class="at">start =</span> 1L, <span class="at">end =</span> 1L),</span>
+<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(district, <span class="st">"^[0-9].*"</span>) <span class="sc">~</span> <span class="fu">str_sub</span>(district, <span class="at">start =</span> <span class="dv">1</span>L, <span class="at">end =</span> <span class="dv">1</span>L),</span>
 <span id="cb2-168"><a href="#cb2-168" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.character</span>(district)</span>
 <span id="cb2-169"><a href="#cb2-169" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
 <span id="cb2-170"><a href="#cb2-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">state =</span> <span class="fu">case_when</span>(</span>
@@ -612,7 +622,7 @@ cookieconsent.run({
 <h2 data-number="3.2" class="anchored" data-anchor-id="abbreviating-names-removing-titles"><span class="header-section-number">3.2</span> Abbreviating names, removing titles</h2>
 <p>An issue which has as been a frequent source of annoyance is the verbose use of academic and other (obviously even more important) titles in names. It only unnecessarily takes space from graphs and has something, in my personal view, deeply inegalitarian to it (the very purpose of using titles is probably to signal inegalitrianism). So, let’s remove all titles and only use the first letter of the first name. <a href="https://stringr.tidyverse.org/articles/regular-expressions.html" target="_blank"><code>Regex</code></a> and <a href="https://stringr.tidyverse.org/index.html" target="_blank"><code>stringr</code></a> are your friends here. Since this is a task which comes up time and again, it actually screams for a r package…</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fn_remove_titles <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  titles <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
@@ -644,7 +654,7 @@ cookieconsent.run({
 <span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_to_title</span>()</span>
 <span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  initals <span class="ot">&lt;-</span> <span class="fu">str_split</span>(first_name, <span class="st">"</span><span class="sc">\\</span><span class="st">s"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(., str_sub, <span class="at">start =</span> 1L, <span class="at">end =</span> 1L) <span class="sc">%&gt;%</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(., str_sub, <span class="at">start =</span> <span class="dv">1</span>L, <span class="at">end =</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span></span>
 <span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map_chr</span>(., str_c, <span class="at">collapse =</span> <span class="st">"."</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste0</span>(., <span class="st">"."</span>)</span>
 <span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
@@ -673,7 +683,7 @@ cookieconsent.run({
 <span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">map_chr</span>(name_orig, fn_remove_titles)) <span class="sc">%&gt;%</span></span>
 <span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name_short =</span> <span class="fu">map_chr</span>(name, fn_short_name)) <span class="sc">%&gt;%</span></span>
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">state =</span> <span class="fu">case_when</span>(</span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(district, <span class="st">"^[0-9].*"</span>) <span class="sc">~</span> <span class="fu">str_sub</span>(district, <span class="at">start =</span> 1L, <span class="at">end =</span> 1L),</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(district, <span class="st">"^[0-9].*"</span>) <span class="sc">~</span> <span class="fu">str_sub</span>(district, <span class="at">start =</span> <span class="dv">1</span>L, <span class="at">end =</span> <span class="dv">1</span>L),</span>
 <span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.character</span>(district)</span>
 <span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
 <span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">state =</span> <span class="fu">case_when</span>(</span>
@@ -696,7 +706,7 @@ cookieconsent.run({
 <section id="plot---total-number-of-preference-votes-per-electoral-district" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="plot---total-number-of-preference-votes-per-electoral-district"><span class="header-section-number">3.3</span> Plot - Total number of preference votes per electoral district</h2>
 <div class="cell" data-code_folding="Code: Plot total number of preference votes per electoral district">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_list <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(district_type <span class="sc">==</span> <span class="st">"Bundeswahlkreis"</span> <span class="sc">&amp;</span> district <span class="sc">!=</span> <span class="st">"Gesamt"</span>)) <span class="sc">%&gt;%</span></span>
@@ -779,7 +789,7 @@ cookieconsent.run({
 </div>
 <div class="cell" data-code_folding="{}">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-38-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
@@ -791,7 +801,7 @@ cookieconsent.run({
 <h2 data-number="3.4" class="anchored" data-anchor-id="group_split-map-and-ggplot"><span class="header-section-number">3.4</span> Group_split, map, and ggplot</h2>
 <p>Another part of the code which I’d like to highlight is the one producing the <a href="http://werk.statt.codes/post/vorzugsstimmen/#candidates-preference-votes-share"><em>plot on candidates’ preference votes share</em></a>. Here, rather than using a <code>facet_grid</code>, I split the dataframe by the electoral district lists, and mapped the plot function to each of the three parts, and subsequently combined them with <code>patchwork</code>. The advantage was that graph is more efficient in using the available space.</p>
 <div class="cell" data-code_folding="plot on candidates’ preference votes share">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>share <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>party2 <span class="sc">==</span> <span class="st">"Other"</span>) <span class="sc">%&gt;%</span></span>
@@ -936,7 +946,7 @@ cookieconsent.run({
 <h2 data-number="3.5" class="anchored" data-anchor-id="obtaining-district-magnitude"><span class="header-section-number">3.5</span> Obtaining district magnitude</h2>
 <p>A convenient way to get data on the districts’ magnitude (number of mandates) is to scrap the pertainnig data from the website of the Ministry of Interior. The <code>rvest</code>package´ is our reliable tool here.</p>
 <div class="cell" data-code_folding="Scrap data from site of MoI">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest, <span class="at">quietly =</span> T, <span class="at">verbose =</span> F, <span class="at">warn=</span>F)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -955,7 +965,7 @@ cookieconsent.run({
 <p>Finally, as the last item, I’d like to highlight the wonderful <a href="https://hafen.github.io/geofacet" target="_blank"><code>geo_fact</code> package</a>. Rather than plotting data to a map by means of different color (shades), the <code>geo_facet</code> package allows facets of a plot to be arranged (more or less) in accordance with the map of e.g.&nbsp;a country. Here, I first created a grid which approximates the position the Austria’s states (<em>Bundesländer</em>), i.e.&nbsp;state electoral districts. This grid is subsequently passed on to the faceting function used in an otherwise ordinary ggplot command. The result you saw above <a href="http://werk.statt.codes/post/vorzugsstimmen/#candidates-preference-votes-and-electoral-number">here</a>. Sweet, isn’t ;-)</p>
 <p>Gladly, the author of the <code>geo_facet</code> package offers users the possibility to <a href="https://hafen.github.io/grid-designer/" target="_blank">submit</a> new grids to be integrated into the package. Once I have polished the grid (e.g.&nbsp;add iso codes), I’ll submit it and you can use it by simply calling the grid’s name in the geo_facet function (update: the grid <a href="https://github.com/hafen/geofacet/issues/226" target="_blank">was submitted</a> and now part of the package).</p>
 <div class="cell" data-code_folding="Code geo_facet grid Austria">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geofacet)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1038,7 +1048,7 @@ cookieconsent.run({
 </section>
 
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
 <ol>
 <li id="fn1"><p>Reportedly, Hofer’s ‘defeat’ to Kickl might be due to an administrative issue though. There was another FPÖ candidate with the family name Hofer running on the federal constituency list. When voters put only the candidate’s family name on the ballot to indicate their preference, it was not clear which Hofer was actually meant. As a consequence, these preference votes were reportedly ruled as invalid.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
@@ -1047,16 +1057,16 @@ cookieconsent.run({
 <li id="fn4"><p>See <a href="https://www.oesterreich.gv.at/themen/leben_in_oesterreich/wahlen/1/Seite.320260.html" target="_blank">here</a> for details<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>By dividing the number of valid votes in a state level constituency by the number of the constituency’s available mandates one gets the ‘electoral number’<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2019,
-  author = {Schmidt, Roland},
+</section><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{2019,
+  author = {},
   title = {Austrian {General} {Elections} 2019: {Preference} Votes},
   date = {2019-11-20},
   url = {https://werk.statt.codes/posts/2019-11-20-vorzugsstimmen},
   langid = {en}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2019" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland. 2019. <span>“Austrian General Elections 2019:
-Preference Votes.”</span> November 20, 2019. <a href="https://werk.statt.codes/posts/2019-11-20-vorzugsstimmen">https://werk.statt.codes/posts/2019-11-20-vorzugsstimmen</a>.
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-2019" class="csl-entry quarto-appendix-citeas" role="listitem">
+<span>“Austrian General Elections 2019: Preference Votes.”</span> 2019.
+November 20, 2019. <a href="https://werk.statt.codes/posts/2019-11-20-vorzugsstimmen">https://werk.statt.codes/posts/2019-11-20-vorzugsstimmen</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -1093,18 +1103,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1136,11 +1135,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/werk\.statt\.codes");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1150,8 +1188,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1163,7 +1210,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1207,6 +1377,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1232,6 +1403,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1297,11 +1494,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-center">
+
+<div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
-    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693">
+<p><i class="fa-brands fa-orcid" aria-label="orcid"></i></p>
+</a>
   </li>  
     <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/werkstattcodes">
@@ -1337,7 +1538,39 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","closeEffect":"zoom","loop":true,"descPosition":"bottom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":false,"descPosition":"bottom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
 
 
 

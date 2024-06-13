@@ -36,14 +36,13 @@ website:
       - text: more
         menu: 
           - about.qmd
-
     collapse: true
     pinned: true
 
 # Default author
-author:
-  - name: Roland Schmidt
-    url: https://werk.statt.codes
+#author:
+#  - name: Roland Schmidt
+#    url: https://werk.statt.codes
 
 format:
   html:

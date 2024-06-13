@@ -2,15 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.321">
+<meta name="generator" content="quarto-1.5.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Roland Schmidt">
 <meta name="dcterms.date" content="2023-04-21">
 <meta name="description" content="How to to scrape content from the electoral lists, and analyze data pertaining to age, regional and gender composition.">
 
-<title>werk.statt.codes - 2023 State Elections in Salzburg - A look at data extracted from the electoral lists</title>
+<title>werk.statt.codes – 2023 State Elections in Salzburg - A look at data extracted from the electoral lists</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -36,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -77,18 +76,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -97,8 +101,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -127,30 +133,49 @@ cookieconsent.run({
   "notice_banner_reject_button_hide":false,
   "preferences_center_close_button_hide":false,
   "website_name":""
+  ,
+"language":"en"
   });
 });
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
-
 <script src="../../site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+
 <link href="../../site_libs/Swiper-8.4.5/swiper-bundle.css" rel="stylesheet">
+
 <script src="../../site_libs/Swiper-8.4.5/swiper-bundle.min.js"></script>
+
 <link href="../../site_libs/swipeRstyles-0.1.0/swipeRstyles.css" rel="stylesheet">
+
 <script src="../../site_libs/swipeR-binding-0.1.0/swipeR.js"></script>
+
 <script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+
 <script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+
 <link href="../../site_libs/reactable-0.4.4/reactable.css" rel="stylesheet">
+
 <script src="../../site_libs/reactable-binding-0.4.4/reactable.js"></script>
+
 <script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+
 <script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+
 <script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+
 <script src="../../site_libs/flatbush-4.0.0/flatbush.min.js"></script>
+
 <link href="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.css" rel="stylesheet">
+
 <script src="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.js"></script>
+
 <script src="../../site_libs/girafe-binding-0.8.7/girafe.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -160,79 +185,41 @@ cookieconsent.run({
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html" rel="" target="">
+    <a class="dropdown-item" href="../../about.html">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body">
-      <h1 class="title">2023 State Elections in Salzburg - A look at data extracted from the electoral lists</h1>
-                  <div>
-        <div class="description">
-          How to to scrape content from the electoral lists, and analyze data pertaining to age, regional and gender composition.
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">Austria</div>
-                <div class="quarto-category">elections</div>
-                <div class="quarto-category">R</div>
-              </div>
-                  </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta">
-
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p><a href="https://werk.statt.codes">Roland Schmidt</a> </p>
-            </div>
-    </div>
-      
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">21 Apr 2023</p>
-      </div>
-    </div>
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -263,14 +250,46 @@ cookieconsent.run({
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">2023 State Elections in Salzburg - A look at data extracted from the electoral lists</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Austria</div>
+    <div class="quarto-category">elections</div>
+    <div class="quarto-category">R</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    How to to scrape content from the electoral lists, and analyze data pertaining to age, regional and gender composition.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">21 Apr 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 <section id="preview-just-the-results-please" class="level1" data-number="1">
@@ -292,7 +311,7 @@ cookieconsent.run({
 <section id="get-data-from-electoral-lists" class="level1 page-columns page-full" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Get data from electoral lists</h1>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Get packages</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
@@ -312,7 +331,7 @@ cookieconsent.run({
 </div>
 <p>The different electoral lists are published on the State of Salzburg’s official website <a href="https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien" target="_blank">here</a>. First, I’ll <strong>get the links for each list</strong>.</p>
 <div class="cell" data-freeze="true">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Extract links to electoral lists</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>link_main <span class="ot">&lt;-</span> <span class="st">"https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -345,7 +364,7 @@ cookieconsent.run({
 </div>
 <p>Now, let’s <strong>define a scraping function</strong> extracting the data from each link/list. Note the <code>\p{C}</code>expression in one of the regex pattern. As it turns out, the websites’ content contains some non-visible characters/signs. The expression matches them. To identify invisible characters in the first place, use <code>stringi::stri_escape_unicode</code>.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Define function extracting data from electoral list</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fn_get_tables <span class="ot">&lt;-</span> <span class="cf">function</span>(link) {</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -375,7 +394,7 @@ cookieconsent.run({
 </div>
 <p>Now let’s <strong>apply the function</strong>.</p>
 <div class="cell" data-freeze="true">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Apply extract function to each electoral list link</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_table_all <span class="ot">&lt;-</span> df_links_list<span class="sc">$</span>links <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set_names</span>() <span class="sc">%&gt;%</span></span>
@@ -408,7 +427,7 @@ cookieconsent.run({
 </div>
 <p>To disentangle the data, some regular expressions are needed. Below the code.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Split composite string into relevant data</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all <span class="sc">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(</span>
@@ -426,7 +445,7 @@ cookieconsent.run({
 </div>
 <p>Once the code above is executed, we get a tidy dataframe with the data of interest in separate columns for all candidates. If you want to know e.g.&nbsp;on which lists a specific candidate runs, the table below has you covered.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Tidy Table.</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">list_fct=</span><span class="fu">fct</span>(list, <span class="at">levels=</span>lvls_list)) <span class="sc">%&gt;%</span></span>
@@ -455,7 +474,6 @@ cookieconsent.run({
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>          <span class="fu">add_source</span>(<span class="at">source=</span><span class="fu">html</span>(<span class="st">"&lt;p style='font-size:8pt; line-height:100%; font-family:Segoe UI;'&gt;Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien;&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:500'&gt;https://werk.statt.codes&lt;/span&gt;&lt;/p&gt;"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:20px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px"><p style="font-family:Segoe UI;">SALZBURG-WAHL 2023: <span style="background-color:black; color:white;list-height:100%;">Liste aller KandidatInnen</span></p></h1>
 <div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-dcdc1361df2c97af38d2" style="width:auto;height:auto;"></div>
 <p style="color:#000;background:#FFFFFF;text-align:left;font-size:16px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px"></p><p style="font-size:8pt; line-height:100%; font-family:Segoe UI;">Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien;<br>Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:500">https://werk.statt.codes</span></p><p></p>
@@ -468,7 +486,7 @@ cookieconsent.run({
 <h1 data-number="4"><span class="header-section-number">4</span> Number of candidates etc</h1>
 <p>With the data now in the proper format, we can check a few aspects, i.e.&nbsp;the number of candidates per party and list.</p>
 <div class="cell" data-layout-align="left">
-<details>
+<details class="code-fold">
 <summary>Code: Create table</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Function creating barplot</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -600,7 +618,6 @@ cookieconsent.run({
 <span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>pl_df_comb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="ncjbqzuxsy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 #ncjbqzuxsy table {
@@ -1182,7 +1199,7 @@ tbody tr:last-child {
 <p>Furthermore, the table also suggests that most parties feature candidates which run on more than one regional list. Let’s make this point more clear.</p>
 <p>The table below shows for each list and party, and the share of candidates who run exclusively on only one regional electoral list. As it turns out the ÖVP is the only party which maintains a 100 % record across all districts. Also WIRS shows remarkably high numbers. On the other extreme, the MFG has only one single candidate who runs exclusively on one regional list. All other MFG candidates put their names on multiple lists. To a lesser degree, but rather striking, also NEOS features relatively low rates for exclusive candidates (with 50 % in the city of Salzburg being the maximum).</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Table exlusive and multi-list candiates</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df_unique <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">!=</span><span class="st">"Landesliste"</span>) <span class="sc">%&gt;%</span></span>
@@ -1278,7 +1295,6 @@ tbody tr:last-child {
 <span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>df_tb_multi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="oewzggpfck" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 #oewzggpfck table {
@@ -1724,346 +1740,642 @@ tbody tr:last-child {
   border-bottom: 2px solid #ffffff00;
 }
 </style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    <tr class="gt_heading">
-      <td colspan="6" class="gt_heading gt_title gt_font_normal" style="">Salzburg-Wahl 2023:<br><span style="background-color:black; color:white;">'Exklusive' KandidatInnen auf Regionallisten</span></td>
-    </tr>
-    <tr class="gt_heading">
-      <td colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style=""><em>Exklusive KandidatInnen:</em> kandidieren nur auf einer einzigen Regionalliste<br><em>Mehrfach KandidatInnen:</em> kandidieren auf mehr als einer Regionalliste</td>
-    </tr>
-    <tr class="gt_col_headings gt_spanner_row">
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="2" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="party">party</th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="3" scope="colgroup" id="<span style='text-algin:left;'>Anzahl Kandidat:Innen</span>">
-        <span class="gt_column_spanner"><span style="text-algin:left;">Anzahl Kandidat:Innen</span></span>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" scope="colgroup" id="Anteil Exklusiver Kandidat:Innen">
-        <span class="gt_column_spanner">Anteil Exklusiver Kandidat:Innen</span>
-      </th>
-    </tr>
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Insgesamt">Insgesamt</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Mehrfach">Mehrfach</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="'Exklusiv'">'Exklusiv'</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="%">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Grafik">Grafik</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Flachgau">Flachgau</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Flachgau  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">20</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">20</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">20</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">19</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">95.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:95%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">20</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">19</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">95.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:95%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">20</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">4</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">16</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">80.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:80%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">NEOS</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">14</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">9</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">5</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">35.7%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:35.7142857142857%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">MFG</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">6</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">6</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">0</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">0.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:0%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">13</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">11</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">84.6%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:84.6153846153846%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Flachgau  party" class="gt_row gt_left">WIRS</td>
-<td headers="Flachgau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Flachgau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Flachgau  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Flachgau  cand_exclusive_share" class="gt_row gt_right">90.0%</td>
-<td headers="Flachgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:90%;height:16px;"></div></div></td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Stadt-Salzburg">Stadt-Salzburg</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Stadt-Salzburg  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">17</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">94.4%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:94.4444444444444%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">17</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">94.4%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:94.4444444444444%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">5</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">13</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">72.2%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:72.2222222222222%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">NEOS</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">9</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">50.0%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:50%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">MFG</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">7</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">6</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">1</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">14.3%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:14.2857142857143%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">18</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">16</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">88.9%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:88.8888888888889%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Stadt-Salzburg  party" class="gt_row gt_left">WIRS</td>
-<td headers="Stadt-Salzburg  cand_total" class="gt_row gt_right">4</td>
-<td headers="Stadt-Salzburg  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Stadt-Salzburg  cand_exclusive" class="gt_row gt_right">4</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Stadt-Salzburg  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Tennengau">Tennengau</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Tennengau  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">90.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:90%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">90.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:90%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">4</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">6</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">60.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:60%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">NEOS</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">8</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">2</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">20.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:20%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">MFG</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">6</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">6</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">0</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">0.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:0%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">5</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">3</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">60.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:60%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Tennengau  party" class="gt_row gt_left">WIRS</td>
-<td headers="Tennengau  cand_total" class="gt_row gt_right">4</td>
-<td headers="Tennengau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Tennengau  cand_exclusive" class="gt_row gt_right">4</td>
-<td headers="Tennengau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Tennengau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Pongau">Pongau</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Pongau  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">10</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">7</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">6</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">85.7%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:85.7142857142857%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">90.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:90%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">4</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">6</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">60.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:60%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">NEOS</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">9</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">1</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">10.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:10%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">MFG</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">6</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">6</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">0</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">0.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:0%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">6</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">4</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">66.7%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:66.6666666666667%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pongau  party" class="gt_row gt_left">WIRS</td>
-<td headers="Pongau  cand_total" class="gt_row gt_right">5</td>
-<td headers="Pongau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Pongau  cand_exclusive" class="gt_row gt_right">4</td>
-<td headers="Pongau  cand_exclusive_share" class="gt_row gt_right">80.0%</td>
-<td headers="Pongau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:80%;height:16px;"></div></div></td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Pinzgau">Pinzgau</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Pinzgau  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">12</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">12</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">12</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">11</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">91.7%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:91.6666666666667%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">12</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">11</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">91.7%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:91.6666666666667%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">12</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">4</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">8</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">66.7%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:66.6666666666667%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">NEOS</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">9</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">1</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">10.0%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:10%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">MFG</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">6</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">6</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">0</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">0.0%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:0%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">5</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">3</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">60.0%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:60%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Pinzgau  party" class="gt_row gt_left">WIRS</td>
-<td headers="Pinzgau  cand_total" class="gt_row gt_right">3</td>
-<td headers="Pinzgau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Pinzgau  cand_exclusive" class="gt_row gt_right">3</td>
-<td headers="Pinzgau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Pinzgau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr class="gt_group_heading_row">
-      <th colspan="6" class="gt_group_heading" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black;" scope="colgroup" id="Lungau">Lungau</th>
-    </tr>
-    <tr class="gt_row_group_first"><td headers="Lungau  party" class="gt_row gt_left">ÖVP</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">10</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">SPÖ</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">5</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">4</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">80.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:80%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">FPÖ</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">1</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">9</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">90.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:90%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">GRÜNE</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">8</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">5</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">3</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">37.5%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:37.5%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">NEOS</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">10</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">9</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">1</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">10.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:10%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">MFG</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">7</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">7</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">0</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">0.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:0%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">KPÖ</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">5</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">2</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">3</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">60.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:60%;height:16px;"></div></div></td></tr>
-    <tr><td headers="Lungau  party" class="gt_row gt_left">WIRS</td>
-<td headers="Lungau  cand_total" class="gt_row gt_right">1</td>
-<td headers="Lungau  cand_mult" class="gt_row gt_right">0</td>
-<td headers="Lungau  cand_exclusive" class="gt_row gt_right">1</td>
-<td headers="Lungau  cand_exclusive_share" class="gt_row gt_right">100.0%</td>
-<td headers="Lungau  cand_exclusive_share_pl" class="gt_row gt_left"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;"><div style="background:orange;width:100%;height:16px;"></div></div></td></tr>
-  </tbody>
-  <tfoot class="gt_sourcenotes">
-    <tr>
-      <td class="gt_sourcenote" colspan="6">Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien<br>Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk.statt.codes</span></td>
-    </tr>
-  </tfoot>
-  
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header gt_heading">
+<th colspan="6" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
+<span style="background-color:black; color:white;">'Exklusive' KandidatInnen auf Regionallisten</span></th>
+</tr>
+<tr class="odd gt_heading">
+<th colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border"><em>Exklusive KandidatInnen:</em> kandidieren nur auf einer einzigen Regionalliste<br>
+<em>Mehrfach KandidatInnen:</em> kandidieren auf mehr als einer Regionalliste</th>
+</tr>
+<tr class="header gt_col_headings gt_spanner_row">
+<th rowspan="2" id="party" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">party</th>
+<th colspan="3" id="<span style='text-algin:left;'>Anzahl Kandidat:Innen</span>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner"><span style="text-algin:left;">Anzahl Kandidat:Innen</span></span></th>
+<th colspan="2" id="Anteil Exklusiver Kandidat:Innen" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Anteil Exklusiver Kandidat:Innen</span></th>
+</tr>
+<tr class="odd gt_col_headings">
+<th id="Insgesamt" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">Insgesamt</th>
+<th id="Mehrfach" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">Mehrfach</th>
+<th id="'Exklusiv'" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">'Exklusiv'</th>
+<th id="%" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">%</th>
+<th id="Grafik" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">Grafik</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd gt_group_heading_row">
+<td colspan="6" id="Flachgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Flachgau</td>
+</tr>
+<tr class="even gt_row_group_first">
+<td class="gt_row gt_left" headers="Flachgau  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">20</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">20</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Flachgau  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">20</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">19</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">95.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:95%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Flachgau  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">20</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">19</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">95.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:95%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Flachgau  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">20</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">4</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">16</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">80.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:80%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Flachgau  party">NEOS</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">14</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">9</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">5</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">35.7%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:35.7142857142857%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Flachgau  party">MFG</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">6</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">6</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">0</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">0.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:0%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Flachgau  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">13</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">11</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">84.6%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:84.6153846153846%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Flachgau  party">WIRS</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Flachgau  cand_exclusive_share">90.0%</td>
+<td class="gt_row gt_left" headers="Flachgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:90%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even gt_group_heading_row">
+<td colspan="6" id="Stadt-Salzburg" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Stadt-Salzburg</td>
+</tr>
+<tr class="odd gt_row_group_first">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">17</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">94.4%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:94.4444444444444%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">17</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">94.4%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:94.4444444444444%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">5</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">13</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">72.2%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:72.2222222222222%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">NEOS</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">9</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">50.0%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:50%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">MFG</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">7</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">6</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">1</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">14.3%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:14.2857142857143%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">18</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">16</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">88.9%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:88.8888888888889%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Stadt-Salzburg  party">WIRS</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_total">4</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive">4</td>
+<td class="gt_row gt_right" headers="Stadt-Salzburg  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Stadt-Salzburg  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd gt_group_heading_row">
+<td colspan="6" id="Tennengau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Tennengau</td>
+</tr>
+<tr class="even gt_row_group_first">
+<td class="gt_row gt_left" headers="Tennengau  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Tennengau  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">90.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:90%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Tennengau  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">90.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:90%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Tennengau  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">4</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">6</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">60.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:60%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Tennengau  party">NEOS</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">8</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">2</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">20.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:20%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Tennengau  party">MFG</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">6</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">6</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">0</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">0.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:0%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Tennengau  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">5</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">3</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">60.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:60%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Tennengau  party">WIRS</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_total">4</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive">4</td>
+<td class="gt_row gt_right" headers="Tennengau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Tennengau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even gt_group_heading_row">
+<td colspan="6" id="Pongau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pongau</td>
+</tr>
+<tr class="odd gt_row_group_first">
+<td class="gt_row gt_left" headers="Pongau  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">10</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pongau  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">7</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">6</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">85.7%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:85.7142857142857%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pongau  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">90.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:90%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pongau  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">4</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">6</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">60.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:60%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pongau  party">NEOS</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">9</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">1</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">10.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:10%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pongau  party">MFG</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">6</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">6</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">0</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">0.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:0%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pongau  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">6</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">4</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">66.7%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:66.6666666666667%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pongau  party">WIRS</td>
+<td class="gt_row gt_right" headers="Pongau  cand_total">5</td>
+<td class="gt_row gt_right" headers="Pongau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive">4</td>
+<td class="gt_row gt_right" headers="Pongau  cand_exclusive_share">80.0%</td>
+<td class="gt_row gt_left" headers="Pongau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:80%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd gt_group_heading_row">
+<td colspan="6" id="Pinzgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pinzgau</td>
+</tr>
+<tr class="even gt_row_group_first">
+<td class="gt_row gt_left" headers="Pinzgau  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">12</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">12</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pinzgau  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">12</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">11</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">91.7%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:91.6666666666667%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pinzgau  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">12</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">11</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">91.7%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:91.6666666666667%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pinzgau  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">12</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">4</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">8</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">66.7%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:66.6666666666667%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pinzgau  party">NEOS</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">9</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">1</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">10.0%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:10%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pinzgau  party">MFG</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">6</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">6</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">0</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">0.0%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:0%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Pinzgau  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">5</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">3</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">60.0%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:60%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Pinzgau  party">WIRS</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_total">3</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive">3</td>
+<td class="gt_row gt_right" headers="Pinzgau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Pinzgau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even gt_group_heading_row">
+<td colspan="6" id="Lungau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Lungau</td>
+</tr>
+<tr class="odd gt_row_group_first">
+<td class="gt_row gt_left" headers="Lungau  party">ÖVP</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">10</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Lungau  party">SPÖ</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">5</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">4</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">80.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:80%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Lungau  party">FPÖ</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">1</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">9</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">90.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:90%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Lungau  party">GRÜNE</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">8</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">5</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">3</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">37.5%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:37.5%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Lungau  party">NEOS</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">10</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">9</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">1</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">10.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:10%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Lungau  party">MFG</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">7</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">7</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">0</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">0.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:0%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Lungau  party">KPÖ</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">5</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">2</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">3</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">60.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:60%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Lungau  party">WIRS</td>
+<td class="gt_row gt_right" headers="Lungau  cand_total">1</td>
+<td class="gt_row gt_right" headers="Lungau  cand_mult">0</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive">1</td>
+<td class="gt_row gt_right" headers="Lungau  cand_exclusive_share">100.0%</td>
+<td class="gt_row gt_left" headers="Lungau  cand_exclusive_share_pl"><div style="flex-grow:1;margin-left:8px;background:#e1e1e1;">
+<div style="background:orange;width:100%;height:16px;">
+
+</div>
+</div></td>
+</tr>
+</tbody><tfoot class="gt_sourcenotes">
+<tr class="even">
+<td colspan="6" class="gt_sourcenote">Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien<br>
+Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk.statt.codes</span></td>
+</tr>
+</tfoot>
+
 </table>
+
 </div>
 </div>
 </div>
@@ -2075,7 +2387,7 @@ tbody tr:last-child {
 <section id="gini-coefficient" class="level3" data-number="4.2.1">
 <h3 data-number="4.2.1" class="anchored" data-anchor-id="gini-coefficient"><span class="header-section-number">4.2.1</span> Gini coefficient</h3>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Calculate Gini coefficient, create table</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ineq)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2120,7 +2432,6 @@ tbody tr:last-child {
 <span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>tb_df_districts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="wovkgkkyfq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 #wovkgkkyfq table {
@@ -2566,44 +2877,67 @@ tbody tr:last-child {
   border-bottom: 2px solid #ffffff00;
 }
 </style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-  <thead>
-    <tr class="gt_heading">
-      <td colspan="2" class="gt_heading gt_title gt_font_normal" style="">Salzburg-Wahl 2023:<br><span style="background-color:black; color:white;">Concentration of list positions among candidates</span></td>
-    </tr>
-    <tr class="gt_heading">
-      <td colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Only regional lists.</td>
-    </tr>
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="party">party</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 0px; border-top-style: solid; border-top-color: black;" scope="col" id="Gini-Coefficient">Gini-Coefficient</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="party" class="gt_row gt_center">NEOS</td>
-<td headers="gini" class="gt_row gt_center">0.42</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">GRÜNE</td>
-<td headers="gini" class="gt_row gt_center">0.25</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">KPÖ</td>
-<td headers="gini" class="gt_row gt_center">0.18</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">MFG</td>
-<td headers="gini" class="gt_row gt_center">0.14</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">SPÖ</td>
-<td headers="gini" class="gt_row gt_center">0.07</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">FPÖ</td>
-<td headers="gini" class="gt_row gt_center">0.06</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">WIRS</td>
-<td headers="gini" class="gt_row gt_center">0.04</td></tr>
-    <tr><td headers="party" class="gt_row gt_center">ÖVP</td>
-<td headers="gini" class="gt_row gt_center">0.00</td></tr>
-  </tbody>
-  <tfoot class="gt_sourcenotes">
-    <tr>
-      <td class="gt_sourcenote" colspan="2">Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien<br>Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk.statt.codes</span></td>
-    </tr>
-  </tfoot>
-  
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header gt_heading">
+<th colspan="2" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
+<span style="background-color:black; color:white;">Concentration of list positions among candidates</span></th>
+</tr>
+<tr class="odd gt_heading">
+<th colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Only regional lists.</th>
+</tr>
+<tr class="header gt_col_headings">
+<th id="party" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">party</th>
+<th id="Gini-Coefficient" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">Gini-Coefficient</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_center" headers="party">NEOS</td>
+<td class="gt_row gt_center" headers="gini">0.42</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="party">GRÜNE</td>
+<td class="gt_row gt_center" headers="gini">0.25</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="party">KPÖ</td>
+<td class="gt_row gt_center" headers="gini">0.18</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="party">MFG</td>
+<td class="gt_row gt_center" headers="gini">0.14</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="party">SPÖ</td>
+<td class="gt_row gt_center" headers="gini">0.07</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="party">FPÖ</td>
+<td class="gt_row gt_center" headers="gini">0.06</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="party">WIRS</td>
+<td class="gt_row gt_center" headers="gini">0.04</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="party">ÖVP</td>
+<td class="gt_row gt_center" headers="gini">0.00</td>
+</tr>
+</tbody><tfoot class="gt_sourcenotes">
+<tr class="odd">
+<td colspan="2" class="gt_sourcenote">Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien<br>
+Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk.statt.codes</span></td>
+</tr>
+</tfoot>
+
 </table>
+
 </div>
 </div>
 </div>
@@ -2632,7 +2966,7 @@ Details on the graph
 </div>
 </div>
 <div class="cell" data-layout-align="left">
-<details>
+<details class="code-fold">
 <summary>Code: Calculate data for Lorenz curves</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_add <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_id=</span><span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(<span class="fu">unique</span>(df_table_all_wide<span class="sc">$</span>party))),</span>
@@ -2688,7 +3022,7 @@ Details on the graph
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Plot curves</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtext)</span>
@@ -2826,10 +3160,10 @@ Details on the graph
 </details>
 </div>
 <div class="cell page-columns page-full" data-layout-align="left" data-fig.format="svg">
-<div class="cell-output-display column-body-outset-right">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-19-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+<div class="cell-output-display page-columns page-full">
+<div class="quarto-figure quarto-figure-left page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/unnamed-chunk-19-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid quarto-figure quarto-figure-left figure-img column-body-outset-right" style="width:100.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -2848,7 +3182,7 @@ Details on the graph
 <li>KPÖ: There is a clear dominance of candidates running also in the city of Salzburg.</li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Create df detailing regional composition of state electoral list</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">##take only district lists; if one candidate runs on more than one list "mehere"</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2870,11 +3204,11 @@ Details on the graph
 <span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>df_landesliste_lists_member <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">==</span><span class="st">"Landesliste"</span>)  <span class="sc">%&gt;%</span></span>
 <span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_reg_lists_member, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"name_clean"</span>, <span class="st">"party"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">lists_origin=</span><span class="fu">fct</span>(lists_origin) <span class="sc">%&gt;%</span> forcats<span class="sc">::</span><span class="fu">fct_na_value_to_level</span>(., <span class="at">level=</span><span class="st">"keine Bezirksliste"</span>) <span class="sc">%&gt;%</span> <span class="fu">fct_relevel</span>(., <span class="st">"mehrere"</span>, <span class="at">after=</span>0L) <span class="sc">%&gt;%</span> fct_rev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">lists_origin=</span><span class="fu">fct</span>(lists_origin) <span class="sc">%&gt;%</span> forcats<span class="sc">::</span><span class="fu">fct_na_value_to_level</span>(., <span class="at">level=</span><span class="st">"keine Bezirksliste"</span>) <span class="sc">%&gt;%</span> <span class="fu">fct_relevel</span>(., <span class="st">"mehrere"</span>, <span class="at">after=</span><span class="dv">0</span>L) <span class="sc">%&gt;%</span> fct_rev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Create plot</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(x[<span class="dv">1</span>], <span class="st">". Listenplatz"</span>), <span class="fu">paste0</span>(x[<span class="sc">-</span><span class="dv">1</span>],<span class="st">"."</span>))</span>
@@ -2948,7 +3282,7 @@ Details on the graph
 <span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-22-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -2963,14 +3297,14 @@ Details on the graph
 <h2 data-number="6.1" class="anchored" data-anchor-id="gender-ratio"><span class="header-section-number">6.1</span> Gender ratio</h2>
 <p>One further aspect I wanted to look into is lists’ gender composition. While not perfect and coming with all sorts of assumptions, I take candidates’ first names to infer their gender by means of the <code>{gender}</code> package. After checking the results, I realized that a few names were off, so I had to correct them manually (Kay, Gabriele, Dominique, Nevin, Nicola).</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Get first name</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">name_first=</span><span class="fu">str_extract</span>(name, <span class="fu">regex</span>(<span class="st">"[^</span><span class="sc">\\</span><span class="st">s]+$"</span>)) <span class="sc">%&gt;%</span> <span class="fu">str_extract</span>(., <span class="fu">regex</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">p{L}+"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Get gender</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gender)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_name_first <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
@@ -2979,7 +3313,7 @@ Details on the graph
 </details>
 </div>
 <div class="cell" data-colum="body-outset-right">
-<details>
+<details class="code-fold">
 <summary>Code: Get gender share, create plot.</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fn to capitalize first facet (GESAMT)</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>fn_labeller_cap <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
@@ -3120,7 +3454,7 @@ Details on the graph
 <span id="cb18-137"><a href="#cb18-137" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-26-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -3133,7 +3467,7 @@ Details on the graph
 <h2 data-number="6.2" class="anchored" data-anchor-id="gender-list-position"><span class="header-section-number">6.2</span> Gender &amp; list position</h2>
 <p>Taking it one step further, the graph below depicts the position of female candidates on the various electoral lists. ÖVP, SPÖ, and Greens have - with minor exceptions - a zipper system when it comes to placing male and female candidates. Out of the eight parties, three feature a female leading candidate on the state list.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: List position of female candidates</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">sep=</span><span class="cn">NULL</span>, name) {</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(x[<span class="dv">1</span>], {{sep}}, {{name}}), <span class="fu">paste0</span>(x[<span class="sc">-</span><span class="dv">1</span>],{{sep}}))</span>
@@ -3202,7 +3536,7 @@ Details on the graph
 <span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a><span class="at">ncol=</span><span class="dv">1</span>, <span class="at">axes=</span><span class="st">"all"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-27-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -3217,7 +3551,7 @@ Details on the graph
 <section id="median-age-per-party-across-all-districts" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="median-age-per-party-across-all-districts"><span class="header-section-number">7.1</span> Median age per party across all districts</h2>
 <div class="cell" data-fig.format="svg">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbeeswarm)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggiraph)</span>
@@ -3353,7 +3687,7 @@ Details on the graph
 <h2 data-number="7.2" class="anchored" data-anchor-id="youngest-oldest-candidates"><span class="header-section-number">7.2</span> youngest &amp; oldest candidates</h2>
 <p>Finally, to wrap it up, here are the 10 youngest and oldest candidates (since there are ties, the result contains more than 10 individuals.)</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_young <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
@@ -3403,7 +3737,6 @@ Details on the graph
 <span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:17px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">SALZBURG-WAHL 2023: <span style="background-color:black; color:white">Jüngesten</span> KandidatInnen</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:11px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored"><br>Drop-down zeigt jeweilige Liste &amp; Position an.</h2>
 <div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fc0d45ff9886fa61d6b0" style="width:auto;height:auto;"></div>
@@ -3412,7 +3745,7 @@ Details on the graph
 </div>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_oldest <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
@@ -3461,7 +3794,6 @@ Details on the graph
 <span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:17px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">SALZBURG-WAHL 2023: <span style="background-color:black; color:white">Ältesten</span> KandidatInnen</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:11px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored"><br>Drop-down zeigt jeweilige Liste &amp; Position an.</h2>
 <div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a15091a503ca4438215b" style="width:auto;height:auto;"></div>
@@ -3476,17 +3808,17 @@ Details on the graph
 </section>
 </section>
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2023,
-  author = {Schmidt, Roland},
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{2023,
+  author = {},
   title = {2023 {State} {Elections} in {Salzburg} - {A} Look at Data
     Extracted from the Electoral Lists},
   date = {2023-04-21},
   url = {https://werk.statt.codes/posts/2023-03-30-sbg-elections-candidate-age},
   langid = {en}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2023" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland. 2023. <span>“2023 State Elections in Salzburg - A Look
-at Data Extracted from the Electoral Lists.”</span> April 21, 2023. <a href="https://werk.statt.codes/posts/2023-03-30-sbg-elections-candidate-age">https://werk.statt.codes/posts/2023-03-30-sbg-elections-candidate-age</a>.
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-2023" class="csl-entry quarto-appendix-citeas" role="listitem">
+<span>“2023 State Elections in Salzburg - A Look at Data Extracted from
+the Electoral Lists.”</span> 2023. April 21, 2023. <a href="https://werk.statt.codes/posts/2023-03-30-sbg-elections-candidate-age">https://werk.statt.codes/posts/2023-03-30-sbg-elections-candidate-age</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -3523,18 +3855,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -3566,11 +3887,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/werk\.statt\.codes");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -3580,8 +3940,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -3593,7 +3962,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -3637,6 +4129,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -3662,6 +4155,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -3727,11 +4246,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-center">
+
+<div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
-    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693">
+<p><i class="fa-brands fa-orcid" aria-label="orcid"></i></p>
+</a>
   </li>  
     <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/werkstattcodes">
@@ -3767,7 +4290,39 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","descPosition":"bottom","loop":true,"selector":".lightbox","closeEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","loop":false,"openEffect":"zoom","descPosition":"bottom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
 
 
 

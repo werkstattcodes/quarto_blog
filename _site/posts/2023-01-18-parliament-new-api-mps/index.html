@@ -2,15 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.321">
+<meta name="generator" content="quarto-1.5.43">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Roland Schmidt">
 <meta name="dcterms.date" content="2023-02-10">
 <meta name="description" content="What is the gender composition of Austria’s Nationalrat? How did it evolve over time? Who are the longest serving MPs? This post details how to answer these and similar questions by using parliament’s new API.">
 
-<title>werk.statt.codes - Parliament’s new API - How to access data on MPs</title>
+<title>werk.statt.codes – Parliament’s new API - How to access data on MPs</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -36,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -77,18 +76,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
-<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -97,8 +101,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -127,23 +133,35 @@ cookieconsent.run({
   "notice_banner_reject_button_hide":false,
   "preferences_center_close_button_hide":false,
   "website_name":""
+  ,
+"language":"en"
   });
 });
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
-
 <script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+
 <link href="../../site_libs/Swiper-8.4.5/swiper-bundle.css" rel="stylesheet">
+
 <script src="../../site_libs/Swiper-8.4.5/swiper-bundle.min.js"></script>
+
 <link href="../../site_libs/swipeRstyles-0.1.0/swipeRstyles.css" rel="stylesheet">
+
 <script src="../../site_libs/swipeR-binding-0.1.0/swipeR.js"></script>
+
 <script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react.min.js"></script>
+
 <script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+
 <script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+
 <link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+
 <script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -153,78 +171,41 @@ cookieconsent.run({
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-more" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">more</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-more">    
         <li>
-    <a class="dropdown-item" href="../../about.html" rel="" target="">
+    <a class="dropdown-item" href="../../about.html">
  <span class="dropdown-text">About</span></a>
   </li>  
     </ul>
   </li>
 </ul>
+          </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-body">
-      <h1 class="title">Parliament’s new API - How to access data on MPs</h1>
-                  <div>
-        <div class="description">
-          What is the gender composition of Austria’s Nationalrat? How did it evolve over time? Who are the longest serving MPs? This post details how to answer these and similar questions by using parliament’s new API.
-        </div>
-      </div>
-                          <div class="quarto-categories">
-                <div class="quarto-category">Austria</div>
-                <div class="quarto-category">API</div>
-              </div>
-                  </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta">
-
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p><a href="https://werk.statt.codes">Roland Schmidt</a> </p>
-            </div>
-    </div>
-      
-      <div>
-      <div class="quarto-title-meta-heading">Published</div>
-      <div class="quarto-title-meta-contents">
-        <p class="date">10 Feb 2023</p>
-      </div>
-    </div>
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -259,18 +240,49 @@ cookieconsent.run({
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Parliament’s new API - How to access data on MPs</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Austria</div>
+    <div class="quarto-category">API</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    What is the gender composition of Austria’s Nationalrat? How did it evolve over time? Who are the longest serving MPs? This post details how to answer these and similar questions by using parliament’s new API.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">10 Feb 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Load packages</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
@@ -304,11 +316,11 @@ cookieconsent.run({
 <h1 data-number="2"><span class="header-section-number">2</span> Context</h1>
 <p>Austria’s parliament was re-opened on 12 January after a few years of renovation. The works did not only entail a major revamp of the 19th century neo-classicist building at Vienna’s Ringstraße, but also a substantial upgrade to its API. The latter was preceded by a public consultation process providing users the opportunity to file suggestions for improvement, and seems to be part of a conscious effort to strengthen the institution’s open data offer. While I am only beginning to toy with the API, as far as I can tell, it considerably lowers the barrier to data on Parliament’s work, not only by making it easier to access them, but also by broadening the offer. You can find information on the API <a href="https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html" target="_blank">here</a> (unfortunately only in German), which provides an overview of the different endpoints/datasets. Most laudable, there are even some exemplary R script <a href="https://www.parlament.gv.at/recherchieren/open-data/showcases/index.html" target="_blank">“showcases”</a>!</p>
 
-<div class="no-row-height column-margin column-container"><div class="">
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p></p><figcaption class="figure-caption">Source: https://commons.wikimedia.org/</figcaption><p></p>
-<p><a href="preview_parliament.jpg" class="lightbox" title="Source: https://commons.wikimedia.org/" data-gallery="quarto-lightbox-gallery-1"><img src="preview_parliament.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
+<figcaption>Source: https://commons.wikimedia.org/</figcaption>
+<p><a href="preview_parliament.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Source: https://commons.wikimedia.org/"><img src="preview_parliament.jpg" class="img-fluid figure-img" style="width:2in" alt="Source: https://commons.wikimedia.org/"></a></p>
 </figure>
 </div>
 </div></div><p>In this post, I dig into one API endpoint, the <a href="https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/parlamentarierinnen/index.html" target="_blank">dataset on MPs since 1920</a>, more precisely the members of the <em>Nationalrat (NR)</em>, parliament’s lower house.</p>
@@ -322,7 +334,7 @@ cookieconsent.run({
 <section id="accessing-the-api-with-httr2" class="level1 page-columns page-full" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Accessing the API with httr2</h1>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Load required packages</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -332,7 +344,7 @@ cookieconsent.run({
 <section id="define-function" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="define-function"><span class="header-section-number">3.1</span> Define function</h2>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Function to access API</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>get_mps <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">Gremium =</span> <span class="cn">NULL</span>,</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Gesetzgebungsperiode =</span> <span class="cn">NULL</span>,</span>
@@ -411,7 +423,7 @@ cookieconsent.run({
 <h2 data-number="3.2" class="anchored" data-anchor-id="apply-function"><span class="header-section-number">3.2</span> Apply function</h2>
 <p>While the API parameters allow to specify MPs’ gender in a search parameter, the subsequent results unfortunately do no include a gender indicator. Hence, I run two separate requests, one for male, one for female MPs and add a column specifying the gender.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Apply function</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_m <span class="ot">&lt;-</span> <span class="fu">get_mps</span>(<span class="at">Gremium =</span> <span class="st">"NR"</span>, Männlich <span class="ot">=</span> <span class="st">"M"</span>, <span class="at">Gesetzgebungsperiode =</span> <span class="st">"ALLE"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gender =</span> <span class="st">"male"</span>)</span>
@@ -429,7 +441,7 @@ cookieconsent.run({
 </div>
 <p>The queries returned a combined dataframe with 1966 rows in total. 388 rows for female MPs, 1578 for male MPs. Does these results mean there were 1966 MPs in total, out of which 388 were women and 1578 were men? Nope. Why? Let’s have a closer look the results.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df_res)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Rows: 1,966</span></span>
@@ -447,7 +459,7 @@ cookieconsent.run({
 </div>
 <p>As you’ll gather from the output, there’s a column called <code>pad_intern</code> which appears to be something like an MP’s unique ID. When we check for the total number of unique <code>pad_intern</code>s, it turns out that there are actually fewer IDs then rows.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(df_res<span class="sc">$</span>pad_intern)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 1931</span></span>
@@ -460,7 +472,7 @@ cookieconsent.run({
 <h2 data-number="3.3" class="anchored" data-anchor-id="taking-care-of-name-variants"><span class="header-section-number">3.3</span> Taking care of name variants</h2>
 <p>This difference is due to changing names of MPs. Let’s have a look here:</p>
 <div class="cell page-columns page-full">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Identify MPs with changing names</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_dupes <span class="ot">&lt;-</span> df_res <span class="sc">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_dupes</span>(., pad_intern) <span class="sc">%&gt;%</span></span>
@@ -497,7 +509,6 @@ cookieconsent.run({
 <span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_title</span>(<span class="at">title =</span> <span class="st">"MPs with changing names"</span>, <span class="at">font_size =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display column-body-outset-right">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:15px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">MPs with changing names</h1>
 <div id="htmlwidget-dc11453c292124bed473" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-dc11453c292124bed473">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"pad_intern":["1174","2872","1130","118","14693","14757","1613","1688","1846","2018","2819","2834","2869","30352","3130","35468","35496","41","51559","547","5647","586","59247","717","76","8184","8238","8240","8245","83111","83124","83125","87146"],"number_variants":[3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],"name_variants":["Konecny Helene<br>Pecker Helene siehe Konecny Helene<br>Pecker-Zörner Helene siehe Konecny Helene","Moser Sonja, Dr. siehe Moser-Starrach Sonja, Dr.<br>Moser-Starrach Sonja, Dr.<br>Stiegelbauer Sonja, Dr. siehe Moser-Starrach Sonja, Dr.","Blau-Meissner Freda siehe Meissner-Blau Freda<br>Meissner-Blau Freda","Binder Gabriele siehe Binder-Maier Gabriele<br>Binder-Maier Gabriele","Rosenkranz Barbara, MA<br>Rosenkranz Barbara siehe Rosenkranz Barbara, MA","Fuhrmann Silvia, Mag. siehe Grünberger Silvia, Mag.<br>Grünberger Silvia, Mag.","Schieder Peter, Dr. h.c.<br>Schieder Peter siehe Schieder Peter, Dr. h.c.","Riess Susanne, Dr. siehe Riess-Passer Susanne, Dr.<br>Riess-Passer Susanne, Dr.","Steinhuber Josef siehe Steinhuber Sepp<br>Steinhuber Sepp","Steibl Ridi Maria<br>Steibl Ridi siehe Steibl Ridi Maria","Amon Werner, MBA<br>Amon Werner siehe Amon Werner, MBA","Graf Martin, Dr. siehe Graf Martin, Mag. Dr.<br>Graf Martin, Mag. Dr.","Bekavac-Ramsbacher Helena siehe Ramsbacher Helena<br>Ramsbacher Helena","Knoll Gertraud, Mag.<br>Knoll-Lacina Gertraud, Mag. siehe Knoll Gertraud, Mag.","Ferrero-Waldner Benita, Dr.<br>Ferrero-Waldner Benita-Maria, Dr. siehe Ferrero-Waldner Benita, Dr.","Belakowitsch Dagmar, Dr.<br>Belakowitsch-Jenewein Dagmar, Dr. siehe Belakowitsch Dagmar, Dr.","Prettenthaler Sylvia siehe Rinner Sylvia<br>Rinner Sylvia","Achatz Anna Elisabeth<br>Aumayr Anna Elisabeth siehe Achatz Anna Elisabeth","Gartelgruber Carmen siehe Schimanek Carmen<br>Schimanek Carmen","Heigl Hans<br>Heigl Johann siehe Heigl Hans","Tanzler Petra<br>Vorderwinkler Petra siehe Tanzler Petra","Hieden Helga, Dr. siehe Hieden-Sommer Helga, Dr.<br>Hieden-Sommer Helga, Dr.","Steßl Sonja, Mag.<br>Steßl-Mühlbacher Sonja, Mag. siehe Steßl Sonja, Mag.","Horvath Waltraud, Mag. siehe Schütz Waltraud, Mag.<br>Schütz Waltraud, Mag.","Bauer Hannes, Dipl.-Kfm. Dr.<br>Bauer Johann, Dipl.-Kfm. Dr. siehe Bauer Hannes, Dipl.-Kfm. Dr.","Breitenfeld-Papházy Sylvia, Dr., MBA siehe Papházy Sylvia, Dr., MBA<br>Papházy Sylvia, Dr., MBA","Wolfmayr Andrea, Dr. siehe Wolfmayr Andrea, Mag. Dr.<br>Wolfmayr Andrea, Mag. Dr.","Glawischnig Eva, Dr. siehe Glawischnig-Piesczek Eva, Dr.<br>Glawischnig-Piesczek Eva, Dr.","Pirklhuber Wolfgang, Dipl.-Ing. Dr.<br>Pirklhuber Wolfgang, Dipl.-Ing. siehe Pirklhuber Wolfgang, Dipl.-Ing. Dr.","Holzinger Daniela, BA siehe Holzinger-Vogtenhuber Daniela, BA<br>Holzinger-Vogtenhuber Daniela, BA","Bernhard Michael<br>Pock Michael siehe Bernhard Michael","Scherak Nikolaus, Dr., MA<br>Scherak Nikolaus, Mag. siehe Scherak Nikolaus, Dr., MA","Dziedzic Ewa, Mag. Dr. siehe Ernst-Dziedzic Ewa, Dr.<br>Ernst-Dziedzic Ewa, Dr."]},"columns":[{"id":"pad_intern","name":"pad_intern","type":"character","show":false,"width":100,"align":"center"},{"id":"number_variants","name":"Number of name variants","type":"numeric","width":200,"align":"center"},{"id":"name_variants","name":"Name variants","type":"character","html":true}],"defaultPageSize":5,"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":14,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"93faa81f8be1931783fdf969e4a01ee3"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
@@ -505,17 +516,17 @@ cookieconsent.run({
 </div>
 <p><br></p>
 
-<div class="no-row-height column-margin column-container"><div class="">
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p></p><figcaption class="figure-caption">from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at</figcaption><p></p>
-<p><a href="meissner_blau.jpg" class="lightbox" title="from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at" data-gallery="quarto-lightbox-gallery-2"><img src="meissner_blau.jpg" class="img-fluid figure-img" style="width:2in"></a></p>
+<figcaption>from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at</figcaption>
+<p><a href="meissner_blau.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at"><img src="meissner_blau.jpg" class="img-fluid figure-img" style="width:2in" alt="from Blau-Meissner to Meissner-Blau; Source: parlament.gv.at"></a></p>
 </figure>
 </div>
 </div></div><p>There are in total 33 MPs whose names have undergone some changes. As the table above shows, two MPs changed their names more than once. Changes are mainly (and supposedly) due to marriage/divorce, and - Tu felix Austria - the addition of academic titles. Or, if you are <a href="https://www.parlament.gv.at/person/1846#:~:text=Lesezeichen-,Sepp%20Steinhuber,(bis%203.11.1971%3A%20Josef%20Steinhuber),-Biografie" target="_blank">Sepp (Steinhuber)</a>, and no longer want to be called ‘Josef.’ New to me: <a href="https://www.parlament.gv.at/person/1130#:~:text=Lesezeichen-,Freda%20Meissner%2DBlau,(bis%2011.5.1988%3A%20Freda%20Blau%2DMeissner),-Biografie" target="_blank">Freda Meissner-Blau</a>, icon of the early environmental movement and first chairperson of the Green party, had up until 1988 the family name Blau-Meissner.</p>
 <p>Since my interest is however not in an MP’s names but the individual, distinct MP, the different name variants have to be nested within the unique <code>pad_intern</code> identifiers.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_res <span class="ot">&lt;-</span> df_res <span class="sc">%&gt;%</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">chop</span>(<span class="at">cols =</span> <span class="fu">c</span>(sortier, name))</span>
@@ -548,7 +559,7 @@ cookieconsent.run({
 <h1 data-number="4"><span class="header-section-number">4</span> Gender composition of the Nationalrat</h1>
 <p>Now, with this issue taken care of, we can have a first, general look at the gender composition of MPs of the Nationalrat - in total, over all legislative periods.</p>
 <div class="cell" data-layout-align="left" data-fig.asp="1.2281">
-<details>
+<details class="code-fold">
 <summary>Code: Calculate gender share and create plot</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_gender <span class="ot">&lt;-</span> df_res <span class="sc">%&gt;%</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(gender) <span class="sc">%&gt;%</span></span>
@@ -579,14 +590,13 @@ cookieconsent.run({
 <span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="htmlwidget-19f91dd3dd501ac93e80" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-19f91dd3dd501ac93e80">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"gender":["female","male"],"n":[362,1569],"perc":[0.187467633350596,0.812532366649404]},"columns":[{"id":"gender","name":"Gender","type":"character","footer":"Total of all MPs"},{"id":"n","name":"number","type":"numeric","footer":"1931"},{"id":"perc","name":"%","type":"numeric","format":{"cell":{"digits":2,"percent":true},"aggregated":{"digits":2,"percent":true}},"footer":"100.00%"}],"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":14,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"79c97e37e5f6c8a08932e4ff36a5e2f3"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p><br> <br></p>
 <div class="cell" data-layout-align="left" data-fig.asp="1.2281" data-crop="true">
-<details>
+<details class="code-fold">
 <summary>Code: Create waffle plot</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_gender <span class="sc">%&gt;%</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>perc) <span class="sc">%&gt;%</span></span>
@@ -676,7 +686,7 @@ cookieconsent.run({
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-16-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="384"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-16-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid quarto-figure quarto-figure-left figure-img" width="384"></a></p>
 </figure>
 </div>
 </div>
@@ -687,7 +697,6 @@ cookieconsent.run({
 <p>The column <code>gesetzgebungsperioden</code> in our API result is a list column, with each element being one legislative period in which an MP held her/his mandate. Below a sample to make this point clearer.</p>
 <div class="cell">
 <div class="cell-output-display">
-
 <div id="htmlwidget-ea977313d7895078d8ac" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-ea977313d7895078d8ac">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"pad_intern":["13649","2003","577","10","14"],"gesetzgebungsperioden":["einundzwanzigste Gesetzgebungsperiode",["erste Gesetzgebungsperiode","zweite Gesetzgebungsperiode","dritte Gesetzgebungsperiode","vierte Gesetzgebungsperiode"],["siebzehnte Gesetzgebungsperiode","achtzehnte Gesetzgebungsperiode","neunzehnte Gesetzgebungsperiode","zwanzigste Gesetzgebungsperiode"],"erste Gesetzgebungsperiode","erste Gesetzgebungsperiode"]},"columns":[{"id":"pad_intern","name":"pad_intern","type":"character"},{"id":"gesetzgebungsperioden","name":"gesetzgebungsperioden","type":"list"}],"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":14,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"92dbb70615122b65526f752a97a0886c"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
@@ -695,7 +704,7 @@ cookieconsent.run({
 <p><br> To count the MPs (and their gender) per legislative period, this list has to be brought into a long format, so that we obtain one row per MP and legislative period.</p>
 <p>Below the code, plus a sample of the result.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Unnest list ‘gesetzgebungsperiode’; obtain one row per MP and legislative period</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df_res_long <span class="ot">&lt;-</span> df_res <span class="sc">%&gt;%</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(pad_intern, gender, gesetzgebungsperioden) <span class="sc">%&gt;%</span></span>
@@ -704,7 +713,6 @@ cookieconsent.run({
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df_res_long <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>gender), <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">reactable</span>(., <span class="at">theme=</span><span class="fu">fivethirtyeight</span>(), <span class="at">compact=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <div id="htmlwidget-8553e3b2759ab71917c0" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-8553e3b2759ab71917c0">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"pad_intern":["13649","2003","2003","2003","2003","577","577","577","577","10"],"gesetzgebungsperioden":["einundzwanzigste Gesetzgebungsperiode","erste Gesetzgebungsperiode","zweite Gesetzgebungsperiode","dritte Gesetzgebungsperiode","vierte Gesetzgebungsperiode","siebzehnte Gesetzgebungsperiode","achtzehnte Gesetzgebungsperiode","neunzehnte Gesetzgebungsperiode","zwanzigste Gesetzgebungsperiode","erste Gesetzgebungsperiode"]},"columns":[{"id":"pad_intern","name":"pad_intern","type":"character"},{"id":"gesetzgebungsperioden","name":"gesetzgebungsperioden","type":"character"}],"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":14,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"3d974895386a57ee1a33d33c866015cd"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
@@ -728,7 +736,7 @@ Sequence of conditions of <code>case_when</code> arguments
 </div>
 </div>
 <div class="cell" data-hash="index_cache/html/unnamed-chunk-20_c0bf87294f69e308287f1a91c2b1b10e">
-<details>
+<details class="code-fold">
 <summary>Code: Define and apply function to convert words to numbers</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># order is critical</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -771,7 +779,7 @@ Sequence of conditions of <code>case_when</code> arguments
 </div>
 <p>After this step, we have all the data necessary to compile the gender composition per legislative period.</p>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code: Table on gender composition per legislative period</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>vec_color_gender<span class="ot">=</span><span class="fu">c</span>(<span class="at">female =</span> <span class="st">"#E6AF2E"</span>, <span class="at">male =</span> <span class="st">"#353A47"</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -869,7 +877,6 @@ Sequence of conditions of <code>case_when</code> arguments
 <span id="cb15-94"><a href="#cb15-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="at">source =</span> <span class="fu">html</span>(<span class="st">"Data: parlament.gv.at&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:bold'&gt;https://werk.statt.codes&lt;/span&gt;"</span>), <span class="at">font_size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display column-page-inset-right">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:19px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Gender composition of the Nationalrat per legislative period</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="gender-composition-of-the-nationalrat">As of 20.1.2023.</h2>
 <div id="htmlwidget-f9eb95971f659dd5b188" class="reactable html-widget" style="width:auto;height:auto;"></div>
@@ -879,7 +886,7 @@ Sequence of conditions of <code>case_when</code> arguments
 </div>
 <p><br> Below an alternative graphical representation of the same data.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Plot gender composition per legislative period plus available seats</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_pl_df_res_long <span class="sc">%&gt;%</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
@@ -954,7 +961,7 @@ Sequence of conditions of <code>case_when</code> arguments
 <span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-25-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -967,7 +974,6 @@ Sequence of conditions of <code>case_when</code> arguments
 <p>The data, however, also reveals that there was was some fluctuation of MPs during each legislative period, or to put it differently, that there were more MPs per legislative period than there are seats in the Nationalrat. The vertical bars in the plot above indicate the available number of seats in the Nationalrat. While this is not surprising as such, MPs may resign due to various reason (health, intra-party dynamics…), I find it interesting to see how little fluctuation there was prior to the 1970s, if compared to later periods. The plot below makes this point clearer.</p>
 <div class="cell">
 <div class="cell-output-display">
-
 <div id="kraafasypg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 html {
@@ -1412,7 +1418,7 @@ tbody tr:last-child {
 </div>
 </div>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code: Calcualte and plot MP turnover by legislative period</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_res_long_seats <span class="ot">&lt;-</span> df_res_long <span class="sc">%&gt;%</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(., df_seats, <span class="at">by =</span> <span class="fu">join_by</span>(</span>
@@ -1561,10 +1567,10 @@ tbody tr:last-child {
 <span id="cb17-145"><a href="#cb17-145" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.caption.position=</span><span class="st">"panel"</span></span>
 <span id="cb17-146"><a href="#cb17-146" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display column-body-outset-right">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-29-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></a></p>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/unnamed-chunk-29-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img column-body-outset-right" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -1577,17 +1583,13 @@ tbody tr:last-child {
 <p>In the next step, I want to refine the calculation of the NR’s gender composition by specifically looking at it at the start of each legislative session. So far we only had the aggregate number per legislative period. Given the demonstrated MP turnover, we have no exact picture of who was MP at the start of each legislative period and hence of the initial gender composition.</p>
 <p>The challenge here is that the results obtained by the API call above did provide us with information on whether an MP was member of the NR during a specific legislative period, but not the exact starting and ending dates of her/his political mandate. Unfortunately, as far as I can tell, this information is not (yet?) accessible via the API. However, the data is actually presented on the Parliament’s homepage.</p>
 <p>Below a sample screenshot from the <a href="https://www.parlament.gv.at/person/65321" target="_blank">bio-page</a> of Sebastian Kurz (who was also an MP). The data of interest is highlighted.</p>
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="screenshot_kurz_mandates.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="screenshot_kurz_mandates.PNG" class="img-fluid figure-img"></a></p>
-</figure>
-</div>
+<p><a href="screenshot_kurz_mandates.PNG" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="screenshot_kurz_mandates.PNG" class="img-fluid"></a></p>
 </section>
 <section id="getting-details-on-mps-political-mandates" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="getting-details-on-mps-political-mandates"><span class="header-section-number">4.3</span> Getting details on MPs’ political mandates</h2>
 <p>To extract the relevant data, I define a function which scrapes the section on political mandates from the biography page. Subsequently, the various political mandates are filtered for membership in the Nationalrat. This function is than applied to the biography pages of all MPs. Once the start and end date of membership in parliament is available, we are also able to answer the question who was an MP at the beginning of which legislative period.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Define function to extract political mandates of each MPs</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fn_get_mp_mandates <span class="ot">&lt;-</span> <span class="cf">function</span>(url) {</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Scrape the section on political functions</span></span>
@@ -1624,7 +1626,7 @@ tbody tr:last-child {
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Apply function</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df_details <span class="ot">&lt;-</span> df_res <span class="sc">%&gt;%</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pad_intern, gender, link) <span class="sc">%&gt;%</span></span>
@@ -1633,7 +1635,7 @@ tbody tr:last-child {
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Unnest list with political mandates and filter</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df_details_long <span class="ot">&lt;-</span> df_details <span class="sc">%&gt;%</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_longer</span>(mandates) <span class="sc">%&gt;%</span></span>
@@ -1656,7 +1658,7 @@ tbody tr:last-child {
 </div>
 <p>While glancing through the results, I noticed an unexpected increase in the number of rows. Checking for duplicates revealed that there were a few MPs who - for reasons unknown to me - featured two different party memberships during the same mandate period. Remarkably, they are all member of the KPÖ.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Control for MPs with multiple party affiliations during same mandate</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check for dupes</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>dupes <span class="ot">&lt;-</span> df_details_long <span class="sc">%&gt;%</span></span>
@@ -1706,7 +1708,6 @@ tbody tr:last-child {
 <span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a><span class="fu">add_title</span>(<span class="at">title=</span><span class="st">"MPs with multiple party affiliations during the same period."</span>, <span class="at">font_size=</span><span class="dv">14</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:14px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">MPs with multiple party affiliations during the same period.</h1>
 <div id="htmlwidget-936bdd1ee63afda6aab2" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-936bdd1ee63afda6aab2">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"name":["Scharf Erwin","Elser Viktor","Elser Viktor","Fischer Ernst","Fischer Ernst","Honner Franz","Honner Franz","Koplenig Johann","Koplenig Johann"],"office":["Abgeordneter zum Nationalrat (VI. GP)","Abgeordneter zum Nationalrat (V. GP)","Abgeordneter zum Nationalrat (VI. GP)","Abgeordneter zum Nationalrat (V. GP)","Abgeordneter zum Nationalrat (VI. GP)","Abgeordneter zum Nationalrat (V. GP)","Abgeordneter zum Nationalrat (VI. GP)","Abgeordneter zum Nationalrat (V. GP)","Abgeordneter zum Nationalrat (VI. GP)"],"office_date_start":["1949-11-08","1945-12-19","1949-11-08","1945-12-19","1949-11-08","1945-12-19","1949-11-08","1945-12-19","1949-11-08"],"office_date_end":["1953-03-18","1949-11-08","1953-03-18","1949-11-08","1953-03-18","1949-11-08","1953-03-18","1949-11-08","1953-03-18"],"party":[["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"],["KPÖ","LB"]],"link":["https://www.parlament.gv.at/person/1592?selectedtab=BIO","https://www.parlament.gv.at/person/309?selectedtab=BIO","https://www.parlament.gv.at/person/309?selectedtab=BIO","https://www.parlament.gv.at/person/333?selectedtab=BIO","https://www.parlament.gv.at/person/333?selectedtab=BIO","https://www.parlament.gv.at/person/645?selectedtab=BIO","https://www.parlament.gv.at/person/645?selectedtab=BIO","https://www.parlament.gv.at/person/914?selectedtab=BIO","https://www.parlament.gv.at/person/914?selectedtab=BIO"]},"columns":[{"id":"name","name":"name","type":"character"},{"id":"office","name":"office","type":"character"},{"id":"office_date_start","name":"office start","type":"Date"},{"id":"office_date_end","name":"office end","type":"Date"},{"id":"party","name":"multiple parties","type":"list","style":{"background":"rgba(0, 0, 0, 0.03)"}},{"id":"link","name":"Link to Biography","type":["glue","character"],"cell":[{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/1592?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/309?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/309?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/333?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/333?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/645?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/645?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/914?selectedtab=BIO","target":"_blank"},"children":["link"]},{"name":"a","attribs":{"href":"https://www.parlament.gv.at/person/914?selectedtab=BIO","target":"_blank"},"children":["link"]}],"html":true,"align":"center"}],"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":12,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"7106152ffd3543c17f338c00ad8fb0e8"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
@@ -1714,7 +1715,7 @@ tbody tr:last-child {
 </div>
 <p><br> While I could imagine that this is a data entry error, I preferred to keep both parties and collapsed the character vector party into a list instead of deleting one. As the result, we have again one row per MPs and mandate, and a list containing all pertaining party affiliations during the period in question.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Collapse party into list</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df_details_long <span class="ot">&lt;-</span> df_details_long <span class="sc">%&gt;%</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">chop</span>(<span class="fu">c</span>(party))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1727,7 +1728,7 @@ tbody tr:last-child {
 <section id="longest-serving-mps" class="level3 page-columns page-full" data-number="4.4.1">
 <h3 data-number="4.4.1" class="anchored"><span class="header-section-number">4.4.1</span> Longest serving MPs</h3>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>Code: Calculate duration of mandates</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>df_duration_mandate <span class="ot">&lt;-</span> df_details_long <span class="sc">%&gt;%</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">office_date_end =</span> <span class="fu">case_when</span>(</span>
@@ -1755,7 +1756,7 @@ tbody tr:last-child {
 </div>
 <p>Below the top 10 of the longest serving MPs.</p>
 <div class="cell page-columns page-full">
-<details>
+<details class="code-fold">
 <summary>Code: Table top 10 MPs</summary>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df_duration_mp <span class="sc">%&gt;%</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">row_id =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
@@ -1810,7 +1811,6 @@ tbody tr:last-child {
 <span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="at">source =</span> <span class="fu">html</span>(<span class="st">"Data: parlament.gv.at. Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:bold'&gt;https://werk.statt.codes&lt;/span&gt;"</span>), <span class="at">font_size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display column-body-outset-right">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:17px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Top 10: Austria's <span style="color:white; background-color:black;">longest serving</span> MPs</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:8px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="longest-serving-mps">Nationalrat only. As of 20.1.2023.</h2>
 <div id="htmlwidget-07cff9f33a296bb11c36" class="reactable html-widget" style="width:auto;height:auto;"></div>
@@ -1823,7 +1823,7 @@ tbody tr:last-child {
 <h3 data-number="4.4.2" class="anchored"><span class="header-section-number">4.4.2</span> Longest serving female MPs</h3>
 <p>Note that there is not a single woman among the top 10 of the longest serving MPs. Let’s have look at female MPs only.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Table top 10 female MPs</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df_duration_mp_fem <span class="ot">&lt;-</span> df_duration_mp <span class="sc">%&gt;%</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gender <span class="sc">==</span> <span class="st">"female"</span>)</span>
@@ -1887,7 +1887,6 @@ tbody tr:last-child {
 <span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="at">source =</span> <span class="fu">html</span>(<span class="st">"Data: parlament.gv.at.Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:bold'&gt;https://werk.statt.codes&lt;/span&gt;"</span>), <span class="at">font_size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:15px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Top 10: Austria's longest serving <span style="background-color:black; color:white;">female</span> MPs</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:8px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="longest-serving-female-mps">Nationalrat only. As of 20.1.2023.</h2>
 <div id="htmlwidget-0dae2e41b26fbf7da6b8" class="reactable html-widget" style="width:auto;height:auto;"></div>
@@ -1900,7 +1899,7 @@ tbody tr:last-child {
 <h3 data-number="4.4.3" class="anchored"><span class="header-section-number">4.4.3</span> Longest service active MPs</h3>
 <p>Let’s also check who is the longest serving MP among the currently serving MPs.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: longest serving active MPs</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># not only those which were continously persent</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>df_current_mps <span class="ot">&lt;-</span> df_duration_mandate <span class="sc">%&gt;%</span></span>
@@ -1973,7 +1972,6 @@ tbody tr:last-child {
 <span id="cb27-69"><a href="#cb27-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="at">source =</span> <span class="fu">html</span>(<span class="st">"Data: parlament.gv.at.Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:bold'&gt;https://werk.statt.codes&lt;/span&gt;"</span>), <span class="at">font_size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:15px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Time in Parliament by <span style="color:white; background-color:black;">currently serving</span> MPs</h1>
 <h2 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:8px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="longest-service-active-mps">Nationalrat only. As of 20.1.2023.</h2>
 <div id="htmlwidget-eeb95419dae0fb8ceeb9" class="reactable html-widget" style="width:auto;height:auto;"></div>
@@ -1986,7 +1984,7 @@ tbody tr:last-child {
 <h3 data-number="4.4.4" class="anchored" data-anchor-id="distribution-of-time-as-mps-between-parties-as-of-today"><span class="header-section-number">4.4.4</span> Distribution of time as MPs between parties as of today</h3>
 <p>The result of above serves as the basis to display the distribution of MPs’ time in the Nationalrat <em>per party</em>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Calculate distribution of MPs’ time in parliament and plot</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>vec_party_col <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"FPÖ"</span> <span class="ot">=</span> <span class="st">"#0056a2"</span>,</span>
@@ -2054,7 +2052,7 @@ tbody tr:last-child {
 <span id="cb28-64"><a href="#cb28-64" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-left">
+<div>
 <figure class="figure">
 <p><a href="index_files/figure-html/unnamed-chunk-42-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
@@ -2071,7 +2069,7 @@ tbody tr:last-child {
 <h3 data-number="4.5.1" class="anchored" data-anchor-id="identify-mps-at-beginning-of-legislative-period"><span class="header-section-number">4.5.1</span> Identify MPs at beginning of legislative period</h3>
 <p>To get the start/end dates of legislative periods, I scrape a pertaining table from <a href="https://de.wikipedia.org/wiki/Nationalrat_(%C3%96sterreich)" target="_blank">Wikipedia</a>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Get data on start/end of legislative periods</summary>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://de.wikipedia.org/wiki/Nationalrat_(%C3%96sterreich)"</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2107,7 +2105,6 @@ tbody tr:last-child {
 <span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="at">source=</span><span class="st">"Source: https://de.wikipedia.org/wiki/Nationalrat_(Österreich)"</span>, <span class="at">font_size=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:12px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Start/end dates of legislative periods</h1>
 <div id="htmlwidget-6f5a003c50394a22aa2e" class="reactable html-widget" style="width:auto;height:auto;"></div>
 <p style="color:#000;background:#FFFFFF;text-align:left;font-size:10px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">Source: https://de.wikipedia.org/wiki/Nationalrat_(Österreich)</p>
@@ -2116,7 +2113,7 @@ tbody tr:last-child {
 </div>
 <p><br> <br> If the start date of a new legislative period falls within an MP’s mandate period, the MP must have formed part of the initial composition of the NR at the beginning of the legislative period. Dplyr’s <code>between</code> join allows us to match the two dataframes accordingly.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Identify MPs at begining of legislative period</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df_details_long <span class="ot">&lt;-</span> df_details_long <span class="sc">%&gt;%</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">office_date_end=</span><span class="fu">case_when</span>(</span>
@@ -2152,7 +2149,7 @@ tbody tr:last-child {
 <h3 data-number="4.5.2" class="anchored" data-anchor-id="add-data-from-other-parliaments-ipu-data"><span class="header-section-number">4.5.2</span> Add data from other parliaments (IPU data)</h3>
 <p>To put the share of female MPs into perspective, I add data from the Interpaliamentarian Union (IPU) on other parliaments as of September 2019, i.e.&nbsp;the start of the NR’s current legislative period.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Code: Get IPU data</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>df_ipu <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="at">file=</span><span class="st">"https://data.ipu.org/api/women-ranking.csv?load-entity-refs=taxonomy_term%2Cfield_collection_item&amp;max-depth=2&amp;langcode=en&amp;month=10&amp;year=2019"</span>, <span class="at">skip=</span><span class="dv">4</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>janitor<span class="sc">::</span><span class="fu">row_to_names</span>(<span class="at">row_number=</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
@@ -2163,7 +2160,7 @@ tbody tr:last-child {
 </div>
 <p>With this data available, we can finally produce our plot of interest.</p>
 <div class="cell page-columns page-full" data-code-folding="true">
-<details>
+<details class="code-fold">
 <summary>Code: Plot development of share &amp; contrast</summary>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pos <span class="ot">&lt;-</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> <span class="dv">3</span>, <span class="at">seed =</span> <span class="dv">1</span>) <span class="co">#define seed for positioning</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2259,10 +2256,10 @@ tbody tr:last-child {
 <span id="cb32-92"><a href="#cb32-92" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.caption.position=</span><span class="st">"plot"</span></span>
 <span id="cb32-93"><a href="#cb32-93" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display column-page-right">
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-49-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="index_files/figure-html/unnamed-chunk-49-1.png" class="img-fluid figure-img" width="672"></a></p>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/unnamed-chunk-49-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-8"><img src="index_files/figure-html/unnamed-chunk-49-1.png" class="img-fluid figure-img column-page-right" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -2277,16 +2274,16 @@ tbody tr:last-child {
 
 </section>
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">https://creativecommons.org/licenses/by-nc/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2023,
-  author = {Schmidt, Roland},
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{2023,
+  author = {},
   title = {Parliament’s New {API} - {How} to Access Data on {MPs}},
   date = {2023-02-10},
   url = {https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps},
   langid = {en}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2023" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland. 2023. <span>“Parliament’s New API - How to Access Data
-on MPs.”</span> February 10, 2023. <a href="https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps">https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps</a>.
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-2023" class="csl-entry quarto-appendix-citeas" role="listitem">
+<span>“Parliament’s New API - How to Access Data on MPs.”</span> 2023.
+February 10, 2023. <a href="https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps">https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -2323,18 +2320,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -2366,11 +2352,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/werk\.statt\.codes");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2380,8 +2405,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2393,7 +2427,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -2437,6 +2594,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -2462,6 +2620,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -2527,11 +2711,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center"><div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
+    <div class="nav-footer-center">
+
+<div class="cookie-consent-footer"><a href="#" id="open_preferences_center">Cookie Preferences</a></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">
-    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693"><i class="fa-brands fa-orcid" aria-label="orcid"></i></a>
+    <a class="nav-link" href="https://orcid.org/0000-0002-6897-1693">
+<p><i class="fa-brands fa-orcid" aria-label="orcid"></i></p>
+</a>
   </li>  
     <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/werkstattcodes">
@@ -2567,7 +2755,39 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","loop":true});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","loop":false,"openEffect":"zoom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
 
 
 

@@ -1,6 +1,7 @@
 {
   "index.qmd": {
-    "index.html": "9ca531e6"
+    "index.html": "9ca531e6",
+    "index.docx": "206411e8"
   },
   "about.qmd": {
     "about.html": "79628f3d"
@@ -95,5 +96,11 @@
   },
   "posts/2023-03-30-sbg-elections-candidate-age/index.qmd": {
     "index.html": "b0cebc35"
+  },
+  "posts/2024-06-11-parliament-speech-length-limits/index.qmd": {
+    "index.html": "d608b6d6"
+  },
+  "posts/2024-06-11-parliament-speech-length-limits/index.rmarkdown": {
+    "index.html": "91cde201"
   }
 }
