@@ -5,11 +5,11 @@
       xmlns:dc="http://purl.org/dc/elements/1.1/" 
       version="2.0">
 <channel>
-<title>werk.statt.codes feed</title>
+<title>werk.statt.codes rss feed</title>
 <link>https://werk.statt.codes/#category=r</link>
 <atom:link href="https://werk.statt.codes/index-r.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
 <generator>quarto-1.5.43</generator>
-<lastBuildDate>Thu, 13 Jun 2024 07:11:25 GMT</lastBuildDate>
+<lastBuildDate>Mon, 17 Jun 2024 07:35:43 GMT</lastBuildDate>
 </channel>
 </rss>

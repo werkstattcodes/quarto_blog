@@ -4,6 +4,7 @@ project:
 website:
   title: "werk.statt.codes"
   site-url: https://werk.statt.codes
+  description: "Blog on data analysis in R."
   cookie-consent:
       palette: dark
   google-analytics: UA-149910232-1
@@ -55,7 +56,7 @@ format:
     fontsize: 16px
     # fontcolor: red
     toc: true
-    toc-depth: 3
+    toc-depth: 4
     toc-title: Contents
     toc-location: left
     code-fold: true

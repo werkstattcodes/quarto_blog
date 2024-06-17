@@ -1,6 +1,5 @@
 # options specified here will apply to all posts in this folder
 
-
 # Default author
 author:
   - name: Roland Schmidt
@@ -20,7 +19,6 @@ citation: true
 #all graphs are left aligned
 fig-align: "left"
 
-
-
-
+#only 3 level of headings are numbered
+number-depth: 3
 

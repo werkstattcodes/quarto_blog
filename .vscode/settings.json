@@ -2,5 +2,9 @@
     "r.session.useWebServer": false,
     "r.plot.useHttpgd": true,
     "r.session.emulateRStudioAPI": true,
-    "r.lsp.enabled": true
+    "r.lsp.enabled": true,
+    "cSpell.enableFiletypes": [
+        "quarto",
+        "r"
+    ]
 }
