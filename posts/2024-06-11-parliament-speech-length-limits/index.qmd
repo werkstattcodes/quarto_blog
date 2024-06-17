@@ -7,7 +7,7 @@ date: 06-11-2024
 categories:
   - Austria
   - parliament
-  - r-blogger
+  - r-bloggers
 
 reference-location: margin
 
@@ -18,7 +18,7 @@ draft: false
 
 After quite a while, finally a new blog post. As already a few times
 before, it's again something on Austria's lower chamber, the National
-Council (for previous posts see e.g. here and here).
+Council (for previous posts see e.g. [here](https://werk.statt.codes/posts/2023-01-18-parliament-new-api-mps/){target='_blank'} and [here](https://werk.statt.codes/posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i/){target="_blank"}).
 
 While working recently on a somewhat related project, I also had a look
 at the pages detailing the proceedings of the National Council's plenary

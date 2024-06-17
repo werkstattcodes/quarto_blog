@@ -11,9 +11,9 @@ listing:
   # fields: [image, date, title, description, categories]
   fields: [title, description, date, categories]
   feed:
-    type: full
+    type: partial
     title: "werk.statt.codes rss feed"
-    categories: [r, r-blogger]
+    categories: [r, r-bloggers]
     description: "RSS feed to relevant posts"
     items: 2
   image-height: 150px
