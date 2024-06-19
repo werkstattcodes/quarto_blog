@@ -2,7 +2,8 @@
 title: "Austrian National Council: Time limits of speeches, and other ramblings..."
 description: "Who speaks for how long in the National Council of Austria's Parliament? And who respects the relevant time limits?"
 
-date: 06-11-2024
+date: 06-19-2024
+#date-modified: last-modified
 
 categories:
   - Austria
