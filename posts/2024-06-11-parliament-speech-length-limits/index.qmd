@@ -1,6 +1,6 @@
 ---
 title: "Austrian National Council: Time limits of speeches, and other ramblings..."
-description: "Who speaks for how long in Austria's National Council? And who respects the relevant time limits?"
+description: "Who speaks for how long in the National Council of Austria's Parliament? And who respects the relevant time limits?"
 
 date: 06-11-2024
 
@@ -44,7 +44,7 @@ are particularly inclined to exceed these limits? Are there
 parties whose members are particularly often speaking longer than
 agreed? This blog post is about answering such questions. And as so
 often, before I eventually get to the point which I initially intended
-to look into, I took a few - hopefully worthwhile - detours and
+to look into, I took a few detours and
 collected and analyzed other data on the way.
 
 As always, the purpose of this post is to demonstrate a) how to use R
@@ -54,8 +54,7 @@ you are primarily interested in the substantive angle, I would suggest
 you simply scroll through the post and stop at the related graphs and
 tables.
 
-On a more general note, let me emphasize that I do not consider myself as an expert on the Austrian political system, let alone the National Council (I happen to have - checks CV - a PhD in PolSci, but that was from an university which was then even not in Austria...). Hence, if you spot any errors etc. please don't hesitate to let me know (best via [mastadon](https://mastodon.social/@zoowalk){target="_blank"} or the platform previously known as Raider, I mean
-[twitter](https://x.com/zoowalk){target="_blank"}).
+On a more general note, let me emphasize that I do not consider myself as an expert on the Austrian political system, let alone the National Council (I happen to have - checks CV - a PhD in PolSci, but that was from an university which was then even not in Austria...). Hence, if you spot any errors etc. please don't hesitate to let me know (best via [mastadon](https://mastodon.social/@zoowalk){target="_blank"} or the platform previously known as [twitter](https://x.com/zoowalk){target="_blank"}).
 
 ## Packages
 
@@ -567,7 +566,7 @@ nrow(df_session_id_mismatch) # 0=OK
 With the data on speeches per legislative sessions available, there are already
 a few things which we can have a look at.
 
-#### Duration, number of session and statements per legislative session
+#### Duration, number of sessions and statements per legislative period
 
 First, let's compare the numbers across legislative periods and create
 an overview table which shows us the length of legislative periods, the
@@ -668,7 +667,7 @@ remove the speech data of the 18th session in the subsequent overview
 table.
 
 :::{.column-margin}
-As a side note, I have been working on a script which extracts the individual speeches from the pdf transcripts of all sesssions prior to legislative period XIX. If time (...and with a little help of some funding...) permits, I hope to finalize it in the near future.
+As a side note, I have been working on a script which extracts the individual speeches from the pdf transcripts of all sessions prior to legislative period XIX. If time (...and with a little help of some funding...) permits, I hope to finalize it in the near future.
 :::
 
 ```{r}
@@ -712,7 +711,7 @@ tbl_legis_period_overview %>%
         name = "Duration (days)",
         width = 200,
         align = "left",
-        cell = data_bars(., fill_color = col_bar, number_fmt = scales::label_number(big.mark = ".", decimal.mark = ","), background = "white")
+        cell = data_bars(., fill_color = col_bar, number_fmt = scales::label_number(big.mark = ",", decimal.mark = "."), background = "white")
       ),
       legis_session_n = colDef(
         name = "Number of sessions",
@@ -732,7 +731,7 @@ tbl_legis_period_overview %>%
           fill_color = "#839791",
           background = "white",
           text_position = "inside-end",
-          number_fmt = scales::label_number(big.mark = ".", decimal.mark = ","),
+          number_fmt = scales::label_number(big.mark = ",", decimal.mark = "."),
           force_outside = c(0, 4000)
         )
       )
@@ -748,7 +747,7 @@ tbl_legis_period_overview %>%
     title = html("<span style='font-size:12pt;'>Austrian National Council (Nationalrat): Legislative periods in comparision: duration, number of sessions, and speeches.</span>")
   ) %>%
   add_subtitle(
-    subtitle = html(glue::glue("<span style='font-size:10pt;'>Number of sessions: Data also includes sessions without statements in the plenary.Duration: XXVII legislative period as of {today() %>% format(., '%d.%m.%Y')}. No data on individual speeches for periods prior to XIX available.</span>")),
+    subtitle = html(glue::glue("<span style='font-size:10pt;'>Number of sessions: Data also includes sessions without statements in the plenary. Duration: XXVII legislative period as of {today() %>% format(., '%d.%m.%Y')}. No data on individual speeches for periods prior to legis. preiod XIX available.</span>")),
     font_color = "grey30", font_weight = "normal", font_style="italic") %>%
   add_source(
     source = html("<span style='font-size:8pt;color:grey30;font-family:Segoe UI !important;'>Source: www.parlament.gv.at; de.wikipedia.org (start/end dates of legislative periods). Analysis: Roland Schmidt - @zoowalk - https://werk.statt.codes</span>"))
@@ -910,7 +909,7 @@ scale_y_continuous(
   expand=expansion(mult=c(0,0))
   )+
 scale_x_continuous(
-  label=\(x) x %>% scales::number(., big.mark='.', decimal.mark=',') %>% fn_label_unit(., "days"), 
+  label=\(x) x %>% scales::number(., big.mark=',', decimal.mark='.') %>% fn_label_unit(., "days"), 
   limits=c(0,NA),
   expand=expansion(mult=c(0,.25))
   )+
@@ -921,10 +920,10 @@ theme(
 )
 ```
 
-If we want to get an idea of the relative frequency of sessions, i.e. take the de facto duration of the legislative periods into account, we can calculate a days/session ratio (a lower value means realtively more sessions). And, as already suggested by the previous grpah, it's the current XXVII legislative period which comes out on top.
+If we want to get an idea of the relative frequency of sessions, i.e. take the de facto duration of the legislative periods into account, we can calculate a days/session ratio (a lower value means relatively more sessions). And, as already suggested by the previous graph, it's the current XXVII legislative period which comes out on top.
 
 ```{r}
-txt_subtitle_pl_2 <- glue::glue("To account for the different de facto lengths of legislative periods, let's divide the number of days by the number of sessions. A lower ratio indicates a higher relative frequency of sessions. No legislative period of the 2nd Republic (legis period V onwards) features a higher releative frequency of sessions than the current period XXVII.")
+txt_subtitle_pl_2 <- glue::glue("To account for the different de facto lengths of legislative periods, let's divide the number of days by the number of sessions. A lower ratio indicates a higher relative frequency of sessions. No legislative period of the 2nd Republic (legis period V onwards) features a higher relative frequency of sessions than the current period XXVII.")
 
 tbl_legis_period_overview %>%
 mutate(x_label=case_when(
@@ -934,7 +933,7 @@ mutate(x_label=case_when(
 mutate(x_label=forcats::fct_infreq(x_label, w=days_per_session)) %>%
 ggplot()+
 labs(
-  title="Relative frequency of sessions in the National Counil",
+  title="Relative frequency of sessions in the National Council",
   subtitle=txt_subtitle_pl_2,
   x="days/session ratio",
   y="legislative period",
@@ -968,9 +967,9 @@ the end of the last lockdown). On the contrary, if we compare its
 dynamic with those of other legislative periods during the same stage
 (days since start of the legislative session), we can see that the
 legislative period XXVII features a rather steep increase. Admittedly,
-each legislative period may have its distinct events and hence assuming
+each legislative period may have its distinct events and hence the assumption
 that the trajectories of the cumulative speech numbers have to run in
-parallel may have its limits. But it's nevertheless noteworthy, and you
+parallel has its limits. But it's nevertheless noteworthy, and you
 may say a good sign, that debates in the legislature did not abate
 during the pandemic.
 
@@ -1019,7 +1018,7 @@ df_session_speeches_n <- df_session_speeches_n %>%
 #| code-summary: "Create plot"
 #| code-fold: true
 
-txt_explanatory <- glue::glue("The graph depicts the cumulative number of plenary speeches in the Austrian National Council per legislative period. As of {lubridate::today() %>% format(., '%d.%m.%Y')} there were {df_session_speeches_n %>% filter(legis_period_num==27) %>% arrange(speeches_n_cum) %>% pull(speeches_n_cum) %>% last() %>% scales::number(.,big.mark='.', decimal.mark=';')} speeches held during the legislative period XXVII. Only during period XXIV more speeches were made. Remarkably, during the height of the pandemic - between the start of the first and the end of the last lockdown - there was a considerable increase in the number of speeches, compared with other legislative periods during the same stage of their duration. There is no comprehenisve data available on the number of individual speeches prior to legislative period XIX.")
+txt_explanatory <- glue::glue("The graph depicts the cumulative number of plenary speeches in the Austrian National Council per legislative period. As of {lubridate::today() %>% format(., '%d.%m.%Y')} there were {df_session_speeches_n %>% filter(legis_period_num==27) %>% arrange(speeches_n_cum) %>% pull(speeches_n_cum) %>% last() %>% scales::number(.,big.mark=',', decimal.mark='.')} speeches held during the legislative period XXVII. Only during period XXIV more speeches were made. Remarkably, during the height of the pandemic - between the start of the first and the end of the last lockdown - there was a considerable increase in the number of speeches, compared with other legislative periods during the same stage of their duration. There is no comprehensive data available on the number of individual speeches prior to legislative period XIX.")
 
 df_legis_27_covid_start <- df_session_speeches_n %>%
   filter(legis_period_num == 27) %>%
@@ -1069,7 +1068,7 @@ df_speeches_covid <- df_legis_covid_start %>%
     speeches_avg = speeches_n / duration
   )
 
-txt_details <- glue::glue("In the period between the start of the first and the last lock-down {df_speeches_covid %>% filter(legis_period_num==27) %>%pull(speeches_n) %>% scales::number(., big.mark='.', decimal.mark=',')} speeches were held. No other legislative period - for which data is available - features a higher number during the same stage (days since start of period).")
+txt_details <- glue::glue("In the period between the start of the first and the last lockdown {df_speeches_covid %>% filter(legis_period_num==27) %>%pull(speeches_n) %>% scales::number(., big.mark=',', decimal.mark='.')} speeches were held. No other legislative period - for which data is available - features a higher number during the same stage (days since start of period).")
 
 col_covid <- "#b3001b"
 
@@ -1084,7 +1083,7 @@ pl_cumsum <- df_session_speeches_n %>%
   filter(legis_period_num > 18) %>%
   ggplot() +
   labs(
-    title = "Cumulative Number of Speeches from legilsative period XIX to XXVII",
+    title = "Cumulative Number of Speeches from legislative period XIX to XXVII",
     # subtitle="Plenary sessions in the National Council only."
     subtitle = txt_explanatory,
     caption = txt_caption_graph
@@ -1185,13 +1184,13 @@ pl_cumsum <- df_session_speeches_n %>%
     size = 3
   ) +
   scale_y_continuous(
-    label = \(x) scales::number(x, big.mark = ".", decimal.mark = ",") %>%
+    label = \(x) scales::number(x, big.mark = ",", decimal.mark = ".") %>%
       fn_label_unit(x = ., "speeches") %>%
       str_wrap(., 10),
     expand = expansion(mult = c(0.01, 0.02))
   ) +
   scale_x_continuous(
-    label = \(x) scales::number(x, big.mark = ".", decimal.mark = ",") %>%
+    label = \(x) scales::number(x, big.mark = ",", decimal.mark = ".") %>%
       fn_label_unit(x = ., "days since start of legislative period") %>%
       str_wrap(., 20),
     expand = expansion(mult = c(0, 0.05)),
@@ -1236,8 +1235,8 @@ during plenary sessions.[^1]
 
 [^1]: For a (not entirely serious) analysis of government speeches see [here]("https://werk.statt.codes/posts/2021-04-22-how-often-do-austrias-chancellors-use-the-word-i/"){target="_blank"}.
 
-To get such a dataset, I first) obtain all individuals who were MPs
-during the legislative period, and second) augment this dataset with a
+To get such a dataset, I first, obtain all individuals who were MPs
+during the legislative period, and second, augment this dataset with a
 the start and end date of their time in parliament. By matching the
 dataset on MPs and speeches by the personal identifier (`pad_intern`) as
 well as the speech's date with the start and end date of an MP's
@@ -1443,7 +1442,7 @@ tbl_speeches_party <- df_session_speeches_27_mps %>%
   count(party, name = "speeches_n") %>%
   mutate(speeches_n_rel = speeches_n / sum(speeches_n)) %>%
   arrange(desc(speeches_n)) %>%
-  mutate(abs_rel = glue::glue('{speeches_n %>% scales::number(big.mark=".", decimal.mark=",")}<br>*({speeches_n_rel %>% scales::percent(.)})*')) 
+  mutate(abs_rel = glue::glue('{speeches_n %>% scales::number(big.mark=",", decimal.mark=".")}<br>*({speeches_n_rel %>% scales::percent(.)})*')) 
 
 tbl_speeches_party %>%
 mutate(party=fct_infreq(party, w=speeches_n) %>% fct_rev) %>%
@@ -1467,7 +1466,7 @@ geom_richtext(
   size=3
 )+
 scale_fill_manual(values=vec_party_colors)+
-scale_x_continuous(label=\(x) x %>% scales::number(., big.mark='.', decimal.mark=','), expand=expansion(mult=c(0,.1)))+
+scale_x_continuous(label=\(x) x %>% scales::number(., big.mark=',', decimal.mark='.'), expand=expansion(mult=c(0,.1)))+
 scale_y_discrete(expand=expansion(mult=c(0.05,0.05)))+
 theme(
   legend.position="none",
@@ -1588,7 +1587,7 @@ between, on the one hand, formal time limits governing the maximum speech length
 Note that there were 19 speeches where data on the debate-typical time
 limit was missing. All of these speeches were held during the first
 session, when the presidents of the chamber were elected. See
-[here](https://www.parlament.gv.at/gegenstand/XXVII/NRSITZ/1?selectedStage=110#:~:text=TOP%202%20Wahl%20der%20Pr%C3%A4sidentin/des%20Pr%C3%A4sidenten%2C%20der%20Zweiten%20Pr%C3%A4sidentin/des%20Zweiten%20Pr%C3%A4sidenten%20und%20der%20Dritten%20Pr%C3%A4sidentin/des%20Dritten%20Pr%C3%A4sidenten){target="_blank"}. I am not sue whether this is simply due to an omission, or whether the 'Normaldebatte' during the election of the presidents follows a different set of rules.
+[here](https://www.parlament.gv.at/gegenstand/XXVII/NRSITZ/1?selectedStage=110#:~:text=TOP%202%20Wahl%20der%20Pr%C3%A4sidentin/des%20Pr%C3%A4sidenten%2C%20der%20Zweiten%20Pr%C3%A4sidentin/des%20Zweiten%20Pr%C3%A4sidenten%20und%20der%20Dritten%20Pr%C3%A4sidentin/des%20Dritten%20Pr%C3%A4sidenten){target="_blank"}. I am not sure whether this is simply due to an omission, or whether the 'Normaldebatte' during the election of the presidents follows a different set of rules.
 
 ```{r}
 #| include: false
@@ -1621,7 +1620,7 @@ df_haslimit_T %>%
 
 col_limit <- "red"
 
-txt_subtitle <- glue::glue("Each graph shows the number of speeches per type of debate (y-axis) and the pertaining time limit in minutes (x-axis). Each type of debate has a <span style='color:{col_limit};'>formally mandated, debate specific maximum length</span> for a plenary speech. For some debate types, this maximum length, however, can be shortened by a <span style='color:orange'>'voluntary' limit</span> agreed upon among the MPs. Overall, the graph reveals that most speeches held during the debates of type 'Dringliche Anfrage', 'Dringlicher Antrag', 'Erste Lesung', and 'Normaldebatte' are subject to shorter, voluntary time limits. There are also some instances of speeches where the actual applied time limit exceeds the limit formally mandated. These speeches pertain to specific speakers who are entitled to speak longer (e.g. MP tabling a request). There are also some speeches which are subject to a mandatory time limit shorter than the debate specific time limit (blue, left of the dotted red line). These speeches are of a specific type. Note different scales on the y-axis.")
+txt_subtitle <- glue::glue("Each graph shows the number of speeches per type of debate (y-axis) and the pertaining time limit in minutes (x-axis). Each type of debate has a <span style='color:{col_limit};'>formally mandated, debate-specific maximum length</span> for a plenary speech. For some debate types, this maximum length, however, can be shortened by a <span style='color:orange'>'voluntary' limit</span> agreed upon among the MPs. Overall, the graph reveals that most speeches held during the debates of type 'Dringliche Anfrage', 'Dringlicher Antrag', 'Erste Lesung', and 'Normaldebatte' are subject to shorter, voluntary time limits. There are also some instances of speeches where the actual applied time limit exceeds the limit formally mandated. These speeches pertain to specific speakers who are entitled to speak longer (e.g. MP tabling a request). There are also some speeches which are subject to a mandatory time limit shorter than the debate-specific time limit (blue, left of the dotted red line). These speeches are of a specific type. Note different scales on the y-axis.")
 
 df_session_speeches_27_mps %>%
   mutate(speech_limit = as.numeric(speech_limit)) %>%
@@ -1661,7 +1660,7 @@ df_session_speeches_27_mps %>%
   scale_x_continuous(expand = expansion(mult = c(0, .1)),
   labels=\(x) fn_label_unit(x, label="min")
   ) +
-  scale_y_continuous(label = \(x) scales::number(x, accuracy = 1, big.mark = ".", decimal.mark = ","), expand = expansion(mult = c(0, .1))) +
+  scale_y_continuous(label = \(x) scales::number(x, accuracy = 1, big.mark = ",", decimal.mark = "."), expand = expansion(mult = c(0, .1))) +
   scale_fill_manual(values = c("voluntary" = "orange", "mandatory" = "dodgerblue4"), name = "Type of speech's time limit") +
   scale_linetype_manual(
     values = c("dummy" = "dashed"), 
@@ -1714,7 +1713,7 @@ the pertaining type of debate. All these speeches have a mandatory
 length limit. See the bars right (!) to the vertical red line. As it turns
 out, all these speeches are of the type "Wortmeldung einer
 Unterzeichnerin bzw. eines Unterzeichners einer Aktuellen Stunde" or
-"Begründung eines Dringlichen Antrags in einer Plenarsitzung". AFAICT,
+"Begründung eines Dringlichen Antrags in einer Plenarsitzung". AFAIK,
 this means that a certain type of speech or speaker can speak longer
 than others, even when it's during the same type of debate. From the
 name of these speech types, I take it that those who are initiating a
@@ -1731,7 +1730,6 @@ df_longer_limit <- df_session_speeches_27_mps %>%
     session_url, typetext, limit, haslimit, speech_limit, wortmeldungsart
   ) %>%
   left_join(., df_lookup_wortmeldung, by = "wortmeldungsart")
-
 
 df_longer_limit %>%
   count(wortmeldungsart_long)
@@ -1770,11 +1768,9 @@ n_missing
 ```
 
 Note that there were `r n_missing` speeches where no speech duration or
-applicable time limit was available. 
+applicable time limits was available. 
 
-
-
-In a frist step, let's check how speech limits are respected, depending on the type of speech limit.
+In a first step, let's check how speech limits are respected, depending on the type of speech limit.
 
 ```{r}
 #| code-summary: "Overtime and speech limit types"
@@ -1788,13 +1784,13 @@ mutate(speech_overtime_yn=factor(speech_overtime_yn, levels=c("TRUE", "FALSE")))
 # mutate(speech_overtime_ny=fct_na_value_to_level(speech_overtime_yn, NA)) %>%
 ungroup() %>%
 mutate(speech_limit_type_N_share=speech_limit_type_N/sum(n)) %>%
-mutate(x_label=glue::glue("speeches with a **{speech_limit_type}** time limit<br>(total: {speech_limit_type_N %>% scales::number(., big.mark='.', decimal.mark=',')}, share: {speech_limit_type_N_share %>% scales::percent(., accuracy=.1)})"))
+mutate(x_label=glue::glue("speeches with a **{speech_limit_type}** time limit<br>(total: {speech_limit_type_N %>% scales::number(., big.mark=',', decimal.mark='.')}, share: {speech_limit_type_N_share %>% scales::percent(., accuracy=.1)})"))
 
 vec_n_na <- df_session_speeches_27_mps %>%
 filter(is.na(speech_overtime_yn)) %>%
 nrow() 
 
-txt_subtitle <- glue::glue("As of {lubridate::today() %>% format(., '%d.%m.%Y')}, there were {nrow(df_session_speeches_27_mps) %>% scales::number(., big.mark='.', decimal.mark=',')} speeches held in total by MPs in the National Council's plenary. Out of these, {df_pl_limit_overtime %>% filter(speech_limit_type=='voluntary') %>% pull(speech_limit_type_N) %>% unique() %>% scales::number(., big.mark='.', decimal.mark=',')} speeches were subject to a 'voluntary' time limit, agreed upon among the MPs; {df_pl_limit_overtime %>% filter(speech_limit_type=='voluntary') %>% filter(speech_overtime_yn==T) %>% pull(n_rel) %>% scales::percent(., accuracy=.1)} exceeded their limit. In contrast, out of the {df_pl_limit_overtime %>% distinct(speech_limit_type, speech_limit_type_N) %>% filter(speech_limit_type=='mandatory') %>% pull(speech_limit_type_N) %>% scales::number(., big.mark='.', decimal.mark=',')} speeches with a 'mandatory' time limit, only {df_pl_limit_overtime %>% filter(speech_limit_type=='mandatory')  %>% filter(speech_overtime_yn==TRUE) %>% pull(n_rel) %>% scales::percent(., accuracy=0.1)} went beyond their  limit. {vec_n_na} speeches with missing data.")
+txt_subtitle <- glue::glue("As of {lubridate::today() %>% format(., '%d.%m.%Y')}, there were {nrow(df_session_speeches_27_mps) %>% scales::number(., big.mark=',', decimal.mark='.')} speeches held in total by MPs in the National Council's plenary. Out of these, {df_pl_limit_overtime %>% filter(speech_limit_type=='voluntary') %>% pull(speech_limit_type_N) %>% unique() %>% scales::number(., big.mark=',', decimal.mark='.')} speeches were subject to a 'voluntary' time limit, agreed upon among the MPs; {df_pl_limit_overtime %>% filter(speech_limit_type=='voluntary') %>% filter(speech_overtime_yn==T) %>% pull(n_rel) %>% scales::percent(., accuracy=.1)} exceeded their limit. In contrast, out of the {df_pl_limit_overtime %>% distinct(speech_limit_type, speech_limit_type_N) %>% filter(speech_limit_type=='mandatory') %>% pull(speech_limit_type_N) %>% scales::number(., big.mark=',', decimal.mark='.')} speeches with a 'mandatory' time limit, only {df_pl_limit_overtime %>% filter(speech_limit_type=='mandatory')  %>% filter(speech_overtime_yn==TRUE) %>% pull(n_rel) %>% scales::percent(., accuracy=0.1)} went beyond their  limit. {vec_n_na} speeches with missing data.")
 
 df_pl_limit_overtime %>%
 ggplot()+
@@ -1813,13 +1809,13 @@ scale_x_discrete(
 geom_text(
   aes(x=speech_overtime_yn,
   y=n+250,
-  label=glue::glue("{n %>% scales::number(., big.mark='.', decimal.mark=',')} ({n_rel %>% scales::percent(., accuracy=0.1)})")),
+  label=glue::glue("{n %>% scales::number(., big.mark=',', decimal.mark='.')} ({n_rel %>% scales::percent(., accuracy=0.1)})")),
   family="Roboto Condensed",
   size=11*.8,
   size.unit='pt',
   color="grey30"
 )+
-scale_y_continuous(labels=\(x) scales::number(x, big.mark='.', decimal.mark=',') %>% fn_label_unit(., "speeches"), expand=expansion(mult=c(0, .1)))+
+scale_y_continuous(labels=\(x) scales::number(x, big.mark=',', decimal.mark='.') %>% fn_label_unit(., "speeches"), expand=expansion(mult=c(0, .1)))+
 theme(
   axis.text.x=element_markdown(),
   panel.grid.major.x=element_blank(),
@@ -1837,7 +1833,7 @@ facet_wrap(vars(x_label))
 
 ## Overtime & Speeches
 
-Let's now look at indiviudal speeches and their respective overtime.
+Let's now look at individual speeches and their respective overtime.
 
 ### Top 5 speeches with the largest overtime
 
@@ -1888,7 +1884,7 @@ df_pl <- df_session_speeches_27_mps %>%
 df_pl %>%
   ggplot() +
   labs(
-    title = "Five Plenary speeches with the longest <span style='color:#AD2341'>overtime</span>",
+    title = "Five plenary speeches with the longest <span style='color:#AD2341'>overtime</span>",
     subtitle = txt_subtitle, ,
     caption = txt_caption_graph,
     # title="Five Plenary speeches with the longest <span style='color:darkgrey'>overtime</span> ",
@@ -2007,7 +2003,7 @@ df_pl %>%
 ### Table: all speeches
 
 To get a more comprehensive view, the table below provides *details on
-all `r nrow(df_session_speeches_27_mps) %>% scales::number(., big.mark='.', decimal.mark=',')` speeches* held so far (hence the page may take a bit longer to load). You can search by party, speaker etc. and
+all `r nrow(df_session_speeches_27_mps) %>% scales::number(., big.mark=',', decimal.mark='.')` speeches* held so far (hence the page may take a bit longer to load). You can search by party, speaker etc. and
 get details on the speeches' total duration and the time by which the pertaining limits were exceeded or not fully made use of. If you sort
 the table by time difference, you'll see that **out of the ten speeches with the
 largest overtime, six are speeches held by FPÖ MPs**.
@@ -2081,8 +2077,8 @@ df_table_speeches %>%
           text_color = "black",
           brighten_text_color = "black",
           number_fmt = scales::label_number(
-            big.mark = ".",
-            decimal.mark = ",",
+            big.mark = ",",
+            decimal.mark = ".",
             accuracy = .1
           ),
           background = "transparent",
@@ -2104,8 +2100,8 @@ df_table_speeches %>%
           text_color = "white",
           brighten_text_color = "black",
           number_fmt = scales::label_number(
-            big.mark = ".",
-            decimal.mark = ",",
+            big.mark = ",",
+            decimal.mark = ".",
             accuracy = .1
           ),
           background = "transparent",
@@ -2127,7 +2123,6 @@ df_table_speeches %>%
           fill_color = "#EDCB96",
           # max_value=,
           number_fmt = scales::percent,
-          # number_fmt=scales::label_percent(big.mark=".", decimal.mark=",", accuracy=.01),
           background = "transparent",
           force_outside = c(-5, 5)
         )
@@ -2168,7 +2163,7 @@ the individual speaker. For this, I calculate for each MP the total
 number of speeches, the total duration of her/his speeches, and the
 total number of his/her overtime minutes. As for the latter, note that I only
 take overtimes to calculate the total. If e.g. a speaker finished a
-speech 1 minute earlier than she/he would have been obliged to, then
+speech one minute earlier than she/he would have been obliged to, then
 this -1 minute is *not* considered for the total overtime (since it's
 not transferable to other speeches and does not offset an overtime
 during another speech). The table features in total 206 speakers
@@ -2238,12 +2233,12 @@ df_speakers_27_mps %>%
       speeches_n = colDef(
         name = "# speeches",
         align = "left",
-        cell = data_bars(., fill_color = "#2E3440", number_fmt = scales::label_number(big.mark = ".", decimal.mark = ","), force_outside = c(0, 50), background = "transparent")
+        cell = data_bars(., fill_color = "#2E3440", number_fmt = scales::label_number(big.mark = ",", decimal.mark = "."), force_outside = c(0, 50), background = "transparent")
       ),
       speeches_duration_total = colDef(
         name = "duration total (hrs)",
         align = "left",
-        cell = data_bars(., fill_color = "#558C8C", number_fmt = scales::label_number(big.mark = ".", decimal.mark = ",", accuracy = .1), background = "transparent", force_outside = c(0, 5))
+        cell = data_bars(., fill_color = "#558C8C", number_fmt = scales::label_number(big.mark = ",", decimal.mark = ".", accuracy = .1), background = "transparent", force_outside = c(0, 5))
       ),
       speeches_overtime_total = colDef(
         sortable = T,
@@ -2251,7 +2246,7 @@ df_speakers_27_mps %>%
         width=80,
         align = "left",
         html=T,
-        cell = data_bars(., fill_color = "#AD2341", number_fmt = scales::label_number(big.mark = ".", decimal.mark = ",", accuracy = .1), background = "transparent", force_outside = c(0, 5))
+        cell = data_bars(., fill_color = "#AD2341", number_fmt = scales::label_number(big.mark = ",", decimal.mark = ".", accuracy = .1), background = "transparent", force_outside = c(0, 5))
       ),
       speeches_overtime_share = colDef(
         show = T,
@@ -2261,7 +2256,6 @@ df_speakers_27_mps %>%
           fill_color = "#EDCB96",
           max_value = 1,
           number_fmt = scales::percent,
-          # number_fmt=scales::label_percent(big.mark=".", decimal.mark=",", accuracy=.01),
           background = "transparent",
           force_outside = c(0, 5)
         )
@@ -2336,7 +2330,7 @@ increases.
 #| code-summary: "Plot total time vs overtime"
 #| column: body-outset-right
 
-txt_subtitle <- glue::glue("Each dot represents an MP. The position on the x-axis represents the total time of his/her speeches in the plenary of the National Council in the course of the XXVII legislative period (as of {lubridate::today() %>% format(., '%d.%m.%Y')}). The position on the y-axis indicates the total overtime of these speeches. There is a group of FPÖ MPs who not only feature a larg total speech time, but also larger overtime, even if compared to their peers who feature somewhat similar total speech times. Neos MP Loacker stands out not only with the longest total speech time, but also with a relatively moderate total overtime, considering that no one spoke longer than him.")
+txt_subtitle <- glue::glue("Each dot represents an MP. The position on the x-axis represents the total time of his/her speeches in the plenary of the National Council in the course of the XXVII legislative period (as of {lubridate::today() %>% format(., '%d.%m.%Y')}). The position on the y-axis indicates the total overtime of these speeches. There is a group of FPÖ MPs who not only feature a large total speech time, but also larger overtime, even if compared to their peers who feature somewhat similar total speech times. Neos MP Loacker stands out not only with the longest total speech time, but also with a relatively moderate total overtime, considering that no one spoke longer than him.")
 
 df_speakers_27_mps %>%
   mutate(party_f = ifelse(party == "FPÖ", "FPÖ", "others")) %>%
@@ -2423,7 +2417,7 @@ summarise(n=n()) %>%
 ungroup() %>%
 mutate(n_max=max(n)) %>%
 mutate(n_max=ifelse(n==n_max, T, F)) %>%
-mutate(label_n = map_chr(n, \(x) scales::number(x, big.mark = ".", decimal.mark = ","))) %>%
+mutate(label_n = map_chr(n, \(x) scales::number(x, big.mark = ",", decimal.mark = "."))) %>%
 mutate(label_n=case_when(
     n_max==T ~ glue::glue("**{label_n}**") %>% as.character(),
     .default=label_n %>% as.character())
@@ -2457,7 +2451,7 @@ pl_number  <- df_pl_number_label %>%
     label.colour="transparent"
   ) +
   geom_text(
-    aes(x=party, y=n_total+100, label=n_total %>% scales::number(., big.mark='.', decimal.mark = ',')),
+    aes(x=party, y=n_total+100, label=n_total %>% scales::number(., big.mark=',', decimal.mark = '.')),
     size=11.5*.8,
     vjust=0,
     size.unit="pt",
@@ -2536,7 +2530,7 @@ pl_share <- df_pl_share %>%
     panel.grid.major.x = element_blank()
   )
 
-txt_subtitle_pl_share <- glue::glue("The party with the most speeches exceeding their time limit is the ÖVP. Overall, its MPs spoke for {df_pl_number_label %>% filter(n_max==T) %>%pull(n) %>% scales::number(., big.mark=',', decimal.mark='.')} instances longer than mandated. However, when considering the number of speeches that ran overtime relative to the total number of speeches by each party, the Green party has the largest share with {df_pl_share %>% filter(n_rel_max==T) %>% pull(n_rel) %>% scales::percent(., accuracy=0.1)}. Note also the small number of speeches exceeding their limit by Pia Beck (ex Strache). Difference between sum of segement labels and total is due to a small number of speeches with missing data on duration or time limits.")
+txt_subtitle_pl_share <- glue::glue("The party with the most speeches exceeding their time limit is the ÖVP. Overall, its MPs spoke for {df_pl_number_label %>% filter(n_max==T) %>%pull(n) %>% scales::number(., big.mark=',', decimal.mark='.')} instances longer than mandated. However, when considering the number of speeches that ran overtime relative to the total number of speeches by each party, the Green party has the largest share with {df_pl_share %>% filter(n_rel_max==T) %>% pull(n_rel) %>% scales::percent(., accuracy=0.1)}. Note also the small number of speeches exceeding their limit by the non-party affiliated Pia Beck (ex Strache). Difference between sum of segement labels and total is due to a small number of speeches with missing data on duration or time limits.")
 
 pl_number / pl_share +
   plot_annotation(
@@ -2589,8 +2583,8 @@ df_speeches_duration <- df_overtime_duration_count %>%
   ungroup() %>%
   mutate(
     duration_label=case_when(
-      duration_max==duration & speech_segment=="speeches_overtime_total" ~ glue::glue("*{duration %>% scales::number(., decimal.mark=',', big.mark='.', accuracy=.1)}*") %>% as.character(),
-      .default=glue::glue("{duration %>% scales::number(., decimal.mark=',', big.mark='.', accuracy=.1)}") %>% as.character()
+      duration_max==duration & speech_segment=="speeches_overtime_total" ~ glue::glue("*{duration %>% scales::number(., decimal.mark='.', big.mark=',', accuracy=.1)}*") %>% as.character(),
+      .default=glue::glue("{duration %>% scales::number(., decimal.mark='.', big.mark=',', accuracy=.1)}") %>% as.character()
     )
   ) %>%
   ungroup() %>%
@@ -2632,7 +2626,7 @@ pl_overtime_duration_abs <- df_speeches_duration %>%
     family="Roboto Condensed"
   ) +
   #totals
-  stat_summary(aes(x = party, y = duration, group = party, label = after_stat(y) %>% scales::number(., accuracy = 0.1, decimal.mark = ",", big.mark = ".")),
+  stat_summary(aes(x = party, y = duration, group = party, label = after_stat(y) %>% scales::number(., accuracy = 0.1, decimal.mark = ".", big.mark = ",")),
     fun = sum, geom = "text", vjust = -0.5,
     size = 11.5 * .8,
     size.unit = "pt",
@@ -2701,7 +2695,7 @@ pl_overtime_duration_rel <- df_speeches_duration %>%
     panel.grid.major.x = element_blank()
   )
 
-txt_subtitle_pl_duration <- glue::glue("The party with the largest total overtime is the {df_speeches_duration %>% slice_max(.,n=1, order_by=duration) %>% pull(party)} with {df_speeches_duration %>% filter(speech_segment=='speeches_overtime_total') %>%  slice_max(.,n=1, order_by=duration) %>% pull(duration) %>% scales::number(.,accuracy=0.1, big.mark='.', decimal.mark=',')} hours of overtime. This is hardly surprising given that it is the largest party and features the largest total speech time. However, when considering total speech duration and looking at the share of speeches' overtime, the FPÖ comes out on top. {df_speeches_duration %>% filter(speech_segment=='speeches_overtime_total') %>% slice_max(.,n=1, order_by=speeches_duration_share) %>% pull(speeches_duration_share) %>% scales::percent(., accuracy=.1)} of the FPÖ's entire speech time is overtime.")
+txt_subtitle_pl_duration <- glue::glue("The party with the largest total overtime is the {df_speeches_duration %>% slice_max(.,n=1, order_by=duration) %>% pull(party)} with {df_speeches_duration %>% filter(speech_segment=='speeches_overtime_total') %>%  slice_max(.,n=1, order_by=duration) %>% pull(duration) %>% scales::number(.,accuracy=0.1, big.mark=',', decimal.mark='.')} hours of overtime. This is hardly surprising given that it is the largest party and features the largest total speech time. However, when considering total speech duration and looking at the share of speeches' overtime, the FPÖ comes out on top. {df_speeches_duration %>% filter(speech_segment=='speeches_overtime_total') %>% slice_max(.,n=1, order_by=speeches_duration_share) %>% pull(speeches_duration_share) %>% scales::percent(., accuracy=.1)} of the FPÖ's entire speech time is overtime.")
 
 pl_overtime_duration_abs / pl_overtime_duration_rel +
   plot_annotation(
@@ -2966,12 +2960,11 @@ pl_rel <- df_rel %>%
 pl_rel
 ```
 
-
 # Wrap up
 
 So that's it. What do I take away from this?
 
-First, my blog post gets again much longer than initially intended. Furthermore, and more importantly, since the founding of the 2nd Republic (legislative period V), there has been no legislative period with more sessions of the National Council than the current XXVII (which is even not yet concluded at the time of writing).
+Well, my blog post gets again much longer than initially intended. Furthermore, and more importantly, since the founding of the 2nd Republic (legislative period V), there has been no legislative period with more sessions of the National Council than the current XXVII (which is even not yet concluded at the time of writing).
 
 When it comes to the number of speeches made during a legislative period, the analysis is somewhat limited due to the lack of data on individual speeches prior to legislative period XIX. Remarkably, though, with the data available, we can see that during the hight of the pandemic the National Chamber was in no way stymied in its deliberations as the high number of speeches by MPs and others demonstrates.
 
