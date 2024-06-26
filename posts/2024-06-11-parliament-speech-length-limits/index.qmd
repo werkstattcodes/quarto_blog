@@ -3,7 +3,7 @@ title: "Austrian National Council: Time limits of speeches, and other ramblings.
 description: "Who speaks for how long in the National Council of Austria's Parliament? And who respects the relevant time limits?"
 
 date: 06-19-2024
-#date-modified: last-modified
+date-modified: last-modified
 
 categories:
   - Austria
@@ -14,6 +14,53 @@ reference-location: margin
 
 draft: false  
 ---
+
+# Just the results, please {.unnumbered}
+
+## On the respect of speech time limits {.unnumbered}
+
+::: {layout-ncol=3}
+
+![](images/n_speeches_party.png){group='gallery'}
+
+![](images/limits.png){group='gallery'}
+
+![](images/n_speeches_overtime_limit_type.png){group='gallery'}
+
+![](images/top_5_overtime_speeches.png){group='gallery'}
+
+![](images/mp_overtime_cum.PNG){group='gallery'}
+
+![](images/overtime_cum.PNG){group='gallery'}
+
+![](images/overtime_speech_time.png){group='gallery'}
+
+![](images/n_speeches_overtime.png){group='gallery'}
+
+![](images/overtime_party.png){group='gallery'}
+
+![](images/overtime_categories.png){group='gallery'}
+
+:::
+
+
+## On legislative periods in comparison {.unnumbered}
+
+
+::: {layout-ncol=3}
+
+![](images/legis_comp.PNG){group="gallery_period"}
+
+![](images/nr_duration_session.png){group="gallery_period"}
+
+![](images/relative_frequency_sessions.png){group="gallery_period"}
+
+![](images/cum_n_speeches.png){group='gallery'}
+
+:::
+
+
+
 
 # Context
 
@@ -56,6 +103,7 @@ you simply scroll through the post and stop at the related graphs and
 tables.
 
 On a more general note, let me emphasize that I do not consider myself as an expert on the Austrian political system, let alone the National Council (I happen to have - checks CV - a PhD in PolSci, but that was from an university which was then even not in Austria...). Hence, if you spot any errors etc. please don't hesitate to let me know (best via [mastadon](https://mastodon.social/@zoowalk){target="_blank"} or the platform previously known as [twitter](https://x.com/zoowalk){target="_blank"}).
+
 
 ## Packages
 
