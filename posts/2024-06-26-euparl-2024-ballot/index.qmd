@@ -1,6 +1,6 @@
 ---
 title: "Professional politicians and their position on electoral lists"
-description: ""
+description: "Electoral lists in Austria include next to the name of each candidate also their profession. How prevalent are candidates who are politicians by profession and where are they located on the lists? An analysis of the electoral lists of the recent European Elections."
 
 date: 07-09-2024
 # date-modified: last-modified
