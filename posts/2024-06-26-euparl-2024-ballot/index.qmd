@@ -309,6 +309,8 @@ gi_pl_candidates
 
 ```{r}
 #| include: false
+#| eval: false
+
 ggsave(path=here::here("posts", "2024-06-26-euparl-2024-ballot","images"), filename="pl_candiadates.png", plot=pl_candidates, scale=1.2)
 
 ```
@@ -387,6 +389,8 @@ rt_pol_share
 ```{r}
 #| eval: false
 #| include: false
+
+
 # htmlwidgets::saveWidget(rt_pol_share, "images/rt_pol_share.html", selfcontained = T)
 # webshot2::webshot("images/rt_pol_share.html", "images/rt_pol_share.png")
 reactablefmtr::save_reactable(rt_pol_share, "images/rt_pol_share.png"
