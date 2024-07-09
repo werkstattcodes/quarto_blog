@@ -1,0 +1,411 @@
+---
+title: "Professional politicians and their position on electoral lists"
+description: ""
+
+date: 07-09-2024
+# date-modified: last-modified
+
+categories:
+  - Austria
+  - elections
+
+reference-location: margin
+
+draft: false  
+---
+
+```{r}
+#| include: false
+# here::set_here("posts","2024-06-26-euparl-2024-ballot")
+```
+
+# Just the results, please! {.unnumbered}
+
+For interactive version see plots in the post below.
+
+
+::: {layout-ncol=2}
+![](images/pl_candiadates.PNG){group='gallery_2'}
+
+![](images/rt_pol_share.png){group='gallery_2'}
+:::
+
+# Context 
+
+A few weeks ago, I attended a presentation on the question how far elected MPs are representative of the wider population when it comes to their demographic and socioeconomic features. In the subsequent Q & A round, a participant mentioned that she recently voted for the first time in Austria (EP elections), and was somewhat surprised to see that the profession of each candidate is stated on the electoral list, next to the candidate's name. Considering that voters may have different associations with different professions, this detail could be pertinent to the question how voters feel represented.
+
+![Snippet of the ÖVP electoral list](images/electoral_list.PNG)
+
+
+<br>
+I have to admit that I have never given any thought to why a candidate's job is actually put on an electoral list.  But it seems indeed reasonable to me to assume that a specific profession, intentionally or not, conveys at least on a purely emotional level something about the candidate, what may or may not be reflective of his political position, but what may have further implications on how voters can relate to a specific candidate. 
+
+Most interestingly though, the mentioned participant then went on to highlight one particular professional group: Politicians. Unsurprisingly, there are some candidates who put forward a political mandate as their professional occupation. E.g. an incumbent member of the European Parliament will submit this MEP position as her profession; a mayor who pursues her mandate as a job will state this position etc. But considering the relatively small number of political mandates, this is likely to be one of the most unrepresentative professional groups one can think of. 
+
+But there might be more to it. From a voter's perspective, a candidate with a professional political occupation might be perceived in starkly contrasting ways. For some, the political profession of a candidate may suggest the presence of a distinct set of skills, expertise, and experience, and hence a level of 'professionalization' which makes a candidate particularly qualified for a future mandate. On the other hand, for some other voters, seeing a candidate who earns his or her money with a political mandate might evoke the feeling of detachment and an insider-outsider division at play. How can somebody represent the wider population if he/she even doesn't form part of the general (working) population, but rather forms part of a political elite?
+
+To be clear, I am exaggerating here and I do not pretend to have read up on any of these aspects. But be it as it may, this all made me wonder how prevalent professional politicians are actually on electoral lists. Are there many and where are they located on their respective parties' electoral lists. To answer these questions, I scraped the electoral lists of the recent EP elections from the website of the Austrian MoI, extracted candidates' data on their professional background and their position on the electoral list. Below the required steps in R and the eventual result. 
+
+As always, if you spot any error, have a suggestion or question, feel free to contact me via direct message on [X](https://x.com/zoowalk){target="_blank"} or, preferably, [mastadon](https://mastodon.social/@zoowalk){target="_blank"}. 
+
+# Get the data
+
+## Load packages
+```{r}
+#| code-summary: "Load packages"
+
+library(tidyverse)
+library(tabulapdf)
+library(rvest)
+library(ggtext)
+library(ggiraph)
+library(reactable)
+library(reactablefmtr)
+library(htmltools)
+
+# define theme for plots
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() +
+    theme(
+      plot.title = element_textbox_simple(size = rel(1.2), margin = ggplot2::margin(0, 0, .25, 0, unit = "cm")),
+      plot.subtitle = element_textbox_simple(size = rel(.9), color = "grey30", face = "italic", family='Roboto condensed',margin = ggplot2::margin(0, 0, b = 1, 0, unit = "cm")),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(size = rel(.8)),
+      axis.text.x = element_text(size = rel(.8)),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = "white  ", color = NA),
+      panel.border = element_blank(),
+      plot.title.position = "plot",
+      plot.margin = ggplot2::margin(l = 0, 0, 0, 0, "cm"),
+      legend.position = "top",
+      legend.margin = ggplot2::margin(l = 0, 0, 0, 0, "cm"),
+      legend.justification = "left",
+      legend.location = "plot",
+      legend.title = element_blank(),
+      plot.caption = element_textbox_simple(hjust = 0, color = "grey30", margin=ggplot2::margin(t=0.5, unit="cm"))
+    )
+}
+
+theme_set(theme_post())
+
+#define caption
+txt_caption_graph <- "Data: https:&#47;&#47;www.bmi.gv.at; Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:400'>https:&#47;&#47;werk.statt.codes</span>"
+
+vec_party_colors <- c(
+  FPOE = "#005DA8", NEOS = "#EA5290", OEVP = "#5DC2CC", SPOE = "#FC0204", GRUENE = "#A3C630", KPOE="#E60000", DNA="#CECAB7", 'no pol' = "darkgrey"
+)
+
+fn_reactable_filter <- function(elementId) {
+  return(function(values, name) {
+    tags$select(
+      onchange = sprintf("Reactable.setFilter('%s', '%s', event.target.value || undefined)", elementId, name),
+      tags$option(value = "", "All"),
+      lapply(sort(unique(values)), tags$option),
+      "aria-label" = sprintf("Filter %s", name),
+      style = "width: 100%; height: 28px;"
+    )
+  })
+}
+
+
+```
+
+## Extract data from electoral lists
+
+The electoral lists are available on the [website](https://www.bmi.gv.at/412/Europawahlen/Europawahl_2024/start.aspx#parteien){target="_blank"} of the Austrian MoI. Here, I first identify the relevant links, load the relevant files, and then extract the data of interest.
+
+```{r}
+#| code-summary: "Get urls leading to electoral lists of each party"
+#| cache: true
+#| collapse: true
+#| code-fold: show
+
+vec_url <- "https://www.bmi.gv.at/412/Europawahlen/Europawahl_2024/start.aspx#parteien"
+
+vec_links <- vec_url %>%
+rvest::read_html() %>%
+rvest::html_elements("a") %>%
+rvest::html_attr("href") 
+
+urls <- vec_links[str_detect(vec_links, regex("Verlautbarung_EU_Wahl_2024_Wahlvorschla"))]  
+
+urls <- urls[!is.na(urls)]
+
+df_files <- urls %>% enframe(name=NULL, value="path")
+df_files
+```
+
+
+To extract the data from the obtained pdfs, I make us of the `tabulapdf` package. 
+
+```{r}
+#| code-summary: "Extract text from electoral lists"
+#| cache: true
+
+fn_get_tables <- function(path) {
+
+# path <- df_files$path[[2]]
+party <- str_extract(path, regex("\\p{Lu}+(?=\\.pdf$)"))
+
+path <- str_c("https://www.bmi.gv.at/", path)
+
+tabulapdf::extract_tables(path)  %>%
+.[[1]] %>%
+janitor::clean_names() %>%
+mutate(across(everything(), \(x) as.character(x))) %>%
+mutate(party=party, .before=1)
+
+}
+
+df_res <- df_files$path %>%
+map(., fn_get_tables, .progress=T) %>%
+list_rbind()
+```
+ 
+Below the content of the electoral lists of all parties running at the European Elections in Austria in 2024.
+
+```{r}
+#| column: body-outset-right
+#| code-summary: "Table of electoral lists"
+
+df_res %>%
+reactable(.,
+columns=list(
+  lfd_nr=colDef(
+    width=50,
+    align="center"
+  ),
+party=colDef(
+  width=70,
+  name="partei",
+  filterable=T,
+  filterInput = fn_reactable_filter("selector")),
+beruf=colDef(width=200),
+plz=colDef(
+  width=100
+)
+),
+    fullWidth = TRUE,
+    compact = TRUE,
+    highlight = FALSE,
+    outlined = TRUE,
+    defaultPageSize = 23,
+    elementId = "selector",
+    filterable = T,
+    theme = fivethirtyeight(font_size = 12)
+  ) %>%
+  add_title(
+    title = html("<span style='font-size:12pt;'>Electoral lists for the 2024 elections to the European Parliament in Austria.</span>")
+  ) %>%
+  add_source(
+    source = html("<span style='font-size:8pt;color:grey30;font-family:Segoe UI !important;'>Source: www.bmi.gv.at/412/Europawahlen/Europawahl_2024;"))
+```
+
+<br>
+
+# Analysis
+
+Now with the raw data available, the next step is about identifying candidates who are 'professional politicians'. 
+While it's in most cases relatively straightforward, there are also a few edge cases, e.g. should an MP's assistant who runs now as a candidate be coded as a professional politician (here coded as 'yes')? Furthermore, as it turns out, some candidates' professional description may not be entirely accurate (e.g. KPÖ's Michael Dankl is a historian, but also Vice-Mayor of Salzburg). So, these are some caveats to bear in mind. To be transparent, below the search terms which have to be matched in order to qualify as a professional politician. The search terms were inductively identified.
+```{r}
+#| code-summary: "Identify candidates who are professional politicians"
+
+regex_beruf_pol  <- c("Abg\\w+ zum Nationalrat", "Mitglied des Europäischen Parlaments", "Politiker", "abgeordnete", "Gemeinderat", "Bundessprecher", "Partei", "Bürgermeister", "Landtag", "Bundesrat", "Bezirksrätin", "Parlamentarische Assistentin|Mitarbeiterin", "Stadträtin" )
+regex_beruf_pol_or <- str_c(regex_beruf_pol, collapse="|")
+
+df_res <- df_res %>%
+mutate(
+    beruf_pol=str_detect(beruf, regex(regex_beruf_pol_or))
+) %>%
+mutate(beruf_pol_party=case_when(
+    beruf_pol==TRUE ~ party,
+    .default="no pol"
+))  
+```
+
+## Position on electoral list
+
+Once we have categorized the different professional occupations, we can plot these categories in relation to their position on parties' electoral lists.
+
+```{r}
+#| code-summary: "Create plot"
+#| fig-height: 5
+#| column: body-outset-right
+
+txt_subtitle=glue::glue("The graph depicts the position of professional politicians on the electoral lists of the Austrian parties running in the European Parliament elections 2024. Of those parties which have already previously won a seat in the EP, only the Green party featured a non-professional politician at the top of its electoral list. In general, with the ÖVP, SPÖ and FPÖ, the most promising positions were dominated by professional politicans. In contrast, NEOS featured only one single candidate who holds a political position according to the data provided on the electoral list. Hover over the dots to get candidates' details.")
+
+df_candidates <- df_res %>%
+mutate(lfd_nr=forcats::fct_inseq(lfd_nr)) %>%
+mutate(party=forcats::fct(party, levels=c("OEVP", "GRUENE", "SPOE", "FPOE", "NEOS", "KPOE", "DNA")) %>% fct_rev) %>%
+mutate(candidate_type=case_when(
+  beruf_pol==T & str_detect(beruf, regex("Mitglied des Europ\\w+\\sParlaments")) ~ "MEP",
+  beruf_pol==T ~ "other politician",
+  beruf_pol==F ~ "no politician",
+  .default=NA
+)) %>%
+mutate(candidate_type=forcats::fct(candidate_type, levels=c("MEP", "other politician", "no politician")))
+
+pl_candidates <- df_candidates %>%
+ggplot()+
+labs(
+    title="European Parliament Elections 2024 in Austria: Professional Politicians and their position on the electoral list",
+    subtitle=txt_subtitle,
+    x="Listenplatz *(position on ballot)*",
+    caption=txt_caption_graph
+)+
+geom_point_interactive(
+    aes(
+      x=lfd_nr, 
+      y=party, 
+      shape=candidate_type, 
+      color=party, 
+      group=party,
+      tooltip=glue::glue("{vorname} {familienname}, {beruf}")
+      ),
+    stat="identity",
+    size=5
+)+
+geom_text(
+  aes(
+    x=lfd_nr, 
+    y=party,
+    label=lfd_nr),
+  size=2,
+  color="black"
+)+
+scale_y_discrete(labels=\(x) str_replace_all(x, c("OE"="Ö", "UE"="Ü")), expand=expansion(mult=c(0.15,.1)))+
+scale_shape_manual(values=c("no politician"=1, "other politician"=16, "MEP"=18))+
+scale_color_manual(values=vec_party_colors)+
+# scale_fill_manual(values=vec_party_colors)+
+ theme(
+    axis.title.y=element_blank(),
+    axis.title.x=element_blank(),
+    panel.background=element_rect(fill="transparent"),
+    legend.position="top",
+    legend.text=element_text(color="grey30"),
+    panel.grid.major.x=element_blank(),
+    panel.grid.major.y=element_blank(),
+    axis.text.x=element_blank(),
+    axis.text.y=element_text(face="bold"),
+    plot.subtitle=element_textbox_simple(),
+    legend.title=element_blank(),
+    plot.caption.position="plot",
+    plot.caption=element_textbox_simple(margin=ggplot2::margin(t=0, unit="cm"))
+ )+
+ guides(
+  color="none",
+  fill="none",
+  shape=guide_legend()
+ )
+
+gi_pl_candidates <- girafe(
+  ggobj = pl_candidates,
+  options = list(opts_toolbar(saveaspng = FALSE))
+)
+
+gi_pl_candidates
+```
+
+```{r}
+#| include: false
+ggsave(path=here::here("posts", "2024-06-26-euparl-2024-ballot","images"), filename="pl_candiadates.png", plot=pl_candidates, scale=1.2)
+
+```
+
+
+<br>
+
+## Aggregate number per party
+
+Now let's compare the aggregate number of professional politicians per party.
+
+```{r}
+#| code-summary: "Get numbers per party"
+
+df_pol_share <- df_candidates %>%
+mutate(candidate_type=fct_collapse(candidate_type, politician=c("MEP", "other politician"))) %>%
+count(party, candidate_type, .drop=F) %>%
+group_by(party) %>%
+mutate(n_candidates_total=sum(n, na.rm=T)) %>%
+pivot_wider(
+  id_cols=c(party, n_candidates_total),
+  values_from=n,
+  names_from=candidate_type
+) %>%
+janitor::clean_names() %>%
+mutate(
+  n_rel=politician/n_candidates_total
+)  %>%
+arrange(desc(n_rel)) %>%
+ungroup()
+
+rt_pol_share <- df_pol_share %>%
+select(-no_politician) %>%
+mutate(party=as.character(party)) %>%
+mutate(party_col = vec_party_colors[party]) %>%
+mutate(party=str_replace_all(party, c("OE"="Ö", "UE"="Ü"))) %>%
+reactable(
+  columns=list(
+    party=colDef(
+      name="Party",
+      width=75),
+    n_candidates_total=colDef(
+      name="on the electoral list in total",
+      align="center",
+      width=125
+      ),
+    politician=colDef(
+      name="who are politicians by profession",
+      align="center",
+      width=125
+      ),
+    n_rel=colDef(
+      name="Share of candidates who are politicians by profession",
+      align="left",
+      cell = data_bars(., fill_color_ref = "party_col", number_fmt = scales::label_percent(), background = "white", force_outside=c(0,.1))
+    ),
+    party_col=colDef(show=FALSE)
+  ),
+  columnGroups = list(
+    colGroup(name = "Number of candidates", 
+    columns = c("n_candidates_total", "politician"))),
+    fullWidth = TRUE,
+    compact = TRUE,
+    highlight = FALSE,
+    defaultPageSize = 23,
+    theme = nytimes(font_size = 12)
+    ) %>%
+  add_title(title = html("<span style='font-size:12pt'>European Parliament Elections 2024: Number of 'professional' politicians on electoral lists in Austria</span>")) %>%
+  add_subtitle(subtitle = html("<span style='font-size:10pt'>Electoral lists provide details on candidates' profession. How many candidates are professionally politicians, e.g. pursue a political mandate as a job. </span>"),  font_color = "black", font_weight = "normal") %>%
+  add_source(source = html("<span style='font-size:9pt; font-family:Segoe UI !important;'>  Data: www.bmi.gv.at. Analysis: Roland Schmidt - werk.statt.codes - @zoowalk</span>"), font_size = 9, font_color = "grey30")
+  
+rt_pol_share
+
+```
+ 
+```{r}
+#| eval: false
+#| include: false
+# htmlwidgets::saveWidget(rt_pol_share, "images/rt_pol_share.html", selfcontained = T)
+# webshot2::webshot("images/rt_pol_share.html", "images/rt_pol_share.png")
+reactablefmtr::save_reactable(rt_pol_share, "images/rt_pol_share.png"
+)
+
+#keep only png files
+
+files_to_keep <- list.files(path = here::here("posts", "2024-06-26-euparl-2024-ballot","images"), pattern="(\\.png).*", ignore.case=TRUE, full.names=T)
+files_to_keep
+all_files <- list.files(path = here::here("posts", "2024-06-26-euparl-2024-ballot","images"), ignore.case=TRUE, full.names=T)
+all_files
+
+files_to_remove <- all_files[!all_files %in% files_to_keep]
+files_to_remove
+# unlink(files_to_remove, recursive=T)
+```
+
+<br>
+
+# Wrap up
+
+So that's it. There's nothing groundbreaking in this exercise, but I still find it informative to see how professional politicians dominate the top electoral positions on the lists of the ÖVP and the SPÖ. The picture is only somewhat different with the FPÖ which has more non-politicians running on promising positions. As far as the the total number of professional politicians is concerned, there is nothing what would distinguish the radical right from the other two major parties.

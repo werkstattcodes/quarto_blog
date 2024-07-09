@@ -10,7 +10,17 @@
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
 <generator>quarto-1.5.43</generator>
-<lastBuildDate>Tue, 18 Jun 2024 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 08 Jul 2024 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Professional politicians and their position on electoral lists</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</link>
+  <description><![CDATA[ For interactive version see plots in the post below. ]]></description>
+  <category>Austria</category>
+  <category>elections</category>
+  <guid>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</guid>
+  <pubDate>Mon, 08 Jul 2024 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Austrian National Council: Time limits of speeches, and other ramblings…</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -21,18 +31,6 @@
   <category>r-bloggers</category>
   <guid>https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/</guid>
   <pubDate>Tue, 18 Jun 2024 22:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>State Elections 2023: Municipal electoral performance and vaccination rates</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2023-03-17-state-elections-and-covid/</link>
-  <description><![CDATA[ How does the electoral performance of parties and the COVID vaccination status on the municipal level correlate? A look at the three most recent state elections in Austria. ]]></description>
-  <category>Austria</category>
-  <category>COVID</category>
-  <category>elections</category>
-  <category>R</category>
-  <guid>https://werk.statt.codes/posts/2023-03-17-state-elections-and-covid/</guid>
-  <pubDate>Sun, 23 Apr 2023 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
