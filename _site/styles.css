@@ -1,0 +1,417 @@
+/* css styles */
+
+.navbar-title {
+color: white;
+background-color: black;
+font-size:.9rem;
+padding-left: 0.2cm;
+padding-right: 0.3cm;
+}
+
+
+.navbar-brand-container {
+color: black;
+background-color: white;
+}
+
+.navbar {
+background-color: white;
+padding-top: 0rem;
+padding-bottom: 0rem;
+color: #202124 !important;
+border: 0px;
+}
+
+/* distance between post title and post meta (published) */
+.quarto-title-banner {
+background-color: white;
+padding-bottom: 0em !important;
+margin-bottom: 0em !important;
+}
+
+.quarto-title-meta {
+    font-size: .9rem;
+}
+
+#quarot-document-content {
+padding-top: 0px !important;
+}
+
+
+.quarto-title {
+color: black;
+}
+
+.navbar-nav {
+color: black;
+border: 0px;
+}
+
+.nav-link {
+    color:#343a40 !important;
+}
+
+
+
+.menu-text {
+color: grey;
+font-size:0.7rem;
+
+}
+
+
+
+/* category labels on article page */
+.quarto-category {
+    /* padding: 0cm !important;
+    padding-right: 0.1cm !important;
+    padding-left: 0.1cm !important;
+    font-size:.6rem !important;
+    color: black;
+    background-color: lightgrey;
+    border: 0px !important;
+    border-radius: 0px !important;
+    margin:0cm !important; */
+
+    padding-top: 0cm !important;
+    padding-bottom: 0cm !important;
+    padding-right: 0.cm !important;
+    padding-left: 0.cm !important;
+    font-size:.6rem !important;
+    color: black;
+    background-color: white;
+    border: 1px solid grey !important;
+    border-radius: 1px !important;
+    margin-left: 0.1rem !important;
+    margin-right: 0.1rem !important;
+}
+
+div.quarto-post {
+
+    border-bottom: 0px;
+}
+
+div.quarto-post .metadata {
+    font-size: 2em;
+    
+}
+
+.menu-text:hover {
+    /* border-bottom: 3px solid rgb(125, 110, 110); */
+    background-color: black;
+    color: white;
+}
+
+a.nav-link.dropdown-toggle:hover {
+    background-color: black;
+    color: white;    
+}
+
+
+a.page-link {
+    color: lightgrey;
+}
+
+.page-link:hover{
+
+    color: black;
+
+}
+
+.page-item.active .page-link  {
+    color: black;
+    background-color: white;
+    border-color: #dee2e6;
+}
+
+
+p {
+   font-family: Cambria,"Times New Roman",Times,serif; 
+   line-height: 1.5em;
+}
+
+
+summary {
+font-size: small;
+   
+}
+
+
+h1 .header-section-number {
+	color: black;
+}
+
+.anchored > .header-section-number {
+	color: #343a40;
+}
+
+h1{
+    margin-top: 0em !important;
+    margin-bottom: 0.2em !important;
+    font-size: 1.2em !important;
+    font-weight: bold;
+    line-height: 1;
+}
+
+h1.title {
+font-size: 1.9em !important;
+font-weight: bold;
+}
+
+h2 {
+    border-bottom: 0px;
+    font-size: 1em !important;
+    margin-bottom: 0.2em !important;
+    margin-top: 0.3em !important;
+    font-weight: 100 !important;
+    line-height: 1;
+}
+
+h3 {
+    border-bottom: 0px;
+    margin-bottom: 0.2em !important;
+    margin-top: 0.3em !important;
+    font-size: .9em !important;
+    font-weight: 100 !important;
+    line-height: 1;
+}
+
+
+h4 {
+    border-bottom: 0px;
+    margin-bottom: 0.2em !important;
+    margin-top: 0.3em !important;
+    font-size: .9em !important;
+    font-weight: 100 !important;
+    font-style: italic;
+    line-height: 1;
+}
+
+
+
+h1, h2, h3, h4 {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"! important;
+
+}
+
+
+/* reactable headings */
+.reactable ~ h1 {
+color: red !important;
+font-size: 0.9em !important;
+}
+
+/* reactable headings */
+div.reactable ~ h2 {
+color: green !important;
+font-size: 0.8em !important;
+}
+
+svg.aa-SubmitIcon  {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+
+::selection {
+  background: lightgrey;
+}
+
+.quarto-color-scheme-toggle {
+    margin-bottom: 5px !important;
+    margin-top: 0px !important;
+}
+
+.category{
+    font-size: .6em;
+}
+
+#quarto-margin-sidebar .quarto-listing-category-title {
+    font-size: .7em;
+}
+
+.category{
+    font-size: .6em;
+}
+
+/* style of category tags on listing page */
+div.listing-category{
+    padding-top: 0cm !important;
+    padding-bottom: 0cm !important;
+    padding-right: 0.cm !important;
+    padding-left: 0.cm !important;
+    font-size:.4rem !important;
+    color: black;
+    background-color: transparent;
+    border: 1px solid grey !important;
+    border-radius: 1px !important;
+    margin-left: 0.1rem !important;
+    margin-right: 0.1rem !important;
+}
+
+div.listing-categories {
+
+padding-bottom: 0px;
+padding-top: 5px;
+
+}
+
+/* Table of contents font */
+#TOC ul>li>a{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 0.85rem !important;
+    color: #6c757d;
+    line-height: .9rem;
+    padding-bottom: .3rem;
+    padding-top: .0rem;
+
+  }
+
+#TOC a {
+    color: #6c757d !important;
+}
+
+/*change color when hovering over table of contents*/
+#TOC a:hover {
+    border-left: 2px solid darkgrey;
+    color: black !important;
+}
+
+  
+.sidebar nav[role=doc-toc] ul>li>a.active {
+    border-left: 3px solid #9cd321;
+    color: black !important;
+    /* color: white !important; */
+    /* background-color: lightgrey !important; */
+    /* font-style: italic; */
+    /* font-weight: 400;     */
+}
+
+
+.sidebar nav[role=doc-toc] ul>li>ul>li>a.active {
+    border-left: 3px solid #9cd321;
+    /* color: black !important; */
+    color: black !important;
+    /* background-color: lightgrey !important; */
+    /* font-style: italic; */
+   /* font-weight: 400;     */
+}
+
+
+
+.card-body {
+
+    padding: 5px;
+    /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);*/
+
+}
+
+/* text size in grid cards, description */
+.card-text.listing-description {
+    font-size: .8rem !important;
+    line-height: .9rem !important;
+}
+
+/* text size of heading in grid card */
+h5.no-anchor.card-title.listing-title {
+
+font-size: .9rem;
+color: black;
+
+}
+
+/* style of description on post page */
+.description {
+
+font-size: 16px;
+font-style: italic;
+margin-top: 15px !important;
+margin-bottom: 0px !important;
+
+
+}
+
+/* size of publication date on listing page */
+div.listing-date {
+font-weight: normal !important;
+text-transform: none !important;
+font-size: .6rem !important;
+line-height: .9rem !important;
+
+}
+
+code {
+    color: black;
+}
+
+.sourceCode.r {
+    font-size: 0.8rem !important;
+}
+
+div.nav-footer {
+    border-top: 0px !important
+}
+
+/* fomrating of lists in the body; otherwise different font */
+.content li {
+    font-family: Georgia, Garamond, 'Times New Roman', Times, serif; 
+    font-size: 0.9em;
+    color: black;
+}
+
+/* changing appearance of url links in text */
+a {
+    color: grey;
+    text-decoration: dotted;
+}
+
+/* removed [target] */
+p a:hover {
+    color:#9cd321;
+    background-color: black;
+    /* text-decoration-line: underline;
+    text-decoration: underline;
+    text-decoration-color: orange; */
+}
+
+/* make hamburger icon rectancle in mobile view */
+
+.navbar-toggler {
+border-radius: 0rem;
+padding: 0rem;
+border: 0px;
+
+}
+
+/* .quarto-grid-item:hover {
+    background-color: orange !important;
+} */
+
+.card:hover {
+    border-left: 3px solid; 
+    border-left-color: #9cd321;
+    /* background-color: rgb(99, 9, 9);
+    box-shadow: 5px 5px lightgrey;
+    color: white; */
+}
+
+/* makes sure that about text is left aligned on mobile view */
+div.quarto-about-solana .about-entity {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between;
+}
+
+@media screen and (max-width: 991.98px) {
+div.quarto-about-solana .about-entity {
+    flex-direction: column-reverse;
+    align-items: flex-start !important;
+    text-align: left;
+}
+}
+
+/* image on about page should be rectangled; not with rounded corners; */
+.about-image.rounded {
+    border-radius: 0rem !important;
+}
+

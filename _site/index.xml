@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>werk.statt.codes rss feed</title>
+<link>https://werk.statt.codes/</link>
+<atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
+<description>RSS feed to relevant posts</description>
+<generator>quarto-1.5.43</generator>
+<lastBuildDate>Mon, 08 Jul 2024 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Professional politicians and their position on electoral lists</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</link>
+  <description><![CDATA[ For interactive version see plots in the post below. ]]></description>
+  <category>Austria</category>
+  <category>elections</category>
+  <guid>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</guid>
+  <pubDate>Mon, 08 Jul 2024 22:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Austrian National Council: Time limits of speeches, and other ramblings…</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/</link>
+  <description><![CDATA[ Who speaks for how long in the National Council of Austria’s Parliament? And who respects the relevant time limits? ]]></description>
+  <category>Austria</category>
+  <category>parliament</category>
+  <category>r-bloggers</category>
+  <guid>https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/</guid>
+  <pubDate>Tue, 18 Jun 2024 22:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
