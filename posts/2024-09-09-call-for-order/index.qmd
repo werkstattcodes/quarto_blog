@@ -22,6 +22,8 @@ editor_options:
 ![](images/pl_calls_legis_period_speaker.png){group='gallery_1'}
 
 ![](images/pl_calls_days_in_parl.png){group='gallery_1'}
+
+![](images/pl_calls_days_ratio.PNG){group='gallery_1'}
 :::
 
 # Context
@@ -53,6 +55,9 @@ library(devtools)
 #| code-summary: "Load packages"
 #| code-fold: true
 library(tidyverse)
+library(reactable)
+library(reactablefmtr)
+library(htmltools)
 library(ggtext)
 library(httr2)
 library(ParlAT)
@@ -555,7 +560,7 @@ maxnumcat <- df_calls %>%
 # return(y)
 # }
 
-txt_subtitle <- "Der vorsitzführende Nationalratspräsident/die vorsitzführende Nationalratspräsidentin kann, wenn ein/e RednerIn die Würde des Hohen Hauses beziehungsweise einer oder eines Abgeordneten verletzt, einen Ordnungsruf aussprechen. Daten dazu sind auf der Homepage des Parlaments ab der Legislaturperiode XX verfügbar. **Noch nie haben die Mitglieder einer Fraktion innerhalb einer Periode soviele Ordnungsrufe bekommen, wie jene der FPÖ in der vergangenen  Legislaturperiode XXVII.**"
+txt_subtitle <- "Der vorsitzführende Nationalratspräsident/die vorsitzführende Nationalratspräsidentin kann, wenn ein/e RednerIn die Würde des Hohen Hauses beziehungsweise einer oder eines Abgeordneten verletzt, einen Ordnungsruf aussprechen. Daten dazu sind auf der Homepage des Parlaments ab der 20. Legislaturperiode verfügbar. Seit diesem Zeitpunkt haben noch nie Mitglieder einer Fraktion so viele Ordnungsrufe innerhalb einer Legislaturperiode bekommen, wie jene der FPÖ in der vergangenen Legislaturperiode XXVII."
 
 df_calls |> 
   filter(person_details_frak_code_long=="Andere") |> 
@@ -647,7 +652,7 @@ pl_calls_legis_period
 #| include: false
 #| eval: true
 
-pl_calls_legis_period <- pl_calls_legis_period+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+pl_calls_legis_period <- pl_calls_legis_period+theme(plot.margin = ggplot2::margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
 
 ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_legis_period.png", plot=pl_calls_legis_period, scale=1.2)
 ```
@@ -729,7 +734,7 @@ tidytext::scale_x_reordered(
   guide = guide_axis(n.dodge = 2)
 )+
 scale_fill_manual(values=vec_party_colors)+
-scale_y_continuous(expand=expansion(mult=c(0,.07)),
+scale_y_continuous(expand=expansion(mult=c(0,.09)),
 breaks=seq(0,40,20))+
 facet_wrap(
   vars(facet_labels),
@@ -769,12 +774,12 @@ pl_calls_legis_period_speaker
 #| include: false
 #| eval: true
 
-pl_calls_legis_period_speaker <- pl_calls_legis_period_speaker+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+pl_calls_legis_period_speaker <- pl_calls_legis_period_speaker+theme(plot.margin = ggplot2::margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
 
 ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_legis_period_speaker.png", plot=pl_calls_legis_period_speaker, scale=1.2)
 ```
 
-Those privy to Austrian politics might be not surprised to see Herbert Kickl featuring most Calls to Orders since the beginning of the data record. The large difference to other MPs, even his party colleagues, I find, to put it mildly, rather remarkable.
+Those privy to Austrian politics might be not surprised to see Herbert Kickl featuring most Calls to Order since the beginning of the data record. The large difference to other MPs, even his party colleagues, I find, to put it mildly, rather remarkable.
 
 ## Calls per MP and mandate days
 
@@ -790,8 +795,8 @@ Another caveat of the graph below pertains to the coloring of the dots, e.g. the
 #| code-fold: true
 #| fig-height: 6
 
-
 #number of calls per mp in total
+#only MPs, drops call against MOI Nehammer
 df_calls_n <- df_calls %>%
 filter(mandate_short=="MP") %>%
 count(person_details_pad_intern, sort=TRUE) %>%
@@ -924,38 +929,161 @@ theme(
     legend.location = "plot",
     legend.position = "top",
     legend.key.height = unit(0.2, "cm"),
-    legend.margin = ggplot2::margin(l = 0, b = 0.2, unit = "cm"),
+    legend.margin = ggplot2::margin(l = 0, b = 0, t=0, unit = "cm"),
     legend.text = element_text(hjust = 1, color = "grey30", face = "italic", size = rel(.8), margin=ggplot2::margin(l=0, unit="cm")),
     legend.box = "vertical",
     legend.box.just = "left",
-    legend.box.margin = ggplot2::margin(l=0, unit="cm"),
-    legend.spacing.y=unit(0.1, unit="cm"),
+    legend.box.margin = ggplot2::margin(l=0, t=.25, unit="cm"),
+    legend.spacing.y=unit(0.05, unit="cm"),
     legend.direction = "horizontal",
     plot.caption.position="plot",
-    plot.subtitle = element_textbox_simple(margin = ggplot2::margin(t=0, l=0, b=.2, r=0, unit="cm"))
+    plot.subtitle = element_textbox_simple(margin = ggplot2::margin(t=0, l=0, b=.2, r=0, unit="cm")
+    )
 )
 
 pl_calls_days_in_parl
 ```
 
-```{r}
 
-```
 ```{r}
 #| include: false
 #| eval: true
 
-pl_calls_days_in_parl <- pl_calls_days_in_parl+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+pl_calls_days_in_parl <- pl_calls_days_in_parl+theme(plot.margin = ggplot2::margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
 
 ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_days_in_parl.png", plot=pl_calls_days_in_parl, scale=1.2)
 ```
 
+### Days per Call Ratio
+
+Now let's look at the days per call ratio and divide the number of days in Parliament by the number of Calls to Order.
+
+```{r}
+#| code-summary: "Days per call ratio"
+#| collapse: true
+#| code-fold: true
+
+df_day_call_ratio <- df_calls_n %>%
+mutate(day_call_ratio=mp_days_N/n) %>%
+mutate(day_call_ratio=as.numeric(day_call_ratio)) %>%
+arrange(day_call_ratio) %>%
+# slice_min(.,n=5, order_by=day_call_ratio) %>%
+select(
+  person_details_pad_intern,
+  name_family_chr, 
+  person_details_frak_code_long,
+  day_call_ratio, 
+  n,
+  mp_days_N
+  )  %>%
+    mutate(party_logo = case_when(
+    person_details_frak_code_long == "FPÖ" ~ "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png",
+    person_details_frak_code_long == "Neos" ~ "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/NEOS_%E2%80%93_Das_Neue_%C3%96sterreich_logo.svg/320px-NEOS_%E2%80%93_Das_Neue_%C3%96sterreich_logo.svg.png",
+    person_details_frak_code_long == "SPÖ" ~ "https://rotbewegt.at/wp-content/uploads/2023/11/SPOe-Logo-Rot500-px.png",
+    person_details_frak_code_long== "GRÜNE" ~ "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Logo_Die_Gruenen_2.svg/320px-Logo_Die_Gruenen_2.svg.png",
+    person_details_frak_code_long== "BZÖ" ~ "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BZ%C3%96-Logo.svg/240px-BZ%C3%96-Logo.svg.png",
+    person_details_frak_code_long== "ÖVP" ~ "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Volkspartei_Logo_2022.svg/320px-Volkspartei_Logo_2022.svg.png",
+    person_details_frak_code_long == "none" ~ "https://upload.wikimedia.org/wikipedia/commons/d/d2/Solid_white.png",
+    person_details_frak_code_long == "PILZ" ~ "https://upload.wikimedia.org/wikipedia/commons/7/71/Liste_Peter_Pilz_Logo.png",
+    .default = "https://upload.wikimedia.org/wikipedia/commons/d/d2/Solid_white.png")) %>%
+    relocate(party_logo, .after="name_family_chr")
+  
+#dupe check
+nrow(janitor::get_dupes(df_day_call_ratio, person_details_pad_intern))==0
 
 
+
+df_day_call_ratio <- df_day_call_ratio %>%
+slice_min(., order_by=day_call_ratio, n=10)  %>%
+select(-mp_days_N, -person_details_pad_intern) %>%
+mutate(rank=row_number(), .before=1) 
+
+txt_subtitle <- "Dividiert man für jede/n Abgeordnete/n die Anzahl der Tage als Nationalratsmitglied durch die Anzahl der erhaltenen Ordnungsrufe so erhält man die Tage-pro-Ordnungsruf Rate als relatives Häufigkeitsmaß. Sie gibt an wieviel Tage, durchschnittlich, zwischen zwei Ordnungsrufen vergehen. Je niedriger, desto relativ häufiger hat ein/e Abgeordnete/r einen Ordnungsruf erhalten. Daten für Ordnungsrufe sind ab Legislaturperiode XX verfübar; Abgeordneten-Tage davor wurden nicht berücksichtigt. Parteizugehörigkeit nach letzter Parteimitgliedschaft."
+
+rt_day_call_ratio <- df_day_call_ratio %>%
+select(-person_details_frak_code_long) %>%
+reactable(.,
+columns=list(
+  rank=colDef(align="center", width=50),
+  name_family_chr=colDef(name="Name",
+  width=100),
+day_call_ratio=colDef(
+  name="Tage/Ordnungsruf",
+  width=150,
+  align="center",
+  format=colFormat(digits=2)),
+n=colDef(
+  name="Anzahl Ordnungsrufe", 
+  align="center"),
+party_logo = colDef(
+    name="Partei",
+    width = 100,
+        cell = function(value) {
+          img_src <- value
+          image <- htmltools::img(src = img_src, style = "height: 12px;", alt = value)
+          htmltools::tagList(
+            htmltools::div(style = "display: inline-block; width: 45px", image)
+          )
+        }
+      )
+),
+    fullWidth = TRUE,
+    compact = TRUE,
+    highlight = FALSE,
+    outlined = TRUE,
+    defaultPageSize = 23,
+    theme = fivethirtyeight(font_size = 12)
+  ) %>%
+  add_title(
+    title = html("<span style='font-size:12pt;'>RELATIVE HÄUFIGKEIT VON ORDNUNGSRUFEN</span>")
+  ) %>%
+  add_subtitle(
+    subtitle = reactablefmtr::html(glue::glue("<span style='font-size:10pt;line-height:0.5;'>{txt_subtitle}</span>") %>% as.character),
+    font_color = "grey30", 
+    font_weight = "normal", 
+    font_style="italic") %>%
+  add_source(
+    source = html("<span style='font-size:8pt;color:grey30;font-family:Segoe UI !important;line-height:0.5'>Source: www.parlament.gv.at/recherieren/open-data. Analysis: Roland Schmidt - @zoowalk - https://werk.statt.codes</span>"))
+
+rt_day_call_ratio    
+```
+
+
+```{r}
+#| eval: false
+#| include: false
+
+df_day_call_ratio <- df_day_call_ratio %>%
+arrange(day_call_ratio, person_details_pad_intern) %>%
+mutate(name_family_chr=fct_inorder(name_family_chr)) %>%
+ggplot()+
+geom_bar(
+  aes(
+    x=name_family_chr,
+    y=day_call_ratio,
+    color=person_details_frak_code_long),
+    stat="identity"
+)+
+scale_color_manual(values=vec_party_colors)
+
+df_day_call_ratio %>%
+  ggplot()+
+  geom_quasirandom(
+    aes(
+      x=day_call_ratio,
+      y=person_details_frak_code_long,
+      size=n,
+    color=person_details_frak_code_long),
+    orientation="y"
+  )+
+  scale_color_manual(values=vec_party_colors)
+
+
+```
 
 # Wrap-up
 
-Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Orders. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl's record in comparison to other FPÖ MPs.
+Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Order. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl's record in comparison to other FPÖ MPs.
 
 Put together with one of my previous [posts](https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/#bar-graph){target="_blank"}, where I show that MPs of the FPÖ have the worst track record when it comes to respecting (voluntary) speech limits, the numbers shown here further add to a picture of a party which stands out for violating (soft) norms of parliamentary conduct. 
 

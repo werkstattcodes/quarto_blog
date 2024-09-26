@@ -141,6 +141,22 @@ cookieconsent.run({
 </script> 
   
 <style>html{ scroll-behavior: smooth; }</style>
+<script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+
+<script src="../../site_libs/react-18.2.0/react.min.js"></script>
+
+<script src="../../site_libs/react-18.2.0/react-dom.min.js"></script>
+
+<script src="../../site_libs/reactwidget-2.0.0/react-tools.umd.cjs"></script>
+
+<link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<link href="../../site_libs/reactable-0.4.4.9000/reactable.css" rel="stylesheet">
+
+<script src="../../site_libs/reactable-binding-0.4.4.9000/reactable.js"></script>
+
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -205,7 +221,10 @@ cookieconsent.run({
   <ul>
   <li><a href="#calls-per-legislative-period" id="toc-calls-per-legislative-period" class="nav-link" data-scroll-target="#calls-per-legislative-period"><span class="header-section-number">3.1</span> Calls per legislative period</a></li>
   <li><a href="#calls-per-individual-speakers" id="toc-calls-per-individual-speakers" class="nav-link" data-scroll-target="#calls-per-individual-speakers"><span class="header-section-number">3.2</span> Calls per individual speakers</a></li>
-  <li><a href="#calls-per-mp-and-mandate-days" id="toc-calls-per-mp-and-mandate-days" class="nav-link" data-scroll-target="#calls-per-mp-and-mandate-days"><span class="header-section-number">3.3</span> Calls per MP and mandate days</a></li>
+  <li><a href="#calls-per-mp-and-mandate-days" id="toc-calls-per-mp-and-mandate-days" class="nav-link" data-scroll-target="#calls-per-mp-and-mandate-days"><span class="header-section-number">3.3</span> Calls per MP and mandate days</a>
+  <ul class="collapse">
+  <li><a href="#days-per-call-ratio" id="toc-days-per-call-ratio" class="nav-link" data-scroll-target="#days-per-call-ratio"><span class="header-section-number">3.3.1</span> Days per Call Ratio</a></li>
+  </ul></li>
   </ul></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up"><span class="header-section-number">4</span> Wrap-up</a></li>
   </ul>
@@ -276,6 +295,9 @@ cookieconsent.run({
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
 <p><a href="images/pl_calls_days_in_parl.png" class="lightbox" data-gallery="gallery_1"><img src="images/pl_calls_days_in_parl.png" class="img-fluid"></a></p>
 </div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><a href="images/pl_calls_days_ratio.PNG" class="lightbox" data-gallery="gallery_1"><img src="images/pl_calls_days_ratio.PNG" class="img-fluid"></a></p>
+</div>
 </div>
 </div>
 </section>
@@ -295,43 +317,46 @@ cookieconsent.run({
 <details class="code-fold">
 <summary>Load packages</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtext)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ParlAT)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">3</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#needed to display custom fonts in quarto</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">dev =</span> <span class="st">"ragg_png"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reactable)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reactablefmtr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(htmltools)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtext)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ParlAT)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">3</span>)</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#define theme</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>theme_post <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  hrbrthemes<span class="sc">::</span><span class="fu">theme_ipsum_rc</span>() <span class="sc">+</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.title =</span> <span class="fu">element_textbox_simple</span>(<span class="at">size =</span> <span class="fu">rel</span>(<span class="fl">1.2</span>), <span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">25</span>, <span class="dv">0</span>, <span class="at">unit =</span> <span class="st">"cm"</span>), <span class="at">family=</span><span class="st">"Oswald"</span>),</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.subtitle =</span> <span class="fu">element_textbox_simple</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">9</span>), <span class="at">color =</span> <span class="st">"grey30"</span>, <span class="at">face =</span> <span class="st">"italic"</span>, <span class="at">family=</span><span class="st">'Roboto Condensed'</span>, <span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">1</span>, <span class="dv">0</span>, <span class="at">unit =</span> <span class="st">"cm"</span>)),</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">8</span>)),</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">8</span>)),</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"white  "</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.title.position =</span> <span class="st">"plot"</span>,</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">"cm"</span>),</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">"cm"</span>),</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.justification =</span> <span class="st">"left"</span>,</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.location =</span> <span class="st">"plot"</span>,</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.caption =</span> <span class="fu">element_textbox_simple</span>(<span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">"grey30"</span>, <span class="at">margin=</span>ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">t=</span><span class="fl">0.5</span>, <span class="at">unit=</span><span class="st">"cm"</span>))</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_post</span>())</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co">#define caption</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>txt_caption_graph <span class="ot">&lt;-</span> <span class="st">"Data: https:&amp;#47;&amp;#47;www.parlament.gv.at&amp;#47;recherchieren&amp;#47;open-data&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:400'&gt;https:&amp;#47;&amp;#47;werk.statt.codes&lt;/span&gt;"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#needed to display custom fonts in quarto</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">dev =</span> <span class="st">"ragg_png"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">#define theme</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>theme_post <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  hrbrthemes<span class="sc">::</span><span class="fu">theme_ipsum_rc</span>() <span class="sc">+</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.title =</span> <span class="fu">element_textbox_simple</span>(<span class="at">size =</span> <span class="fu">rel</span>(<span class="fl">1.2</span>), <span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">25</span>, <span class="dv">0</span>, <span class="at">unit =</span> <span class="st">"cm"</span>), <span class="at">family=</span><span class="st">"Oswald"</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.subtitle =</span> <span class="fu">element_textbox_simple</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">9</span>), <span class="at">color =</span> <span class="st">"grey30"</span>, <span class="at">face =</span> <span class="st">"italic"</span>, <span class="at">family=</span><span class="st">'Roboto Condensed'</span>, <span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">1</span>, <span class="dv">0</span>, <span class="at">unit =</span> <span class="st">"cm"</span>)),</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">8</span>)),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">8</span>)),</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"white  "</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.title.position =</span> <span class="st">"plot"</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">"cm"</span>),</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">"cm"</span>),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.justification =</span> <span class="st">"left"</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.location =</span> <span class="st">"plot"</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.caption =</span> <span class="fu">element_textbox_simple</span>(<span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">"grey30"</span>, <span class="at">margin=</span>ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">t=</span><span class="fl">0.5</span>, <span class="at">unit=</span><span class="st">"cm"</span>))</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_post</span>())</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">#define caption</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>txt_caption_graph <span class="ot">&lt;-</span> <span class="st">"Data: https:&amp;#47;&amp;#47;www.parlament.gv.at&amp;#47;recherchieren&amp;#47;open-data&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:400'&gt;https:&amp;#47;&amp;#47;werk.statt.codes&lt;/span&gt;"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -356,12 +381,12 @@ cookieconsent.run({
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="do">## $ call_id     &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,…</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="do">## $ gp_code     &lt;chr&gt; "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX"…</span></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="do">## $ ityp        &lt;chr&gt; "GO", "GO", "GO", "GO", "GO", "GO", "GO", "GO", "GO", "GO"…</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="do">## $ inr         &lt;chr&gt; "45", "49", "50", "51", "52", "54", "53", "55", "56", "57"…</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="do">## $ inr         &lt;chr&gt; "45", "49", "50", "51", "52", "53", "55", "54", "56", "57"…</span></span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="do">## $ zukz        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="do">## $ datum       &lt;date&gt; 1996-02-27, 1996-03-13, 1996-03-20, 1996-03-21, 1996-05-2…</span></span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="do">## $ art         &lt;chr&gt; "GO09", "GO09", "GO09", "GO09", "GO09", "GO09", "GO09", "G…</span></span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="do">## $ betreff     &lt;chr&gt; "Präsident MMag. Dr. Brauneder - Abg. Haidlmayr", "Präside…</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="do">## $ nummer      &lt;chr&gt; "45/GO", "49/GO", "50/GO", "51/GO", "52/GO", "54/GO", "53/…</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="do">## $ nummer      &lt;chr&gt; "45/GO", "49/GO", "50/GO", "51/GO", "52/GO", "53/GO", "55/…</span></span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="do">## $ datumsort   &lt;chr&gt; "19960227", "19960313", "19960320", "19960321", "19960523"…</span></span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="do">## $ phasen_bis  &lt;chr&gt; "05", "05", "05", "05", "05", "05", "05", "05", "05", "05"…</span></span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="do">## $ status      &lt;chr&gt; "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"…</span></span>
@@ -381,7 +406,7 @@ cookieconsent.run({
 <span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="do">## $ eurovoc     &lt;chr&gt; "[\"Parlamentssitzung\"]", "[\"Parlamentssitzung\"]", "[\"…</span></span>
 <span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="do">## $ sysdate     &lt;chr&gt; "Wed Sep 25 15:02:42 CEST 2024", "Wed Sep 25 15:02:42 CEST…</span></span>
 <span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="do">## $ wentry_id   &lt;chr&gt; "1080172", "1080181", "1080183", "1080185", "1080187", "10…</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="do">## $ inrnum      &lt;chr&gt; "45", "49", "50", "51", "52", "54", "53", "55", "56", "57"…</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="do">## $ inrnum      &lt;chr&gt; "45", "49", "50", "51", "52", "53", "55", "54", "56", "57"…</span></span>
 <span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="do">## $ nr_gp_code  &lt;chr&gt; "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX", "XX"…</span></span>
 <span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="do">## $ nrbr        &lt;chr&gt; "NR", "NR", "NR", "NR", "NR", "NR", "NR", "NR", "NR", "NR"…</span></span>
 <span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="do">## $ gruppe      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -409,7 +434,7 @@ cookieconsent.run({
 <summary>Check content of <code>fraktionen</code></summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_calls<span class="sc">$</span>fraktionen[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "[\"GRÜNE\"]" "[\"ÖVP\"]"   "[\"F\"]"     "[\"F\"]"     "[\"GRÜNE\"]"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  [6] "[\"F\"]"     "[\"SPÖ\"]"   "[\"SPÖ\"]"   "[\"F\"]"     "[\"SPÖ\"]"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  [6] "[\"SPÖ\"]"   "[\"SPÖ\"]"   "[\"F\"]"     "[\"F\"]"     "[\"SPÖ\"]"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>In fact, the data is stored in a json format. Let’s convert it and parse it into plain text.</p>
@@ -623,7 +648,7 @@ cookieconsent.run({
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -881,7 +906,7 @@ cookieconsent.run({
 <span id="cb19-88"><a href="#cb19-88" aria-hidden="true" tabindex="-1"></a><span class="co"># return(y)</span></span>
 <span id="cb19-89"><a href="#cb19-89" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
 <span id="cb19-90"><a href="#cb19-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-91"><a href="#cb19-91" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> <span class="st">"Der vorsitzführende Nationalratspräsident/die vorsitzführende Nationalratspräsidentin kann, wenn ein/e RednerIn die Würde des Hohen Hauses beziehungsweise einer oder eines Abgeordneten verletzt, einen Ordnungsruf aussprechen. Daten dazu sind auf der Homepage des Parlaments ab der Legislaturperiode XX verfügbar. **Noch nie haben die Mitglieder einer Fraktion innerhalb einer Periode soviele Ordnungsrufe bekommen, wie jene der FPÖ in der vergangenen  Legislaturperiode XXVII.**"</span></span>
+<span id="cb19-91"><a href="#cb19-91" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> <span class="st">"Der vorsitzführende Nationalratspräsident/die vorsitzführende Nationalratspräsidentin kann, wenn ein/e RednerIn die Würde des Hohen Hauses beziehungsweise einer oder eines Abgeordneten verletzt, einen Ordnungsruf aussprechen. Daten dazu sind auf der Homepage des Parlaments ab der 20. Legislaturperiode verfügbar. Seit diesem Zeitpunkt haben noch nie Mitglieder einer Fraktion so viele Ordnungsrufe innerhalb einer Legislaturperiode bekommen, wie jene der FPÖ in der vergangenen Legislaturperiode XXVII."</span></span>
 <span id="cb19-92"><a href="#cb19-92" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-93"><a href="#cb19-93" aria-hidden="true" tabindex="-1"></a>df_calls <span class="sc">|&gt;</span> </span>
 <span id="cb19-94"><a href="#cb19-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(person_details_frak_code_long<span class="sc">==</span><span class="st">"Andere"</span>) <span class="sc">|&gt;</span> </span>
@@ -982,7 +1007,7 @@ cookieconsent.run({
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -1069,7 +1094,7 @@ cookieconsent.run({
 <span id="cb20-73"><a href="#cb20-73" aria-hidden="true" tabindex="-1"></a>  <span class="at">guide =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">2</span>)</span>
 <span id="cb20-74"><a href="#cb20-74" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
 <span id="cb20-75"><a href="#cb20-75" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_manual</span>(<span class="at">values=</span>vec_party_colors)<span class="sc">+</span></span>
-<span id="cb20-76"><a href="#cb20-76" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_y_continuous</span>(<span class="at">expand=</span><span class="fu">expansion</span>(<span class="at">mult=</span><span class="fu">c</span>(<span class="dv">0</span>,.<span class="dv">07</span>)),</span>
+<span id="cb20-76"><a href="#cb20-76" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_y_continuous</span>(<span class="at">expand=</span><span class="fu">expansion</span>(<span class="at">mult=</span><span class="fu">c</span>(<span class="dv">0</span>,.<span class="dv">09</span>)),</span>
 <span id="cb20-77"><a href="#cb20-77" aria-hidden="true" tabindex="-1"></a><span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">40</span>,<span class="dv">20</span>))<span class="sc">+</span></span>
 <span id="cb20-78"><a href="#cb20-78" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(</span>
 <span id="cb20-79"><a href="#cb20-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vars</span>(facet_labels),</span>
@@ -1107,12 +1132,12 @@ cookieconsent.run({
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-22-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-22-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Those privy to Austrian politics might be not surprised to see Herbert Kickl featuring most Calls to Orders since the beginning of the data record. The large difference to other MPs, even his party colleagues, I find, to put it mildly, rather remarkable.</p>
+<p>Those privy to Austrian politics might be not surprised to see Herbert Kickl featuring most Calls to Order since the beginning of the data record. The large difference to other MPs, even his party colleagues, I find, to put it mildly, rather remarkable.</p>
 </section>
 <section id="calls-per-mp-and-mandate-days" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="calls-per-mp-and-mandate-days"><span class="header-section-number">3.3</span> Calls per MP and mandate days</h2>
@@ -1122,8 +1147,8 @@ cookieconsent.run({
 <div class="cell">
 <details class="code-fold">
 <summary>Number of Calls vs Time in National Council</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#number of calls per mp in total</span></span>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of calls per mp in total</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#only MPs, drops call against MOI Nehammer</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>df_calls_n <span class="ot">&lt;-</span> df_calls <span class="sc">%&gt;%</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(mandate_short<span class="sc">==</span><span class="st">"MP"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(person_details_pad_intern, <span class="at">sort=</span><span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
@@ -1264,32 +1289,133 @@ cookieconsent.run({
 <span id="cb21-140"><a href="#cb21-140" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.location =</span> <span class="st">"plot"</span>,</span>
 <span id="cb21-141"><a href="#cb21-141" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
 <span id="cb21-142"><a href="#cb21-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="fl">0.2</span>, <span class="st">"cm"</span>),</span>
-<span id="cb21-143"><a href="#cb21-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="fl">0.2</span>, <span class="at">unit =</span> <span class="st">"cm"</span>),</span>
+<span id="cb21-143"><a href="#cb21-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="dv">0</span>, <span class="at">t=</span><span class="dv">0</span>, <span class="at">unit =</span> <span class="st">"cm"</span>),</span>
 <span id="cb21-144"><a href="#cb21-144" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"grey30"</span>, <span class="at">face =</span> <span class="st">"italic"</span>, <span class="at">size =</span> <span class="fu">rel</span>(.<span class="dv">8</span>), <span class="at">margin=</span>ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"cm"</span>)),</span>
 <span id="cb21-145"><a href="#cb21-145" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box =</span> <span class="st">"vertical"</span>,</span>
 <span id="cb21-146"><a href="#cb21-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box.just =</span> <span class="st">"left"</span>,</span>
-<span id="cb21-147"><a href="#cb21-147" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"cm"</span>),</span>
-<span id="cb21-148"><a href="#cb21-148" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.spacing.y=</span><span class="fu">unit</span>(<span class="fl">0.1</span>, <span class="at">unit=</span><span class="st">"cm"</span>),</span>
+<span id="cb21-147"><a href="#cb21-147" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.box.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l=</span><span class="dv">0</span>, <span class="at">t=</span>.<span class="dv">25</span>, <span class="at">unit=</span><span class="st">"cm"</span>),</span>
+<span id="cb21-148"><a href="#cb21-148" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.spacing.y=</span><span class="fu">unit</span>(<span class="fl">0.05</span>, <span class="at">unit=</span><span class="st">"cm"</span>),</span>
 <span id="cb21-149"><a href="#cb21-149" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.direction =</span> <span class="st">"horizontal"</span>,</span>
 <span id="cb21-150"><a href="#cb21-150" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption.position=</span><span class="st">"plot"</span>,</span>
-<span id="cb21-151"><a href="#cb21-151" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_textbox_simple</span>(<span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">t=</span><span class="dv">0</span>, <span class="at">l=</span><span class="dv">0</span>, <span class="at">b=</span>.<span class="dv">2</span>, <span class="at">r=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"cm"</span>))</span>
-<span id="cb21-152"><a href="#cb21-152" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb21-153"><a href="#cb21-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-154"><a href="#cb21-154" aria-hidden="true" tabindex="-1"></a>pl_calls_days_in_parl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-151"><a href="#cb21-151" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_textbox_simple</span>(<span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">t=</span><span class="dv">0</span>, <span class="at">l=</span><span class="dv">0</span>, <span class="at">b=</span>.<span class="dv">2</span>, <span class="at">r=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"cm"</span>)</span>
+<span id="cb21-152"><a href="#cb21-152" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb21-153"><a href="#cb21-153" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-154"><a href="#cb21-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-155"><a href="#cb21-155" aria-hidden="true" tabindex="-1"></a>pl_calls_days_in_parl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="index_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="index_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="index_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
+<section id="days-per-call-ratio" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored"><span class="header-section-number">3.3.1</span> Days per Call Ratio</h3>
+<p>Now let’s look at the days per call ratio and divide the number of days in Parliament by the number of Calls to Order.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Days per call ratio</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_day_call_ratio <span class="ot">&lt;-</span> df_calls_n <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">day_call_ratio=</span>mp_days_N<span class="sc">/</span>n) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">day_call_ratio=</span><span class="fu">as.numeric</span>(day_call_ratio)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">arrange</span>(day_call_ratio) <span class="sc">%&gt;%</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># slice_min(.,n=5, order_by=day_call_ratio) %&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  person_details_pad_intern,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  name_family_chr, </span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  person_details_frak_code_long,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  day_call_ratio, </span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  n,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  mp_days_N</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  )  <span class="sc">%&gt;%</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">party_logo =</span> <span class="fu">case_when</span>(</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long <span class="sc">==</span> <span class="st">"FPÖ"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"</span>,</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long <span class="sc">==</span> <span class="st">"Neos"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/NEOS_%E2%80%93_Das_Neue_%C3%96sterreich_logo.svg/320px-NEOS_%E2%80%93_Das_Neue_%C3%96sterreich_logo.svg.png"</span>,</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long <span class="sc">==</span> <span class="st">"SPÖ"</span> <span class="sc">~</span> <span class="st">"https://rotbewegt.at/wp-content/uploads/2023/11/SPOe-Logo-Rot500-px.png"</span>,</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long<span class="sc">==</span> <span class="st">"GRÜNE"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Logo_Die_Gruenen_2.svg/320px-Logo_Die_Gruenen_2.svg.png"</span>,</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long<span class="sc">==</span> <span class="st">"BZÖ"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BZ%C3%96-Logo.svg/240px-BZ%C3%96-Logo.svg.png"</span>,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long<span class="sc">==</span> <span class="st">"ÖVP"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Volkspartei_Logo_2022.svg/320px-Volkspartei_Logo_2022.svg.png"</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long <span class="sc">==</span> <span class="st">"none"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/d/d2/Solid_white.png"</span>,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    person_details_frak_code_long <span class="sc">==</span> <span class="st">"PILZ"</span> <span class="sc">~</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/7/71/Liste_Peter_Pilz_Logo.png"</span>,</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> <span class="st">"https://upload.wikimedia.org/wikipedia/commons/d/d2/Solid_white.png"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(party_logo, <span class="at">.after=</span><span class="st">"name_family_chr"</span>)</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a><span class="co">#dupe check</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(janitor<span class="sc">::</span><span class="fu">get_dupes</span>(df_day_call_ratio, person_details_pad_intern))<span class="sc">==</span><span class="dv">0</span></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] TRUE</span></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>df_day_call_ratio <span class="ot">&lt;-</span> df_day_call_ratio <span class="sc">%&gt;%</span></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_min</span>(., <span class="at">order_by=</span>day_call_ratio, <span class="at">n=</span><span class="dv">10</span>)  <span class="sc">%&gt;%</span></span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(<span class="sc">-</span>mp_days_N, <span class="sc">-</span>person_details_pad_intern) <span class="sc">%&gt;%</span></span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">rank=</span><span class="fu">row_number</span>(), <span class="at">.before=</span><span class="dv">1</span>) </span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> <span class="st">"Dividiert man für jede/n Abgeordnete/n die Anzahl der Tage als Nationalratsmitglied durch die Anzahl der erhaltenen Ordnungsrufe so erhält man die Tage-pro-Ordnungsruf Rate als relatives Häufigkeitsmaß. Sie gibt an wieviel Tage, durchschnittlich, zwischen zwei Ordnungsrufen vergehen. Je niedriger, desto relativ häufiger hat ein/e Abgeordnete/r einen Ordnungsruf erhalten. Daten für Ordnungsrufe sind ab Legislaturperiode XX verfübar; Abgeordneten-Tage davor wurden nicht berücksichtigt. Parteizugehörigkeit nach letzter Parteimitgliedschaft."</span></span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>rt_day_call_ratio <span class="ot">&lt;-</span> df_day_call_ratio <span class="sc">%&gt;%</span></span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(<span class="sc">-</span>person_details_frak_code_long) <span class="sc">%&gt;%</span></span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a><span class="fu">reactable</span>(.,</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a><span class="at">columns=</span><span class="fu">list</span>(</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">rank=</span><span class="fu">colDef</span>(<span class="at">align=</span><span class="st">"center"</span>, <span class="at">width=</span><span class="dv">50</span>),</span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">name_family_chr=</span><span class="fu">colDef</span>(<span class="at">name=</span><span class="st">"Name"</span>,</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">width=</span><span class="dv">100</span>),</span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a><span class="at">day_call_ratio=</span><span class="fu">colDef</span>(</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">name=</span><span class="st">"Tage/Ordnungsruf"</span>,</span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">width=</span><span class="dv">150</span>,</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">align=</span><span class="st">"center"</span>,</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">format=</span><span class="fu">colFormat</span>(<span class="at">digits=</span><span class="dv">2</span>)),</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a><span class="at">n=</span><span class="fu">colDef</span>(</span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">name=</span><span class="st">"Anzahl Ordnungsrufe"</span>, </span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">align=</span><span class="st">"center"</span>),</span>
+<span id="cb22-54"><a href="#cb22-54" aria-hidden="true" tabindex="-1"></a><span class="at">party_logo =</span> <span class="fu">colDef</span>(</span>
+<span id="cb22-55"><a href="#cb22-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">name=</span><span class="st">"Partei"</span>,</span>
+<span id="cb22-56"><a href="#cb22-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">100</span>,</span>
+<span id="cb22-57"><a href="#cb22-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">cell =</span> <span class="cf">function</span>(value) {</span>
+<span id="cb22-58"><a href="#cb22-58" aria-hidden="true" tabindex="-1"></a>          img_src <span class="ot">&lt;-</span> value</span>
+<span id="cb22-59"><a href="#cb22-59" aria-hidden="true" tabindex="-1"></a>          image <span class="ot">&lt;-</span> htmltools<span class="sc">::</span><span class="fu">img</span>(<span class="at">src =</span> img_src, <span class="at">style =</span> <span class="st">"height: 12px;"</span>, <span class="at">alt =</span> value)</span>
+<span id="cb22-60"><a href="#cb22-60" aria-hidden="true" tabindex="-1"></a>          htmltools<span class="sc">::</span><span class="fu">tagList</span>(</span>
+<span id="cb22-61"><a href="#cb22-61" aria-hidden="true" tabindex="-1"></a>            htmltools<span class="sc">::</span><span class="fu">div</span>(<span class="at">style =</span> <span class="st">"display: inline-block; width: 45px"</span>, image)</span>
+<span id="cb22-62"><a href="#cb22-62" aria-hidden="true" tabindex="-1"></a>          )</span>
+<span id="cb22-63"><a href="#cb22-63" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-64"><a href="#cb22-64" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb22-65"><a href="#cb22-65" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb22-66"><a href="#cb22-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">fullWidth =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb22-67"><a href="#cb22-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">compact =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb22-68"><a href="#cb22-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">highlight =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb22-69"><a href="#cb22-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">outlined =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb22-70"><a href="#cb22-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">defaultPageSize =</span> <span class="dv">23</span>,</span>
+<span id="cb22-71"><a href="#cb22-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">theme =</span> <span class="fu">fivethirtyeight</span>(<span class="at">font_size =</span> <span class="dv">12</span>)</span>
+<span id="cb22-72"><a href="#cb22-72" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-73"><a href="#cb22-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_title</span>(</span>
+<span id="cb22-74"><a href="#cb22-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">html</span>(<span class="st">"&lt;span style='font-size:12pt;'&gt;RELATIVE HÄUFIGKEIT VON ORDNUNGSRUFEN&lt;/span&gt;"</span>)</span>
+<span id="cb22-75"><a href="#cb22-75" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-76"><a href="#cb22-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_subtitle</span>(</span>
+<span id="cb22-77"><a href="#cb22-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> reactablefmtr<span class="sc">::</span><span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-size:10pt;line-height:0.5;'&gt;{txt_subtitle}&lt;/span&gt;"</span>) <span class="sc">%&gt;%</span> as.character),</span>
+<span id="cb22-78"><a href="#cb22-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_color =</span> <span class="st">"grey30"</span>, </span>
+<span id="cb22-79"><a href="#cb22-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_weight =</span> <span class="st">"normal"</span>, </span>
+<span id="cb22-80"><a href="#cb22-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_style=</span><span class="st">"italic"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-81"><a href="#cb22-81" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(</span>
+<span id="cb22-82"><a href="#cb22-82" aria-hidden="true" tabindex="-1"></a>    <span class="at">source =</span> <span class="fu">html</span>(<span class="st">"&lt;span style='font-size:8pt;color:grey30;font-family:Segoe UI !important;line-height:0.5'&gt;Source: www.parlament.gv.at/recherieren/open-data. Analysis: Roland Schmidt - @zoowalk - https://werk.statt.codes&lt;/span&gt;"</span>))</span>
+<span id="cb22-83"><a href="#cb22-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-84"><a href="#cb22-84" aria-hidden="true" tabindex="-1"></a>rt_day_call_ratio    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:32px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px"><span style="font-size:12pt;">RELATIVE HÄUFIGKEIT VON ORDNUNGSRUFEN</span></h1>
+<h2 style="color:grey30;background:#FFFFFF;text-align:left;font-size:24px;font-style:italic;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px" class="anchored" data-anchor-id="days-per-call-ratio"><span style="font-size:10pt;line-height:0.5;">Dividiert man für jede/n Abgeordnete/n die Anzahl der Tage als Nationalratsmitglied durch die Anzahl der erhaltenen Ordnungsrufe so erhält man die Tage-pro-Ordnungsruf Rate als relatives Häufigkeitsmaß. Sie gibt an wieviel Tage, durchschnittlich, zwischen zwei Ordnungsrufen vergehen. Je niedriger, desto relativ häufiger hat ein/e Abgeordnete/r einen Ordnungsruf erhalten. Daten für Ordnungsrufe sind ab Legislaturperiode XX verfübar; Abgeordneten-Tage davor wurden nicht berücksichtigt. Parteizugehörigkeit nach letzter Parteimitgliedschaft.</span></h2>
+<div class="reactable html-widget html-fill-item" id="htmlwidget-73bc9ffe9346f148a597" style="width:auto;height:auto;"></div>
+<p style="color:#000;background:#FFFFFF;text-align:left;font-size:16px;font-style:normal;font-weight:normal;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px"><span style="font-size:8pt;color:grey30;font-family:Segoe UI !important;line-height:0.5">Source: www.parlament.gv.at/recherieren/open-data. Analysis: Roland Schmidt - @zoowalk - https://werk.statt.codes</span></p>
+<script type="application/json" data-for="htmlwidget-73bc9ffe9346f148a597">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"rank":[1,2,3,4,5,6,7,8,9,10],"name_family_chr":["Grosz","Kickl","Haider","Wabl","Jenewein","Amesbauer","Edlinger","Gaugg","Nehammer","Pilz"],"party_logo":["https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BZ%C3%96-Logo.svg/240px-BZ%C3%96-Logo.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Logo_Die_Gruenen_2.svg/320px-Logo_Die_Gruenen_2.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","https://rotbewegt.at/wp-content/uploads/2023/11/SPOe-Logo-Rot500-px.png","https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Volkspartei_Logo_2022.svg/320px-Volkspartei_Logo_2022.svg.png","https://upload.wikimedia.org/wikipedia/commons/7/71/Liste_Peter_Pilz_Logo.png"],"day_call_ratio":[107.411764705882,118.019607843137,147.25,153.555555555556,166.2,167.533333333333,191.166666666667,196.6,197.25,202.4],"n":[17,51,8,9,5,15,6,10,4,35]},"columns":[{"id":"rank","name":"rank","type":"numeric","width":50,"align":"center"},{"id":"name_family_chr","name":"Name","type":"character","width":100},{"id":"party_logo","name":"Partei","type":"character","cell":[{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BZ%C3%96-Logo.svg/240px-BZ%C3%96-Logo.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BZ%C3%96-Logo.svg/240px-BZ%C3%96-Logo.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Logo_Die_Gruenen_2.svg/320px-Logo_Die_Gruenen_2.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Logo_Die_Gruenen_2.svg/320px-Logo_Die_Gruenen_2.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://rotbewegt.at/wp-content/uploads/2023/11/SPOe-Logo-Rot500-px.png","style":{"height":"12px"},"alt":"https://rotbewegt.at/wp-content/uploads/2023/11/SPOe-Logo-Rot500-px.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Logo_of_Freedom_Party_of_Austria.svg/320px-Logo_of_Freedom_Party_of_Austria.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Volkspartei_Logo_2022.svg/320px-Volkspartei_Logo_2022.svg.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Volkspartei_Logo_2022.svg/320px-Volkspartei_Logo_2022.svg.png"},"children":[]}]}]},{"name":"Fragment","attribs":[],"children":[{"name":"div","attribs":{"style":{"display":"inline-block","width":"45px"}},"children":[{"name":"img","attribs":{"src":"https://upload.wikimedia.org/wikipedia/commons/7/71/Liste_Peter_Pilz_Logo.png","style":{"height":"12px"},"alt":"https://upload.wikimedia.org/wikipedia/commons/7/71/Liste_Peter_Pilz_Logo.png"},"children":[]}]}]}],"width":100},{"id":"day_call_ratio","name":"Tage/Ordnungsruf","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"width":150,"align":"center"},{"id":"n","name":"Anzahl Ordnungsrufe","type":"numeric","align":"center"}],"defaultPageSize":23,"outlined":true,"compact":true,"theme":{"color":"#222222","borderColor":"#dddddd","borderWidth":"1px","stripedColor":"#dddddd","highlightColor":"#f0f0f0","cellPadding":5,"tableStyle":{"fontSize":12,"borderBottom":"3px solid #222222"},"headerStyle":{"borderWidth":"3px","paddingTop":"12px","verticalAlign":"bottom","textAlign":"bottom","background":"#ffffff","textTransform":"uppercase","borderColor":"#222222","color":"#000000","&:hover":{"background":"#dddddd"},"&[aria-sort='ascending'], &[aria-sort='descending']":{"background":"#5b5e5f","color":"#ffffff"},"borderColor.1":"#333","fontSize":12},"groupHeaderStyle":{"&:not(:empty)":{"paddingBottom":"3px","verticalAlign":"bottom","textAlign":"bottom","backgroundColor":"#ffffff","textTransform":"uppercase","fontSize":12,"color":"#222222"}},"rowSelectedStyle":{"backgroundColor":"#dddddd"},"inputStyle":{"backgroundColor":"#ffffff","color":"#222222"},"searchInputStyle":{"textTransform":"uppercase","color":"#222222","fontSize":"14px"},"paginationStyle":{"textTransform":"uppercase","fontSize":"14px"},"pageButtonStyle":{"textTransform":"uppercase","fontSize":"14px"}},"dataKey":"8610c173b60f6aebea5e8e9028574bcf"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
 </section>
 </section>
 <section id="wrap-up" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Wrap-up</h1>
-<p>Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Orders. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl’s record in comparison to other FPÖ MPs.</p>
+<p>Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Order. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl’s record in comparison to other FPÖ MPs.</p>
 <p>Put together with one of my previous <a href="https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/#bar-graph" target="_blank">posts</a>, where I show that MPs of the FPÖ have the worst track record when it comes to respecting (voluntary) speech limits, the numbers shown here further add to a picture of a party which stands out for violating (soft) norms of parliamentary conduct.</p>
 
 
@@ -1776,7 +1902,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","openEffect":"zoom","closeEffect":"zoom","loop":false,"selector":".lightbox"});
+<script>var lightboxQuarto = GLightbox({"loop":false,"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","openEffect":"zoom"});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {
