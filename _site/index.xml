@@ -10,7 +10,17 @@
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
 <generator>quarto-1.5.43</generator>
-<lastBuildDate>Mon, 08 Jul 2024 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 24 Sep 2024 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Calls to Order in Austria’s Parliament</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2024-09-09-call-for-order/</link>
+  <description><![CDATA[ Whenever a speaker in the National Council uses e.g. foul language and violates the ‘dignity of the house’, the president of the National Council is tasked with issuing a ‘Call to Order’. To whom are these calls directed, and how frequently do they occur? Using the development version of the new R Package {ParlAT} helps answering these questions. ]]></description>
+  <category>Austria</category>
+  <category>Parliament</category>
+  <guid>https://werk.statt.codes/posts/2024-09-09-call-for-order/</guid>
+  <pubDate>Tue, 24 Sep 2024 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Professional politicians and their position on electoral lists</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -20,17 +30,6 @@
   <category>elections</category>
   <guid>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</guid>
   <pubDate>Mon, 08 Jul 2024 22:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Austrian National Council: Time limits of speeches, and other ramblings…</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/</link>
-  <description><![CDATA[ Who speaks for how long in the National Council of Austria’s Parliament? And who respects the relevant time limits? ]]></description>
-  <category>Austria</category>
-  <category>parliament</category>
-  <category>r-bloggers</category>
-  <guid>https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/</guid>
-  <pubDate>Tue, 18 Jun 2024 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>

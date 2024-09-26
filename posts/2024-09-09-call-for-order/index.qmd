@@ -1,0 +1,961 @@
+---
+title: "Calls to Order in Austria's Parliament"
+description: "Whenever a speaker in the National Council uses e.g. foul language and violates the 'dignity of the house', the president of the National Council is tasked with issuing a 'Call to Order'. To whom are these calls directed, and how frequently do they occur? Using the development version of the new R Package {ParlAT} helps answering these questions."
+
+date: 09-25-2024
+# date-modified: last-modified
+
+categories:
+  - Austria
+  - Parliament
+reference-location: margin
+draft: false  
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Just the results, please! {.unnumbered}
+
+::: {layout-ncol=2}
+![](images/pl_calls_legis_period.PNG){group='gallery_1'}
+
+![](images/pl_calls_legis_period_speaker.png){group='gallery_1'}
+
+![](images/pl_calls_days_in_parl.png){group='gallery_1'}
+:::
+
+# Context
+
+As a side project, I have been working on a new R package (ParlAT) which wraps the API of the Austrian Parliament. And while testing it, time and again, I already bump into some data which either make me chuckle or sigh. 
+
+One such data point is on the number of Calls to Order in the National Council. In a nutshell, whenever a member of the chamber makes a statement which violates the 'dignity of the house' or of another MP, e.g. uses vulgar or disrespectful language, the president of the chamber is tasked to call the speaker to order. If you want to know more, there's a good [podcast](https://www.parlament.gv.at/aktuelles/mediathek/podcasts/parlament-erklaert-folge-23/){target="_blank"} on that topic by the Parliament's public relations office.
+
+Conveniently, the API of the Austrian Parliament facilitates querying the data on Calls to Order, starting from the 20th legislative period (from 15.01.1996) onwards. And while this is indeed a laudable offer in terms of Open Data, a bit of 'data housekeeping' is still needed to get the relevant result. Below, I will detail the necessary steps to get the 'clean' data, and subsequently put the it 'through the paces' with a few descriptive analyses.
+
+Readers interested in R and who potentially want to work with same data source in the future might benefit from reading the Data section (@sec-data). If you are only interested in the results, go directly to the Analysis section (@sec-analysis). 
+
+As always, if you spot any error, have a suggestion or question, feel free to contact me via direct message on [X](https://x.com/zoowalk){target="_blank"} or, preferably, [mastadon](https://mastodon.social/@zoowalk){target="_blank"}. 
+
+# Get Data {#sec-data}
+
+## Load packages
+
+```{r}
+#| include: false
+#| eval: false
+library(devtools)
+# devtools::install_github("werkstattcodes/ParlAT")
+```
+
+
+
+```{r}
+#| code-summary: "Load packages"
+#| code-fold: true
+library(tidyverse)
+library(ggtext)
+library(httr2)
+library(ParlAT)
+library(furrr)
+plan(multisession, workers = 3)
+
+#needed to display custom fonts in quarto
+knitr::opts_chunk$set(dev = "ragg_png")
+
+#define theme
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() +
+    theme(
+      plot.title = element_textbox_simple(size = rel(1.2), margin = ggplot2::margin(0, 0, .25, 0, unit = "cm"), family="Oswald"),
+      plot.subtitle = element_textbox_simple(size = rel(.9), color = "grey30", face = "italic", family='Roboto Condensed', margin = ggplot2::margin(0, 0, b = 1, 0, unit = "cm")),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(size = rel(.8)),
+      axis.text.x = element_text(size = rel(.8)),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = "white  ", color = NA),
+      panel.border = element_blank(),
+      plot.title.position = "plot",
+      plot.margin = ggplot2::margin(l = 0, 0, 0, 0, "cm"),
+      legend.position = "top",
+      legend.margin = ggplot2::margin(l = 0, 0, 0, 0, "cm"),
+      legend.justification = "left",
+      legend.location = "plot",
+      legend.title = element_blank(),
+      plot.caption = element_textbox_simple(hjust = 0, color = "grey30", margin=ggplot2::margin(t=0.5, unit="cm"))
+    )
+}
+
+theme_set(theme_post())
+
+#define caption
+txt_caption_graph <- "Data: https:&#47;&#47;www.parlament.gv.at&#47;recherchieren&#47;open-data<br>Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:400'>https:&#47;&#47;werk.statt.codes</span>"
+
+```
+
+## API call
+
+Having wrapped the API endpoint, {ParlAT} makes retrieving the (raw) data a one stop process.
+
+```{r}
+#| code-summary: "Get all Calls to Order via ParlAT"
+#| code-fold: show
+#| collapse: true
+df_calls <- ParlAT::get_item(institution = "Nationalrat", item = "GO", doc_type = "GO09") %>%
+  as_tibble() %>%
+  mutate(datum = lubridate::dmy(datum)) %>%
+  arrange(datum) %>%
+  mutate(call_id = row_number(), .before = 1)
+
+#preview results
+df_calls %>% glimpse()
+```
+
+### Quality check
+
+We have now data on each Call to Order, including the speaker's party affiliation (`fraktionen`) and an url leading to further details of him or her (`his_url`). But while working with it, I noticed some inconsistencies which required a few further steps.
+
+At a first look, we might be tempted to think that each element of `fraktionen` contains one element, i.e. the party to which the speaker is affiliated.
+
+```{r}
+#| code-fold: show
+#| collapse: true
+df_calls %>%
+  mutate(fraktionen_length = map_dbl(fraktionen, \(x) length(x))) %>%
+  count(fraktionen_length)
+```
+
+A second glimpse of `fraktionen`, however, reveals that the format of the stored data looks somewhat peculiar for a character vector.
+
+```{r}
+#| code-summary: "Check content of `fraktionen`"
+#| code-fold: show
+#| collapse: true
+df_calls$fraktionen[1:10]
+```
+
+In fact, the data is stored in a json format. Let's convert it and parse it into plain text.
+
+```{r}
+#| code-summary: "Parse json"
+#| code-fold: show
+#| cache: true
+
+df_calls <- df_calls %>%
+  mutate(fraktionen = future_map(fraktionen, \(x) jsonlite::fromJSON(x)))
+```
+
+As it turns out now, there are a few instances in which we have more than one party under `fraktionen` for a single Call to Order.
+
+```{r}
+#| code-summary: "Check number of entries in `fraktionen`"
+#| code-fold: show
+#| collapse: true
+
+df_calls %>%
+  mutate(fraktionen_length = map_dbl(fraktionen, \(x) length(x))) %>%
+  count(fraktionen_length)
+
+df_check <- df_calls %>%
+  mutate(fraktionen_length = map_dbl(fraktionen, \(x) length(x))) %>%
+  filter(fraktionen_length > 1) %>%
+  mutate(fraktionen = map_chr(fraktionen, \(x) paste(x, collapse = ", "))) %>%
+  select(call_id, betreff, fraktionen, his_url)
+df_check
+```
+
+I think what happened here is that on a few occasions the creator of the dataset added also the party affiliation of the president of the National Council, who issued the Call to Order. The complicating factor, however, is that in a few cases the order in which the parties were added is not in line with the order in which the president and the speaker appear. E.g. in `call_id` 292 President Prammer would be a member of the BZÖ and MP Stadler a member of the SPÖ. And while the Austrian Parliament has been full of surprises, we can definitely rule this one out.
+
+Let me emphasize at this point that the error in the data is not a big deal in the bigger picture. There are `r nrow(df_check)` rows out of `r nrow(df_calls)` which make some troubles. So kudos to the data set creators, the issue is marginal. However, for the sake of correctness and maybe also to save some troubles for those who work with this data at a laster stage, let's see how we can deal with it *programmatically* (instead of editing the data set manually).
+
+## A more robust approach
+
+From the description field `betreff` of the call, let's first isolate the name of the speaker who was called to order.
+
+```{r}
+#| code-summary: "Extract speaker's name from raw text"
+#| code-fold: show
+#| collapse: true
+
+df_calls <- df_calls %>%
+  # remove part on President
+  mutate(mp = str_remove(betreff, regex("^.*?-\\s")), .after = "betreff") %>%
+  # remove "Abgeordnete/r" %>%
+  mutate(mp = str_remove(mp, regex("^Abgeord\\S+"))) %>%
+  # remove trailing acad titles after comma
+  mutate(mp = str_remove(mp, regex(",.*$"))) %>%
+  # remove leading title ending on a dot, including Abg. and acad titles
+  mutate(mp = str_remove_all(mp, regex("\\S*\\.\\s"))) %>%
+  # remove academic titles comprising multiple captial letters
+  mutate(mp = str_remove(mp, regex("\\p{Lu}+\\p{Ll}*\\p{Lu}+\\p{Ll}*\\b"))) %>%
+  # remove bracket elements
+  mutate(mp = str_remove_all(mp, regex("\\([^\\(]*\\)"))) %>%
+  # remove § reference
+  mutate(mp = str_remove(mp, regex("§\\s\\d+.*$"))) %>%
+  mutate(mp = str_trim(mp) %>% str_squish())
+
+df_calls %>%
+  slice_head(., n = 10) %>%
+  select(call_id, betreff, mp, his_url)
+```
+
+In a second step, let's use the `his_url` link which provides us with more details on the Call to Order. For this we first define a function, and subsequently apply it.
+
+```{r}
+#| code-summary: "Define function to get speaker details via `his_url`"
+#| code-fold: show
+
+fn_get_person_details <- function(url_call) {
+
+  link_file_json <- glue::glue("https://www.parlament.gv.at{url_call}?json=TRUE")
+
+  li_details <- tryCatch(
+    {
+      jsonlite::fromJSON(link_file_json)
+    },
+    error = function(e) {
+      # warning(paste("Error reading JSON from URL:", e$message))
+      return(NULL)
+    }
+  )
+
+  if (is.null(li_details)) {
+    return(NA)
+  }
+
+  if (!is.null(li_details$content$names)) {
+    res <- li_details$content$names %>%
+      select(-funktext, -portrait) %>%
+      mutate(pad_intern = str_extract(url, regex("\\d+$")))
+    return(res)
+  } else {
+    return(NA)
+  }
+}
+```
+
+To make the new approach clear, let's zoom in on one single example, the Parmmer - Stadler call mentioned earlier.
+
+```{r}
+#| code-summary: "Example Call to Order details"
+#| collapse: true
+#| code-fold: show
+url_call <- "/gegenstand/XXIV/GO/128"
+fn_get_person_details(url_call)
+```
+
+Our function querying the call's details also returns two names. This time, however, the name and the party affiliation are correct: Prammer (S=SPÖ) and Stadler (B=BZÖ). While the data in the call's details does not indicate who is the president and who is the speaker called to order, we can infer this due to our previous step where we extracted the name of the speaker from the call's description field `betreff`. Hence, in those cases where two names were mentioned, we only have to keep the entry where the name of the speaker extracted from the call's description matches the name extracted from the call's details. This will yield the correct party affiliation.
+
+```{r}
+#| code-summary: "Apply function to get speaker's details"
+#| code-fold: show
+#| cache: true
+#| collapse: true
+
+# apply function
+df_calls <- df_calls %>%
+  mutate(person_details = future_map(his_url, \(x) fn_get_person_details(url_call = x), .progress = TRUE))
+
+# unnest (1 row per person)
+df_calls_rev <- df_calls %>%
+  unnest_longer(person_details, keep_empty = TRUE) %>%
+  unnest_wider(person_details, names_sep = "_") %>%
+  mutate(row_id = row_number())
+nrow(df_calls_rev)
+
+# check for duplicates, i.e. where a Call to Order has more than one person
+df_dupes <- janitor::get_dupes(df_calls_rev, call_id) %>%
+  select(row_id, call_id, betreff, mp, person_details_name, person_details_frak_code) %>%
+  # remove those where names don't match
+  filter(!str_detect(person_details_name, regex(mp)))
+
+# remove duplicates
+df_calls_rev_filtered <- df_calls_rev %>%
+  anti_join(., df_dupes, "row_id")
+nrow(df_calls_rev_filtered)
+nrow(df_calls)
+
+df_calls <- df_calls_rev_filtered
+```
+
+Now, let's check whether there are some remaining rows - where we had only one person mentioned - where the extracted name from the call's description does not match the name of the MP extracted via the person's details.
+
+```{r}
+#| code-summary: "Check again"
+#| collapse: true
+#| code-fold: show
+
+df_calls %>%
+  filter(!str_detect(person_details_name, regex(mp))) %>%
+  select(call_id, mp, person_details_name, person_details_frak_code)
+```
+
+By in large the result looks fine. Partik-Pablé wasn't matched because of an accent, a few others because family name and given names were swapped. However, there is one call which is obviously wrong. `Call_id` 152 features MP Westenthaler as a member of the SPÖ, and the call's details page features only the Council's then president Heinz Fischer. This entry has to be corrected.
+
+```{r}
+#| code-summary: "Correct wrong call"
+#| code-fold: show
+#| collapse: true
+
+ParlAT::get_persons(names = "Westenthaler")
+
+df_calls <- df_calls %>%
+  mutate(fraktionen = ifelse(call_id == 152, "F", fraktionen)) %>%
+  mutate(person_details_name = ifelse(call_id == 152, "Peter Westenthaler", person_details_name)) %>%
+  mutate(person_details_frak_code = ifelse(call_id == 152, "F", person_details_frak_code)) %>%
+  mutate(person_details_pad_intern = ifelse(call_id == 152, "2723", person_details_pad_intern)) %>%
+  mutate(person_details_url = ifelse(call_id == 152, "/person/2723", person_details_url))
+```
+
+Now, as a final check - let's see whether there are some missing observations.
+
+```{r}
+#| code-summary: "Check for missing data"
+#| code-fold: show
+#| collapse: true
+
+visdat::vis_miss(df_calls)
+
+df_na <- df_calls %>%
+filter(if_any(starts_with("person_details"), \(x) is.na(x))) %>%
+select(call_id, gp_code, datum, betreff, mp, fraktionen, his_url, starts_with("person_details"))
+df_na
+nrow(df_na)
+```
+
+As it turns out there are `r nrow(df_na)` calls, where details on the call are missing. Trying to extract the peratining data from `his_url` did not yield any result, i.e. the person's name, party affiliation, or id. While we have the first two elements already available from the source, we want to double check its veracity as we did with all other rows.
+
+For situations like this one, where one has only the name of an MP and wants to retrieve further details about him or her, the {ParlAT} package will provide the `get_person` function. Below we apply this function to the names extracted from `betreff` to get the missing data.
+
+At this point let me also highlight the wonderful, relatively new `rows_patch` function of the dplyr package. In cases where I previously used a e.g. a join followed by a coalesce function, `rows_patch` does it all in one step.
+
+```{r}
+#| code-summary: "Fill missing data"
+#| code-fold: show
+#| collapse: true
+
+#apply function for the data of the call
+df_na <- df_na %>%
+    mutate(data = map2(mp, datum, 
+    possibly(
+      \(x,y) get_persons(names = x, date = y, search_strict = TRUE, institution = "Nationalrat", mandates = TRUE),
+      otherwise = NA
+    )
+  ))
+
+#extract details on MP who was called to order
+df_na <- df_na %>%
+mutate(person_details_name=map_chr(data, \(x) pluck(x, "name", .default=NA))) %>%
+mutate(person_details_pad_intern=map_chr(data, \(x) pluck(x, "pad_intern", .default=NA)))  %>% 
+mutate(person_details_url=glue::glue("/person/{person_details_pad_intern}/"))  %>% 
+mutate(person_details_frak_code=map_chr(data, \(x) pluck(x, "mandates_wahlpartei", .default=NA)))  
+
+#insert new data into NA fields
+df_calls <- df_calls %>% dplyr::rows_patch(.,
+  df_na %>% select(-data), by="call_id"
+)
+```
+
+```{r}
+#| include: false
+#| eval: false
+###check
+df_calls %>%
+semi_join(., df_na, "call_id") %>%
+select(starts_with("person")) 
+```
+
+Now let's check again whether the data obtained contained via the initial API call and the data retrieved by calling the details pages are congruent.
+
+```{r}
+#| code-summary: "Check for data inconsistencies"
+#| code-fold: true
+#| collapse: true
+
+#compare `fraktionen` and `person_details_frak_code_long`; should be the same
+
+#standardize person_details_frak_code
+vec_party_abbrev <- c("G"="GRÜNE", "V"="ÖVP", "F"="FPÖ", "S"="SPÖ", "L"="LIBERALES FORUM", "B"="BZÖ", "A"="Andere", "T"="STRONACH", "N"="NEOS", "P"="PILZ", "J"="JETZT")
+
+df_calls <- df_calls %>%
+mutate(
+  person_details_frak_code_long=coalesce(vec_party_abbrev[person_details_frak_code],person_details_frak_code)
+)
+
+#standardize fraktionen
+look_up_2 <- c("F"="FPÖ", "L"="LIBERALES FORUM", "Pilz"="PILZ")
+
+df_calls <- df_calls %>%
+mutate(fraktionen_chr=map_chr(fraktionen, \(x) str_c(x, collapse=", "))) %>%
+mutate(
+  fraktionen_chr=coalesce(look_up_2[fraktionen_chr], fraktionen_chr)
+) 
+
+#check difference
+df_check <- df_calls %>%
+select(
+  datum, betreff, fraktionen_chr, 
+  his_url,
+  person_details_frak_code_long
+) %>%
+filter(!str_detect(fraktionen_chr, regex(person_details_frak_code_long)))
+#non-matched call
+df_calls %>%
+filter(is.na(person_details_frak_code_long)) %>%
+select(call_id, betreff, his_url)
+
+#remove call_id 104
+df_calls <- df_calls  %>%
+  filter(call_id!=104)
+```
+
+As we can see, there was one call which must have some kind of dummy data ('Generiert'). I remove it from the further analysis.
+
+## Adding mandate type
+
+The steps above not only gave us the correct name of the person called to order, it also gave us the person's `pad_intern`, its unique id. With this id, we can - using again a new function of the {ParlAT} package - easily query the relevant political mandate of a specific person at a specific date.
+
+```{r}
+#| code-summary: "Add speaker's mandate"
+#| cache: true
+#| collapse: true
+#| code-fold: show
+
+#apply function
+df_calls <- df_calls %>%
+  mutate(mandate_li = future_map2(person_details_pad_intern, datum, \(x, y) get_mandates(pad_intern = x, date = y, institution = NULL), .progress = TRUE))
+
+#extract mandate
+df_calls <- df_calls %>%
+  mutate(mandate = map_chr(mandate_li, \(x) pluck(x, "mandat", .default = NA) %>% str_c(., collapse = ", "))) %>%
+  mutate(mandate_short = case_when(
+    str_detect(mandate, regex("Abgeord\\w+")) ~ "MP",
+    .default = mandate
+  ))
+
+df_calls %>%
+  count(mandate_short)
+```
+
+So as it turns out, of the the `r nrow(df_calls)` Calls to Order which were issued since the start of the 20the legislative period, there has been only a single instance in which the call was issued for a member of the government bench, more precisely, the Minister of Interior.
+Let's get the name.
+
+```{r}
+#| code-summary: "Get Call to Order for Gov member"
+#| code-fold: show
+#| collapse: true
+df_calls %>%
+filter(mandate_short!="MP") %>%
+select(call_id, betreff, person_details_name, his_url)
+```
+
+The answer is: Karl Nehammer, the current Chancellor and top candidate of the ÖVP for the upcoming elections is the only member of government who has ever been subject to a Call to Order (since the availability of pertaining data/the beginning of the XX legislative period). Details on the Call can be found [here](https://www.parlament.gv.at/dokument/XXVII/NRSITZ/97/fnameorig_996940.html#TEXTOBJ_243313:~:text=Da%20ist%20der%20Innen%C2%ADminister%20au%C3%9Fer%20Dienst%20auf%20die%20B%C3%BChne%20getreten%20und%20hat%20sich%20als%20Brandstifter%20bet%C3%A4tigt.%20(Neu%C2%ADerliche%20Zwischenrufe%20bei%20der%20FP%C3%96.)){target="_blank"}.
+
+# Analysis {#sec-analysis}
+
+Now after this somewhat lengthy data preparation, let's finally dig into the numbers. 
+
+## Calls per legislative period
+
+As a first step, let's get the number of Calls to Order per party and legislative period. I find the result rather remarkable. The number of calls directed at members of the FPÖ during the legislative period XXVII is unprecedented, even when considering the particular length of the period.
+
+```{r}
+#| code-summary: "Number of calls per party and legislative period"
+#| code-fold: true
+#| collapse: true
+#| fig-height: 5
+
+vec_party_colors <- c(
+  "ÖVP" = "#63C3D0",
+  "SPÖ" = "#E4001B",
+  "FPÖ" = "#0056A2",
+  "GRÜNE" = "#88B626",
+  "NEOS" = "#E84188",
+  "PILZ" = "#E0E0E0",  # Same as Liste Pilz
+  "STRONACH" = "#F7B200",
+  "BZÖ" = "#FF6600",
+  "LIBERALES FORUM"="#FFCA23",
+  "Andere" = "#999999"  # Medium gray for "Others"
+)
+
+lvls_party <- names(vec_party_colors)
+
+vec_party_labels <- c(
+   "GRÜNE" = "G",
+  "ÖVP" = "V",
+  "FPÖ" = "F",
+  "SPÖ" = "S",
+  "BZÖ" = "B",
+  "Andere" = "A", 
+  "LIBERALES FORUM"="L",
+  "STRONACH" = "TS",
+  "NEOS" = "N",
+  "PILZ" = "P",  # Same as Liste Pilz
+  "JETZT" = "J"  # White, as it was also associated with Liste Pilz
+)
+
+fn_labels <- function(x) {
+
+  label_clean <- str_remove(x, regex("^.*_"))
+
+  vec_party_labels[label_clean]
+
+}
+
+#collapse PILZ and Jetzt into PILZ; treat them as one;
+df_n <- df_calls %>%
+  mutate(person_details_frak_code_long=case_when(
+    person_details_frak_code_long %in% c("PILZ", "JETZT") ~ "PILZ",
+    .default=person_details_frak_code_long)) %>%
+  group_by(gp_code, person_details_frak_code_long) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n), .by_group = T) %>%
+  mutate(gp_fraktionen = paste(gp_code, person_details_frak_code_long, sep = "_")) %>%
+  mutate(gp_fraktionen = forcats::fct_inorder(gp_fraktionen)) %>%
+  ungroup() |> 
+  mutate(person_details_frak_code_long=forcats::fct(person_details_frak_code_long, levels=lvls_party))
+
+df_legis <- ParlAT::get_legis_period() %>%
+mutate(date_end=case_when(
+  legis_period_current==TRUE ~ lubridate::today(),
+  .default=date_end
+)) %>%
+mutate(
+  duration_days=difftime(date_end, date_start, units="days")
+) %>%
+mutate(
+  date_start_formated=stringi::stri_datetime_format(date_start, format="MMM y", locale="de"),
+  date_end_formated=stringi::stri_datetime_format(date_end, format="MMM y", locale="de")
+) %>%
+mutate(legis_period_dates=glue::glue("{date_start_formated}-{date_end_formated}"))
+
+df_n <- df_n %>% left_join(.,
+df_legis %>%
+select(legis_period_rom, legis_period_dates, duration_days), by=c("gp_code"="legis_period_rom")) 
+
+#create facet labels
+df_n <- df_n %>%
+  mutate(facet_labels=case_when(
+  gp_code=="XXVII" ~ glue::glue("**Periode: {gp_code}**<br><span style='font-size:8pt; color:grey30; font-weight:100;'>{legis_period_dates}<br>Dauer: {duration_days} Tage</span>"),
+  .default=glue::glue("**{gp_code}**<br><span style='color:grey30;font-size:8pt;'>{legis_period_dates}, {duration_days}</span>")))
+
+#number x categories
+maxnumcat <- df_calls %>%
+  distinct(gp_code, person_details_frak_code) %>%
+  count(gp_code) %>%
+  pull(n) %>%
+  max()
+
+# fn_labeller <- function(x) {
+  
+#   y <- as.numeric(x) %>% as.roman() %>% as.character()
+#   y[1]
+#   y[1] <- glue::glue("Legislaturperiode {y[1]}")
+
+# return(y)
+# }
+
+txt_subtitle <- "Der vorsitzführende Nationalratspräsident/die vorsitzführende Nationalratspräsidentin kann, wenn ein/e RednerIn die Würde des Hohen Hauses beziehungsweise einer oder eines Abgeordneten verletzt, einen Ordnungsruf aussprechen. Daten dazu sind auf der Homepage des Parlaments ab der Legislaturperiode XX verfügbar. **Noch nie haben die Mitglieder einer Fraktion innerhalb einer Periode soviele Ordnungsrufe bekommen, wie jene der FPÖ in der vergangenen  Legislaturperiode XXVII.**"
+
+df_calls |> 
+  filter(person_details_frak_code_long=="Andere") |> 
+  select(betreff, starts_with("person")) 
+
+lvls_person_details_frak_code_long <- c(
+  
+)
+
+pl_calls_legis_period <- df_n %>%
+  mutate(gp_code = as.roman(gp_code) %>% as.numeric()) %>%
+  arrange(desc(gp_code)) %>%
+  mutate(facet_labels = forcats::fct_inorder(facet_labels)) %>%
+  ggplot() +
+  labs(
+    title="ANZAHL VON ORDNUNGSRUFEN PER PARTEI UND LEGISLATURPERIODE",
+    subtitle=txt_subtitle,
+    caption=txt_caption_graph
+  )+
+  geom_bar(
+    aes(x = gp_fraktionen, y = n, fill=person_details_frak_code_long), 
+    stat = "identity",
+    key_glyph = "dotplot") +
+  geom_text(
+    data=. %>% slice_max(order_by=n, n=7),
+    aes(
+    x=gp_fraktionen, 
+    y=n,
+    label=n),
+    family = "Roboto condensed",
+    size=3,
+    nudge_y=7
+    )+
+  scale_x_discrete(
+    limits = function(x) {
+      y <- paste0("dummy", seq_len(maxnumcat))
+      c(x, y[seq_len(maxnumcat - length(x))])
+    },
+    breaks = function(x) {
+      x[!startsWith(x, "dummy")]
+    },
+    labels = \(x) fn_labels(x), 
+    guide = guide_axis(n.dodge = 1)
+  ) +
+  scale_y_continuous(
+       expand=expansion(mult=c(0, .05)),
+  )+
+  scale_fill_manual(
+    values=vec_party_colors
+  )+
+  facet_wrap(
+    vars(facet_labels), 
+    ncol = 4, 
+    scales = "free_x"#,
+    # labeller=labeller(gp_code=fn_labeller)
+    ) +
+  theme(
+    axis.text.x.bottom=element_text(margin=ggplot2::margin(t=0, "cm")),
+    axis.title=element_blank(),
+    legend.title.position = "left",
+    legend.location = "plot",
+    legend.position = "top",
+    legend.key.height = unit(0.2, "cm"),
+    legend.margin = ggplot2::margin(l = 0, b = 0.2, unit = "cm"),
+    legend.text = element_text(hjust = 1, color = "grey30", face = "italic", size = rel(.8), margin=ggplot2::margin(l=0, unit="cm")),
+    legend.box = "vertical",
+    legend.box.just = "left",
+    legend.direction = "horizontal",
+    panel.grid.major.x=element_blank(),
+    axis.title.x=element_blank(),
+    panel.spacing.y=unit(0.5, "cm"),
+    plot.caption.position="plot",
+    plot.subtitle = element_textbox_simple(
+      margin = ggplot2::margin(t=0, l=0, b=.2, r=0, unit="cm")
+    ),
+    strip.text = element_textbox_simple(
+      size = rel(1),
+      lineheight=.5,
+      vjust = 1
+    )
+  )+
+    guides(fill = guide_legend(nrow = 1))
+
+pl_calls_legis_period
+```
+
+
+```{r}
+#| include: false
+#| eval: true
+
+pl_calls_legis_period <- pl_calls_legis_period+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+
+ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_legis_period.png", plot=pl_calls_legis_period, scale=1.2)
+```
+
+## Calls per individual speakers
+
+In the next step, let's now look at the number of Calls to Order per speakers who were disciplined. 
+
+```{r}
+#| code-summary: "Calls per speaker and legislative period"
+#| code-fold: true
+#| collapse: true
+#| fig-height: 6
+
+#get freqs; collapse PILZ and JETZT
+df_calls_person_gp_n <- df_calls %>%
+  mutate(person_details_frak_code_long=case_when(
+    person_details_frak_code_long %in% c("PILZ", "JETZT") ~ "PILZ",
+    .default=person_details_frak_code_long)) %>%
+  count(
+    person_details_pad_intern, 
+    gp_code, 
+    person_details_frak_code_long,
+    sort = T)
+
+janitor::get_dupes(df_calls_person_gp_n, person_details_pad_intern, gp_code)
+
+#get mps names based on pad_intern to avoid issues to due name changes
+df_calls_person_gp_n <- df_calls_person_gp_n %>%
+  mutate(name = future_map(person_details_pad_intern, \(x) ParlAT::get_names(pad_intern = x, latest = TRUE), .progress = TRUE))
+
+#extract name
+df_calls_person_gp_n <- df_calls_person_gp_n %>%
+  mutate(name_chr = future_map_chr(name, \(x) pluck(x, "name", .default = NA), .progress=TRUE)) %>%
+  mutate(name_family_chr = future_map_chr(name, \(x) pluck(x, "name_family", .default = NA), .progress=TRUE)) %>%
+  select(-name)
+
+df_calls_person_gp_n <- df_calls_person_gp_n %>% left_join(.,
+df_legis %>%
+select(legis_period_rom, legis_period_dates, duration_days), by=c("gp_code"="legis_period_rom")) 
+
+df_calls_person_gp_n <- df_calls_person_gp_n %>%
+ mutate(facet_labels=case_when(
+  gp_code=="XXVII" ~ glue::glue("**Periode: {gp_code}**<br><span style='font-size:8pt; color:grey30; font-weight:100;'>{legis_period_dates}<br>Dauer: {duration_days} Tage</span>"),
+  .default=glue::glue("**{gp_code}**<br><span style='color:grey30;font-size:8pt;'>{legis_period_dates}, {duration_days}</span>")))
+
+txt_subtitle <- "Seit dem Beginn der 20. Legislaturperiode, dem Zeitpunkt ab dem Daten verfügbar sind, hat noch nie ein Abgeordneter so viele Ordnungsrufe bekommen wie FPÖ Chef Herbert Kickl in der 27. Legislaturperiode. In der gleichen Legislaturperiode kommen die 5 Abgeordneten mit den häufigsten Ordnungsrufen alle aus der FPÖ."
+
+#graph
+pl_calls_legis_period_speaker <- df_calls_person_gp_n %>%
+slice_max(., n=5, order_by=n, by=gp_code, with_ties=FALSE) %>%
+mutate(gp_code_num=as.roman(gp_code) %>% as.numeric) %>%
+arrange(desc(gp_code_num)) %>%
+mutate(facet_labels=forcats::fct_inorder(facet_labels)) %>%
+mutate(person_details_frak_code_long=forcats::fct(person_details_frak_code_long, levels=lvls_party)) %>%
+ggplot()+
+labs(
+  title="ABGEORDNETE MIT DEN MEISTEN ORDNUNGSRUFEN PER LEGISLATURPERIODE (TOP 5)",
+  subtitle=txt_subtitle,
+  caption=txt_caption_graph
+)+
+geom_bar(aes(
+  x=tidytext::reorder_within(name_family_chr, within=gp_code, by=-n),
+  y=n,
+  fill=person_details_frak_code_long),
+  key_glyph = "dotplot",
+  stat="identity")+
+  geom_text(
+    data=. %>% slice_max(order_by=n, n=10),
+    aes(
+      x=tidytext::reorder_within(name_family_chr, within=gp_code, by=-n),
+    y=n,
+    label=n),
+    family = "Roboto condensed",
+    size=3,
+    nudge_y=4
+    )+  
+tidytext::scale_x_reordered(
+  guide = guide_axis(n.dodge = 2)
+)+
+scale_fill_manual(values=vec_party_colors)+
+scale_y_continuous(expand=expansion(mult=c(0,.07)),
+breaks=seq(0,40,20))+
+facet_wrap(
+  vars(facet_labels),
+  scales="free_x")+
+  theme(
+    axis.text.x.bottom=element_text(margin=ggplot2::margin(t=0, "cm")),
+    axis.title=element_blank(),
+    legend.title.position = "left",
+    legend.location = "plot",
+    legend.position = "top",
+    legend.key.height = unit(0.2, "cm"),
+    legend.margin = ggplot2::margin(l = 0, b = 0.2, unit = "cm"),
+    legend.text = element_text(hjust = 1, color = "grey30", face = "italic", size = rel(.8), margin=ggplot2::margin(l=0, unit="cm")),
+    legend.box = "vertical",
+    legend.box.just = "left",
+    legend.direction = "horizontal",
+    panel.grid.minor.y=element_blank(),
+    panel.grid.major.x=element_blank(),
+    axis.title.x=element_blank(),
+    panel.spacing.y=unit(0.5, "cm"),
+    plot.caption.position="plot",
+    plot.subtitle = element_textbox_simple(
+      margin = ggplot2::margin(t=0, l=0, b=.2, r=0, unit="cm")
+    ),
+    strip.text = element_textbox_simple(
+      size = rel(1),
+      lineheight=.5,
+      vjust = 1
+    )
+  )+
+    guides(fill = guide_legend(nrow = 1))
+
+pl_calls_legis_period_speaker
+```
+
+```{r}
+#| include: false
+#| eval: true
+
+pl_calls_legis_period_speaker <- pl_calls_legis_period_speaker+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+
+ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_legis_period_speaker.png", plot=pl_calls_legis_period_speaker, scale=1.2)
+```
+
+Those privy to Austrian politics might be not surprised to see Herbert Kickl featuring most Calls to Orders since the beginning of the data record. The large difference to other MPs, even his party colleagues, I find, to put it mildly, rather remarkable.
+
+## Calls per MP and mandate days
+
+So far we have only seen the aggregate numbers of MPs' Calls to Order. What the analysis didn't take into consideration is the actual length of time during which an individual has been serving as an MP. There is a qualitative difference if an MP gets e.g. five calls within 15 years or within only two years.
+
+To account for the different number of days in Parliament, I'll get the start and end dates of all mandates of each MP in the National Council who got a Call to Order. Critically, since we have only data on Calls to Order since the start of legislative period XX (15.1.1996, 'left censored data'), the days in Parliament have to be corrected accordingly. Otherwise, the comparison would be skewed in favor of those who have been serving as MPs prior to legislative period XX (the time prior to legislative period XX can't feature Calls to Order). In other words, days served as an MP prior to 15.1.1996 are excluded from the analysis. This limitation has to be kept in mind, when interpreting the subsequent results.
+
+Another caveat of the graph below pertains to the coloring of the dots, e.g. the MPs' association with a party. Here, I used the party to which the MP belonged most recently. Some MPs have changed their party affiliation over the years, and may have been subject to a Call to Order while serving for a different party. This detail has also to be kept in mind when reading the graph.
+
+```{r}
+#| code-summary: "Number of Calls vs Time in National Council"
+#| collapse: true
+#| code-fold: true
+#| fig-height: 6
+
+
+#number of calls per mp in total
+df_calls_n <- df_calls %>%
+filter(mandate_short=="MP") %>%
+count(person_details_pad_intern, sort=TRUE) %>%
+ungroup()
+
+#get mandate day
+vec_pad_interns <- df_calls_n %>% distinct(person_details_pad_intern) %>% pull()
+
+#get all NR mandates of those MPs who got a Call to Order
+df_mandates <- future_map(vec_pad_interns, \(x) ParlAT::get_mandates(pad_intern=x, institution="Nationalrat"), .progress=TRUE) %>% list_rbind()
+
+vec_XX_date_start <- get_legis_period(legis_period=20) %>%
+pull(date_start)
+
+#correct dates
+df_mandates <- df_mandates %>%
+ungroup() %>%
+#ongoing mandates are right censored with today's date
+mutate(
+  mandatBis=case_when(
+    aktiv==TRUE & is.na(mandatBis) ~ lubridate::today(),
+    .default=mandatBis
+  )
+) %>%
+#remove mandates which ended before start of legis period XX
+filter(mandatBis>vec_XX_date_start) %>%
+#mandates prior to XX are cut off; 
+mutate(
+  mandatVon_censored=case_when(
+    mandatVon<vec_XX_date_start ~ vec_XX_date_start,
+    .default=mandatVon
+  )
+) %>%
+#calcluate days in Parliament
+mutate(mp_days=difftime(mandatBis, mandatVon_censored, units="days")) %>%
+mutate(censored=case_when(
+    mandatVon<vec_XX_date_start ~ TRUE,
+    .default=FALSE))
+
+#mp_day sum per mp
+df_mp_days_N <- df_mandates %>%
+group_by(pad_intern) %>%
+summarise(
+  mp_days_N=sum(mp_days),
+  censored=any(censored)
+)
+#check
+table(df_mp_days_N$censored)
+janitor::get_dupes(df_mp_days_N, pad_intern) %>% nrow()==0
+
+#combine number of calls with number of days in Parliament
+df_calls_n <- df_calls_n %>% left_join(., df_mp_days_N, by=c("person_details_pad_intern"="pad_intern"))
+
+#check for accidental dupes
+nrow(df_calls_n %>% janitor::get_dupes(., person_details_pad_intern))==0
+
+#get names and party affiliation
+df_pers_details <- df_calls_person_gp_n %>%
+mutate(gp_code_num=as.roman(gp_code) %>% as.numeric) %>%
+arrange(desc(gp_code_num), person_details_pad_intern) %>%
+slice_head(., n=1, by=c(person_details_pad_intern)) %>%
+select(
+  person_details_pad_intern,
+  gp_code, 
+  person_details_frak_code_long,
+  name_family_chr
+)
+
+#checks for accidential dupes
+nrow(janitor::get_dupes(df_pers_details, person_details_pad_intern))==0
+nrow(df_calls_n)==nrow(df_pers_details)
+
+df_calls_n <- df_calls_n %>%
+left_join(., df_pers_details, by=c("person_details_pad_intern"))
+
+#checks
+nrow(janitor::get_dupes(df_calls_n, person_details_pad_intern))==0
+
+#graph
+txt_subtitle <- "Die Graphik zeigt wieviele Ordnungsrufe ein/e NR-Abgeordnete/r erhalten hat und setzt diese Zahl in Verhältnis mit der Anzahl an Tagen, die die Person Abgeordnete/r war. Da die Daten zu Ordnungsrufen erst mit dem Beginn der 20. Legilsaturperiode verfügbar sind (15.1.1996), werden hier nur die Abgeordneten-Tage ab diesem Datum berücksichtigt. Die Gegenüberstellung verdeutlicht die hohe Anzahl an Ordnungsrufen für FPÖ Chef Herbert Kickl. Selbst andere Abgeordnete mit ähnlicher oder auch längerer Verweildauer im Nationalrat haben weniger Ordnungsrufe bekommen. Bemerkenswert ist auch die hohe Anzahl vom aktuellen Vize-Kanzler Kogler. Die Zuordnung zu Parteien erfolgte auf Basis der letzten Parteimitgliedschaft."
+
+pl_calls_days_in_parl <- df_calls_n %>%
+mutate(person_details_frak_code_long=fct(person_details_frak_code_long, lvls_party)) %>%
+mutate(mp_days_N=as.numeric(mp_days_N)) %>%
+ggplot()+
+labs(
+  title="ANZAHL ORDNUNGSRUFE UND TAGE IM NATIONALRAT PRO ABGEORDNETEM/R",
+  subtitle=txt_subtitle,
+  y="Anzahl Ordungsrufe",
+  x="Anzahl an Tagen im Nationlrat (ab 15.1.1996)",
+  caption=txt_caption_graph
+)+
+geom_point(
+  aes(
+    x=mp_days_N,
+    y=n,
+    shape=censored,
+    color=person_details_frak_code_long),
+    size=2
+)+
+ggrepel::geom_text_repel(
+  data=. %>% filter(mp_days_N>7500 | n>15),
+  aes(
+    x=mp_days_N,
+    y=n,
+    label=name_family_chr)
+)+
+scale_color_manual(values=vec_party_colors)+
+scale_x_continuous(
+  labels=scales::label_comma(decimal.mark=",", big.mark="."),
+  breaks=seq(0,10000, 2500),
+  expand=expansion(mult=c(0.07,0.1))
+  )+
+scale_y_continuous(expand=expansion(mult=c(0.02,0.1)))+
+scale_shape_manual(
+  values=c(
+    "TRUE"=17, 
+    "FALSE"=19),
+  breaks="TRUE",
+  labels=c("TRUE"="Tage vor 15.1.1996 ignoriert")
+  )+
+guides(
+  color = guide_legend(nrow = 1, position="top", order=1)
+  )+
+theme(
+  axis.title.x=element_text(hjust=1, color="grey30", family="Roboto Condensed"),
+  axis.title.y=element_text(angle=90, hjust=1, color="grey30", family="Roboto Condensed"),
+  panel.grid.minor.y=element_blank(),
+    legend.title.position = "left",
+    legend.location = "plot",
+    legend.position = "top",
+    legend.key.height = unit(0.2, "cm"),
+    legend.margin = ggplot2::margin(l = 0, b = 0.2, unit = "cm"),
+    legend.text = element_text(hjust = 1, color = "grey30", face = "italic", size = rel(.8), margin=ggplot2::margin(l=0, unit="cm")),
+    legend.box = "vertical",
+    legend.box.just = "left",
+    legend.box.margin = ggplot2::margin(l=0, unit="cm"),
+    legend.spacing.y=unit(0.1, unit="cm"),
+    legend.direction = "horizontal",
+    plot.caption.position="plot",
+    plot.subtitle = element_textbox_simple(margin = ggplot2::margin(t=0, l=0, b=.2, r=0, unit="cm"))
+)
+
+pl_calls_days_in_parl
+```
+
+```{r}
+
+```
+```{r}
+#| include: false
+#| eval: true
+
+pl_calls_days_in_parl <- pl_calls_days_in_parl+theme(plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"))
+
+ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename="pl_calls_days_in_parl.png", plot=pl_calls_days_in_parl, scale=1.2)
+```
+
+
+
+
+# Wrap-up
+
+Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Orders. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl's record in comparison to other FPÖ MPs.
+
+Put together with one of my previous [posts](https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/#bar-graph){target="_blank"}, where I show that MPs of the FPÖ have the worst track record when it comes to respecting (voluntary) speech limits, the numbers shown here further add to a picture of a party which stands out for violating (soft) norms of parliamentary conduct. 
+
