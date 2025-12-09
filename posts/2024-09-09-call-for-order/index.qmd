@@ -16,27 +16,27 @@ editor_options:
 
 # Just the results, please! {.unnumbered}
 
-::: {layout-ncol=2}
-![](images/pl_calls_legis_period.PNG){group='gallery_1'}
+::: {layout-ncol="2"}
+![](images/pl_calls_legis_period.PNG){group="gallery_1"}
 
-![](images/pl_calls_legis_period_speaker.png){group='gallery_1'}
+![](images/pl_calls_legis_period_speaker.png){group="gallery_1"}
 
-![](images/pl_calls_days_in_parl.png){group='gallery_1'}
+![](images/pl_calls_days_in_parl.png){group="gallery_1"}
 
-![](images/pl_calls_days_ratio.PNG){group='gallery_1'}
+![](images/pl_calls_days_ratio.PNG){group="gallery_1"}
 :::
 
 # Context
 
-As a side project, I have been working on a new R package (ParlAT) which wraps the API of the Austrian Parliament. And while testing it, time and again, I already bump into some data which either make me chuckle or sigh. 
+As a side project, I have been working on a new R package (ParlAT) which wraps the API of the Austrian Parliament. And while testing it, time and again, I already bump into some data which either make me chuckle or sigh.
 
 One such data point is on the number of Calls to Order in the National Council. In a nutshell, whenever a member of the chamber makes a statement which violates the 'dignity of the house' or of another MP, e.g. uses vulgar or disrespectful language, the president of the chamber is tasked to call the speaker to order. If you want to know more, there's a good [podcast](https://www.parlament.gv.at/aktuelles/mediathek/podcasts/parlament-erklaert-folge-23/){target="_blank"} on that topic by the Parliament's public relations office.
 
 Conveniently, the API of the Austrian Parliament facilitates querying the data on Calls to Order, starting from the 20th legislative period (from 15.01.1996) onwards. And while this is indeed a laudable offer in terms of Open Data, a bit of 'data housekeeping' is still needed to get the relevant result. Below, I will detail the necessary steps to get the 'clean' data, and subsequently put the it 'through the paces' with a few descriptive analyses.
 
-Readers interested in R and who potentially want to work with same data source in the future might benefit from reading the Data section (@sec-data). If you are only interested in the results, go directly to the Analysis section (@sec-analysis). 
+Readers interested in R and who potentially want to work with same data source in the future might benefit from reading the Data section (@sec-data). If you are only interested in the results, go directly to the Analysis section (@sec-analysis).
 
-As always, if you spot any error, have a suggestion or question, feel free to contact me via direct message on [X](https://x.com/zoowalk){target="_blank"} or, preferably, [mastadon](https://mastodon.social/@zoowalk){target="_blank"}. 
+As always, if you spot any error, have a suggestion or question, feel free to contact me via direct message on [X](https://x.com/zoowalk){target="_blank"} or, preferably, [mastadon](https://mastodon.social/@zoowalk){target="_blank"}.
 
 # Get Data {#sec-data}
 
@@ -48,8 +48,6 @@ As always, if you spot any error, have a suggestion or question, feel free to co
 library(devtools)
 # devtools::install_github("werkstattcodes/ParlAT")
 ```
-
-
 
 ```{r}
 #| code-summary: "Load packages"
@@ -442,8 +440,7 @@ df_calls %>%
   count(mandate_short)
 ```
 
-So as it turns out, of the the `r nrow(df_calls)` Calls to Order which were issued since the start of the 20the legislative period, there has been only a single instance in which the call was issued for a member of the government bench, more precisely, the Minister of Interior.
-Let's get the name.
+So as it turns out, of the the `r nrow(df_calls)` Calls to Order which were issued since the start of the 20the legislative period, there has been only a single instance in which the call was issued for a member of the government bench, more precisely, the Minister of Interior. Let's get the name.
 
 ```{r}
 #| code-summary: "Get Call to Order for Gov member"
@@ -458,7 +455,7 @@ The answer is: Karl Nehammer, the current Chancellor and top candidate of the Ö
 
 # Analysis {#sec-analysis}
 
-Now after this somewhat lengthy data preparation, let's finally dig into the numbers. 
+Now after this somewhat lengthy data preparation, let's finally dig into the numbers.
 
 ## Calls per legislative period
 
@@ -647,7 +644,6 @@ pl_calls_legis_period <- df_n %>%
 pl_calls_legis_period
 ```
 
-
 ```{r}
 #| include: false
 #| eval: true
@@ -659,7 +655,7 @@ ggsave(path=here::here("posts", "2024-09-09-call-for-order","images"), filename=
 
 ## Calls per individual speakers
 
-In the next step, let's now look at the number of Calls to Order per speakers who were disciplined. 
+In the next step, let's now look at the number of Calls to Order per speakers who were disciplined.
 
 ```{r}
 #| code-summary: "Calls per speaker and legislative period"
@@ -944,7 +940,6 @@ theme(
 pl_calls_days_in_parl
 ```
 
-
 ```{r}
 #| include: false
 #| eval: true
@@ -1048,7 +1043,6 @@ party_logo = colDef(
 rt_day_call_ratio    
 ```
 
-
 ```{r}
 #| eval: false
 #| include: false
@@ -1085,5 +1079,4 @@ df_day_call_ratio %>%
 
 Like many others, I assume, I am not surprised to see the FPÖ and Herbert Kickl featuring a high number of Calls to Order. The extent of the increase during the now closing 27th legislative period, however, was a surprise to me as was Kickl's record in comparison to other FPÖ MPs.
 
-Put together with one of my previous [posts](https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/#bar-graph){target="_blank"}, where I show that MPs of the FPÖ have the worst track record when it comes to respecting (voluntary) speech limits, the numbers shown here further add to a picture of a party which stands out for violating (soft) norms of parliamentary conduct. 
-
+Put together with one of my previous [posts](https://werk.statt.codes/posts/2024-06-11-parliament-speech-length-limits/#bar-graph){target="_blank"}, where I show that MPs of the FPÖ have the worst track record when it comes to respecting (voluntary) speech limits, the numbers shown here further add to a picture of a party which stands out for violating (soft) norms of parliamentary conduct.

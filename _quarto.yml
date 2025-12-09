@@ -79,3 +79,4 @@ execute:
   echo: true
   message: false
   warning: false
+  freeze: true

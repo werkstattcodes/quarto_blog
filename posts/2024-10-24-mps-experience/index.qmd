@@ -1,0 +1,1651 @@
+---
+title: "28th Austrian National Council: Prior Experiences as MPs."
+description: "Who speaks for how long in the National Council of Austria's Parliament? And who respects the relevant time limits?"
+
+date: 10-23-2024
+date-modified: last-modified
+
+categories:
+  - Austria
+  - parliament
+  - r-bloggers
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: false  
+---
+
+# Just the results, please {.unnumbered}
+
+# Context
+
+This week, marking the start of the 28th legislative period, Austria's new National Council will be inaugurated and its members sworn in. In terms of its composition, the chamber will reflect the result of the most recent general election in which the radical/populist Freedom Party (FPÖ) came out victorious. The FPÖ not only celebrated the strongest result in the party's history, it also became the largest party in Parliament for the first time. With increasing its vote share by 12.7 percentage points to 28.8 %, its group in parliament grows by 26 to 57 MPs (out of 183). This is by all means quite a surge.
+
+While much has been said and written about the problematic nature of the FPÖ and its worldview - and rightly so IMHO -, I would like to focus on the latter aspect here. What struck me was the vast influx of new MPs into the FPÖ's parliamentary group and parliament in general. Being a party politician is one thing, but being an MP is a completely different animal and entails its own challenges, not least the need to be familiar with the ins and outs of the chamber's rules of procedure and other bureaucratic intricacies governing the legislative process. Furthermore, one can think of various soft norms which structure parliamentary interactions to which the new MPs may have yet to be introduced. And finally, on a mere personal level, it is likely to make a difference whether you seek to strike a compromise with an MP across the ile with who you have been already sitting in parliament for several years or with somebody completely new. Personal ties need time to develop.
+
+All this made wonder how unprecedented the current influx of new MPs is in the history of the 2nd Republic (since 1945). More precisely, there are two things I will empirically look into: - How much prior experience as MPs do the members of the new Parliament have and how does it compare to other legislative periods? - How large has been the share of new MPs without prior experience in the National Council at the start of other legislative periods?
+
+As always, since this blog is in the first place a blog about data analytics in R, I will detail below the required steps. I will also make use of ParlAT, a package which I currently - as far as time permits - develop with the aim to make the analysis of data by Austria's parliament more accessible and easier to analyse. If you are not interested in these more technical side, just have a look at the embedded graphs which essentially summarise the results. Last but not least, iff you spot any errors, have questions etc. please do not hesitate to contact me via direct message on [bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}, [mastadon](https://mastodon.social/@zoowalk){target="_blank"} or, if really necessary, on [x](https://x.com/zoowalk){target="_blank"}.
+
+# Load packages
+
+```{r}
+#| code-summary: "Load packages and define auxiliary functions"
+#| code-fold: true
+
+library(tidyverse)
+library(ParlAT)
+library(furrr)
+plan(multisession, workers = 3)
+library(ggdist)
+library(ggtext)
+library(ggforce)
+library(ggrepel)
+library(tictoc)
+library(patchwork)
+library(ggh4x)
+
+vec_background_color <- NULL
+
+theme_post <- function() {
+  hrbrthemes::theme_ipsum_rc() %+replace%
+    theme(
+    #   plot.title = element_textbox_simple(size = rel(1.2), margin = ggplot2::margin(0, 0, .25, 0, unit = "cm"), family='Time'),
+      plot.title = element_textbox_simple(
+        size = rel(1.4), 
+        margin = ggplot2::margin(0, 0, .25, 0, unit = "cm"), 
+        family='Open Sans Condensed',
+        hjust = 0,
+        face="bold"),
+      plot.subtitle = element_textbox_simple(
+        size = rel(.9), 
+        color = "grey30", 
+        face = "plain", 
+        family='Roboto Condensed', 
+        margin = ggplot2::margin(0, 0, b = 1, 0, unit = "cm")),
+      text=element_text(family="Roboto Condensed"),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(size = rel(.8), hjust=1),
+      axis.text.x = element_text(size = rel(.8)),
+      panel.background = element_rect(fill = vec_background_color, color = NA),
+      plot.background = element_rect(fill = vec_background_color, color = NA),
+      panel.border = element_blank(),
+      plot.title.position = "plot",
+      plot.margin = ggplot2::margin(0, 0.25, 0, 0, "cm"),
+      legend.position = "top",
+      legend.margin = ggplot2::margin(l = 0, 0, 0, 0, "cm"),
+      legend.justification = "left",
+      legend.location = "plot",
+      legend.title = element_blank(),
+      plot.caption.position = "plot",
+      plot.caption = element_textbox_simple(
+        hjust = 0, 
+        color = "grey30", 
+        family="Roboto Condensed",
+        face="plain",
+        margin=ggplot2::margin(t=0.35, unit="cm"),
+        size=rel(.8)
+        )  
+    )
+}
+
+theme_set(theme_post())
+
+fn_label_unit <- function(x, label) {
+  x <- scales::number(x,big.mark=".", decimal.mark=",")
+  #x <- as.character(x)
+  index_last_label <- max(which(!is.na(x)))
+  x[index_last_label] <- paste(x[index_last_label], label)
+  return(x)
+}
+
+vec_party_colors <- c(
+  FPÖ = "#005DA8", NEOS = "#EA5290", ÖVP = "#5DC2CC", SPÖ = "#FC0204", GRÜNE = "#A3C630",
+  none = "darkgrey"
+)
+
+#define caption
+txt_caption_graph <- "Data: https:&#47;&#47;www.parlament.gv.at&#47;recherchieren&#47;open-data.  Analysis: Roland Schmidt | @zoowalk | <span style='font-weight:400'>https:&#47;&#47;werk.statt.codes</span>"
+
+```
+
+# MPs' experience in the National Council
+
+## MPs at start of legislative period
+
+In this section I want to get a measurement how much experienced are MPs when they get sworn in at the beginning of a legislative period. In other words, I would like to know, for how many days/years they have been already sitting as an MP in the National Council, prior to the new period. To do so we first have to get a dataframe which contains the MPs at the start of each legislative period. In a second step, I'll calculate their prior time as MPs.
+
+```{r}
+#| code-summary: "Get start and end dates of ligislative periods"
+#| code-fold: show
+df_legis_periods <- ParlAT::get_legis_period() %>%
+filter(legis_period>=5) #only after 1945
+
+glimpse(df_legis_periods)
+```
+
+As things stand for now, the API of the Austrian Parliament doesn't allow you to retrieve the composition of parliament for a specific date. It allows you to get all the MPs who where member of a specific legislative period, but the result includes also MPs who joined the Council at later stage in the legislative period.
+
+To be able to obtain only the MPs present at the legislative periods' start, I make use of ParlAT's 'create_panel' function which creates a MP-date panel. To put it differently, it returns a row for every day of the specified legislative periods the composition of the National Council. Note this function can take quite a bit of time.
+
+```{r}
+#| code-summary: "Get mps at start of legislative period"
+#| eval: true
+#| cache: true
+
+tic()
+df_panel_nr <- ParlAT::create_panel(institution="Nationalrat", legis_period=5:28)
+toc()
+```
+
+```{r}
+#| include: false
+
+#check 28 period
+
+df_panel_nr_28 <- df_panel_nr %>% filter(mandate_date>as.Date("2024-10-23"))
+df_panel_nr_28 %>%
+filter(mandate_date==max(mandate_date)) %>%
+nrow()
+```
+
+```{r}
+#| include: false
+#| eval: true
+
+#library(nanoparquet)
+# nanoparquet::write_parquet(df_panel_nr, file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_panel_nr.parquet"))
+
+df_panel_nr <- nanoparquet::read_parquet(file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_panel_nr.parquet"))
+
+#checks
+nrow(df_panel_nr)
+names(df_panel_nr)
+
+#checks
+df_panel_nr_28 <- ParlAT::create_panel(institution="Nationalrat", legis_period=28)
+
+```
+
+Overall, our MP-day panel features `r nrow(df_panel_nr)` rows. Before applying the filter in order to keep only the MPs at the start of the legislative period, there's one modification which is needed. As it turns out, there are some MPs who were MPs for only for single day. I am not sure what's the context to this, but as it turns out most of these cases actually relate to the first day of the 20th legislative period (15.1.1996). I remove them since according to the data a) they were replaced on the same day by other MPs and b) how much experience the MPs bring with them, going forward into the new legislative period.
+
+```{r}
+#| code-summary: "Identify MPs who lasted only one single day"
+
+df_panel_nr <- df_panel_nr %>%
+group_by(pad_intern, index_mandate) %>%
+mutate(n_days_mandate=difftime(max(mandate_date), min(mandate_date), unit="days")+1) %>%
+ungroup()
+
+df_single_day_mandates <- df_panel_nr %>%
+filter(n_days_mandate==1)
+
+#remove single day mandates
+df_panel_nr_mod <- df_panel_nr %>%
+anti_join(., df_single_day_mandates, by=c("pad_intern", "index_mandate"))
+
+```
+
+Now with the panel sanitized, let's keep only the the dates which are the starting dates of a new legislative period.
+
+```{r}
+#| code-summary: "Keep only MPs at start of period"
+
+df_panel_nr_start <- df_panel_nr_mod %>%
+#keep only start of legislative period
+semi_join(., df_legis_periods, by=c("mandate_date"="date_start")) %>%
+#legis_period information
+left_join(., df_legis_periods %>% select(-date_end), by=c("mandate_date"="date_start"))
+
+#remove end day of mandate ending to avoid overlaps
+df_panel_nr_start_corr <- df_panel_nr_start %>%
+filter(mandate_date_type!="mandatBis" | is.na(mandate_date_type)) 
+```
+
+```{r}
+#| code-summary: "Plot number of MPs/Size of National Council over time"
+
+df_plot <- df_panel_nr_start_corr %>%
+mutate(year=lubridate::year(mandate_date)) %>%
+mutate(year=as.factor(year)) %>%
+count(legis_period, year)
+
+df_plot %>%
+ggplot()+
+labs(title="Anzahl an NR Abeordnenten/Größe des Nationalrates",
+caption=txt_caption_graph)+
+geom_point(
+    aes(
+        x=as.factor(legis_period),
+        y=n)
+)+
+geom_line(
+    aes(
+        x=as.factor(legis_period),
+        y=n,
+        group=1)
+)+
+scale_x_discrete(labels=\(x) as.numeric(x) %>% as.roman(),
+  sec.axis = sec_axis(
+    transform=identity,
+  labels=paste0("'",df_plot$year %>% str_extract(., regex("\\d{2}$"))))
+)+
+scale_y_continuous(
+    limits=c(0, 200),
+    breaks=c(100, 165, 183),
+    minor_breaks=NULL
+    )
+```
+
+## Get number of days in Parl at starting day
+
+At this point we have a dataframe with the MPs at the start of each legislative period. Now, we want to know for how long each MP has been already *previously* sitting in the National Council, i.e. how many days/years of experience he or she already has. Note that I don't differentiate between party membership - e.g. if a current MP was previously sitting for a different party in the National Council, this (obviously) still counts as experience in the National Council.
+
+In order to answer this question, I'll set up a function which extracts an MP's period(s) in the National Council and cuts the period off with the date of the start of the legislative period in question. This is because I am interested in the experience at the start of each legislative period. As you may note, nested in the function is the call to ParlAT's `get_mandates` which retrieves an MP's mandates and their durations.
+
+```{r}
+#| code-summary: "Define function to get number of days in Parliament as of cut-off date"
+
+fn_get_days_in_parl <- function(pad_intern, cut_off_date) {
+
+#get start and end dates of all mandates of an MP
+df_mandates <- ParlAT::get_mandates(pad_intern = pad_intern, institution="Nationalrat")
+
+df_mandate_days <- df_mandates %>%
+#if a legislative period is onging fill in the current date
+mutate(mandatBis=case_when(
+    aktiv==TRUE & is.na(mandatBis) ~ lubridate::today(),
+    .default=mandatBis
+)) %>%
+distinct(pad_intern, mandat, wahlpartei, mandatVon, mandatBis) %>%
+#remove pre-WW2 mandates
+filter(mandatVon >= as.Date("1945-12-19")) %>%
+#only mandates which started before or at the cut_off_date
+filter(mandatVon <= cut_off_date) %>%
+#replace the end date if it's later than the cut-off date = date of begining of legislative period
+mutate(mandatBis_mod=case_when(
+    mandatBis >= cut_off_date ~ cut_off_date,
+    .default=mandatBis
+)) %>%
+#calculate length of mandate in days
+mutate(
+    days_in_parl=difftime(mandatBis_mod, mandatVon, unit="days")
+)
+
+#get sum of days per MP; pull numeric vector
+df_mandate_days %>%
+summarise(N_days_in_parl=sum(days_in_parl, na.rm=T)) %>%
+pull(N_days_in_parl) %>% as.numeric()
+
+}
+```
+
+Note that, depending on your machine, this function also takes a bit of time.
+
+```{r}
+#| code-summary: "Apply function"
+#| eval: true
+#| cache: true
+
+tic()
+df_days_in_parl <- df_panel_nr_start_corr %>%
+mutate(days_in_parl=future_map2_int(pad_intern, mandate_date, \(x,y) fn_get_days_in_parl(pad_intern=x, cut_off_date=y), .progress=TRUE))  %>%
+select(
+    legis_period,
+    pad_intern, 
+    name, 
+    wahlpartei, 
+    days_in_parl 
+)
+toc()
+
+
+#add starting year to legsilativ periods for better labeling
+df_legis_start_year <- df_legis_periods %>%
+mutate(year_start=lubridate::year(date_start)) %>%
+select(
+    legis_period_rom,
+    legis_period,
+    year_start
+)
+
+df_days_in_parl <- df_days_in_parl %>%
+left_join(., df_legis_start_year, by="legis_period")
+```
+
+```{r}
+#| include: false
+#| code-summary: "Check whether number of mps still ok"
+#| eval: false
+
+df_days_in_parl %>%
+count(year_start)
+```
+
+Since party abbreviations changed over time we have to standardize them.
+
+```{r}
+#| code-summary: "Keep only current five parties and standardize party names"
+
+#standardize party names & filter to current parties
+df_days_in_parl <- df_days_in_parl %>%
+mutate(wahlpartei_standard=case_when(
+    str_detect(wahlpartei, regex("NEOS")) ~ "NEOS",
+    str_detect(wahlpartei, regex("^F$|FPÖ")) ~ "FPÖ",
+    .default=wahlpartei))
+
+#show combinations  
+df_days_in_parl %>%
+distinct(wahlpartei, wahlpartei_standard)    
+```
+
+```{r}
+#| code-summary: "Check parties"
+#| include: false
+#| eval: false
+df_days_in_parl %>%
+reactable::reactable(., filterable=TRUE)
+```
+
+```{r}
+#| include: false
+#| eval: true
+
+# nanoparquet::write_parquet(df_days_in_parl, file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_days_in_parl.parquet"))
+```
+
+```{r}
+#| include: false
+df_days_in_parl <- nanoparquet::read_parquet(file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_days_in_parl.parquet"))
+```
+
+```{r}
+#| code-summary: "Check for missing data"
+visdat::vis_miss(df_days_in_parl)
+```
+
+There are no missing data.
+
+```{r}
+#| code-summary: "Check for duplicates"
+
+df_dupes <- janitor::get_dupes(df_days_in_parl, pad_intern, legis_period)
+df_dupes
+```
+
+There are `r nrow(df_dupes)` duplicates when checking for combinations of MP's ID and legislative period.
+
+## Visualize result
+
+By now we have the data we are interested in. Now, it's about finding the appropriate way to convey its meaning. It seems to me there are three ways to look at it:
+
+-   aggregated by party and legislative period
+-   average experience by MP per party and legislative period
+-   on an individual level, per legislative period
+
+## Aggregated MP experience by party
+
+Below two graphs. The first one is a line graph depicting the development for each of the parties which are currently in parliament (other parties are not shown individually but included into the category "Alle"). The position on the y-axis indicates the number of total years which the MPs have already previously spent as MPs in the National Chamber.
+
+A few things stood out to me:
+
+-   On a general level, MPs' peak in aggregate prior MP-years has been in the 1970s. I haven't really thought it through, but I assume there's been at least partly some legacy effect of the increase from 165 to 183 MPs with the start of the 13th legislative period.
+
+-   The 27th legislative period was the period in which MPs featured in total the lowest number of previous years in the National Chamber. I.e., it was the National Council with the least prior experience at the start of a new legislative period.
+
+-   At the start of the current, 28th legislative period, the FPÖ features for the first time more prior experience in the chamber than the SPÖ. For the SPÖ it's the lowest number since the start of the 2nd Republic. Considering its sweeping electoral success now, the FPÖ will most likely overtake the ÖVP by the end of this period.
+
+### Line graph
+
+```{r}
+#| code-summary: "Get summary stats per party and legisltive period"
+
+df_res_party <- df_days_in_parl %>%
+group_by(legis_period, wahlpartei_standard, year_start) %>%
+summarise(
+    mps_n=n(),
+    sum_days_in_parl=sum(days_in_parl, na.rm=T),
+    median_days_in_parl=median(days_in_parl, na.rm=T),
+    mean_days_in_parl=mean(days_in_parl, na.rm=T),
+    sd_days_in_parl=sd(days_in_parl, na.rm=T),
+    
+) %>%
+ungroup() %>%
+mutate(across(
+    matches("_days"),  # Select columns containing "_days"
+    list(years = ~./365),  # Create new columns by dividing by 365
+    .names = "{str_replace(.col, '_days','_years')}"  # Naming pattern for new columns
+  )
+) %>%
+mutate(year_start_short=str_extract(year_start, regex("\\d{2}$")) %>% paste0("'",.)) %>%
+mutate(year_start_short=str_replace_all(year_start_short, c("'02"="2002", "'45"="1945"))) %>%
+# mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}\n({year_start_short})")) %>%
+mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}<br><span style='font-size:6pt;'>({year_start_short})</span>")) %>%
+arrange(legis_period) %>%
+mutate(legis_period_label=fct_inorder(legis_period_label))
+
+df_res_all <- df_days_in_parl %>%
+group_by(legis_period, year_start) %>%
+summarise(
+    mps_n=n(),
+    sum_days_in_parl=sum(days_in_parl, na.rm=T),
+    median_days_in_parl=median(days_in_parl, na.rm=T),
+    mean_days_in_parl=mean(days_in_parl, na.rm=T),
+    sd_days_in_parl=sd(days_in_parl, na.rm=T)
+) %>%
+ungroup() %>%
+mutate(across(
+    matches("_days"),  # Select columns containing "_days"
+    list(years = ~./365),  # Create new columns by dividing by 365
+    .names = "{str_replace(.col, '_days','_years')}"  # Naming pattern for new columns
+  )
+) %>%
+mutate(year_start_short=str_extract(year_start, regex("\\d{2}$")) %>% paste0("'",.)) %>%
+mutate(year_start_short=str_replace_all(year_start_short, c("'02"="2002", "'45"="1945"))) %>%
+# mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}\n({year_start_short})")) %>%
+mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}<br><span style='font-size:6pt;'>({year_start_short})</span>")) %>%
+arrange(legis_period) %>%
+mutate(legis_period_label=fct_inorder(legis_period_label)) %>%
+mutate(wahlpartei_standard="Alle")
+
+vec_party_colors <- c(vec_party_colors, "Alle"="black")
+
+df_comb <- bind_rows(
+    df_res_all , 
+    df_res_party %>% 
+    filter(wahlpartei_standard %in% c("NEOS", "FPÖ", "SPÖ", "ÖVP", "GRÜNE"))
+    ) %>%
+    mutate(legend_label_y_right_color=vec_party_colors[wahlpartei_standard]) %>%
+    mutate(legend_label_y_right=glue::glue("<span style='color:{legend_label_y_right_color}'>{wahlpartei_standard}: {sum_years_in_parl %>% scales::number(accuracy=1, big.mark='.', 
+    decimal.mark=',')} Jahre</span>")) 
+```
+
+```{r}
+#| include: false
+#| eval: false
+
+# #check
+df_res_party %>%
+count(legis_period, wt=mps_n)
+
+df_res_party %>%
+reactable::reactable(., filterable=TRUE)
+```
+
+```{r}
+#| code-summary: "Plot"
+
+txt_subtitle <- "Die Graphik zeigt an wieviel Abgeordneten-Jahre Parteien zum Beginn einer Legislaturperiode bereits mitbringen. Abgeordneten-Jahre sind Jahre, die eine/r Abgeordnete/r in früheren Legislaturperioden bereits im Nationalrat gesessen ist und somit als Erfahrung mitbringt. Die y-Achse zeigt die Summme dieser Jahre für jede Partei an. **Mit dem Beginn der 28. Legislaturperiode verfügt der FPÖ-Fraktion erstmals über mehr Abgeordnetenjahre als die SPÖ.** Zu keinem anderen Legislaturperiodenbeginn hatten die Abgeordneten des Nationalrates in Summe so wenig Abgeordneten-Erfahrung wie zu Beginn der vergangenen 27. Legislaturperiode."
+
+df_res_party_interest <- df_res_party %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) 
+
+pl_comb <- df_comb %>% 
+ggplot()+
+labs(
+    title="Summe der Abgeordneten-Jahre pro Partei zu Beginn einer Legislaturperiode",
+    subtitle=txt_subtitle,
+    y="Summe der bisherigen Jahren als NR-Abg. ('Erfahrung')",
+    # x="Legislatureperiode (Startjahr)",
+    caption=txt_caption_graph
+)+
+geom_line(aes(
+    x=as.factor(legis_period_label),
+    y=sum_years_in_parl,
+    color=wahlpartei_standard,
+    group=wahlpartei_standard)
+)+
+geom_point(aes(
+    x=as.factor(legis_period_label),
+    y=sum_years_in_parl,
+    color=wahlpartei_standard)
+)+
+# ggrepel::geom_label_repel(
+#     data=. %>% filter(legis_period==28),
+#     aes(
+#         x=as.factor(legis_period_label),
+#         y=sum_years_in_parl ,
+#         label= glue::glue("{wahlpartei_standard}: {scales::number(sum_years_in_parl,accuracy=.1, big.mark='.', decimal.mark=',')} Jahre"),
+#         color=wahlpartei_standard
+#     ),
+#     label.size = 0,
+#     fill="grey95",
+#     xlim=c(28-3.5,NA),
+#     size=3,
+#     family="Roboto Condensed"
+# )+
+geom_vline(xintercept=9, color="black", linetype="dotted")+
+geom_text(
+    x=8, 
+    y=Inf, 
+    label="<- 165 Abg",
+    color="grey30",
+    check_overlap=T,
+    hjust=1,
+    vjust=1,
+    size=3,
+    family="Roboto Condensed"
+    )+
+geom_text(
+    x=10, 
+    y=Inf, 
+    color="grey30",
+    label="183 Abg ->",
+    check_overlap=T,
+    hjust=0,
+    vjust=1,
+    size=3,
+    family="Roboto Condensed"
+    )+
+scale_color_manual(values=vec_party_colors)+
+scale_x_discrete(
+    expand=expansion(mult=c(0.01,.01)),
+    guide = guide_axis(n.dodge=1)
+    )+
+scale_y_continuous(
+    labels=scales::number_format(big.mark = ".", decimal.mark = ","),
+    expand=expansion(mult=c(0.01,.1)),
+    sec.axis = sec_axis(~., 
+        breaks=df_comb %>% 
+            filter(legis_period==28) %>% 
+            mutate(sum_years_in_parl=case_when(
+                wahlpartei_standard=="NEOS" ~ sum_years_in_parl-50,
+                wahlpartei_standard=="FPÖ" ~ sum_years_in_parl-25,
+                .default= sum_years_in_parl)) %>%
+            pull(sum_years_in_parl),
+        labels=df_comb %>% filter(legis_period==28) %>% pull(legend_label_y_right))
+    )+
+theme(
+    panel.background=element_rect(fill=vec_background_color),
+    plot.background=element_rect(fill=vec_background_color),
+    legend.position="none",
+    # plot.title=element_text(family="Open Sans Condensed", face="bold"),
+    plot.caption.position="plot",
+    plot.subtitle = element_textbox_simple(
+      margin = ggplot2::margin(t=0, l=0, b=.4, r=0, unit="cm")),
+    axis.title.y=element_text(hjust=1, angle=90, color="grey30"),
+    axis.text.x=element_markdown(size=rel(.6)),
+    axis.text.y=element_markdown()
+    )
+pl_comb    
+```
+
+### Bargraph
+
+The second graph is a bar graph which depicts the distribution of aggregated prior MP-years/experience in the National Chamber between the parties for each legislative period. In other words, of the total prior MP-years, how much does each party contribute. How 'experienced' are the different parties vice-versa at a specific point in time?
+
+```{r}
+#| code-summary: "Distribution of legislative experience between parties"
+#| fig.height: 8
+
+df_res_party <- df_res_party %>%
+mutate(wahlpartei_standard_other=fct_other(wahlpartei_standard, keep=c("ÖVP", "SPÖ", "FPÖ", "GRÜNE", "NEOS"))) %>%
+mutate(wahlpartei_standard_other=forcats::fct_infreq(wahlpartei_standard_other) %>% fct_rev) %>%
+mutate(wahlpartei_standard_other=forcats::fct_relevel(wahlpartei_standard_other, "Other"))
+
+df_res_party_share <- df_res_party %>%
+group_by(legis_period, legis_period_label, year_start, wahlpartei_standard_other) %>%
+summarise(
+    sum_years_in_parl=sum(sum_years_in_parl)    
+) %>%
+group_by(legis_period, legis_period_label, year_start) %>%
+mutate(
+    share_years_in_parl=sum_years_in_parl/sum(sum_years_in_parl)
+) %>%
+ungroup() %>%
+# mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))} <i>({year_start})</i>")) %>%
+mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))} ({year_start})")) %>%
+arrange(desc(legis_period)) %>%
+mutate(legis_period_label=fct_inorder(legis_period_label) %>% fct_rev)
+
+# #annotated max share for each party
+# df_label_max <- df_res_party_share %>%
+# slice_max(order_by=share_years_in_parl, n=1, by=wahlpartei_standard_other) 
+
+# #annotate min share for each party
+# df_label_min <- df_res_party_share %>%
+# slice_min(order_by=share_years_in_parl, n=1, by=wahlpartei_standard_other)
+
+#factor levels of parties for sorting facets
+lvls_party <- c("Other", "SPÖ", "FPÖ", "GRÜNE", "NEOS", "ÖVP")
+
+#calculate y position of labels
+df_label <- df_res_party_share %>%
+# mutate(wahlpartei_standard_other=forcats::fct_reorder(wahlpartei_standard_other, levels = lvls_party)) %>%
+mutate(wahlpartei_standard_other=forcats::fct_rev(wahlpartei_standard_other)) %>%
+group_by(legis_period, legis_period_label) %>%
+arrange(wahlpartei_standard_other, .by_group = TRUE) %>%
+group_by(legis_period) %>%
+mutate(pos_y=cumsum(share_years_in_parl)-share_years_in_parl/2) %>%
+ungroup()
+
+#annotate largest share
+df_label_max <- df_label %>%
+filter(share_years_in_parl>0) %>%
+slice_max(order_by=share_years_in_parl, n=1, by=wahlpartei_standard_other) 
+
+#annotate for each party the smallest share other than 0
+df_label_min <- df_label %>%
+filter(share_years_in_parl>0) %>%
+slice_min(order_by=share_years_in_parl, n=1, by=wahlpartei_standard_other)
+
+#annotate all elements of the 28th legislative period start
+df_label_28 <- df_label %>%
+filter(legis_period==28)
+
+#combine labels
+df_label_comb  <-  bind_rows(df_label_28, df_label_min, df_label_max) %>%
+mutate(segment_color=case_when(
+    wahlpartei_standard_other=="FPÖ" ~ "white",
+    .default="black"))
+
+#labels sec axis
+vec_label_sec_axis <- df_res_party_share %>%
+filter(legis_period>5) %>%
+group_by(legis_period) %>%
+summarise(total_years_in_parl=sum(sum_years_in_parl, na.rm=TRUE)) %>%
+ungroup() %>%
+arrange(legis_period) %>%
+pull(total_years_in_parl) %>%
+scales::number(accuracy=.1, big.mark='.', decimal.mark=',')
+
+txt_subtitle <- "Die Graphik zeigt die Verteilung der aggregtierten Abgeordnenten-Jahre zwischen den Parteien zu Beginn der jeweiligen Legislaturperiode an. Abgeordneten-Jahre sind Jahre, die Abgeordente bereits zuvor im Nationalrat gesessen haben und als Erfahrung in die beginnende Legislaturperiode mitbringen. Segment-Labels zeigen die aktuellen sowie höchsten und niedrigsten Werte für jede Partei an. Die SPÖ beginnt die 28. Legislaturperiode mit ihrem historisch niedrigsten Anteil an aggregierten Abgeordneten-Jahren."
+
+pl_res_party_share <- df_res_party_share %>%
+filter(legis_period>5) %>%
+ggplot()+
+labs(
+    title="Verteilung der Abgeordneten-Jahre pro Legislaturperiode",
+    x="Verteilung der Abgeordneten-Jahre zwischen Parteien je Legislaturperiode",
+    subtitle=txt_subtitle,
+    caption=txt_caption_graph
+)+
+geom_bar(
+    aes(
+        y=legis_period_label,
+        x=share_years_in_parl,
+        fill=wahlpartei_standard_other#,
+        # group=wahlpartei_standard_other
+    ),
+    stat="identity",
+    position="stack",
+    orientation="y"
+)+
+geom_text(
+    data=df_label_comb %>% 
+    filter(wahlpartei_standard_other!="Other"),
+    aes(
+        y=as.factor(legis_period_label),
+        x=pos_y,
+        label=share_years_in_parl %>% scales::percent(accuracy=.1),
+        color=segment_color), #make annoation color dependent on segment color (white font/dark background)
+    stat="identity",
+    size=3,
+    check_overlap=TRUE
+)+
+scale_fill_manual(values=vec_party_colors)+
+scale_x_continuous(
+    labels=scales::label_percent(accuracy = 1),
+    expand=expansion(mult=c(0,0.001)),
+    breaks=c(0, .25, .5, .75, 1),
+    minor_breaks=NULL,
+    position="top"
+    )+
+scale_y_discrete(
+    sec.axis=dup_axis(
+        name="Summe Abg.-Jahre zu Beginn der Legislaturperiode",
+        labels=vec_label_sec_axis
+        ),
+    expand=expansion(mult=c(0,0))
+)+
+scale_color_identity()+
+theme(
+    axis.title=element_text(size=rel(.8), color="grey30"),
+    axis.title.x=element_text(
+        color="grey30", 
+        margin=ggplot2::margin(0,0,0,0,"cm"),
+        hjust=0),
+    axis.text.x.top=element_markdown(
+        hjust=c(0,.5,.5,.5,1),
+        margin=ggplot2::margin(0.1,0,0,0,"cm")
+        ),
+    axis.title.y.right=element_text(
+        hjust=1, 
+        color="grey30", ),
+    axis.text.y=element_markdown(),
+    axis.text.y.right=element_markdown(
+        hjust=1, 
+        color="grey30",
+        margin=ggplot2::margin(0,0.1,0,0.1,"cm")
+        ),  
+    panel.grid.major.y=element_blank(),
+    panel.grid.minor.x=element_blank(),
+    panel.grid.minor.y=element_blank(),
+    legend.position="none",
+    plot.background=element_rect(fill=vec_background_color),
+    panel.background=element_rect(fill=vec_background_color),
+    plot.title.position = "plot",
+    plot.subtitle = element_textbox_simple(
+        margin = ggplot2::margin(t=0, l=0, b=.3, r=0, unit="cm")),
+    plot.margin = ggplot2::margin(r = 0.25, 0, 0, 0, "cm")
+    )
+```
+
+```{r}
+#| include: false
+#| eval: false
+
+complete_theme <- modifyList(theme_get(), pl_res_party_share$theme)
+listviewer::jsonedit(complete_theme)
+```
+
+```{r}
+#| fig.height: 6
+pl_res_party_share
+```
+
+## Average MP experience by party
+
+In the previous section we looked at parties' aggregate number of their MPs'previous years in the National Council. To get a more nuanced view, let's now look at the average MP experience by party.
+
+### beeswarm
+
+```{r}
+df_days_in_parl %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+ggplot()+
+geom_jitter(
+    aes(
+        x=as.factor(legis_period), 
+        y=days_in_parl/365
+        )
+)+
+facet_wrap(vars(wahlpartei_standard))
+```
+
+mean median and SD
+
+# concentration of experience within a party
+
+gini
+
+### statpoint_interval
+
+```{r}
+#| eval: true
+#| code-summary: "Average MP-years per party" 
+
+#update of package needed; incompatibility with dev version of ggplot?
+
+lvls_party <- c("FPÖ", "ÖVP", "SPÖ", "NEOS", "GRÜNE")
+
+df_pl_mp_average <- df_days_in_parl %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS"))  %>%
+mutate(wahlpartei_standard=factor(wahlpartei_standard, levels=lvls_party)) |> 
+  group_by(legis_period, wahlpartei_standard) |> 
+  mutate(n_obs=n()) |> 
+  ungroup()
+
+pl_mp_average <- df_pl_mp_average %>%
+#filter(legis_period>20)
+ggplot()+
+stat_pointinterval(
+    aes(
+        x=as.factor(legis_period), 
+        y=days_in_parl/365,
+        color=wahlpartei_standard#,
+        #size=n_obs
+        ),
+)+
+scale_color_manual(values=vec_party_colors)+
+facet_wrap(vars(wahlpartei_standard))
+```
+
+```{r}
+#| fig-height: 7
+
+pl_mp_average
+```
+
+# gini
+
+```{r}
+library(ineq)
+
+df_gini <- df_days_in_parl |> 
+  group_by(legis_period, wahlpartei_standard) |> 
+  summarise(gini=ineq::Gini(days_in_parl)) |> 
+  ungroup()
+
+df_gini |> 
+  filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS"))  %>%
+  filter(legis_period==28) |> 
+  ggplot()+
+  geom_point(aes(x=wahlpartei_standard, y=gini, color=wahlpartei_standard))+
+  scale_color_manual(values=vec_party_colors)+
+  scale_y_continuous(limits=c(0,1))
+
+```
+
+# median - geom_point/geom_line
+
+```{r}
+df_days_in_parl %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+group_by(wahlpartei_standard, legis_period) %>%
+summarise(median_days_in_parl=median(days_in_parl, na.rm=T)) %>%
+ungroup() %>%
+ggplot()+
+geom_point(
+    aes(
+        x=as.factor(legis_period), 
+        y=median_days_in_parl, 
+        color=wahlpartei_standard)
+)+
+geom_line(
+    aes(x=as.factor(legis_period), 
+    y=median_days_in_parl, 
+    group=wahlpartei_standard,
+    color=wahlpartei_standard)
+)+
+scale_color_manual(values=vec_party_colors)+
+facet_wrap(vars(wahlpartei_standard))+
+theme(
+    plot.background=element_rect(fill=vec_background_color),
+    panel.background=element_rect(fill=vec_background_color)
+)
+
+```
+
+# mean - geom_point/geom_line
+
+```{r}
+df_days_in_parl %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+group_by(wahlpartei_standard, legis_period) %>%
+summarise(mean_days_in_parl=mean(days_in_parl, na.rm=T)) %>%
+ungroup() %>%
+ggplot()+
+geom_point(
+    aes(x=as.factor(legis_period), y=mean_days_in_parl, color=wahlpartei_standard)
+)+
+geom_line(
+    aes(x=as.factor(legis_period), y=mean_days_in_parl, 
+    group=wahlpartei_standard,
+    color=wahlpartei_standard)
+)+
+scale_color_manual(values=vec_party_colors)+
+facet_wrap(~wahlpartei_standard, ncol=1)
+```
+
+## Individual MPs
+
+# 28 legis period
+
+```{r}
+df_labels <- df_days_in_parl %>%
+filter(legis_period==28) %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+slice_max(order_by=days_in_parl, n=1, by=wahlpartei_standard, ) 
+
+df_days_in_parl %>%
+filter(legis_period==28) %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+mutate(wahlpartei_standard=factor(wahlpartei_standard, levels=lvls_party)) %>%
+ggplot()+
+labs(
+    title="Dauer der Zugerhörigkeit zum Nationalrat",
+    x="Tage als Abgeordnete/r zum Nationalrat",
+    caption=txt_caption_graph
+)+
+geom_boxplot(
+    aes(x=days_in_parl, y=wahlpartei_standard),
+    color="grey90",
+    alpha=.01,
+    outliers=FALSE
+)+
+ggbeeswarm::geom_quasirandom(
+    aes(
+        x=days_in_parl, 
+        y=wahlpartei_standard, 
+        color=wahlpartei_standard
+        ),
+)+
+geom_text_repel(
+    data=df_labels
+    ,aes(
+    x=days_in_parl,
+    y=wahlpartei_standard,
+    label=name
+    ),
+    min.segment.length = 0
+)+
+scale_color_manual(values=vec_party_colors)+
+scale_x_continuous(labels=\(x) fn_label_unit(x, label="Tage als NR Abg."))+
+theme_post()+
+theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.x=element_text(hjust=0),
+    axis.text.y=element_blank(),
+    legend.position="none",
+    strip.text=element_text(hjust=1)
+)+
+facet_wrap(
+    vars(wahlpartei_standard), 
+    ncol=1, 
+    strip.position="left",
+    scales="free_y")
+```
+
+### table
+
+```{r}
+#| code-summary: ""
+#| eval: true
+
+df_experience <- df_days_in_parl %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+group_by(wahlpartei_standard, legis_period) %>%
+summarise(
+    median_days_in_parl=median(days_in_parl, na.rm=T),
+    mean_days_in_parl=mean(days_in_parl, na.rm=T),
+    sd_days_in_parl=sd(days_in_parl, na.rm=T)
+    )
+
+df_experience    
+```
+
+# Share of Newcomers
+
+In the following section, I am interested in each party's share of new MPs at the start of a new legislative period.
+
+Here, I take an MP as 'new' if she or he so far haven't had a mandate in any of the previous National Councils. So if an MP of the 28th legislative period, didn't have a mandate in the 27th, but e.g. in the 26th, I would still not consider it as a new MPs. The motivation behind this approach is my interest in how large the share of MPs without any previous (lower chamber) parliamentarian experience actually is. To get the numbers of interest, let's - get a data frame of all MPs since 1945 and the number of the legislative periods in which they served - and match this dataframe with the with composition of the National Council at the start of each legislative period.
+
+```{r}
+#| code-summary: "Get all MPs since 1945"
+
+#df of all MPs since 1945; the 5 legislative period
+df_mps_5_end <- ParlAT::get_mps(legis_period = "all", institution="Nationalrat") %>%
+unnest_longer(c("gesetzgebungsperioden")) %>%
+mutate(gesetzgebungsperioden_num=as.roman(gesetzgebungsperioden) %>% as.numeric) %>%
+filter(gesetzgebungsperioden_num>=5) %>%
+rename(legis_period=gesetzgebungsperioden_num)
+```
+
+```{r}
+#| code-summary: "interim save"
+#| eval: true
+#| include: false
+df_mps_5_end %>% 
+select(-fraktion, -bundesland) %>%
+nanoparquet::write_parquet(file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_mps_5_end.parquet"))
+```
+
+```{r}
+#| code-summary: "Import interim save"
+
+df_mps_5_end <- nanoparquet::read_parquet(file=here::here("posts", "2024-10-24-mps-experience", "data_interim", "df_mps_5_end.parquet"))
+```
+
+## bar graph share of new MPs
+
+```{r}
+#| code-summary: "Match MPs at start of legislative period with mandates"
+#| fig-height: 6
+#| column: body-outset-right
+
+df_mps_legis <- df_days_in_parl %>%
+  mutate(year_start_short=str_extract(year_start, regex("\\d{2}$")) %>% paste0("'",.)) %>%
+  mutate(year_start_short=str_replace_all(year_start_short,c("'02"="2002", "'45"="1945"))) %>%
+# mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}\n({year_start_short})")) %>%
+mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}<br><span style='font-size:6pt;'>({year_start_short})</span>")) %>%
+arrange(legis_period) %>%
+mutate(legis_period_label=fct_inorder(legis_period_label)) |> 
+select(
+    pad_intern,
+    legis_period,
+    legis_period_label,
+    name,
+    wahlpartei_standard,
+) 
+
+#add start date of legislative period; from there derive end date of previous period
+df_mps_legis <- df_mps_legis %>%
+left_join(., df_legis_periods %>% select(legis_period, date_start), by="legis_period") %>%
+mutate(date_end_previous=date_start-1)
+
+#check
+#nrow(df_mps_legis_x)==nrow(df_mps_legis)
+
+#use date_end_previous to match with all MPs at the end of the previous legislative period => reveals whether MP 'survived' elections
+#get MPs of last day of legis period from panel
+df_mps_legis <- df_mps_legis %>%
+nest_join(., 
+    df_panel_nr, 
+    name="mp_remainer",
+    by=join_by(pad_intern, date_end_previous==mandate_date))
+
+df_mps_legis <- df_mps_legis %>%
+mutate(
+    mp_status_remainer_match=map_lgl(mp_remainer, \(x) nrow(x)==1)
+)
+
+#check whether MP has been in any previous legislative period
+df_mps_legis <- df_mps_legis %>%
+nest_join(., 
+    df_mps_5_end,
+    name="mp_returnee",
+    by=join_by(pad_intern, legis_period>legis_period)) %>%
+mutate(
+    mp_status_returnee_match=map_lgl(mp_returnee, \(x) nrow(x)>0)
+) %>%
+#only a returnee if not already a remainer
+mutate(
+    mp_status_returnee_match=if_else(mp_status_remainer_match==TRUE, FALSE, mp_status_returnee_match)
+)
+
+df_mps_legis <- df_mps_legis %>%
+mutate(
+    mp_status_novice=case_when(
+        mp_status_returnee_match==FALSE &
+        mp_status_remainer_match==FALSE ~ TRUE,
+        .default=FALSE        
+    )
+)
+
+df_mps_legis <- df_mps_legis %>%
+mutate(mp_status=case_when(
+    mp_status_novice==TRUE ~ "novice",
+    mp_status_returnee_match==TRUE ~ "returnee",
+    mp_status_remainer_match==TRUE ~ "remainer",
+    .default=NA
+)) %>%
+mutate(
+    mp_status=forcats::fct(mp_status, levels=c("novice", "returnee", "remainer"))
+)
+
+df_mps_legis %>%
+filter(is.na(mp_status)) %>%
+nrow()
+```
+
+```{r}
+#| include: false
+#| eval: false
+
+df_mps_legis %>% 
+reactable::reactable(, filterable=TRUE)
+```
+
+```{r}
+df_all <- df_mps_legis %>%
+count(legis_period, legis_period_label, mp_status) %>%
+group_by(legis_period, legis_period_label) %>%
+mutate(rel=n/sum(n)) %>%
+ungroup() %>%
+mutate(wahlpartei_standard="ALLE")
+
+df_select <- df_mps_legis %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+mutate(wahlpartei_standard=forcats::fct(wahlpartei_standard)) %>%
+count(legis_period, legis_period_label, wahlpartei_standard, mp_status) 
+nrow(df_select) 
+
+#make sure that for every legis period you have a value for the parties of interest; if the party was
+#not in the National Counicl => set rel to NA
+# df_select <- df_select |>
+# group_by(legis_period, legis_period_label) %>%
+# complete(wahlpartei_standard, mp_status, fill=list(n=NA)) %>%
+# ungroup()
+
+# df_select %>% filter(legis_period==14)
+
+#make sure that for every legis period - party pair you have three values for mp_status
+df_select <- df_select |>
+group_by(legis_period, legis_period_label, wahlpartei_standard) |>
+complete(mp_status, fill=list(n=0)) %>%
+ungroup()
+
+# df_select_x %>% filter(legis_period==26)
+
+df_select <- df_select |>
+group_by(legis_period, legis_period_label, wahlpartei_standard) %>%
+mutate(rel=n/sum(n)) %>%
+ungroup()
+
+df_comb <- bind_rows(df_all, df_select)
+
+#order factor levels for order of bar segments
+lvls_mp_status <- c("novice", "returnee", "remainer")
+df_comb <- df_comb |> 
+  mutate(mp_status=forcats::fct(mp_status, levels=lvls_mp_status))
+
+#calculate y-position of segment labels
+df_comb <- df_comb |> 
+  group_by(legis_period, legis_period_label, wahlpartei_standard) |> 
+  arrange(desc(mp_status), .by_group=TRUE) |> 
+  mutate(rel_cumsum=cumsum(rel)) |> 
+  mutate(label_pos=(rel/2)+lag(rel_cumsum, default=0)) |> 
+  ungroup()
+
+vec_mp_status_colors <- c("novice"="orange", "remainer"="#152238", "returnee"="darkred")
+
+#Labels segments
+## add legis-period index per party; 1st period should not be labelled
+df_comb <- df_comb |> 
+  group_by(wahlpartei_standard) |> 
+  arrange(legis_period, .by_group=TRUE) |> 
+  mutate(
+    legis_period_first=min(legis_period)==legis_period
+  ) |> 
+  ungroup()
+
+## latest
+df_label_latest <- df_comb |> 
+  filter(legis_period_first==FALSE) |> 
+  slice_max(order_by=legis_period, by=wahlpartei_standard, n=1)
+## max
+df_label_max <- df_comb |> 
+  filter(legis_period_first==FALSE) |> 
+  slice_max(order_by=rel, by=c(wahlpartei_standard, mp_status), n=1)
+## min
+df_label_min <- df_comb |> 
+  filter(legis_period_first==FALSE) |> 
+  slice_min(order_by=rel, by=c(wahlpartei_standard, mp_status), n=1)
+
+#combine all
+df_labels <- bind_rows(df_label_latest, df_label_max) |> 
+  distinct()
+
+#Add color dependent on MP status/segment color
+df_labels <- df_labels %>%
+mutate(
+    segment_label_color=case_when(
+        mp_status=="novice" ~ "black",
+        mp_status=="remainer" ~ "white",
+        mp_status=="returnee" ~ "white"
+    )
+)  
+
+#Add party total seats / legis period
+df_comb <- df_comb |> 
+  group_by(legis_period, wahlpartei_standard) |> 
+  mutate(n_sum=sum(n), .after="n") |> 
+  ungroup()
+
+```
+
+```{r}
+#| fig-height: 6
+
+txt_subtitle <- glue::glue("Die Graphik zeigt die relative Zusammensetzung der Parteien zu Beginn der Legislaturperioden nach vorhergender Erfahrung im Nationalrat an. **<span style='color:{vec_mp_status_colors['novice']}; font-weight:00'>'Newcomers'</span>** sitzen zum ersten mal im Nationalrat. **<span style='color:{vec_mp_status_colors['returnee']}'>'Returnees'</span>** waren bereits Abgeordnete jedoch nicht am Ende der vorhergehenden Legislaturperiode. **<span style='color:{vec_mp_status_colors['remainer']}'>'Remainers'</span>** waren am Ende der letzten Legislaturperiode bereits Mitglied. Segment-Labels zeigen die aktuellen sowie höchsten und niedrigsten Werte für jede Partei an. Die Kategorie 'Alle' enthalt sämtliche Partein, die in der 2. Republik im Parlament vertreten waren. Was den Anteil an Newcomern angeht so sind die Höchstwerte erst vor relativ kurzem erreicht worden.")
+
+pl_rel <- df_comb |> 
+  ggplot()+
+  labs(
+    title="Newcomers, Returnees und Remainers: Zusammensetzung des Nationalrats nach vorhergehender NR-Erfahrung",
+    subtitle=txt_subtitle,
+    y="Anteil nach NR-Erfahrung",
+    caption=txt_caption_graph
+  )+
+  geom_bar(
+    aes(x=legis_period_label,
+        y=rel,
+        fill=mp_status),
+    stat="identity")+
+  #segment labels
+  geom_text(
+    data=df_labels %>% filter(rel>.05),
+    aes(
+      x=legis_period_label,
+      y=label_pos,
+      label=rel |> scales::percent(accuracy=1),
+      color=segment_label_color
+    ),
+    size=2.5,
+    fontface="bold",
+    nudge_x =.25, #right allingmet distorts positioning
+    hjust=1
+  )+
+  geom_text(
+    aes(
+      x=legis_period_label,
+      y=1.1, #1=100 %
+      label=n_sum
+    ),
+    color="grey30",
+    check_overlap = TRUE,
+    size=2.5
+  )+
+  scale_fill_manual(values=vec_mp_status_colors)+
+  scale_y_continuous(
+    position="right",
+    breaks=c(0,.5,1),
+    label=scales::label_percent(accuracy = 1)
+    )+
+  scale_x_discrete(
+    expand=expansion(mult=c(0,0)),
+    sec.axis = dup_axis(name="Anzahl Mandate", labels=NULL)
+  )+
+  scale_color_identity()+
+  facet_wrap2(
+    vars(wahlpartei_standard),
+    ncol=1,
+    scales="free_y",
+    strip.position="left")+
+  #define y-scale for each facet; show axis labels only for first facet
+  facetted_pos_scales(
+    y = list(
+       wahlpartei_standard=="ALLE" ~ scale_y_continuous(
+            position="right",
+            breaks=c(0,.5,1),
+            label=scales::label_percent(accuracy = 1),
+            expand=expansion(mult=c(0,0.1))),
+       wahlpartei_standard!="ALLE" ~ scale_y_continuous(
+         labels=NULL,
+         breaks=c(0,.5,1),
+         expand=expansion(mult=c(0,0.1))))
+  )+
+  theme(
+    panel.grid.major.x=element_blank(),
+    panel.grid.minor.x=element_blank(),
+    panel.grid.minor.y=element_blank(),
+    axis.title.x.top = element_text(
+        color="grey30", 
+        size=rel(0.8),
+        hjust=0,
+        margin=ggplot2::margin(b=0, unit="cm")
+        ),
+    axis.text.x=element_markdown(size=rel(.6)),
+    axis.title.y.right=element_text(
+      size=rel(.8),
+      angle=270,
+      hjust=0.03,
+      color="grey30"
+      ),
+    axis.text.y.right=element_text(,
+      vjust=c(0,.5,1),
+      size=rel(.8),
+      color="grey30"),
+    panel.spacing.y=unit(0.25, "cm"),
+    legend.position="none",
+    strip.text=element_text(
+      color="grey30", 
+      #vjust=1,
+      hjust=1,
+      size=rel(0.8))
+  )
+
+plot(pl_rel)
+
+```
+
+```{r}
+knitr::knit_exit()
+```
+
+```{r}
+df_comb |> 
+  filter(legis_period_first==FALSE) |> 
+  filter(mp_status=="novice") |> 
+  ggplot()+
+  geom_label(
+    aes(
+      x=wahlpartei_standard,
+      y=rel,
+      label=legis_period,
+      color=wahlpartei_standard))+
+  scale_color_manual(values=vec_party_colors)
+  
+```
+
+## Linegraph share of new comers
+
+### data
+
+```{r}
+df_pl_novice <- df_comb  %>%
+filter(legis_period_first==FALSE) %>%
+filter(mp_status=="novice") 
+
+class(df_pl_novice$wahlpartei_standard)
+class(df_pl_novice$mp_status)
+levels(df_pl_novice$mp_status)
+
+df_pl_novice <- df_pl_novice %>%
+mutate(mp_status=fct_drop(mp_status)) %>%
+mutate(wahlpartei_standard=fct(wahlpartei_standard))
+
+class(df_pl_novice$wahlpartei_standard)
+
+df_pl_novice <- df_pl_novice %>%
+group_by(legis_period, legis_period_label) %>%
+complete(wahlpartei_standard, fill=list(rel=NA, mp_status="novice"))
+```
+
+### graph
+
+```{r}
+#linegraph
+df_pl_novice %>%
+ggplot()+
+geom_line(
+    aes(
+        x=legis_period_label,
+        y=rel,
+        color=wahlpartei_standard,
+        group=wahlpartei_standard
+    ),
+    # na.rm=TRUE
+)+
+geom_label(
+    aes(
+        x=legis_period_label,
+        y=rel,
+        label=rel %>% scales::percent(accuracy = .1),
+        color=wahlpartei_standard,
+        group=wahlpartei_standard
+    )
+)+
+scale_color_manual(
+    values=vec_party_colors)+
+scale_y_continuous(
+    limits=c(0,NA),
+    expand=expansion(mult=c(0.1,0.1)),
+    labels=scales::label_percent(accuracy = 1)
+)+
+facet_wrap2(vars(wahlpartei_standard), 
+ncol=1
+# scale="free_y"
+)+
+theme(
+    axis.text.x=element_markdown(size=rel(.6))
+)
+```
+
+# Continuity in parliamentary groups
+
+```{r}
+df_mps_legis_count <- df_mps_legis %>%
+#filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+count(legis_period, mp_status, wahlpartei_standard)  %>%
+group_by(legis_period, wahlpartei_standard) %>%
+mutate(mandates_n=sum(n)) 
+
+df_mps_legis_count_wide <- df_mps_legis_count %>%
+pivot_wider(id_cols=c(legis_period, wahlpartei_standard, mandates_n),
+names_from=mp_status,
+values_from=n) %>%
+group_by(wahlpartei_standard) %>%
+arrange(legis_period, .by_group=TRUE) %>%
+mutate(retention_rate=remainer/lag(mandates_n))
+
+df_mps_legis_count_wide %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+ggplot()+
+geom_line(
+    aes(x=legis_period, y=retention_rate, color=wahlpartei_standard)
+)+
+# geom_line(
+#     aes(x=legis_period, y=retention_rate, color=wahlpartei_standard)
+# )+
+scale_color_manual(values=vec_party_colors)+
+facet_wrap(vars(wahlpartei_standard),ncol=1)
+
+
+df_mps_legis_count %>%
+group_by(legis_period, wahlpartei_standard) %>%
+mutate(rel=n/sum(n)) %>%
+ungroup() %>%
+group_by(legis_period, wahlpartei_standard) %>%
+mutate(mandates_n=sum(n)) %>%
+ungroup() %>%
+# filter(mp_status=="remainer") %>%
+group_by(wahlpartei_standard) %>%
+arrange(legis_period, .by_group=TRUE)  %>%
+mutate(retention_rate=n/lag(mandates_n)) 
+
+```
+
+### Top 5 of new MPs (returnees and novices)
+
+```{r}
+df_mps_status <- df_mps_legis %>%
+mutate(
+    mp_status_2=case_when(
+        mp_status %in% c("novice", "returnee") ~ "new",
+        mp_status=="remainer" ~ "remainer",
+
+    )
+) %>%
+count(legis_period, year_start, mp_status_2, wahlpartei_standard) %>%
+group_by(legis_period, year_start, wahlpartei_standard) %>%
+mutate(rel=n/sum(n)) %>%
+ungroup()
+
+df_mps_status %>%
+filter(legis_period>5) %>%
+filter(mp_status_2=="new") %>%
+slice_max(order_by=n, n=5)
+```
+
+```{r}
+knitr::knit_exit()
+```
+
+```{r}
+
+df_mps_previous_mandates_2$period_preceding[1]
+
+class(df_mps_previous_mandates_2$period_preceding)
+
+mutate(
+    last_perioud=case_when(
+        !is.na(period_preceding) ~ TRUE,
+        .default=FALSE
+    )
+)
+
+
+df_mps_previous_mandate <- df_days_in_parl %>%
+left_join(
+    .,
+    df_mps_5_end %>% select(pad_intern, gesetzgebungsperioden_num_previous=gesetzgebungsperioden_num),
+    by=join_by(
+        pad_intern, 
+        legis_period>gesetzgebungsperioden_num_previous
+        )) 
+
+#per party and legislative period
+df_mps_previous_mandate_indicator <- df_mps_previous_mandate %>%
+group_by(
+    pad_intern,
+    legis_period,
+    wahlpartei_standard #party affiliation at start of period
+) %>%
+summarise(
+    previous_mandate=sum(!is.na(gesetzgebungsperioden_num_previous))#,
+    # wahlpartei_prev=str_c(fraktion, collapse=", ")
+) %>%
+ungroup() %>%
+mutate(previous_mandate=case_when(
+    previous_mandate==0 ~ FALSE,
+    previous_mandate>0 ~ TRUE
+))
+
+nrow(df_mps_previous_mandate_indicator)==nrow(df_days_in_parl)
+
+
+#across all parties, per legislative period
+# df_all_previous_mandate_indicator <- df_mps_previous_mandate_indicator %>%
+# group_by(
+#     legis_period,
+#     previous_mandate, .drop=FALSE
+# ) %>%
+# summarise(
+#     count=n()) %>%
+# mutate(
+# wahlpartei_standard="ALLE"
+# )
+
+#add category for all parties
+df_all_previous_mandate_indicator <- df_mps_previous_mandate_indicator %>%
+mutate(wahlpartei_standard="ALLE")
+
+df_all <- bind_rows(
+    df_mps_previous_mandate_indicator, 
+    df_all_previous_mandate_indicator)
+
+
+txt_subtitle="Wieiviel % der Abgeordneten haben keine vorherige Erfahrung als Nationalratsabgeordnete. Zahlen beziehen sich auf den Beginn der Legislaturperioden."
+
+#Plot - party of interests and "alle"
+df_all %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS", "ALLE")) %>%
+ggplot()+
+labs(
+    title="Anteil von neuen Abgeordneten",
+    subtitle=txt_subtitle,
+    x="Legislaturperiode"
+)+
+geom_bar(
+    aes(x=as.factor(legis_period), 
+    fill=wahlpartei_standard,
+    alpha=previous_mandate
+    ),
+    position="fill"
+)+
+geom_text(
+    aes(
+        x=as.factor(legis_period),
+        y=after_stat(1.05),
+        label=after_stat(count)
+    ),
+    vjust=0,
+    stat="count"
+)+
+geom_text(
+    data=. %>% count(legis_period, wahlpartei_standard, previous_mandate) %>%
+      group_by(legis_period, wahlpartei_standard) %>%
+      mutate(
+          rel=n/sum(n)
+      ) %>%
+      mutate(label_pos=1-(rel/2)) %>%
+      filter(previous_mandate==FALSE),
+    aes(
+      x = as.factor(legis_period),
+      group = previous_mandate,
+      y = label_pos,
+      label=rel  %>% scales::percent(accuracy = 1)
+      ),
+    size = 3, #font size
+    stat = "identity",
+    position = position_fill()
+  ) +
+scale_fill_manual(values=vec_party_colors)+
+scale_alpha_manual(values=c(0.5, 1))+
+scale_y_continuous(
+    labels=scales::label_percent(accuracy = 1),
+    expand=expansion(mult=c(0,.15)),
+    breaks=seq(0,1,.5),
+    minor_breaks=NULL,
+    position="right"
+    )+
+scale_x_discrete(
+  labels=\(x) as.roman(as.numeric(x)),
+  guide = guide_axis(n.dodge = 2))+
+facet_wrap(vars(wahlpartei_standard), 
+           ncol=1,
+           strip.position="left"
+           )+
+theme_minimal()+
+theme(
+    panel.grid.major.x=element_blank(),
+    panel.grid.minor.x=element_blank(),
+    panel.grid.minor.y=element_blank(),
+    axis.title.x=element_text(hjust=1, color="grey30"),
+    strip.text.x=element_text(angle=0, hjust=0),
+    legend.position="none",
+    plot.title.position = "plot",
+    axis.title.y.right = element_blank(),
+    plot.subtitle=element_textbox_simple()
+)+
+guides(fill="none")
+```
+
+```{r}
+knitr::knit_exit()
+```
+
+## line graph
+
+```{r}
+df_parties <- df_days_in_parl_x %>%
+filter(wahlpartei_standard %in% c("GRÜNE", "ÖVP", "SPÖ", "FPÖ", "NEOS")) %>%
+mutate(previous_mandate=as.factor(previous_mandate)) %>%
+count(legis_period, wahlpartei_standard, previous_mandate, .drop=FALSE) %>%
+group_by(legis_period, wahlpartei_standard) %>%
+mutate(
+    rel=n/sum(n)) %>%
+    filter(previous_mandate==FALSE) %>%
+mutate(legis_period=as.factor(legis_period))
+
+df_all <- df_days_in_parl_x %>%
+mutate(previous_mandate=as.factor(previous_mandate)) %>%
+count(legis_period, previous_mandate, .drop=FALSE) %>%
+group_by(legis_period) %>%
+mutate(
+    rel=n/sum(n)) %>%
+    filter(previous_mandate==FALSE) %>%
+mutate(legis_period=as.factor(legis_period)) %>%
+mutate(wahlpartei_standard="Alle")
+
+df_parties_all <- bind_rows(df_parties, df_all) 
+
+df_parties_all %>%
+ggplot()+
+labs(
+caption=txt_caption_graph
+)+
+geom_line(
+    aes(
+        x=legis_period,
+        y=rel,
+        group=wahlpartei_standard,
+        color=wahlpartei_standard
+    )
+)+    
+geom_point(
+    aes(
+        x=legis_period,
+        y=rel,
+        size=n,
+        group=wahlpartei_standard,
+        color=wahlpartei_standard
+    )
+) +
+geom_text(
+    aes(
+        x=legis_period,
+        y=rel,
+        label=n,
+        group=wahlpartei_standard,
+        color="white"
+    )
+) +
+scale_color_manual(values=vec_party_colors)+
+scale_y_continuous(
+    labels=scales::label_percent(accuracy = 1)
+)+
+scale_x_discrete(labels=\(x) as.roman(as.numeric(x)))+
+facet_wrap(vars(wahlpartei_standard), ncol=1)+
+theme_post()+
+theme(
+    axis.text.x=element_text(angle=0, hjust=0.5),
+)   
+```

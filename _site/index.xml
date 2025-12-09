@@ -9,8 +9,19 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.5.43</generator>
-<lastBuildDate>Tue, 24 Sep 2024 22:00:00 GMT</lastBuildDate>
+<generator>quarto-1.8.25</generator>
+<lastBuildDate>Tue, 22 Oct 2024 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>28th Austrian National Council: Prior Experiences as MPs.</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2024-10-24-mps-experience/</link>
+  <description><![CDATA[ Who speaks for how long in the National Council of Austria’s Parliament? And who respects the relevant time limits? ]]></description>
+  <category>Austria</category>
+  <category>parliament</category>
+  <category>r-bloggers</category>
+  <guid>https://werk.statt.codes/posts/2024-10-24-mps-experience/</guid>
+  <pubDate>Tue, 22 Oct 2024 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Calls to Order in Austria’s Parliament</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -20,16 +31,6 @@
   <category>Parliament</category>
   <guid>https://werk.statt.codes/posts/2024-09-09-call-for-order/</guid>
   <pubDate>Tue, 24 Sep 2024 22:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Professional politicians and their position on electoral lists</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</link>
-  <description><![CDATA[ Electoral lists in Austria include next to the name of each candidate also their profession. How prevalent are candidates who are politicians by profession and where are they located on the lists? An analysis of the electoral lists of the recent European Elections. ]]></description>
-  <category>Austria</category>
-  <category>elections</category>
-  <guid>https://werk.statt.codes/posts/2024-06-26-euparl-2024-ballot/</guid>
-  <pubDate>Mon, 08 Jul 2024 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>

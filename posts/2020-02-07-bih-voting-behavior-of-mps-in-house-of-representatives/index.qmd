@@ -11,22 +11,21 @@ categories:
   - web scraping
 
 image: preview - Copy.png  
-
 ---
 
 # CONTEXT
 
 A while ago I noticed that the website of Bosnia's parliament also provides the voting records for each separate vote taken in both houses. These records also include the voting behavior for each individual MP. Here an example of one of these voting records:
 
-![](record.PNG){width=100% height=100%}
+![](record.PNG){width="100%" height="100%"}
 
 While the dominant role of the ethnic cleavage in Bosnian politics has been a constant theme and continuously emphasized for the last 25 years (to an extent which frequently blanks out other salient issues), I hadn't seen any empirical record on MP's individual voting behavior which could corroborate the cleavage's prevalence in the legislative arena (one insightful exception is Birgit Bahtić-Kunrath's 2011 [paper](https://www.cambridge.org/core/journals/nationalities-papers/article/of-veto-players-and-entityvoting-institutional-gridlock-in-the-bosnian-reform-process/96BB80A5191E12B40F501841546C151D){target="_blank"}).
 
 This post digs into the now available records for the 2014-2018 parliament and seeks to shed some light on the legislative process. The first part presents the results, the second highlights the most relevant steps in R to produce them. The entire code for the analysis is again available on my [github account](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives){target="_blank"}. Since the post got a bit longer than initially expected, this one will mainly focus on the lower chamber (House of Representatives). A later post will take up the upper chamber in detail (House of Peoples).
 
-As always, if you see any glaring error, feel free to let me know (best via [twitter](https://twitter.com/zoowalk){target="_blank"} DM). If you think the blog is interesting and feel like quoting it, please refer to it as _Roland Schmidt, "Bosnia: Voting behavior of MPs in the House of Representatives (2014-2018)", https://werk.statt.codes/post/bih-voting-behavior-of-mps-in-house-of-representatives/, 8 February 2020_.
+As always, if you see any glaring error, feel free to let me know (best via [twitter](https://twitter.com/zoowalk){target="_blank"} DM). If you think the blog is interesting and feel like quoting it, please refer to it as *Roland Schmidt, "Bosnia: Voting behavior of MPs in the House of Representatives (2014-2018)", https://werk.statt.codes/post/bih-voting-behavior-of-mps-in-house-of-representatives/, 8 February 2020*.
 
-For those working in R, the blog post might be particularly interesting when it comes to retrieving the actual data. As so often with empirical research the challenges has been less the analysis of the data itself, but 'liberating' it from the format within which it is provided. In this case, the voting records for both the House of Peoples and the House of Representative are provided in pdfs, such as the one above or this [_one_](http://parlament.ba/oLaw/GetOwisDocument/?documentId=206164&data=10788B4568269048D57D8F644F829519&lang=hr){target="_blank"} or this [_one_](http://parlament.ba/oLaw/GetOwisDocument/?documentId=193121&data=E0B8243EF8B51ED931E698C78D196E84&lang=hr){target="_blank"}. Hence, there's been some hefty OCR-ing involved thanks to the powerful [`pdf_tools`](https://docs.ropensci.org/pdftools/){target="_blank"} package by [Jeroen Ooms](https://twitter.com/opencpu){target="_blank"}.
+For those working in R, the blog post might be particularly interesting when it comes to retrieving the actual data. As so often with empirical research the challenges has been less the analysis of the data itself, but 'liberating' it from the format within which it is provided. In this case, the voting records for both the House of Peoples and the House of Representative are provided in pdfs, such as the one above or this [*one*](http://parlament.ba/oLaw/GetOwisDocument/?documentId=206164&data=10788B4568269048D57D8F644F829519&lang=hr){target="_blank"} or this [*one*](http://parlament.ba/oLaw/GetOwisDocument/?documentId=193121&data=E0B8243EF8B51ED931E698C78D196E84&lang=hr){target="_blank"}. Hence, there's been some hefty OCR-ing involved thanks to the powerful [`pdf_tools`](https://docs.ropensci.org/pdftools/){target="_blank"} package by [Jeroen Ooms](https://twitter.com/opencpu){target="_blank"}.
 
 # RESULTS
 
@@ -122,9 +121,9 @@ df_ocr_results_unnested_truncated <- df_ocr_results_unnested %>%
 
 ## Number of bills considered and outcome
 
-Overall, during the 2014 to 2018 parliament session 163 bills were considered in both houses. Out of this total, only 37 % were eventually passed and published to become law. 38 % of all bills were rejected in at least one of both houses.^[Bills' outcome was translated as follows: "Usvojen"="adopted", "Procedura - nije preuzet"="procedure - not started", "Procedura"="procedure", "Donesen i objavljen"="submitted and published",
-"Odbijen"="rejected", "Obustavljen zakonodavni postupak"="legislative process suspended", "Povucen"="withdrawn",
-"Ceka na pokretanje procedure"="waiting for the procedure to start", "Nije razmatran"="not considered". If you think there are more fitting translations, feel free to let me know.]
+Overall, during the 2014 to 2018 parliament session 163 bills were considered in both houses. Out of this total, only 37 % were eventually passed and published to become law. 38 % of all bills were rejected in at least one of both houses.[^1]
+
+[^1]: Bills' outcome was translated as follows: "Usvojen"="adopted", "Procedura - nije preuzet"="procedure - not started", "Procedura"="procedure", "Donesen i objavljen"="submitted and published", "Odbijen"="rejected", "Obustavljen zakonodavni postupak"="legislative process suspended", "Povucen"="withdrawn", "Ceka na pokretanje procedure"="waiting for the procedure to start", "Nije razmatran"="not considered". If you think there are more fitting translations, feel free to let me know.
 
 ```{r echo=FALSE, fig.height=7, fig.width=10, message=FALSE}
 df_details_all_status_wide <- readr::read_csv2(here::here("posts","2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives","df_details_all_status_wide.csv")) %>% 
@@ -182,7 +181,7 @@ df_laws_outcome %>%
 
 ### by house
 
-Looking separately at each of the two houses provides a more detailed picture. In the lower chamber, the House of Representatives,  153 bills were considered in total out of which a bit more than 50 % were approved. In the upper chamber, the House of Peoples, which comprises five delegates of each constituent people (Bosniak, Croats, Serbs), 56.7 % of all considered bills were passed. 
+Looking separately at each of the two houses provides a more detailed picture. In the lower chamber, the House of Representatives, 153 bills were considered in total out of which a bit more than 50 % were approved. In the upper chamber, the House of Peoples, which comprises five delegates of each constituent people (Bosniak, Croats, Serbs), 56.7 % of all considered bills were passed.
 
 ```{r echo=FALSE, fig.height=5, fig.width=10}
 #in which house are bills rejected
@@ -288,7 +287,7 @@ plot_df_outcome_chambers <- df_outcome_chambers %>%
 
 If we intersect the developments for each law in each chamber, we get a clearer picture where bills were actually rejected/not passed. The table/heatmap below intends to show this. The x-axis shows a bill's outcome in the House of Representative, the y-axis the outcome of the same bill in the House of Peoples (if a bill was considered only in one chamber, the respective status in the other chamber is 'missing').
 
-Out of the 67 bills adopted in the House of Peoples and 77 in the House of Representatives, 60 were actually considered in both chambers and eventually passed.  With 37 % of all bills it's the largest category in the table. The second largest category comprises 27 bills (16.7 % of all bills) which were rejected in the House of Representatives and never made it to the House of Peoples. The third largest category contains 12 bills (7.4 % of all bills) which were adopted in the lower house but rejected in the upper chamber. 
+Out of the 67 bills adopted in the House of Peoples and 77 in the House of Representatives, 60 were actually considered in both chambers and eventually passed. With 37 % of all bills it's the largest category in the table. The second largest category comprises 27 bills (16.7 % of all bills) which were rejected in the House of Representatives and never made it to the House of Peoples. The third largest category contains 12 bills (7.4 % of all bills) which were adopted in the lower house but rejected in the upper chamber.
 
 ```{r echo=FALSE, fig.width=10, fig.height=7 , message=FALSE}
 df_outcome_chambers_combined <- df_details_all_status_wide %>% 
@@ -484,13 +483,15 @@ Even without going into numeric details, I find the graph rather informative. Wh
 
 Note that the representatives Vjekoslav Bevanda and Halid Genjac were only briefly members of the House of Representatives. If not mistaken, Bevanda subsequently became Chairperson of the Council of Ministers. From the graph it appears that his place was taken by Predrag Kožul. Similarly, SDA's Genjac was only for the early sessions member of the HoR. His place seems to have been taken over by Hazim Rančić.
 
-As a general caveat, note that I took MPs' party affiliation as stated on the parliament's website which may omit instances in which MPs have changed their party affiliation in the course of the 2014-2018 legislative period. I am not aware that this was actually the case, but if so, please let me know.^[One way to improve the graph would be to have equally sized heights per MP.]
+As a general caveat, note that I took MPs' party affiliation as stated on the parliament's website which may omit instances in which MPs have changed their party affiliation in the course of the 2014-2018 legislative period. I am not aware that this was actually the case, but if so, please let me know.[^2]
 
-## MP ranking per vote category 
+[^2]: One way to improve the graph would be to have equally sized heights per MP.
 
-To get a more detailed view on MPs' individual voting behavior, the next graph presents each MP's voting behavior per voting category as % of an MP's number of total voting decisions (incl. abstentions etc). In other words, the graph reveals how often an MP votes for e.g. yes, no etc. as % of all instances in which she was tasked to cast a vote. Party affiliation is presented next to each MP's name. Furthermore, to highlight discrepancies between representatives originating (in terms of mandate) from the Federation and the RS, the bars are colored differently. The variation is rather remarkable, particularly with regard to MPs' 'no' votes and absence (not present and abstentions). 
+## MP ranking per vote category
 
-I leave it up to the reader to go through each category, but just to highlight one case: According to the published voting records, Nikola Špirić, one of SNSD's main figure heads (and previously Chairperson of the Council of Ministers), was absent in 44.8 % of all ballots. Even with the benefit of doubt and acknowledging that an MP's work entails more than participating in ballots (work in committees etc), this is a rather, let's say, 'remarkably' low rate of presence.  His party colleagues Markovic and Milovanovic participated only a few times more often. In those instances in which they were present, they voted predominantly with 'no'. Constructive engagement in the legislative process looks different, at least to me.
+To get a more detailed view on MPs' individual voting behavior, the next graph presents each MP's voting behavior per voting category as % of an MP's number of total voting decisions (incl. abstentions etc). In other words, the graph reveals how often an MP votes for e.g. yes, no etc. as % of all instances in which she was tasked to cast a vote. Party affiliation is presented next to each MP's name. Furthermore, to highlight discrepancies between representatives originating (in terms of mandate) from the Federation and the RS, the bars are colored differently. The variation is rather remarkable, particularly with regard to MPs' 'no' votes and absence (not present and abstentions).
+
+I leave it up to the reader to go through each category, but just to highlight one case: According to the published voting records, Nikola Špirić, one of SNSD's main figure heads (and previously Chairperson of the Council of Ministers), was absent in 44.8 % of all ballots. Even with the benefit of doubt and acknowledging that an MP's work entails more than participating in ballots (work in committees etc), this is a rather, let's say, 'remarkably' low rate of presence. His party colleagues Markovic and Milovanovic participated only a few times more often. In those instances in which they were present, they voted predominantly with 'no'. Constructive engagement in the legislative process looks different, at least to me.
 
 ```{r echo=FALSE, fig.height=20, fig.width=10, message=FALSE, warning=FALSE}
 library(tidytext)
@@ -556,7 +557,8 @@ df_votes_delegates %>%
 ```
 
 ## Party differences
-As a next step, let's group MPs' voting behavior by party and the respective (ascribed or self-declared) ethnic affiliation. Admittedly, the latter is not without problems, but I guess the categorization below reflects some kind of middle-ground (SDP could probably be moved to the 'Bosniak' category, but well...). The table provides the total number of votes casted by all representatives of each party and their respective share in each vote category. Note the high percentage rate of SDA in the 'yes' category and SNSD's ratio in the 'no' or 'not present' category. 
+
+As a next step, let's group MPs' voting behavior by party and the respective (ascribed or self-declared) ethnic affiliation. Admittedly, the latter is not without problems, but I guess the categorization below reflects some kind of middle-ground (SDP could probably be moved to the 'Bosniak' category, but well...). The table provides the total number of votes casted by all representatives of each party and their respective share in each vote category. Note the high percentage rate of SDA in the 'yes' category and SNSD's ratio in the 'no' or 'not present' category.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
@@ -640,7 +642,6 @@ df_party_voting %>%
 
 ```
 
-
 ```{r eval=FALSE, fig.height=20, fig.width=10, warning=FALSE, include=FALSE}
 
 colors_ethnicity=c("Bosniak"="darkgreen",
@@ -718,28 +719,30 @@ girafe(ggobj=wrap_plot_delegats,
 Overall, the results are pretty much in line with what I expected, but the details nevertheless are quite intriguing. Delegates of SNSD are either absent or vote with 'no' in the House of Representatives. There is a clear gulf between representatives from the Federation and the RS when it comes to 'no' votes.
 
 Since this has been already rather lengthy (not to speak of the actual coding), I leave it here and will continue the analysis with a new post in a bit. If you spotted anything peculiar or have any other constructive comment etc. feel free to let me know and I will try to follow up on it. In any case, thanks for reading.
-  
-  
-----
+
+------------------------------------------------------------------------
 
 # STEPS IN R
-Below the most important steps to obtain the results from above. The entire code for the  (and more) is available at my github [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives){target="_blank"}.
 
-As already mentioned above, getting the actual data from the voting records/pdfs has been the main challenge. Essentially, there were three steps required: 
+Below the most important steps to obtain the results from above. The entire code for the (and more) is available at my github [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives){target="_blank"}.
 
-* First, get the links to each law 
-* Second, from there extract
-  + data on the status and details of the law in each chamber
-  + the links to each voting record(s)
-  + use this links to download each voting results file
-* Third, get 
-  + the raw text from the voting result files and 
-  + extract data of interest (e.g. MP and vote)
-* Finally, start with the actual analysis ;-)
+As already mentioned above, getting the actual data from the voting records/pdfs has been the main challenge. Essentially, there were three steps required:
+
+-   First, get the links to each law
+-   Second, from there extract
+    -   data on the status and details of the law in each chamber
+    -   the links to each voting record(s)
+    -   use this links to download each voting results file
+-   Third, get
+    -   the raw text from the voting result files and
+    -   extract data of interest (e.g. MP and vote)
+-   Finally, start with the actual analysis ;-)
 
 ## Get the data
+
 ### Getting the links to each law
-The parliament's website provides a list with all bills considered during the 2014-2018 session. See [*here*](http://parlament.ba/oLaw/GetOLawsByStatus?SearchTerm=&MandateId=4&Status=-1){target="_blank"}. Overall, there are 17 pages which contain short summaries on each law plus the links a site with more details on each law. Iterating over these 17 pages and extracting the pertaining links provides us with a dataframe containing the links to the 162 (proposed) laws which were considered in at least one of both houses. To do this, the `purrr` and `rvest` package are our tools of choice. The `possibly` option provides us with a NULL response should the link no yield any info (instead of causing an error). 
+
+The parliament's website provides a list with all bills considered during the 2014-2018 session. See [*here*](http://parlament.ba/oLaw/GetOLawsByStatus?SearchTerm=&MandateId=4&Status=-1){target="_blank"}. Overall, there are 17 pages which contain short summaries on each law plus the links a site with more details on each law. Iterating over these 17 pages and extracting the pertaining links provides us with a dataframe containing the links to the 162 (proposed) laws which were considered in at least one of both houses. To do this, the `purrr` and `rvest` package are our tools of choice. The `possibly` option provides us with a NULL response should the link no yield any info (instead of causing an error).
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=TRUE}
 library(tidyverse)
@@ -787,7 +790,7 @@ df_links_to_laws %>%
   scroll_box(width = "100%", height = "200px")
 ```
 
-With these links we are now able to scrap the status and details of each single (proposed) law (see e.g. [*here*](http://parlament.ba/olaw/OLawDetails?lawId=61794){target="_blank"}). In short, the code produces the same result as if we were clicking through our initial list from above and copy-paste the information from each law's details page. The `rvest`'s functions were again applied to each link with the purrr's `map_dfr`. 
+With these links we are now able to scrap the status and details of each single (proposed) law (see e.g. [*here*](http://parlament.ba/olaw/OLawDetails?lawId=61794){target="_blank"}). In short, the code produces the same result as if we were clicking through our initial list from above and copy-paste the information from each law's details page. The `rvest`'s functions were again applied to each link with the purrr's `map_dfr`.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
 
@@ -848,6 +851,7 @@ df_details_all_status<- df_links_to_laws$links_to_law_details %>%
 ```
 
 ### Get status of each law
+
 As a first step, I want to get info on each law's status by the end of the 2014-2018 legislative period in each house. We get this info by applying the below scrapping function to each law's link (obtained above). Subsequently I reshape the data to a more convenient wider rectangular form (`pivot_wider`) and extract each field of interest with `stringr` and `regex`.
 
 ```{r eval=FALSE}
@@ -927,7 +931,7 @@ library(googleLanguageR)
 gl_auth("C:/Users/Roland/Google Drive/Events - Projects/R-Projects/GoogleAPI/BiH-Laws-49dca6b0c199.json")
 
 ```
- 
+
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
 df_details_all_status_wide<- df_details_all_status_wide %>% 
   mutate(doc_name_eng=googleLanguageR::gl_translate(doc_name, target="en", format=c("text"),
@@ -951,6 +955,7 @@ df_details_all_status_wide %>%
 ```
 
 ### Get details of each law
+
 In the next step I want to go beyond each bill's eventual status, but get details on each bill's development. The function below, again applied to each link we initially obtained provides us with this. See e.g. [here](http://parlament.ba/olaw/OLawDetails?lawId=61794){target="_blank"}. Note, to speed things up, I use the `furrr` package with the multiprocess option to apply the function in parallel and not in sequence to each link. Hence, rather than scrapping the details of each bill one after the other, they are downloaded in parallel and therefore much quicker.
 
 ```{r message=FALSE, warning=FALSE}
@@ -987,7 +992,8 @@ df_details_all_status<- df_links_to_laws$links_to_law_details %>%
 
 ```
 
-### Getting links to each voting record 
+### Getting links to each voting record
+
 Critically, the details page of each bill also contains links to the records for each vote taken pertaining to the bill in question. This can be only one vote in only one house, or multiple votes in each house since a bill goes through several readings and entails also votes on procedural issues (e.g. whether the bill should be fast-tracked). For an example see [here](http://parlament.ba/olaw/OLawDetails?lawId=61565){target="_blank"} and note that the links to the voting records are called 'Listing glasanja o skracenom postupku' or 'Listing glasanja o zahtjevu za hitni postupa'. The critical point here is that links to voting records always contain the word 'listing'. What is hence required at this stage is to extract from all bills' detail pages every link which contains the word 'listing'. Once these links are obtained, the voting records to which these links lead can be downloaded. The function below extracts these links of interest.
 
 ```{r}
@@ -1026,6 +1032,7 @@ df_voting_results_links %>%
 ```
 
 ### Download voting records
+
 Overall we obtain links to 793 voting records which pertain to any of both houses. With these links we can now download each voting record. Note that these voting records pertain to the bills which were considered during the 2014-2018 legislative period. This does not mean the voting took actually place in the 2014-2018 period. A bill might have been initiated prior to 2014 and hence some voting took place prior to the 2014-2018 period. At a later step, once when we have extracted the actual date of each vote, we are able to separate votes which took place during the 2014-2018 session from others.
 
 ```{r, eval=FALSE, echo=T}
@@ -1034,13 +1041,14 @@ pdf_destination <- glue("{wdr}/data/voting_records/law_id_{df_voting_results_lin
 
 furrr::future_walk2(df_voting_results_links$link_to_voting_record, pdf_destination, download.file, mode = "wb") 
 ```
+
 ## Extracting text from voting records (OCR)
-Now, with eventually our objects of desire obtained, we have to retrieve the data we are actually interested in from each pdf, e.g.  eave a look at [*this record*](http://parlament.ba/oLaw/GetOwisDocument/?documentId=201825&data=66A251EE8272F76CD4563213F5B76864&lang=bs){target="_blank"}. 
+
+Now, with eventually our objects of desire obtained, we have to retrieve the data we are actually interested in from each pdf, e.g. eave a look at [*this record*](http://parlament.ba/oLaw/GetOwisDocument/?documentId=201825&data=66A251EE8272F76CD4563213F5B76864&lang=bs){target="_blank"}.
 
 The primary tool which enables us to extract the text from the pdfs is the `pdf_tools` package (see package site [here](https://docs.ropensci.org/pdftools/){target="_blank"}). What hte package basically does is it recognizes the characters in each pdf and extracts them as plain text. Before doing so, one has to download the required language package. Subsequently, apply a function which extracts the entire (!) text from each pdf.
 
-Below the main steps (see the full script at my repo [here.](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/ocr_files.R){target="_blank"}). 
-
+Below the main steps (see the full script at my repo [here.](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/ocr_files.R){target="_blank"}).
 
 ```{r eval=FALSE}
 library(pdftools)
@@ -1073,7 +1081,9 @@ df_ocr_results <- x %>%
   mutate(raw_text=iconv(raw_text, from="UTF-8", to="windows-1253")) 
 
 ```
+
 ## Extract data of interest from ocr-ed text
+
 Once this is done, the probably trickiest part of the entire endeavor comes. Extracting our data of interest from the raw text obtained above. Below, in the R code chunk comments which hopefully make a bit clear what's going on.
 
 ```{r eval=FALSE}
@@ -1159,7 +1169,7 @@ df_ocr_results_unnested<- df_ocr_results_unnested %>%
   mutate(delegate_name_family=stringr::word(delegate_name, -1))
 ```
 
-The table below presents first 200 out of 24637 rows of the resulting dataframe which is essentially the basis for any further analysis. Each row represents the vote of one MP for a specific ballot. For future research the obtained dataset is made available [here](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/data/df_ocr_results_unnested.csv){target="_blank"}. 
+The table below presents first 200 out of 24637 rows of the resulting dataframe which is essentially the basis for any further analysis. Each row represents the vote of one MP for a specific ballot. For future research the obtained dataset is made available [here](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/data/df_ocr_results_unnested.csv){target="_blank"}.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
@@ -1180,7 +1190,7 @@ read_csv2(my_link,
 
 ## Get party affiliation of MPs
 
-Since we are also interested in MP's party affiliation (already included in the table above) we need to get this information. Luckily, the parliament's website also provides us with this detail. The code below extracts the information (for both houses and all legislative sessions). 
+Since we are also interested in MP's party affiliation (already included in the table above) we need to get this information. Luckily, the parliament's website also provides us with this detail. The code below extracts the information (for both houses and all legislative sessions).
 
 ```{r eval=FALSE}
 library(tidyverse)
@@ -1309,16 +1319,9 @@ df_members_parliament <- bind_rows(df_members_HoPeoples, df_members_HoRepresenta
 head(df_members_parliament)
 
 ```
+
 With this source on MP's party affiliation however comes an important caveat: The source does not provide any details on whether MP's changed party affiliation during (!) a legislative period. I am not aware that this has actually been the case, but if so, it would distort results grouped by party affiliation (please let me know in case you're aware of such a change of party affiliation).
 
 ## Analysis
-The rest of the R code is more or less 'only' number crunching and producing the graphs above. I won't go into much detail here since i think it's rather straightforward and renders the blog post only unnecessarily longer. In any case, the code is available [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/analysis.R){target="_blank"}. 
 
-
-
-
-
-
-
-
-
+The rest of the R code is more or less 'only' number crunching and producing the graphs above. I won't go into much detail here since i think it's rather straightforward and renders the blog post only unnecessarily longer. In any case, the code is available [*here*](https://github.com/werkstattcodes/2020-02-07-bih-voting-behavior-of-mps-in-house-of-representatives/blob/master/script/analysis.R){target="_blank"}.
