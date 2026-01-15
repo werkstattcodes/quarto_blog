@@ -1,0 +1,155 @@
+/*-- scss:defaults --*/
+$body-bg: #2e3440;
+$body-color: #eceff4;
+$link-color: #88c0d0;
+$code-block-bg-alpha: -.9;
+
+/*-- scss:rules --*/
+@import "theme.scss";
+
+body {
+  color-scheme: dark;
+  background-color: var(--nord0);
+  color: var(--nord6);
+}
+
+.navbar-title {
+  color: var(--nord0);
+  background-color: var(--nord8);
+}
+
+.navbar-brand-container {
+  color: var(--nord4);
+  background-color: var(--nord0);
+}
+
+.navbar {
+  background-color: var(--nord0);
+  color: var(--nord4) !important;
+}
+
+.quarto-title-banner {
+  background-color: var(--nord0);
+}
+
+.quarto-title {
+  color: var(--nord6);
+}
+
+.navbar-nav {
+  color: var(--nord4);
+}
+
+.nav-link {
+  color: var(--nord4) !important;
+}
+
+.menu-text {
+  color: var(--nord3);
+}
+
+.quarto-category {
+  color: var(--nord4);
+  background-color: var(--nord1);
+  border: 1px solid var(--nord3) !important;
+}
+
+.menu-text:hover {
+  background-color: var(--nord2);
+  color: var(--nord6);
+}
+
+a.nav-link.dropdown-toggle:hover {
+  background-color: var(--nord2);
+  color: var(--nord6);
+}
+
+a.page-link {
+  color: var(--nord3);
+}
+
+.page-link:hover {
+  color: var(--nord6);
+}
+
+.page-item.active .page-link {
+  color: var(--nord6);
+  background-color: var(--nord1);
+  border-color: var(--nord3);
+}
+
+h1 .header-section-number {
+  color: var(--nord4);
+}
+
+.anchored > .header-section-number {
+  color: var(--nord4);
+}
+
+.reactable ~ h1 {
+  color: var(--nord11) !important;
+}
+
+div.reactable ~ h2 {
+  color: var(--nord14) !important;
+}
+
+::selection {
+  background: var(--nord2);
+}
+
+div.listing-category {
+  color: var(--nord4);
+  background-color: transparent;
+  border: 0.25px solid rgba(236, 239, 244, 0.2) !important;
+  padding-right: 0.1cm !important;
+  padding-left: 0.1cm !important;
+}
+
+#TOC ul>li>a {
+  color: var(--nord3);
+}
+
+#TOC a {
+  color: var(--nord3) !important;
+}
+
+#TOC a:hover {
+  border-left: 2px solid var(--nord3);
+  color: var(--nord6) !important;
+}
+
+.sidebar nav[role=doc-toc] ul>li>a.active {
+  border-left: 3px solid var(--nord14);
+  color: var(--nord6) !important;
+}
+
+.sidebar nav[role=doc-toc] ul>li>ul>li>a.active {
+  border-left: 3px solid var(--nord14);
+  color: var(--nord6) !important;
+}
+
+h5.no-anchor.card-title.listing-title {
+  color: var(--nord6);
+}
+
+code {
+  color: var(--nord6);
+}
+
+.content li {
+  color: var(--nord6);
+}
+
+a {
+  color: var(--nord4);
+}
+
+p a:hover {
+  color: var(--nord14);
+  background-color: var(--nord0);
+}
+
+.card:hover {
+  border-left-color: var(--nord14);
+}
