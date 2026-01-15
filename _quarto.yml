@@ -47,10 +47,20 @@ website:
 
 format:
   html:
-    theme: 
-      light: litera
-      # dark: slate
-    css: styles.css
+    theme:
+      light: [litera, theme.scss]
+      dark: [litera, theme-dark.scss]
+    include-in-header:
+      - text: |
+          <script>
+          // Apply saved theme preference immediately to prevent flash
+          (function() {
+            const saved = localStorage.getItem('quarto-color-scheme');
+            if (saved === 'alternate') {
+              document.documentElement.classList.add('quarto-dark');
+            }
+          })();
+          </script>
     code-copy: true
     highlight-style: nord
     fontsize: 16px
