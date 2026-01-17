@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -71,19 +71,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/cookie-consent/cookie-consent.css" rel="stylesheet">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-08a986702f25be8975c8b65d6c8bbdcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-ed4b38395d4851a5a81f61d12608a600.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-08a986702f25be8975c8b65d6c8bbdcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-3b1501349d7dfd46069e04c2dc173257.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-ee14434d0d2c8694825ac38f60ff1e8a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-3b1501349d7dfd46069e04c2dc173257.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
@@ -330,8 +329,6 @@ cookieconsent.run({
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
@@ -447,7 +444,7 @@ cookieconsent.run({
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import csv --------------------------------------------------------------</span></span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import csv --------------------------------------------------------------</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># file_link &lt;- "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># df_global &lt;- readr::read_csv(file=file_link, col_types = "ccccDdddddd")</span></span>
@@ -481,7 +478,7 @@ cookieconsent.run({
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                                     <span class="fu">str_detect</span>(type, <span class="st">"work"</span>) <span class="sc">~</span> <span class="st">"‘places of work’"</span>,</span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                                     <span class="fu">str_detect</span>(type, <span class="st">"residential"</span>) <span class="sc">~</span> <span class="st">"‘places of residence’"</span>,</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                                     <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.character</span>(<span class="st">"missing"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date=</span><span class="fu">as.Date</span>(date))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date=</span><span class="fu">as.Date</span>(date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>The mobility reports contain data on the following types of places:</p>
@@ -502,7 +499,7 @@ cookieconsent.run({
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set dates ---------------------------------------------------------------</span></span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set dates ---------------------------------------------------------------</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>date.start.lockdown <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="st">"2020-03-16"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>date.opening.shops <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="st">"2020-04-14"</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -510,7 +507,7 @@ cookieconsent.run({
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">date.opening.shops=</span>date.opening.shops) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols=</span><span class="fu">everything</span>(),</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"event"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to=</span><span class="st">"date"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to=</span><span class="st">"date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -520,13 +517,13 @@ cookieconsent.run({
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>AUT_states_grid <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>AUT_states_grid <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">code =</span> <span class="fu">c</span>(<span class="st">"4"</span>, <span class="st">"3"</span>, <span class="st">"9"</span>, <span class="st">"8"</span>, <span class="st">"7"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"1"</span>, <span class="st">"2"</span>),</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name_en=</span><span class="fu">c</span>(<span class="st">"Upper Austria"</span>, <span class="st">"Lower Austria"</span>, <span class="st">"Vienna"</span>, <span class="st">"Vorarlberg"</span>, <span class="st">"Tyrol"</span>, <span class="st">"Salzburg"</span>, <span class="st">"Styria"</span>, <span class="st">"Burgenland"</span>, <span class="st">"Carinthia"</span>),</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">4</span>))</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>AUT_states_grid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>AUT_states_grid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>  code       name_en row col
@@ -548,7 +545,7 @@ cookieconsent.run({
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Changes for each day are compared to a baseline value for that day of the week: The baseline is the median value, for the corresponding day of the week, during the 5-week period Jan 3–Feb 6, 2020. For details see https://www.google.com/covid19/mobility/. Data as of {data_as_of}."</span>)</span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Changes for each day are compared to a baseline value for that day of the week: The baseline is the median value, for the corresponding day of the week, during the 5-week period Jan 3–Feb 6, 2020. For details see https://www.google.com/covid19/mobility/. Data as of {data_as_of}."</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>date_shutdown <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(<span class="st">"2020-03-16"</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -625,7 +622,7 @@ cookieconsent.run({
 <span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">colour =</span> <span class="st">"red"</span>,</span>
 <span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>                                                     <span class="at">direction=</span><span class="st">"vertical"</span>),</span>
 <span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">reverse =</span> T),</span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>         <span class="at">colour =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>         <span class="at">colour =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell page-columns page-full" data-layout-align="center" data-fig.heigt="6">
@@ -651,7 +648,7 @@ cookieconsent.run({
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># boxplot before after ----------------------------------------------------</span></span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># boxplot before after ----------------------------------------------------</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>df_AT_long <span class="ot">&lt;-</span> df_AT_long <span class="sc">%&gt;%</span> </span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lockdown.indicator=</span><span class="fu">case_when</span>(date<span class="sc">&gt;=</span>date.start.lockdown <span class="sc">~</span> <span class="st">"lockdown"</span>,</span>
@@ -729,7 +726,7 @@ cookieconsent.run({
 <span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>pl_list <span class="ot">&lt;-</span> <span class="fu">unique</span>(df_AT_long<span class="sc">$</span>type) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(., <span class="sc">~</span><span class="fu">fn_map</span>(<span class="at">df=</span>df_AT_long, <span class="at">my_type=</span>.x))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(., <span class="sc">~</span><span class="fu">fn_map</span>(<span class="at">df=</span>df_AT_long, <span class="at">my_type=</span>.x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="retail-and-recreation" class="level2 page-columns page-full" data-number="5.1">
@@ -886,14 +883,13 @@ Mobility Patterns During Covid-19 Lock-down in Austria.”</span> April
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-      const outerScaffold = trigger.parentElement.cloneNode(true);
-      const codeEl = outerScaffold.querySelector('code');
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
         }
-      }
-      return codeEl.innerText;
+        return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

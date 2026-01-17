@@ -1,11 +1,30 @@
 /*-- scss:defaults --*/
-$body-bg: #2e3440;
-$body-color: #eceff4;
-$link-color: #88c0d0;
+$body-bg: #1e1f22;
+$body-color: #dfe1e5;
+$link-color: #56a8f5;
 $code-block-bg-alpha: -.9;
 
 /*-- scss:rules --*/
 @import "theme.scss";
+
+:root {
+  --nord0: #1e1f22;
+  --nord1: #2b2d30;
+  --nord2: #313335;
+  --nord3: #3c3f41;
+  --nord4: #ced0d6;
+  --nord5: #bdbfc3;
+  --nord6: #dfe1e5;
+  --nord7: #2aacb8;
+  --nord8: #3574f0;
+  --nord9: #56a8f5;
+  --nord10: #5c8eba;
+  --nord11: #f75464;
+  --nord12: #e6816e;
+  --nord13: #e0bb65;
+  --nord14: #6aab73;
+  --nord15: #9876aa;
+}
 
 body {
   color-scheme: dark;

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -71,19 +71,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/cookie-consent/cookie-consent.css" rel="stylesheet">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-707710bb7a0eddacf54b96aa728de139.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-4faf44808c66243957c3082ea87d90f3.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-08a986702f25be8975c8b65d6c8bbdcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-ed4b38395d4851a5a81f61d12608a600.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-08a986702f25be8975c8b65d6c8bbdcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-3b1501349d7dfd46069e04c2dc173257.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-ee14434d0d2c8694825ac38f60ff1e8a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-3b1501349d7dfd46069e04c2dc173257.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
@@ -330,8 +329,6 @@ cookieconsent.run({
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">werk.statt.codes</span>
     </a>
@@ -452,7 +449,7 @@ cookieconsent.run({
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">20 Feb 2025</p>
+      <p class="date-modified">17 Jan 2026</p>
     </div>
   </div>
     
@@ -478,7 +475,7 @@ cookieconsent.run({
 <div class="cell">
 <details class="code-fold">
 <summary>Load packages and define auxiliary functions</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ParlAT)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">3</span>)</span>
@@ -551,7 +548,7 @@ cookieconsent.run({
 <span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="co">#define caption</span></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>txt_caption_graph <span class="ot">&lt;-</span> <span class="st">"Data: https:&amp;#47;&amp;#47;www.parlament.gv.at&amp;#47;recherchieren&amp;#47;open-data.  Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:400'&gt;https:&amp;#47;&amp;#47;werk.statt.codes&lt;/span&gt;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>txt_caption_graph <span class="ot">&lt;-</span> <span class="st">"Data: https:&amp;#47;&amp;#47;www.parlament.gv.at&amp;#47;recherchieren&amp;#47;open-data.  Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:400'&gt;https:&amp;#47;&amp;#47;werk.statt.codes&lt;/span&gt;"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -563,7 +560,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get start and end dates of ligislative periods</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df_legis_periods <span class="ot">&lt;-</span> ParlAT<span class="sc">::</span><span class="fu">get_legis_period</span>() <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df_legis_periods <span class="ot">&lt;-</span> ParlAT<span class="sc">::</span><span class="fu">get_legis_period</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(legis_period<span class="sc">&gt;=</span><span class="dv">5</span>) <span class="co">#only after 1945</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df_legis_periods)</span>
@@ -573,7 +570,7 @@ cookieconsent.run({
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="do">## $ legis_period         &lt;dbl&gt; 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 1…</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="do">## $ legis_period_current &lt;lgl&gt; TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, F…</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="do">## $ date_start           &lt;date&gt; 2024-10-24, 2019-10-23, 2017-11-09, 2013-10-29, …</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">## $ date_end             &lt;date&gt; NA, 2024-10-23, 2019-10-22, 2017-11-08, 2013-10-…</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">## $ date_end             &lt;date&gt; NA, 2024-10-23, 2019-10-22, 2017-11-08, 2013-10-…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>As things stand for now, the API of the Austrian Parliament doesn’t allow you to retrieve the composition of parliament for a specific date. It allows you to get all the MPs who where member of a specific legislative period, but the result includes also MPs who joined the Council at later stage in the legislative period.</p>
@@ -581,7 +578,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get mps at start of legislative period</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df_panel_nr <span class="ot">&lt;-</span> ParlAT<span class="sc">::</span><span class="fu">create_panel</span>(<span class="at">institution=</span><span class="st">"Nationalrat"</span>, <span class="at">legis_period=</span><span class="dv">5</span><span class="sc">:</span><span class="dv">28</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">## &gt;&gt; {"M":["M"],"W":["W"],"NRBR":["NR"],"GP":["V"],"WP":["ALLE"],"FR":["ALLE"],"WK":["ALLE"]}</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 177</span></span>
@@ -632,14 +629,14 @@ cookieconsent.run({
 <span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="do">## &gt;&gt; {"M":["M"],"W":["W"],"NRBR":["NR"],"GP":["XXVIII"],"WP":["ALLE"],"FR":["ALLE"],"WK":["ALLE"]}</span></span>
 <span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 188</span></span>
 <span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="do">## 529.41 sec elapsed</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="do">## 529.41 sec elapsed</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Overall, our MP-day panel features 5095444 rows. Before applying the filter in order to keep only the MPs at the start of the legislative period, there’s one modification which is needed. As it turns out, there are some MPs who were MPs for only for single day. I am not sure what’s the context to this, but as it turns out most of these cases actually relate to the first day of the 20th legislative period (15.1.1996). I remove them since according to the data a) they were replaced on the same day by other MPs and b) how much experience the MPs bring with them, going forward into the new legislative period.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Identify MPs who lasted only one single day</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_panel_nr <span class="ot">&lt;-</span> df_panel_nr <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_panel_nr <span class="ot">&lt;-</span> df_panel_nr <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(pad_intern, index_mandate) <span class="sc">%&gt;%</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">n_days_mandate=</span><span class="fu">difftime</span>(<span class="fu">max</span>(mandate_date), <span class="fu">min</span>(mandate_date), <span class="at">unit=</span><span class="st">"days"</span>)<span class="sc">+</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ungroup</span>()</span>
@@ -649,14 +646,14 @@ cookieconsent.run({
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#remove single day mandates</span></span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>df_panel_nr_mod <span class="ot">&lt;-</span> df_panel_nr <span class="sc">%&gt;%</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(., df_single_day_mandates, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"pad_intern"</span>, <span class="st">"index_mandate"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(., df_single_day_mandates, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"pad_intern"</span>, <span class="st">"index_mandate"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Now with the panel sanitized, let’s keep only the the dates which are the starting dates of a new legislative period.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Keep only MPs at start of period</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_panel_nr_start <span class="ot">&lt;-</span> df_panel_nr_mod <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_panel_nr_start <span class="ot">&lt;-</span> df_panel_nr_mod <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#keep only start of legislative period</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">semi_join</span>(., df_legis_periods, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"mandate_date"</span><span class="ot">=</span><span class="st">"date_start"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#legis_period information</span></span>
@@ -664,13 +661,13 @@ cookieconsent.run({
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#remove end day of mandate ending to avoid overlaps</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>df_panel_nr_start_corr <span class="ot">&lt;-</span> df_panel_nr_start <span class="sc">%&gt;%</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(mandate_date_type<span class="sc">!=</span><span class="st">"mandatBis"</span> <span class="sc">|</span> <span class="fu">is.na</span>(mandate_date_type)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(mandate_date_type<span class="sc">!=</span><span class="st">"mandatBis"</span> <span class="sc">|</span> <span class="fu">is.na</span>(mandate_date_type)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Plot number of MPs/Size of National Council over time</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_plot <span class="ot">&lt;-</span> df_panel_nr_start_corr <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_plot <span class="ot">&lt;-</span> df_panel_nr_start_corr <span class="sc">%&gt;%</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">year=</span>lubridate<span class="sc">::</span><span class="fu">year</span>(mandate_date)) <span class="sc">%&gt;%</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">year=</span><span class="fu">as.factor</span>(year)) <span class="sc">%&gt;%</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(legis_period, year)</span>
@@ -699,7 +696,7 @@ cookieconsent.run({
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">200</span>),</span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks=</span><span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">165</span>, <span class="dv">183</span>),</span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">minor_breaks=</span><span class="cn">NULL</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -717,7 +714,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Define function to get number of days in Parliament as of cut-off date</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fn_get_days_in_parl <span class="ot">&lt;-</span> <span class="cf">function</span>(pad_intern, cut_off_date) {</span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fn_get_days_in_parl <span class="ot">&lt;-</span> <span class="cf">function</span>(pad_intern, cut_off_date) {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#get start and end dates of all mandates of an MP</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>df_mandates <span class="ot">&lt;-</span> ParlAT<span class="sc">::</span><span class="fu">get_mandates</span>(<span class="at">pad_intern =</span> pad_intern, <span class="at">institution=</span><span class="st">"Nationalrat"</span>)</span>
@@ -748,14 +745,14 @@ cookieconsent.run({
 <span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="at">N_days_in_parl=</span><span class="fu">sum</span>(days_in_parl, <span class="at">na.rm=</span>T)) <span class="sc">%&gt;%</span></span>
 <span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="fu">pull</span>(N_days_in_parl) <span class="sc">%&gt;%</span> <span class="fu">as.numeric</span>()</span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Note that, depending on your machine, this function also takes a bit of time.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Apply function</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>()</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="ot">&lt;-</span> df_panel_nr_start_corr <span class="sc">%&gt;%</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">days_in_parl=</span><span class="fu">future_map2_int</span>(pad_intern, mandate_date, \(x,y) <span class="fu">fn_get_days_in_parl</span>(<span class="at">pad_intern=</span>x, <span class="at">cut_off_date=</span>y), <span class="at">.progress=</span><span class="cn">TRUE</span>))  <span class="sc">%&gt;%</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(</span>
@@ -779,14 +776,14 @@ cookieconsent.run({
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_legis_start_year, <span class="at">by=</span><span class="st">"legis_period"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_legis_start_year, <span class="at">by=</span><span class="st">"legis_period"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Since party abbreviations changed over time we have to standardize them.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Keep only current five parties and standardize party names</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#standardize party names &amp; filter to current parties</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#standardize party names &amp; filter to current parties</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">wahlpartei_standard=</span><span class="fu">case_when</span>(</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(wahlpartei, <span class="fu">regex</span>(<span class="st">"NEOS"</span>)) <span class="sc">~</span> <span class="st">"NEOS"</span>,</span>
@@ -815,13 +812,13 @@ cookieconsent.run({
 <span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="do">## 14 KPÖ        KPÖ                </span></span>
 <span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="do">## 15 KuL        KuL                </span></span>
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="do">## 16 STRONACH   STRONACH           </span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="do">## 17 OK         OK</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="do">## 17 OK         OK</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Check for missing data</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>visdat<span class="sc">::</span><span class="fu">vis_miss</span>(df_days_in_parl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>visdat<span class="sc">::</span><span class="fu">vis_miss</span>(df_days_in_parl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -835,12 +832,12 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Check for duplicates</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_dupes <span class="ot">&lt;-</span> janitor<span class="sc">::</span><span class="fu">get_dupes</span>(df_days_in_parl, pad_intern, legis_period)</span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_dupes <span class="ot">&lt;-</span> janitor<span class="sc">::</span><span class="fu">get_dupes</span>(df_days_in_parl, pad_intern, legis_period)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>df_dupes</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="do">## # A data frame: 0 × 9</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 9 variables: pad_intern &lt;chr&gt;, legis_period &lt;dbl&gt;, dupe_count &lt;int&gt;,</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="do">## #   name &lt;chr&gt;, wahlpartei &lt;chr&gt;, days_in_parl &lt;int&gt;, legis_period_rom &lt;chr&gt;,</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="do">## #   year_start &lt;dbl&gt;, wahlpartei_standard &lt;chr&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="do">## #   year_start &lt;dbl&gt;, wahlpartei_standard &lt;chr&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>There are 0 duplicates when checking for combinations of MP’s ID and legislative period.</p>
@@ -868,7 +865,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get summary stats per party and legisltive period</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_res_party <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_res_party <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(legis_period, wahlpartei_standard, year_start) <span class="sc">%&gt;%</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mps_n=</span><span class="fu">n</span>(),</span>
@@ -925,13 +922,13 @@ cookieconsent.run({
 <span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
 <span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">legend_label_y_right_color=</span>vec_party_colors[wahlpartei_standard]) <span class="sc">%&gt;%</span></span>
 <span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">legend_label_y_right=</span>glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='color:{legend_label_y_right_color}'&gt;{wahlpartei_standard}: {sum_years_in_parl %&gt;% scales::number(accuracy=1, big.mark='.', </span></span>
-<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="st">    decimal.mark=',')} Jahre&lt;/span&gt;"</span>)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="st">    decimal.mark=',')} Jahre&lt;/span&gt;"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Plot</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> <span class="st">"Die Graphik zeigt an wieviel Abgeordneten-Jahre Parteien zum Beginn einer Legislaturperiode bereits mitbringen. Abgeordneten-Jahre sind Jahre, die eine/r Abgeordnete/r in früheren Legislaturperioden bereits im Nationalrat gesessen ist und somit als Erfahrung mitbringt. Die y-Achse zeigt die Summme dieser Jahre für jede Partei an. **Mit dem Beginn der 28. Legislaturperiode verfügt der FPÖ-Fraktion erstmals über mehr Abgeordnetenjahre als die SPÖ.** Zu keinem anderen Legislaturperiodenbeginn hatten die Abgeordneten des Nationalrates in Summe so wenig Abgeordneten-Erfahrung wie zu Beginn der vergangenen 27. Legislaturperiode."</span></span>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> <span class="st">"Die Graphik zeigt an wieviel Abgeordneten-Jahre Parteien zum Beginn einer Legislaturperiode bereits mitbringen. Abgeordneten-Jahre sind Jahre, die eine/r Abgeordnete/r in früheren Legislaturperioden bereits im Nationalrat gesessen ist und somit als Erfahrung mitbringt. Die y-Achse zeigt die Summme dieser Jahre für jede Partei an. **Mit dem Beginn der 28. Legislaturperiode verfügt der FPÖ-Fraktion erstmals über mehr Abgeordnetenjahre als die SPÖ.** Zu keinem anderen Legislaturperiodenbeginn hatten die Abgeordneten des Nationalrates in Summe so wenig Abgeordneten-Erfahrung wie zu Beginn der vergangenen 27. Legislaturperiode."</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df_res_party_interest <span class="ot">&lt;-</span> df_res_party <span class="sc">%&gt;%</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) </span>
@@ -1023,7 +1020,7 @@ cookieconsent.run({
 <span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x=</span><span class="fu">element_markdown</span>(<span class="at">size=</span><span class="fu">rel</span>(.<span class="dv">6</span>)),</span>
 <span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y=</span><span class="fu">element_markdown</span>()</span>
 <span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>pl_comb    </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>pl_comb    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1040,7 +1037,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Distribution of legislative experience between parties</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df_res_party <span class="ot">&lt;-</span> df_res_party <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df_res_party <span class="ot">&lt;-</span> df_res_party <span class="sc">%&gt;%</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">wahlpartei_standard_other=</span><span class="fu">fct_other</span>(wahlpartei_standard, <span class="at">keep=</span><span class="fu">c</span>(<span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"GRÜNE"</span>, <span class="st">"NEOS"</span>))) <span class="sc">%&gt;%</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">wahlpartei_standard_other=</span>forcats<span class="sc">::</span><span class="fu">fct_infreq</span>(wahlpartei_standard_other) <span class="sc">%&gt;%</span> fct_rev) <span class="sc">%&gt;%</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">wahlpartei_standard_other=</span>forcats<span class="sc">::</span><span class="fu">fct_relevel</span>(wahlpartei_standard_other, <span class="st">"Other"</span>))</span>
@@ -1190,13 +1187,13 @@ cookieconsent.run({
 <span id="cb14-148"><a href="#cb14-148" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_textbox_simple</span>(</span>
 <span id="cb14-149"><a href="#cb14-149" aria-hidden="true" tabindex="-1"></a>        <span class="at">margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">t=</span><span class="dv">0</span>, <span class="at">l=</span><span class="dv">0</span>, <span class="at">b=</span>.<span class="dv">3</span>, <span class="at">r=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"cm"</span>)),</span>
 <span id="cb14-150"><a href="#cb14-150" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">r =</span> <span class="fl">0.25</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">"cm"</span>)</span>
-<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pl_res_party_share</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pl_res_party_share</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1216,7 +1213,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_jitter</span>(</span>
@@ -1225,7 +1222,7 @@ cookieconsent.run({
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">y=</span>days_in_parl<span class="sc">/</span><span class="dv">365</span></span>
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        )</span>
 <span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="fu">vars</span>(wahlpartei_standard))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="fu">vars</span>(wahlpartei_standard))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1247,7 +1244,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Average MP-years per party</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#update of package needed; incompatibility with dev version of ggplot?</span></span>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#update of package needed; incompatibility with dev version of ggplot?</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>lvls_party <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"FPÖ"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"NEOS"</span>, <span class="st">"GRÜNE"</span>)</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -1270,13 +1267,13 @@ cookieconsent.run({
 <span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        ),</span>
 <span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
 <span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_color_manual</span>(<span class="at">values=</span>vec_party_colors)<span class="sc">+</span></span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="fu">vars</span>(wahlpartei_standard))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="fu">vars</span>(wahlpartei_standard))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pl_mp_average</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pl_mp_average</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1293,7 +1290,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ineq)</span>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ineq)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>df_gini <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">|&gt;</span> </span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(legis_period, wahlpartei_standard) <span class="sc">|&gt;</span> </span>
@@ -1306,7 +1303,7 @@ cookieconsent.run({
 <span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
 <span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>wahlpartei_standard, <span class="at">y=</span>gini, <span class="at">color=</span>wahlpartei_standard))<span class="sc">+</span></span>
 <span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span>vec_party_colors)<span class="sc">+</span></span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1322,7 +1319,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(wahlpartei_standard, legis_period) <span class="sc">%&gt;%</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="at">median_days_in_parl=</span><span class="fu">median</span>(days_in_parl, <span class="at">na.rm=</span>T)) <span class="sc">%&gt;%</span></span>
@@ -1345,7 +1342,7 @@ cookieconsent.run({
 <span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
 <span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.background=</span><span class="fu">element_rect</span>(<span class="at">fill=</span>vec_background_color),</span>
 <span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.background=</span><span class="fu">element_rect</span>(<span class="at">fill=</span>vec_background_color)</span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1361,7 +1358,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(wahlpartei_standard, legis_period) <span class="sc">%&gt;%</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="at">mean_days_in_parl=</span><span class="fu">mean</span>(days_in_parl, <span class="at">na.rm=</span>T)) <span class="sc">%&gt;%</span></span>
@@ -1376,7 +1373,7 @@ cookieconsent.run({
 <span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">color=</span>wahlpartei_standard)</span>
 <span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
 <span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_color_manual</span>(<span class="at">values=</span>vec_party_colors)<span class="sc">+</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="sc">~</span>wahlpartei_standard, <span class="at">ncol=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap</span>(<span class="sc">~</span>wahlpartei_standard, <span class="at">ncol=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1395,7 +1392,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_labels <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_labels <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(legis_period<span class="sc">==</span><span class="dv">28</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_max</span>(<span class="at">order_by=</span>days_in_parl, <span class="at">n=</span><span class="dv">1</span>, <span class="at">by=</span>wahlpartei_standard, ) </span>
@@ -1446,7 +1443,7 @@ cookieconsent.run({
 <span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">vars</span>(wahlpartei_standard), </span>
 <span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">ncol=</span><span class="dv">1</span>, </span>
 <span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.position=</span><span class="st">"left"</span>,</span>
-<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales=</span><span class="st">"free_y"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">scales=</span><span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1461,7 +1458,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary></summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df_experience <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df_experience <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(wahlpartei_standard <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"GRÜNE"</span>, <span class="st">"ÖVP"</span>, <span class="st">"SPÖ"</span>, <span class="st">"FPÖ"</span>, <span class="st">"NEOS"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(wahlpartei_standard, legis_period) <span class="sc">%&gt;%</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(</span>
@@ -1486,7 +1483,7 @@ cookieconsent.run({
 <span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="do">##  9 FPÖ                           16               1444              2079.</span></span>
 <span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 10 FPÖ                           17               1280              1287.</span></span>
 <span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 74 more rows</span></span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: sd_days_in_parl &lt;dbl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: sd_days_in_parl &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1498,20 +1495,20 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get all MPs since 1945</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#df of all MPs since 1945; the 5 legislative period</span></span>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#df of all MPs since 1945; the 5 legislative period</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df_mps_5_end <span class="ot">&lt;-</span> ParlAT<span class="sc">::</span><span class="fu">get_mps</span>(<span class="at">legis_period =</span> <span class="st">"all"</span>, <span class="at">institution=</span><span class="st">"Nationalrat"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unnest_longer</span>(<span class="fu">c</span>(<span class="st">"gesetzgebungsperioden"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">gesetzgebungsperioden_num=</span><span class="fu">as.roman</span>(gesetzgebungsperioden) <span class="sc">%&gt;%</span> as.numeric) <span class="sc">%&gt;%</span></span>
 <span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(gesetzgebungsperioden_num<span class="sc">&gt;=</span><span class="dv">5</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rename</span>(<span class="at">legis_period=</span>gesetzgebungsperioden_num)</span>
 <span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="do">## &gt;&gt; {"M":["M"],"W":["W"],"NRBR":["NR"],"GP":["ALLE"],"WP":["ALLE"],"FR":["ALLE"],"WK":["ALLE"]}</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 2035</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 2035</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Import interim save</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df_mps_5_end <span class="ot">&lt;-</span> nanoparquet<span class="sc">::</span><span class="fu">read_parquet</span>(<span class="at">file=</span>here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"posts"</span>, <span class="st">"2024-10-24-mps-experience"</span>, <span class="st">"data_interim"</span>, <span class="st">"df_mps_5_end.parquet"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df_mps_5_end <span class="ot">&lt;-</span> nanoparquet<span class="sc">::</span><span class="fu">read_parquet</span>(<span class="at">file=</span>here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"posts"</span>, <span class="st">"2024-10-24-mps-experience"</span>, <span class="st">"data_interim"</span>, <span class="st">"df_mps_5_end.parquet"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="bar-graph-share-of-new-mps" class="level2 page-columns page-full" data-number="9.1">
@@ -1519,7 +1516,7 @@ cookieconsent.run({
 <div class="cell column-body-outset-right">
 <details open="" class="code-fold">
 <summary>Match MPs at start of legislative period with mandates</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df_mps_legis <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df_mps_legis <span class="ot">&lt;-</span> df_days_in_parl <span class="sc">%&gt;%</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year_start_short=</span><span class="fu">str_extract</span>(year_start, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">d{2}$"</span>)) <span class="sc">%&gt;%</span> <span class="fu">paste0</span>(<span class="st">"'"</span>,.)) <span class="sc">%&gt;%</span></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year_start_short=</span><span class="fu">str_replace_all</span>(year_start_short,<span class="fu">c</span>(<span class="st">"'02"</span><span class="ot">=</span><span class="st">"2002"</span>, <span class="st">"'45"</span><span class="ot">=</span><span class="st">"1945"</span>))) <span class="sc">%&gt;%</span></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># mutate(legis_period_label=glue::glue("{as.roman(as.numeric(legis_period))}\n({year_start_short})")) %&gt;%</span></span>
@@ -1589,13 +1586,13 @@ cookieconsent.run({
 <span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a>df_mps_legis <span class="sc">%&gt;%</span></span>
 <span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="fu">is.na</span>(mp_status)) <span class="sc">%&gt;%</span></span>
 <span id="cb26-70"><a href="#cb26-70" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>()</span>
-<span id="cb26-71"><a href="#cb26-71" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-71"><a href="#cb26-71" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> df_mps_legis <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> df_mps_legis <span class="sc">%&gt;%</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(legis_period, legis_period_label, mp_status) <span class="sc">%&gt;%</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(legis_period, legis_period_label) <span class="sc">%&gt;%</span></span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">rel=</span>n<span class="sc">/</span><span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
@@ -1667,13 +1664,13 @@ cookieconsent.run({
 <span id="cb27-70"><a href="#cb27-70" aria-hidden="true" tabindex="-1"></a>df_comb <span class="ot">&lt;-</span> df_comb <span class="sc">|&gt;</span> </span>
 <span id="cb27-71"><a href="#cb27-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(legis_period, wahlpartei_standard) <span class="sc">|&gt;</span> </span>
 <span id="cb27-72"><a href="#cb27-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n_sum=</span><span class="fu">sum</span>(n), <span class="at">.after=</span><span class="st">"n"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb27-73"><a href="#cb27-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-73"><a href="#cb27-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Die Graphik zeigt die relative Zusammensetzung der Parteien zu Beginn der Legislaturperioden nach vorhergender Erfahrung im Nationalrat an. **&lt;span style='color:{vec_mp_status_colors['novice']}; font-weight:00'&gt;'Newcomers'&lt;/span&gt;** sitzen zum ersten mal im Nationalrat. **&lt;span style='color:{vec_mp_status_colors['returnee']}'&gt;'Returnees'&lt;/span&gt;** waren bereits Abgeordnete jedoch nicht am Ende der vorhergehenden Legislaturperiode. **&lt;span style='color:{vec_mp_status_colors['remainer']}'&gt;'Remainers'&lt;/span&gt;** waren am Ende der letzten Legislaturperiode bereits Mitglied. Segment-Labels zeigen die aktuellen sowie höchsten und niedrigsten Werte für jede Partei an. Die Kategorie 'Alle' enthalt sämtliche Partein, die in der 2. Republik im Parlament vertreten waren. Was den Anteil an Newcomern angeht so sind die Höchstwerte erst vor relativ kurzem erreicht worden."</span>)</span>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>txt_subtitle <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Die Graphik zeigt die relative Zusammensetzung der Parteien zu Beginn der Legislaturperioden nach vorhergender Erfahrung im Nationalrat an. **&lt;span style='color:{vec_mp_status_colors['novice']}; font-weight:00'&gt;'Newcomers'&lt;/span&gt;** sitzen zum ersten mal im Nationalrat. **&lt;span style='color:{vec_mp_status_colors['returnee']}'&gt;'Returnees'&lt;/span&gt;** waren bereits Abgeordnete jedoch nicht am Ende der vorhergehenden Legislaturperiode. **&lt;span style='color:{vec_mp_status_colors['remainer']}'&gt;'Remainers'&lt;/span&gt;** waren am Ende der letzten Legislaturperiode bereits Mitglied. Segment-Labels zeigen die aktuellen sowie höchsten und niedrigsten Werte für jede Partei an. Die Kategorie 'Alle' enthalt sämtliche Partein, die in der 2. Republik im Parlament vertreten waren. Was den Anteil an Newcomern angeht so sind die Höchstwerte erst vor relativ kurzem erreicht worden."</span>)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>pl_rel <span class="ot">&lt;-</span> df_comb <span class="sc">|&gt;</span> </span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
@@ -1771,7 +1768,7 @@ cookieconsent.run({
 <span id="cb28-96"><a href="#cb28-96" aria-hidden="true" tabindex="-1"></a>      <span class="at">size=</span><span class="fu">rel</span>(<span class="fl">0.8</span>))</span>
 <span id="cb28-97"><a href="#cb28-97" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb28-98"><a href="#cb28-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-99"><a href="#cb28-99" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pl_rel)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-99"><a href="#cb28-99" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pl_rel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1784,7 +1781,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">knit_exit</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">knit_exit</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
@@ -1868,14 +1865,13 @@ Experiences as MPs.”</span> October 23, 2024. <a href="https://werk.statt.code
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-      const outerScaffold = trigger.parentElement.cloneNode(true);
-      const codeEl = outerScaffold.querySelector('code');
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
         }
-      }
-      return codeEl.innerText;
+        return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
