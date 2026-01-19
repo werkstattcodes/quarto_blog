@@ -129,6 +129,13 @@ a.nav-link.dropdown-toggle:hover {
     color: white;    
 }
 
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus,
+.dropdown-menu .dropdown-item:active {
+    background-color: black;
+    color: white;
+}
+
 
 a.page-link {
     color: lightgrey;
