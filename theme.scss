@@ -383,6 +383,28 @@ div.nav-footer {
     border-top: 0px !important
 }
 
+/* align footer icon list horizontally */
+.nav-footer .footer-items {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-footer-right {
+    text-align: right;
+}
+
+.nav-footer .footer-items .nav-link {
+    display: flex;
+    align-items: center;
+}
+
+.nav-footer .footer-items p {
+    margin: 0;
+}
+
 /* fomrating of lists in the body; otherwise different font */
 .content li {
     font-family: "Source Serif 4", Georgia, Garamond, "Times New Roman", Times, serif;

@@ -18,11 +18,9 @@ website:
         href: https://orcid.org/0000-0002-6897-1693
       - icon: github
         href: https://github.com/werkstattcodes
-      - icon: mastodon  
-        aria-label: mastodon
-        href: https://mastodon.social/@zoowalk
-      - icon: twitter 
-        href: https://twitter.com/zoowalk 
+      - text: "{{< fa brands bluesky >}}"
+        aria-label: bluesky
+        href: https://bsky.app/profile/zoowalk.bsky.social
       - icon: rss
         href: index.xml
       - icon: envelope-plus
