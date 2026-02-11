@@ -375,6 +375,11 @@ code {
     color: black;
 }
 
+:not(pre) > code {
+    background-color: #e9ecef !important;
+    color: inherit !important;
+}
+
 .sourceCode.r {
     font-size: 0.8rem !important;
 }

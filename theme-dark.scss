@@ -163,6 +163,11 @@ code {
   color: var(--nord6);
 }
 
+:not(pre) > code {
+  background-color: var(--nord3) !important;
+  color: inherit !important;
+}
+
 .content li {
   color: var(--nord6);
 }
