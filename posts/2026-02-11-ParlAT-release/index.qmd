@@ -1,0 +1,550 @@
+---
+title: "Introducing {ParlAT}: Accessing Austrian Parliamentary Open Data from R"
+date: 2026-02-10
+date-modified: last-modified
+author: Roland Schmidt
+description: |
+  {ParlAT} is an R package that wraps the Austrian Parliament's Open Data API —
+  making it straightforward to query data on MPs, legislative items, committees,
+  plenary sessions, and more from R.
+
+categories:
+  - Austria
+  - parliament
+  - r-bloggers
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: true  
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(ParlAT)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+```
+
+Anyone who has followed this blog will know that I frequently rely on data published by the Austrian Parliament — whether it's for analysing [speeches](posts/2024-06-11-parliament-speech-length-limits/), tracing [calls to order](posts/2024-09-09-call-for-order/), or examining [the prior experience of MPs](posts/2024-10-24-mps-experience/). Until now, most of that work required custom scripts to query the Parliament's API and wrangle the JSON responses into tidy data frames. The [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) package is an attempt to bundle these steps into a consistent, reusable interface.
+
+{ParlAT} wraps the [Open Data API of the Austrian Parliament](https://www.parlament.gv.at/recherchieren/open-data) and provides a set of `get_*()` functions — one for each major data domain — that return tibbles ready for analysis. The package is still in development, but the core functionality is in place and I've been using it for my own work for some time.
+
+You can install {ParlAT} from GitHub:
+
+``` r
+# install.packages("pak")
+pak::pak("werkstattcodes/ParlAT")
+```
+
+For the full function reference and a more detailed introductory vignette, see the [documentation site](https://werkstattcodes.github.io/ParlAT/).
+
+## What data is available?
+
+The Austrian Parliament publishes [25 open datasets](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html) — with some exceptions — under a CC BY 4.0 license. These cover a broad range of parliamentary activity: MP records going back to 1918, committee compositions and memberships, plenary session protocols, citizen initiatives (Bürgerinitiativen), government bills (Regierungsvorlagen), written questions (Schriftliche Anfragen), EU submissions, and more.
+
+{ParlAT} mirrors the API's structure. Most datasets map directly to a dedicated function; some, like the many types of parliamentary items (Verhandlungsgegenstände), are accessed through `get_items()` with different `item` parameters. Here's a condensed overview of the main functions:
+
+| Function | Data |
+|-----------------------------|-------------------------------------------|
+| `get_mps()` | MPs since 1918, by period or date |
+| `get_mps_current()` | Current composition of NR or BR |
+| `get_mps_details()` | Individual MP speeches, activities, committee work |
+| `get_mandates()` | All mandates of one or more individuals |
+| `get_items()` | Parliamentary items: bills, motions, questions, etc. |
+| `get_committees()` | Committees, optionally with member lists |
+| `get_plenary_sessions()` | Plenary session metadata |
+| `get_transcripts()` | Stenographic protocols with PDF export |
+| `get_events()` | Parliamentary events and calendar |
+| `get_participation()` | Public participation / consultation data |
+
+## MPs: Current composition
+
+A natural starting point is the composition of Parliament itself. `get_mps_current()` retrieves the members currently serving in the National Council (Nationalrat) or the Federal Council (Bundesrat):
+
+```{r}
+#| eval: true
+df_current <- get_mps_current(institution = "NR")
+
+df_current |>
+  count(party, sort = TRUE)
+#> # A tibble: 5 × 2
+#>   party     n
+#>   <chr> <int>
+#> 1 FPÖ      57
+#> 2 ÖVP      51
+#> 3 SPÖ      41
+#> 4 NEOS     18
+#> 5 Grüne    16
+```
+
+The function also works for the Federal Council (Bundesrat):
+
+```{r}
+#| eval: true
+df_current_br <- get_mps_current(institution = "BR")
+nrow(df_current_br)
+#> [1] 61
+```
+
+## MPs: Historical queries
+
+For historical queries, `get_mps()` returns MPs active during a given legislative period or on a specific date. The function accepts both numeric and Roman numeral period identifiers (e.g., `27` or `"XXVII"`), as well as special codes like `"PN"` (Provisorische Nationalversammlung) and `"KN"` (Konstituierende Nationalversammlung).
+
+### By legislative period
+
+```{r}
+#| eval: true
+# All MPs of the National Council during the 22nd legislative period
+mps_legis22 <- get_mps(legis_period = 22, institution = "NR")
+```
+
+Each row corresponds to one MP per legislative period. A nested `mp_details` column captures mandate-level details — party affiliation, electoral list, position — which can change within a single period. This is where things get interesting: unnesting `mp_details` reveals party switches, changes in parliamentary group, or mandate interruptions within a period.
+
+A well-known example is Herbert Scheibner, who switched from FPÖ to BZÖ during the 22nd period. Unnesting his details surfaces both affiliations:
+
+```{r}
+#| eval: true
+mps_legis22 |>
+  unnest(mp_details) |>
+  filter(str_detect(name, "Scheibner"))
+```
+
+### By date
+
+When a specific date is more appropriate than a legislative period — for instance, when working with the Federal Council, which doesn't follow legislative periods in the same way — `get_mps()` accepts a `date` parameter:
+
+```{r}
+#| eval: true
+# Members of the Federal Council on 30 October 2013
+df_mps_br <- get_mps(date = "30.10.2013", institution = "BR")
+nrow(df_mps_br)
+#> [1] 61
+```
+
+Note that filtering the Federal Council by `legis_period` is not supported (the API returns an informative error). Using a date is the way to go for BR queries. To find the relevant dates for a specific legislative period, `get_legis_periods()` provides the start and end dates:
+
+```{r}
+#| eval: true
+get_legis_periods(legis_period = 25)
+#> # A tibble: 1 × 5
+#>   legis_period_name  legis_period_abbrev legis_period_abbrev_num date_start date_end
+#>   <chr>              <chr>               <chr>                   <date>     <date>
+#> 1 XXV. Gesetzgebun…  XXV                 25                      2013-10-29 2017-11-08
+```
+
+### Filtering by gender, party, state
+
+`get_mps()` supports a number of additional filters. These can be combined:
+
+```{r}
+#| eval: true
+# Female SPÖ MPs in the current legislative period
+female_spoe <- get_mps(
+  gender = "female",
+  party = "SPÖ",
+  legis_period = 28,
+  institution = "NR"
+)
+
+# MPs from Vienna during the 27th period
+vienna_mps <- get_mps(
+  state = "Wien",
+  legis_period = 27,
+  institution = "NR"
+)
+```
+
+The `presidents_only` argument narrows results to presidents of the chamber — useful for identifying the leadership at a given point in time.
+
+## Mandates: Tracing careers across Parliament
+
+`get_mandates()` returns all current and past mandates for one or more individuals. It accepts either names or unique `pad_intern` identifiers. Mandates are not limited to Parliament — they also cover executive positions (e.g., Chancellor, Minister), presidencies, and other functions.
+
+```{r}
+#| eval: true
+get_mandates(name = c("Karl Nehammer", "Andreas Babler"))
+```
+
+The returned data includes `position_code` (e.g., "NR", "BK" for Bundeskanzler, "BM" for Bundesminister), start and end dates, party affiliation, and a flag for whether the mandate is currently active. This makes it straightforward to calculate the total time an MP has served:
+
+```{r}
+#| eval: true
+# How long have current NR members served in the National Council?
+df_mandates <- get_mandates(pad_intern = df_current$pad_intern, institution = "NR")
+
+duration <- df_mandates |>
+  # For active mandates, use today as end date
+  mutate(position_date_end = case_when(
+    is.na(position_date_end) & position_active == TRUE ~ today(),
+    .default = position_date_end
+  )) |>
+  mutate(
+    days = as.numeric(difftime(position_date_end, position_date_start, units = "days"))
+  ) |>
+  summarise(total_days = sum(days), .by = c(pad_intern, name)) |>
+  arrange(desc(total_days))
+
+# Top 5 longest-serving current NR members
+duration |> slice_head(n = 5)
+```
+
+`get_mandates()` also accepts a `date` argument to filter for mandates active at a specific point in time, and an `institution` argument to restrict to a single chamber.
+
+## Identifying MPs: `get_pad_intern()` and `get_names()`
+
+The unique identifier for each person in the Parliament's database is `pad_intern`. Many functions accept it as input. To look it up by name:
+
+```{r}
+#| eval: true
+get_pad_intern("Peter Pilz")
+#> # A tibble: 1 × 2
+#>   pad_intern names_variants
+#>   <chr>      <chr>
+#> 1 1210       Peter Pilz
+```
+
+`get_names()` retrieves all name variants an MP has used over time — relevant when names change due to marriage, divorce, or other reasons. A good example is Pia Philippa Beck (formerly Strache):
+
+```{r}
+#| eval: true
+# All name variants
+get_names(pad_intern = 44127)
+#> # A tibble: 3 × 9
+#>   index pad_intern name                     date_start date_end   name_clean   name_family name_given note
+#>   <int>      <dbl> <chr>                    <date>     <date>     <chr>        <chr>       <chr>      <chr>
+#> 1     1      44127 Philippa Pia Beck        2024-01-18 NA         Philippa Pi… Beck        Philippa … (sei…
+#> 2     2      44127 Philippa Pia Strache-Be… 2020-01-10 2024-01-17 Philippa Pi… Strache-Be… Philippa … NA
+#> 3     3      44127 Philippa Pia Strache     NA         2020-01-09 Philippa Pi… Strache     Philippa … (bis…
+
+# Name applicable on 1 January 2023
+get_names(44127, date = "01/01/2023")
+#> # A tibble: 1 × 9
+#>   ...
+#>   name_clean: Philippa Pia Strache-Beck
+```
+
+Note that the API always returns the latest name of a person. So querying for "Michael Pöck" (who changed his name to Michael Bernhard) will return all results under "Michael Bernhard". `get_names()` helps clarify which name was valid when.
+
+## Parliamentary items (Verhandlungsgegenstände)
+
+`get_items()` is arguably the most versatile function in the package. It covers a broad spectrum of parliamentary business — motions (Anträge), committee reports (Ausschussberichte), government bills (Regierungsvorlagen), written questions (Anfragen), EU submissions, citizen initiatives (Bürgerinitiativen), popular initiatives (Volksbegehren), and more — all controlled through the `item` parameter.
+
+### Government bills
+
+```{r}
+#| eval: true
+# Government bills tabled in the 27th legislative period
+gov_bills <- get_items(item = "RV", legis_period = 27)
+
+glimpse(gov_bills)
+```
+
+### Written questions across multiple periods
+
+```{r}
+#| eval: true
+# Written and oral questions from the 20th to 27th period
+questions <- get_items(item = "J_JPR_M", legis_period = seq(20, 27))
+
+nrow(questions)
+#> [1] ~38000 (varies)
+```
+
+The returned data includes metadata such as topic classification (`topics` is a list-column), sponsoring parliamentary group(s), and document type. This makes it straightforward to aggregate and visualise parliamentary activity — for example, counting questions by party and legislative period.
+
+### Citizen initiatives and popular initiatives
+
+```{r}
+#| eval: true
+# Popular initiatives (Volksbegehren) from the 20th to 27th period
+vb <- get_items(item = "VOLKBG", legis_period = seq(20, 27), institution = "NR")
+vb |> count(legis_period)
+
+# Citizen initiatives (Bürgerinitiativen)
+bi <- get_items(item = "BI", legis_period = 27)
+```
+
+### Filtering by topic and parliamentary group
+
+Items can be filtered by topic (Thema), parliamentary group, EuroVoc terms, and more. The `parl_group_names_standard` argument expands party abbreviations to their historical variants — so searching for "FPÖ" also captures items filed under "F" or "F-BZÖ":
+
+```{r}
+#| eval: true
+# SPÖ motions on health topics during the 27th period
+spoe_health <- get_items(
+  item = "ANTR",
+  topic = "Gesundheit und Ernährung",
+  parl_group = "SPÖ",
+  legis_period = 27,
+  institution = "NR",
+  parl_group_names_standard = TRUE
+)
+```
+
+### EU submissions
+
+For EU-related items, the `type_eu_submission` parameter controls which type of EU document is queried:
+
+```{r}
+#| eval: true
+# Statements of the EU Main Committee
+eu_statements <- get_items(
+  item = "EU",
+  type_eu_submission = "S",
+  institution = "NR",
+  legis_period = 27
+)
+```
+
+## An MP's work in detail
+
+`get_mps_details()` provides granular data on individual MPs' plenary speeches, committee memberships, and parliamentary activities. It takes a `pad_intern` and a `detail_type` ("plenary", "committees", or "activities").
+
+### Plenary speeches
+
+```{r}
+#| eval: true
+# All plenary speeches by Sebastian Kurz in the National Council
+get_pad_intern("Sebastian Kurz")
+#> pad_intern: 65321
+
+df_plenary_kurz <- get_mps_details(
+  pad_intern = 65321,
+  detail_type = "plenary",
+  institution = "NR"
+)
+
+# Kurz held speeches in different capacities — Abgeordneter, Bundeskanzler, etc.
+df_plenary_kurz |>
+  unnest(position_name) |>
+  count(position_name, sort = TRUE)
+#> # A tibble: 4 × 2
+#>   position_name                          n
+#>   <chr>                              <int>
+#> 1 Abgeordneter zum Nationalrat          45
+#> 2 Bundeskanzler                          32
+#> 3 Bundesminister für Europa, Integr…     18
+#> 4 Bundesminister für europäische un…      4
+```
+
+Note that `get_mps_details()` returns all speeches regardless of the person's role at the time. The `position_name` list-column reveals which position(s) the person held when the speech was given — showing, for example, that Kurz spoke both as an MP and as Chancellor.
+
+### Committee memberships
+
+```{r}
+#| eval: true
+# Committees where a specific MP served
+df_committees_mp <- get_mps_details(
+  pad_intern = 65321,
+  detail_type = "committees",
+  institution = "NR"
+)
+```
+
+### Parliamentary activities
+
+```{r}
+#| eval: true
+# Written questions submitted by an MP
+df_activities <- get_mps_details(
+  pad_intern = 2822,
+  detail_type = "activities",
+  institution = "NR",
+  item = "JMIN"  # Written questions to the Federal Government
+)
+```
+
+## Committees (Ausschüsse)
+
+`get_committees()` retrieves committee information for a given legislative period and institution. It can also extract membership lists when `details_type = "members"` is set.
+
+### Listing committees
+
+```{r}
+#| eval: true
+# All committees of the National Council in the 27th period
+committees_nr27 <- get_committees(legis_period = 27, institution = "NR")
+committees_nr27
+```
+
+### Committees of inquiry (Untersuchungsausschüsse)
+
+The `citation` parameter allows filtering by committee type code. Committees of inquiry use the code "USA":
+
+```{r}
+#| eval: true
+# How many committees of inquiry per legislative period?
+inquiry_committees <- map(
+  seq(20, 28),
+  \(x) get_committees(legis_period = x, institution = "NR", citation = "USA")
+) |>
+  list_rbind()
+
+inquiry_committees |>
+  mutate(legis_period = factor(legis_period, levels = as.character(as.roman(20:28)))) |>
+  count(legis_period, .drop = FALSE)
+```
+
+### Extracting members
+
+```{r}
+#| eval: true
+# The "Ibiza" committee of inquiry, including its members
+ibiza <- get_committees(
+  legis_period = 27,
+  search_string = "Ibiza",
+  institution = "NR",
+  details_type = "members"
+)
+
+ibiza
+```
+
+When `details_type = "members"` is specified, the function fetches the HTML membership lists from the Parliament's website, parses them, and returns the results with columns for `name`, `member_type` (member, substitute, or leadership role), `party`, and `member_url`. This is automatically unnested into the result — no extra wrangling required.
+
+## Plenary sessions
+
+`get_plenary_sessions()` retrieves metadata about plenary sessions — dates, session numbers, and links to agendas. It supports three modes via the `session_and_activities` parameter:
+
+-   `"sessions"`: Basic session metadata (dates, numbers, agenda URLs)
+-   `"submitted"`: Items submitted during sessions (motions, questions, etc.)
+-   `"held"`: Types of proceedings held (Question Hours, Government Declarations, etc.)
+
+```{r}
+#| eval: true
+# Plenary sessions from the 20th to 27th period
+sessions <- get_plenary_sessions(
+  institution = "NR",
+  legis_period = seq(20, 27),
+  session_and_activities = "sessions"
+)
+
+# Count sessions per legislative period
+sessions |> count(legis_period)
+
+# What types of motions were submitted during 28th period sessions?
+submitted_28 <- get_plenary_sessions(
+  institution = "NR",
+  legis_period = 28,
+  session_and_activities = "submitted",
+  submitted = "UEA"  # Dependent resolution motions
+)
+```
+
+The function also supports the Federal Assembly (Bundesversammlung, `institution = "BV"`) — a rare but constitutionally significant body that convenes when both chambers meet jointly.
+
+## Transcripts (Stenographische Protokolle)
+
+`get_transcripts()` provides access to stenographic protocols. Results include links to both HTML and PDF versions of the transcripts. For bulk downloads, the function supports PDF export
+
+```{r}
+#| eval: false
+# Transcripts mentioning "Gesundheit" in the 28th period
+transcripts <- get_transcripts(
+  search_string = "gesundheit",
+  legis_period = 28,
+  session_type = "NRSITZ",
+  echo = TRUE
+)
+
+# Federal Council transcripts from the first half of 2024
+br_transcripts <- get_transcripts(
+  session_type = "BRSITZ",
+  date_start = "01-01-2024",
+  date_end = "30-06-2024"
+)
+glimpse(br_transcripts)
+```
+ 
+```{r}
+#| eval: false
+
+# Download PDFs to a local folder
+get_transcripts(
+  legis_period = 28,
+  session_type = "NRSITZ",
+  export = "pdf",
+  export_destination = "my_transcripts"
+)
+```
+
+## Events (Termine)
+
+`get_events()` retrieves the parliamentary calendar — committee meetings, plenary sessions, guided tours, press conferences, and other events. It can be filtered by date range, legislative period, event type, and location.
+
+```{r}
+#| eval: true
+# All events in the National Council during the 27th period
+events <- get_events(institution = "NR", legis_period = 27)
+
+# Committee meetings in January 2025
+committee_meetings <- get_events(
+  institution = "NR",
+  event_type = "Ausschusssitzung oder Ausschuss",
+  date_start = "01-01-2025",
+  date_end = "31-01-2025"
+)
+```
+
+The `location` parameter is surprisingly specific — you can filter for events held in the "Bundesratssaal", the "Auditorium", or even the "Epstein Beletage" if you want to.
+
+## Public participation (Stellungnahmen)
+
+`get_participation()` retrieves data on public participation mechanisms — statements (Stellungnahmen) submitted in response to legislative initiatives, citizen initiatives, or petitions. This data reflects the public's engagement with the parliamentary process.
+
+```{r}
+#| eval: true
+# Currently open calls for public participation
+active_participation <- get_participation(active = "J")
+
+# Participation on health topics
+health_participation <- get_participation(
+  topic = "Gesundheit und Ernährung",
+  legis_period = "28"
+)
+```
+
+The result includes the number of statements submitted (`statements`), the number of supporters (`support`), the responsible ministry, and a link to the item on the Parliament's website.
+
+## The `echo` argument
+
+Most functions accept an `echo` argument. When set to `TRUE`, the function prints the search parameters and a direct URL linking to the same results on the Parliament's website:
+
+```{r}
+#| eval: true
+get_items(item = "RV", legis_period = 27, echo = TRUE)
+#> {"NRBR":"NR","GP":"XXVII.","VHG":"RV"}
+#> https://www.parlament.gv.at/recherchieren/gegenstaende/...
+#> [1] 245
+```
+
+I find this useful for verification, for quickly sharing a specific query with someone who prefers the web interface, and for sanity-checking that the API query is doing what I expect. It's a small feature but it's saved me more than once.
+
+## Party names across history
+
+Anyone working with Austrian parliamentary data spanning multiple decades will run into the naming problem. The FPÖ has been listed under various abbreviations over the years — "FPÖ", "F", "F-BZÖ" — depending on the period and context. The same applies to other parties.
+
+The helper function `aux_parl_group_names_standard()` expands party abbreviations to include their historical variants. Several `get_*()` functions expose this via a `parl_group_names_standard` argument, which ensures that a search for "FPÖ" also captures "F" and "F-BZÖ", "NEOS" includes "NEOS-LIF", and so on. This matters more than you might think when aggregating data across legislative periods.
+
+## What changed in v0.0.2
+
+The second release focuses on reliability and developer experience:
+
+-   **Improved input validation and error handling** across several functions, including better date format checks in `get_mps()` (invalid dates now produce an early, clear error) and null-safe institution handling in `get_mps_current()`.
+-   **Progress messages now use {cli}** instead of the {progress} package, providing more consistent feedback during longer requests — for instance, when `get_mandates()` iterates over dozens of MP identifiers.
+-   **Expanded test suite**, with better mocked API coverage via {httptest2} and more robust cross-platform behaviour. In particular, the timezone handling for CET-based API requests has been fixed to work correctly on CI environments running in UTC — a subtle but important fix that ensures test fixtures produce consistent results regardless of the machine's timezone.
+
+## Getting started
+
+The [Get Started vignette](https://werkstattcodes.github.io/ParlAT/articles/ParlAT.html) walks through several worked examples — from counting questions by party across eight legislative periods to visualising government bills by topic, tracing MP careers through mandates, and exploring committee structures. The full function reference is available on the [documentation site](https://werkstattcodes.github.io/ParlAT/).
+
+{ParlAT} is still in active development. If you encounter issues or have ideas for additional features, feel free to open an issue on [GitHub](https://github.com/werkstattcodes/ParlAT/issues). Note that neither the package nor its author is affiliated with the Austrian Parliament.

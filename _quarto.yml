@@ -60,7 +60,7 @@ format:
           })();
           </script>
     code-copy: true
-    highlight-style: nord
+    highlight-style: github
     fontsize: 16px
     # fontcolor: red
     toc: true
