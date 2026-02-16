@@ -19,7 +19,7 @@ knitr:
       code-fold: show
       collapse: true
       dev: "ragg_png"
-draft: false
+draft: true
 ---
 
 ```{r}
