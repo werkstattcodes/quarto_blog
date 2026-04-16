@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -71,18 +71,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/cookie-consent/cookie-consent.css" rel="stylesheet">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-234273d1456647dabc34a594ac50e507.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0348920b7671f696dc9078d39bff215e.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-234273d1456647dabc34a594ac50e507.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-368e5a5000e0a569eb6e2850c8b7e9cb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-b9c04a8edfa109ba902780547b22a37c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-368e5a5000e0a569eb6e2850c8b7e9cb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-98f0fc669a606a5886da90601889d076.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-03a60bb937316abaf97719021d170da1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-98f0fc669a606a5886da90601889d076.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-6.7.2/all.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-6.7.2/latex-fontsize.css" rel="stylesheet">
 <script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
@@ -480,7 +481,7 @@ cookieconsent.run({
 <div class="cell">
 <details class="code-fold">
 <summary>Get packages</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reactable)</span>
@@ -493,14 +494,14 @@ cookieconsent.run({
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">loadfonts</span>(<span class="at">device =</span> <span class="st">"win"</span>, <span class="at">quiet =</span> T)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hrbrthemes)</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtExtras)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtExtras)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>The different electoral lists are published on the State of Salzburg’s official website <a href="https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien" target="_blank">here</a>. First, I’ll <strong>get the links for each list</strong>.</p>
 <div class="cell" data-freeze="true">
 <details open="" class="code-fold">
 <summary>Code: Extract links to electoral lists</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>link_main <span class="ot">&lt;-</span> <span class="st">"https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>link_main <span class="ot">&lt;-</span> <span class="st">"https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df_links_on_page <span class="ot">&lt;-</span> link_main <span class="sc">%&gt;%</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>xml2<span class="sc">::</span><span class="fu">read_html</span>() <span class="sc">%&gt;%</span></span>
@@ -511,7 +512,7 @@ cookieconsent.run({
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df_links_list <span class="ot">&lt;-</span> df_links_on_page <span class="sc">%&gt;%</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="fu">str_detect</span>(links, <span class="st">"/parteien/"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">links=</span>glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"https://www.salzburg.gv.at{links}"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">links=</span>glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"https://www.salzburg.gv.at{links}"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Here’s the result:</p>
@@ -533,7 +534,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code: Define function extracting data from electoral list</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fn_get_tables <span class="ot">&lt;-</span> <span class="cf">function</span>(link) {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fn_get_tables <span class="ot">&lt;-</span> <span class="cf">function</span>(link) {</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># df_tb1 &lt;- df_links_list$links[[1]] %&gt;%</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>link <span class="sc">%&gt;%</span></span>
@@ -556,20 +557,20 @@ cookieconsent.run({
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(raw)) <span class="sc">%&gt;%</span></span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(<span class="sc">-</span>nchar_raw)</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Now let’s <strong>apply the function</strong>.</p>
 <div class="cell" data-freeze="true">
 <details open="" class="code-fold">
 <summary>Code: Apply extract function to each electoral list link</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_table_all <span class="ot">&lt;-</span> df_links_list<span class="sc">$</span>links <span class="sc">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_table_all <span class="ot">&lt;-</span> df_links_list<span class="sc">$</span>links <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set_names</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(., fn_get_tables, <span class="at">.progress =</span> T) <span class="sc">%&gt;%</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">list_rbind</span>(., <span class="at">names_to=</span><span class="st">"list"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">list=</span><span class="fu">str_extract</span>(list, <span class="fu">regex</span>(<span class="st">"[^</span><span class="sc">\\</span><span class="st">/]+$"</span>))) <span class="sc">%&gt;%</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">raw=</span><span class="fu">str_trim</span>(raw)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(raw, <span class="fu">regex</span>(<span class="st">"^Liste</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\\</span><span class="st">d+"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(raw, <span class="fu">regex</span>(<span class="st">"^Liste</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\\</span><span class="st">d+"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Below some sample rows of the obtained dataframe. As you can see, the column <code>raw</code> contains all the data from the electoral list, however, in one single string. Candidates’ names, years of birth, places of residence, professions are all lumped together into one cell.</p>
@@ -596,7 +597,7 @@ cookieconsent.run({
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code: Split composite string into relevant data</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all <span class="sc">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all <span class="sc">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name=</span><span class="fu">str_extract</span>(raw, <span class="fu">regex</span>(<span class="st">"^[^,]+"</span>)),</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">year=</span><span class="fu">str_extract</span>(raw, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">d{4}"</span>)),</span>
@@ -607,14 +608,14 @@ cookieconsent.run({
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">list_position=</span><span class="fu">as.numeric</span>(list_position)) <span class="sc">%&gt;%</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">list=</span><span class="fu">str_to_title</span>(list) <span class="sc">%&gt;%</span> <span class="fu">str_remove</span>(., <span class="fu">regex</span>(<span class="st">"-Ltw23"</span>))) <span class="sc">%&gt;%</span></span>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#remove some academic titles to ensure consistency of names across lists</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">name_clean=</span><span class="fu">str_remove_all</span>(name, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">S+</span><span class="sc">\\</span><span class="st">."</span>)) <span class="sc">%&gt;%</span> <span class="fu">str_trim</span>(., <span class="at">side=</span><span class="st">"both"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">name_clean=</span><span class="fu">str_remove_all</span>(name, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">S+</span><span class="sc">\\</span><span class="st">."</span>)) <span class="sc">%&gt;%</span> <span class="fu">str_trim</span>(., <span class="at">side=</span><span class="st">"both"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Once the code above is executed, we get a tidy dataframe with the data of interest in separate columns for all candidates. If you want to know e.g.&nbsp;on which lists a specific candidate runs, the table below has you covered.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Tidy Table.</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="sc">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">list_fct=</span><span class="fu">fct</span>(list, <span class="at">levels=</span>lvls_list)) <span class="sc">%&gt;%</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">age=</span><span class="dv">2023</span><span class="sc">-</span>year) <span class="sc">%&gt;%</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(list, party, name, list_position, year, origin) <span class="sc">%&gt;%</span></span>
@@ -638,7 +639,7 @@ cookieconsent.run({
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>          <span class="fu">add_title</span>(</span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">title=</span> <span class="fu">html</span>(<span class="st">"&lt;p style='font-family:Segoe UI;'&gt;SALZBURG-WAHL 2023: &lt;span style='background-color:black; color:white;list-height:100%;'&gt;Liste aller KandidatInnen&lt;/span&gt;&lt;/p&gt;"</span>), </span>
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">font_size=</span><span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>          <span class="fu">add_source</span>(<span class="at">source=</span><span class="fu">html</span>(<span class="st">"&lt;p style='font-size:8pt; line-height:100%; font-family:Segoe UI;'&gt;Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien;&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:500'&gt;https://werk.statt.codes&lt;/span&gt;&lt;/p&gt;"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>          <span class="fu">add_source</span>(<span class="at">source=</span><span class="fu">html</span>(<span class="st">"&lt;p style='font-size:8pt; line-height:100%; font-family:Segoe UI;'&gt;Data: https://www.salzburg.gv.at/pol/wahl/land/ltw23/parteien;&lt;br&gt;Analysis: Roland Schmidt | @zoowalk | &lt;span style='font-weight:500'&gt;https://werk.statt.codes&lt;/span&gt;&lt;/p&gt;"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:20px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px"><p style="font-family:Segoe UI;">SALZBURG-WAHL 2023: <span style="background-color:black; color:white;list-height:100%;">Liste aller KandidatInnen</span></p></h1>
@@ -655,7 +656,7 @@ cookieconsent.run({
 <div class="cell" data-layout-align="left">
 <details class="code-fold">
 <summary>Code: Create table</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Function creating barplot</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Function creating barplot</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>fn_pl_bar_list <span class="ot">&lt;-</span> <span class="cf">function</span>(list_name) {</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -782,7 +783,7 @@ cookieconsent.run({
 <span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
 <span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>gtExtras<span class="sc">::</span><span class="fu">gt_theme_538</span>()</span>
 <span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>pl_df_comb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>pl_df_comb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="ncjbqzuxsy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -1368,7 +1369,7 @@ tbody tr:last-child {
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Table exlusive and multi-list candiates</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df_unique <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df_unique <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">!=</span><span class="st">"Landesliste"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(party, name, year) <span class="sc">%&gt;%</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(<span class="at">lists=</span><span class="fu">paste</span>(list, <span class="at">collapse=</span><span class="st">", "</span>),</span>
@@ -1459,7 +1460,7 @@ tbody tr:last-child {
 <span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>  <span class="at">table.margin.left =</span> <span class="fu">px</span>(<span class="dv">0</span>)</span>
 <span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>df_tb_multi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>df_tb_multi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="oewzggpfck" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -1908,7 +1909,7 @@ tbody tr:last-child {
 }
 </style>
 
-<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <colgroup>
 <col style="width: 16%">
 <col style="width: 16%">
@@ -1919,12 +1920,12 @@ tbody tr:last-child {
 </colgroup>
 <thead>
 <tr class="gt_heading header">
-<th colspan="6" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
-<span style="background-color:black; color:white;">'Exklusive' KandidatInnen auf Regionallisten</span></th>
+<td colspan="6" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
+<span style="background-color:black; color:white;">'Exklusive' KandidatInnen auf Regionallisten</span></td>
 </tr>
 <tr class="gt_heading even">
-<th colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border"><em>Exklusive KandidatInnen:</em> kandidieren nur auf einer einzigen Regionalliste<br>
-<em>Mehrfach KandidatInnen:</em> kandidieren auf mehr als einer Regionalliste</th>
+<td colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border"><em>Exklusive KandidatInnen:</em> kandidieren nur auf einer einzigen Regionalliste<br>
+<em>Mehrfach KandidatInnen:</em> kandidieren auf mehr als einer Regionalliste</td>
 </tr>
 <tr class="gt_col_headings gt_spanner_row header">
 <th rowspan="2" id="party" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">party</th>
@@ -1941,7 +1942,7 @@ tbody tr:last-child {
 </thead>
 <tbody class="gt_table_body">
 <tr class="gt_group_heading_row odd">
-<td colspan="6" id="Flachgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Flachgau</td>
+<th colspan="6" id="Flachgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Flachgau</th>
 </tr>
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_left" headers="Flachgau  party">ÖVP</td>
@@ -2040,7 +2041,7 @@ tbody tr:last-child {
 </div></td>
 </tr>
 <tr class="gt_group_heading_row even">
-<td colspan="6" id="Stadt-Salzburg" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Stadt-Salzburg</td>
+<th colspan="6" id="Stadt-Salzburg" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Stadt-Salzburg</th>
 </tr>
 <tr class="gt_row_group_first odd">
 <td class="gt_row gt_left" headers="Stadt-Salzburg  party">ÖVP</td>
@@ -2139,7 +2140,7 @@ tbody tr:last-child {
 </div></td>
 </tr>
 <tr class="gt_group_heading_row odd">
-<td colspan="6" id="Tennengau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Tennengau</td>
+<th colspan="6" id="Tennengau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Tennengau</th>
 </tr>
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_left" headers="Tennengau  party">ÖVP</td>
@@ -2238,7 +2239,7 @@ tbody tr:last-child {
 </div></td>
 </tr>
 <tr class="gt_group_heading_row even">
-<td colspan="6" id="Pongau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pongau</td>
+<th colspan="6" id="Pongau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pongau</th>
 </tr>
 <tr class="gt_row_group_first odd">
 <td class="gt_row gt_left" headers="Pongau  party">ÖVP</td>
@@ -2337,7 +2338,7 @@ tbody tr:last-child {
 </div></td>
 </tr>
 <tr class="gt_group_heading_row odd">
-<td colspan="6" id="Pinzgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pinzgau</td>
+<th colspan="6" id="Pinzgau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Pinzgau</th>
 </tr>
 <tr class="gt_row_group_first even">
 <td class="gt_row gt_left" headers="Pinzgau  party">ÖVP</td>
@@ -2436,7 +2437,7 @@ tbody tr:last-child {
 </div></td>
 </tr>
 <tr class="gt_group_heading_row even">
-<td colspan="6" id="Lungau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Lungau</td>
+<th colspan="6" id="Lungau" class="gt_group_heading" data-quarto-table-cell-role="th" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: black" scope="colgroup">Lungau</th>
 </tr>
 <tr class="gt_row_group_first odd">
 <td class="gt_row gt_left" headers="Lungau  party">ÖVP</td>
@@ -2556,7 +2557,7 @@ Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Calculate Gini coefficient, create table</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ineq)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ineq)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_districts <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">!=</span><span class="st">"Landesliste"</span>) <span class="sc">%&gt;%</span></span>
@@ -2596,7 +2597,7 @@ Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk
 <span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">table.margin.left =</span> <span class="fu">px</span>(<span class="dv">0</span>)</span>
 <span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>tb_df_districts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>tb_df_districts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="wovkgkkyfq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
@@ -3045,18 +3046,18 @@ tbody tr:last-child {
 }
 </style>
 
-<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="gt_heading header">
-<th colspan="2" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
-<span style="background-color:black; color:white;">Concentration of list positions among candidates</span></th>
+<td colspan="2" class="gt_heading gt_title gt_font_normal">Salzburg-Wahl 2023:<br>
+<span style="background-color:black; color:white;">Concentration of list positions among candidates</span></td>
 </tr>
 <tr class="gt_heading even">
-<th colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Only regional lists.</th>
+<td colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Only regional lists.</td>
 </tr>
 <tr class="gt_col_headings header">
 <th id="party" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" style="border-top-width: 0px; border-top-style: solid; border-top-color: black" scope="col">party</th>
@@ -3114,12 +3115,12 @@ Analysis: Roland Schmidt | @zoowalk | <span style="font-weight:400">https://werk
 <section id="lorenz-curves" class="level3 page-columns page-full" data-number="4.2.2">
 <h3 data-number="4.2.2" class="anchored" data-anchor-id="lorenz-curves"><span class="header-section-number">4.2.2</span> Lorenz curves</h3>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Details on the graph
+<span class="screen-reader-only">Note</span>Details on the graph
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -3135,7 +3136,7 @@ Details on the graph
 <div class="cell" data-layout-align="left">
 <details class="code-fold">
 <summary>Code: Calculate data for Lorenz curves</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_add <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_add <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_id=</span><span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(<span class="fu">unique</span>(df_table_all_wide<span class="sc">$</span>party))),</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">party=</span><span class="fu">unique</span>(df_table_all_wide<span class="sc">$</span>party),</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lists_share_cum=</span><span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(<span class="fu">unique</span>(df_table_all_wide<span class="sc">$</span>party))),</span>
@@ -3185,13 +3186,13 @@ Details on the graph
 <span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>df_combined <span class="ot">&lt;-</span> df_combined <span class="sc">%&gt;%</span> </span>
 <span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_party_positions_N, <span class="at">by=</span><span class="st">"party"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_party_candidates_N, <span class="at">by=</span><span class="st">"party"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_party_candidates_N, <span class="at">by=</span><span class="st">"party"</span>) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Plot curves</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtext)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>pl_combined <span class="ot">&lt;-</span> df_combined <span class="sc">%&gt;%</span></span>
@@ -3323,7 +3324,7 @@ Details on the graph
 <span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.text.y.left=</span><span class="fu">element_text</span>(<span class="at">size=</span><span class="fu">rel</span>(<span class="fl">0.3</span>))</span>
 <span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
-<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_layout</span>(<span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_layout</span>(<span class="at">ncol=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell page-columns page-full" data-layout-align="left" data-fig.format="svg">
@@ -3351,7 +3352,7 @@ Details on the graph
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Create df detailing regional composition of state electoral list</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">##take only district lists; if one candidate runs on more than one list "mehere"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">##take only district lists; if one candidate runs on more than one list "mehere"</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df_reg_lists_member <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">!=</span><span class="st">"Landesliste"</span>) <span class="sc">%&gt;%</span></span>
@@ -3371,13 +3372,13 @@ Details on the graph
 <span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>df_landesliste_lists_member <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(list<span class="sc">==</span><span class="st">"Landesliste"</span>)  <span class="sc">%&gt;%</span></span>
 <span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(., df_reg_lists_member, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"name_clean"</span>, <span class="st">"party"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">lists_origin=</span><span class="fu">fct</span>(lists_origin) <span class="sc">%&gt;%</span> forcats<span class="sc">::</span><span class="fu">fct_na_value_to_level</span>(., <span class="at">level=</span><span class="st">"keine Bezirksliste"</span>) <span class="sc">%&gt;%</span> <span class="fu">fct_relevel</span>(., <span class="st">"mehrere"</span>, <span class="at">after=</span><span class="dv">0</span>L) <span class="sc">%&gt;%</span> fct_rev)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">lists_origin=</span><span class="fu">fct</span>(lists_origin) <span class="sc">%&gt;%</span> forcats<span class="sc">::</span><span class="fu">fct_na_value_to_level</span>(., <span class="at">level=</span><span class="st">"keine Bezirksliste"</span>) <span class="sc">%&gt;%</span> <span class="fu">fct_relevel</span>(., <span class="st">"mehrere"</span>, <span class="at">after=</span><span class="dv">0</span>L) <span class="sc">%&gt;%</span> fct_rev)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Create plot</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(x[<span class="dv">1</span>], <span class="st">". Listenplatz"</span>), <span class="fu">paste0</span>(x[<span class="sc">-</span><span class="dv">1</span>],<span class="st">"."</span>))</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -3446,7 +3447,7 @@ Details on the graph
 <span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">vjust=</span>.<span class="dv">5</span>,</span>
 <span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">lineheight =</span> <span class="dv">13</span>,</span>
 <span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">face=</span><span class="st">"plain"</span>)</span>
-<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -3466,23 +3467,23 @@ Details on the graph
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Get first name</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">name_first=</span><span class="fu">str_extract</span>(name, <span class="fu">regex</span>(<span class="st">"[^</span><span class="sc">\\</span><span class="st">s]+$"</span>)) <span class="sc">%&gt;%</span> <span class="fu">str_extract</span>(., <span class="fu">regex</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">p{L}+"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_table_all_wide <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">name_first=</span><span class="fu">str_extract</span>(name, <span class="fu">regex</span>(<span class="st">"[^</span><span class="sc">\\</span><span class="st">s]+$"</span>)) <span class="sc">%&gt;%</span> <span class="fu">str_extract</span>(., <span class="fu">regex</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">p{L}+"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code: Get gender</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gender)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gender)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_name_first <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(name_first) <span class="sc">%&gt;%</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">gender=</span><span class="fu">gender</span>(name_first, <span class="at">method=</span><span class="st">"genderize"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">gender=</span><span class="fu">gender</span>(name_first, <span class="at">method=</span><span class="st">"genderize"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell" data-colum="body-outset-right">
 <details class="code-fold">
 <summary>Code: Get gender share, create plot.</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fn to capitalize first facet (GESAMT)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fn to capitalize first facet (GESAMT)</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>fn_labeller_cap <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="fu">str_to_upper</span>(x[<span class="dv">1</span>]), x[<span class="sc">-</span><span class="dv">1</span>])</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>}</span>
@@ -3618,7 +3619,7 @@ Details on the graph
 <span id="cb18-134"><a href="#cb18-134" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip=</span><span class="fu">strip_themed</span>(</span>
 <span id="cb18-135"><a href="#cb18-135" aria-hidden="true" tabindex="-1"></a>      <span class="at">background_x =</span> strip_backgrounds,</span>
 <span id="cb18-136"><a href="#cb18-136" aria-hidden="true" tabindex="-1"></a>      <span class="at">text_x=</span>strip_text)</span>
-<span id="cb18-137"><a href="#cb18-137" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-137"><a href="#cb18-137" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -3636,7 +3637,7 @@ Details on the graph
 <div class="cell">
 <details class="code-fold">
 <summary>Code: List position of female candidates</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">sep=</span><span class="cn">NULL</span>, name) {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fn_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">sep=</span><span class="cn">NULL</span>, name) {</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">paste0</span>(x[<span class="dv">1</span>], {{sep}}, {{name}}), <span class="fu">paste0</span>(x[<span class="sc">-</span><span class="dv">1</span>],{{sep}}))</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -3700,7 +3701,7 @@ Details on the graph
 <span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.margin=</span>ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="at">l=</span><span class="dv">0</span>, <span class="at">t=</span><span class="dv">0</span>, <span class="at">unit=</span><span class="st">"pt"</span>)  </span>
 <span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a>)<span class="sc">+</span></span>
 <span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a><span class="fu">facet_wrap2</span>(<span class="at">facet=</span><span class="fu">vars</span>(list_fct), </span>
-<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a><span class="at">ncol=</span><span class="dv">1</span>, <span class="at">axes=</span><span class="st">"all"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a><span class="at">ncol=</span><span class="dv">1</span>, <span class="at">axes=</span><span class="st">"all"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -3720,7 +3721,7 @@ Details on the graph
 <div class="cell" data-fig.format="svg">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbeeswarm)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggbeeswarm)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggiraph)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>df_pl <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
@@ -3839,7 +3840,7 @@ Details on the graph
 <span id="cb20-117"><a href="#cb20-117" aria-hidden="true" tabindex="-1"></a>                               <span class="at">offy =</span> <span class="sc">-</span><span class="dv">30</span>,</span>
 <span id="cb20-118"><a href="#cb20-118" aria-hidden="true" tabindex="-1"></a>                               <span class="at">delay_mouseout =</span> <span class="dv">1000</span>)</span>
 <span id="cb20-119"><a href="#cb20-119" aria-hidden="true" tabindex="-1"></a>                               )</span>
-<span id="cb20-120"><a href="#cb20-120" aria-hidden="true" tabindex="-1"></a>giraph_height<span class="ot">=</span><span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-120"><a href="#cb20-120" aria-hidden="true" tabindex="-1"></a>giraph_height<span class="ot">=</span><span class="dv">4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
@@ -3856,7 +3857,7 @@ Details on the graph
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_young <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_young <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(name, year, party) <span class="sc">%&gt;%</span> </span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(., <span class="at">order_by=</span>year, <span class="at">n=</span><span class="dv">10</span>, <span class="at">with_ties=</span>T) <span class="sc">%&gt;%</span> </span>
@@ -3901,7 +3902,7 @@ Details on the graph
 <span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_size=</span><span class="dv">11</span>,</span>
 <span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_weight=</span><span class="st">"normal"</span></span>
 <span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:17px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">SALZBURG-WAHL 2023: <span style="background-color:black; color:white">Jüngesten</span> KandidatInnen</h1>
@@ -3914,7 +3915,7 @@ Details on the graph
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_oldest <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_oldest <span class="ot">&lt;-</span> df_table_all_wide <span class="sc">%&gt;%</span> </span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(name, year, party) <span class="sc">%&gt;%</span> </span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_min</span>(., <span class="at">order_by=</span>year, <span class="at">n=</span><span class="dv">10</span>, <span class="at">with_ties=</span>T) <span class="sc">%&gt;%</span> </span>
@@ -3958,7 +3959,7 @@ Details on the graph
 <span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle=</span><span class="fu">html</span>(<span class="st">"&lt;br&gt;Drop-down zeigt jeweilige Liste &amp; Position an."</span>), </span>
 <span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_weight=</span><span class="st">"normal"</span>,</span>
 <span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_size=</span><span class="dv">11</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_source</span>(<span class="fu">html</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"&lt;span style='font-style: Roboto Condensed;'&gt;{txt_caption_table}&lt;/span&gt;"</span>)), <span class="at">font_size=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <h1 style="color:#000;background:#FFFFFF;text-align:left;font-size:17px;font-style:normal;font-weight:bold;text-decoration:;letter-spacing:px;word-spacing:px;text-transform:;text-shadow:;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px">SALZBURG-WAHL 2023: <span style="background-color:black; color:white">Ältesten</span> KandidatInnen</h1>
@@ -4051,13 +4052,14 @@ at Data Extracted from the Electoral Lists.”</span> April 21, 2023. <a href="h
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
