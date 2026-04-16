@@ -446,10 +446,8 @@ border: 0px;
 } */
 
 .card:hover {
-    border-left: 3px solid; 
-    border-left-color: #9cd321;
+    box-shadow: inset 1px 0 0 #9cd321;
     /* background-color: rgb(99, 9, 9);
-    box-shadow: 5px 5px lightgrey;
     color: white; */
 }
 

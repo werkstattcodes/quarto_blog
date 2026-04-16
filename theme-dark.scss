@@ -182,5 +182,5 @@ p a:hover {
 }
 
 .card:hover {
-  border-left-color: var(--nord14);
+  box-shadow: inset 1px 0 0 var(--nord14);
 }
