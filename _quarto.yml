@@ -48,6 +48,7 @@ format:
     theme:
       light: [litera, theme.scss]
       dark: [litera, theme-dark.scss]
+    html-table-processing: none
     include-in-header:
       - text: |
           <script>

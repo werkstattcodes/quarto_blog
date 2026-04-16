@@ -3,22 +3,19 @@ title: "Introducing {ParlAT}: An R Package to access Open Data of the Austrian P
 date: 2026-02-14
 date-modified: last-modified
 author: Roland Schmidt
-description: |
-  {ParlAT} is an R package that wraps the Austrian Parliament's Open Data API —
-  making it straightforward to query data on MPs, legislative items, committees,
-  plenary sessions, and more from R.
+description: "{ParlAT} is an R package that wraps the Austrian Parliament's Open Data API — making it straightforward to query data on MPs, legislative items, committees, plenary sessions, and more from R."
 
 categories:
-  - Austria
-  - parliament
-  - r-bloggers
+ - Austria
+ - parliament
+ - r-bloggers
 
 reference-location: margin
 knitr:
-    opts_chunk:
-      code-fold: show
-      collapse: true
-      dev: "ragg_png"
+  opts_chunk:
+    code-fold: show
+    collapse: true
+    dev: "ragg_png"
 draft: true
 ---
 
