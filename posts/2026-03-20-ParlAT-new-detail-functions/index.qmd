@@ -1,0 +1,365 @@
+---
+title: "Drilling Down: New Detail Functions in {ParlAT}"
+date: 2026-03-20
+date-modified: last-modified
+author: Roland Schmidt
+description: |
+  {ParlAT} v0.0.3 adds two new functions — `get_item_details()` and
+  `get_plenary_meeting_details()` — that let you drill into the legislative
+  stages of parliamentary items and the granular proceedings of plenary meetings.
+
+categories:
+  - Austria
+  - parliament
+  - r-bloggers
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(ParlAT)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+```
+
+The [introductory post](../2026-02-11-ParlAT-release/) on [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) walked through the package's core `get_*()` functions — retrieving MPs, items, committees, transcripts, and plenary session metadata. Those functions answer the question *what exists*: which bills were tabled, which MPs served, which sessions took place. But they stop at the summary level.
+
+With version 0.0.3, {ParlAT} adds two functions that go one level deeper: `get_item_details()` and `get_plenary_meeting_details()`. Where `get_items()` tells you that a government bill exists, `get_item_details()` tells you what happened to it — which committees handled it, when debates took place, who spoke. And where `get_plenary_meetings()` gives you a list of session dates, `get_plenary_meeting_details()` opens up the meeting itself: the agenda, the speakers, the timeline, and the decisions.
+
+This post walks through both functions and shows how they connect to the rest of the package.
+
+::: callout-note
+## Breaking changes in v0.0.3
+
+`get_plenary_sessions()` has been renamed to `get_plenary_meetings()`, and `get_plenary_sessions_details()` to `get_plenary_meeting_details()`. The old names no longer work. See the [changelog](https://werkstattcodes.github.io/ParlAT/news/index.html) for the full list of changes.
+:::
+
+## From items to stages: `get_item_details()`
+
+The typical workflow starts with `get_items()`, which returns a tibble of parliamentary items — bills, motions, questions, citizen initiatives — filtered by type, legislative period, topic, and more. Each row includes a URL pointing to the item's detail page on the Parliament website.
+
+`get_item_details()` takes one of those URLs and scrapes the structured data from the detail page. It returns a tibble where each row represents one *legislative stage* the item has passed through — introduction, committee referral, committee debate, plenary vote, and so on.
+
+### A parliamentary motion
+
+Let's start with a motion (Antrag) on border security — the kind of item that typically passes through multiple stages and generates debate:
+
+```{r}
+#| eval: true
+stages <- get_item_details("https://www.parlament.gv.at/gegenstand/XXVIII/A/61")
+
+glimpse(stages)
+```
+
+Each row is a stage. The item-level metadata — title, item number, topics, EuroVoc terms — is replicated across rows, while the stage-level columns (`phase`, `stage_date`, `stage_name`) vary.
+
+### Nested details: documents, introducers, speeches
+
+Several columns are list-columns containing nested tibbles. `item_documents` holds links to associated PDFs and documents. `introducers` shows who brought the item forward. And `speeches` — present for items that reached plenary debate — captures who spoke, with links to the protocol and video recordings:
+
+```{r}
+#| eval: true
+# Who introduced this motion?
+stages |>
+  slice(1) |>
+  pull(introducers) |>
+  pluck(1)
+```
+
+```{r}
+#| eval: true
+# Which stages had debate contributions?
+stages |>
+  filter(map_lgl(speeches, \(x) !is.null(x))) |>
+  select(phase, stage_date, stage_name, speeches) |>
+  unnest(speeches)
+```
+
+Not every item will have a `speeches` column — it only appears when the item reached plenary debate. A citizen initiative (Bürgerinitiative) still working its way through committee, for instance, won't have one yet.
+
+### Items without plenary debate
+
+Not all items generate debate. A citizen initiative (Bürgerinitiative) that is still in committee will have stages for introduction and committee referral, but no `speeches` column at all:
+
+```{r}
+#| eval: true
+bi_stages <- get_item_details(
+  "https://www.parlament.gv.at/gegenstand/XXVIII/BI/24"
+)
+
+# 19 columns — no speeches column, because this item hasn't reached plenary yet
+ncol(bi_stages)
+"speeches" %in% names(bi_stages)
+
+bi_stages |>
+  select(phase, stage_date, stage_name) |>
+  slice_head(n = 5)
+```
+
+The `speeches` column only appears for items that went through plenary debate. When combining results from multiple items via `list_rbind()`, items without the column get `speeches` filled with `NA` — so the pipeline works smoothly across item types.
+
+### Connecting `get_items()` and `get_item_details()`
+
+The intended workflow chains the two functions. Use `get_items()` to find items of interest, then pipe their URLs into `get_item_details()` to get the full legislative history:
+
+```{r}
+#| eval: true
+# Find citizen initiatives from the current legislative period
+bi_items <- get_items(item = "BI", legis_period = 28, institution = "NR")
+
+# Pick the first few and get their stage details
+bi_details <- bi_items |>
+  slice_head(n = 3) |>
+  pull(item_url) |>
+  map(\(x) get_item_details(x), .progress = TRUE) |>
+  list_rbind()
+
+bi_details |>
+  count(title, phase)
+```
+
+This makes it straightforward to answer questions like: *How many citizen initiatives from the current period have actually reached committee debate?* or *Which ones are still stuck at the introduction stage?*
+
+### Relative paths work too
+
+You don't need the full URL. `get_item_details()` accepts relative paths and normalises them internally:
+
+```{r}
+#| eval: false
+# All equivalent:
+get_item_details("https://www.parlament.gv.at/gegenstand/XXVIII/A/61")
+get_item_details("/gegenstand/XXVIII/A/61")
+get_item_details("gegenstand/XXVIII/A/61")
+```
+
+## Inside plenary meetings: `get_plenary_meeting_details()`
+
+Where `get_item_details()` follows an item through its legislative journey, `get_plenary_meeting_details()` opens up a single meeting. It returns four different views of the same session, controlled by the `details_on` parameter.
+
+### Two ways to identify a meeting
+
+You can supply either a URL or a combination of `institution`, `legis_period`, and `meeting_number`:
+
+```{r}
+#| eval: true
+# Via URL
+meeting_meta <- get_plenary_meeting_details(
+  url = "https://www.parlament.gv.at/gegenstand/XXVIII/NRSITZ/50"
+)
+
+meeting_meta
+```
+
+```{r}
+#| eval: true
+# Via structured arguments — numeric or Roman numeral periods both work
+meeting_meta2 <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 50
+)
+```
+
+Both return identical results. The structured approach is convenient when iterating over meetings programmatically.
+
+### Meeting metadata (default)
+
+With `details_on = NULL` (the default), you get a single-row tibble with the meeting's date, start and end times, title, and status:
+
+```{r}
+#| eval: true
+meeting_meta |>
+  select(meeting_title, date, start_time, end_time, state)
+```
+
+### Speakers: who said what, and for how long
+
+Setting `details_on = "speakers"` returns one row per speech, with timing information, speech type codes, and the debate context:
+
+```{r}
+#| eval: true
+speakers <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 50,
+  details_on = "speakers"
+)
+
+nrow(speakers)
+```
+
+The `wm_type` column encodes the type of contribution — `"wm"` for regular debate speeches ("Wortmeldung"), `"sr"` for a speech from the government bench ("Sitzungsrede"), and so on. `duration` gives the actual speaking time in MM:SS format, while `speech_limit` records the allotted time in minutes:
+
+```{r}
+#| eval: true
+speakers |>
+  select(
+    speaker_name,
+    wm_type,
+    start_time,
+    duration,
+    speech_limit,
+    debate_type
+  ) |>
+  slice_head(n = 10)
+```
+
+This is the kind of data that lets you answer questions about speaking time distribution across parties, or whether time limits are routinely exceeded — questions that previously required parsing the stenographic protocols manually.
+
+### Decisions: the agenda items
+
+`details_on = "decisions"` returns one row per agenda item (Tagesordnungspunkt, or TOP), with the resolution title and a link to the underlying parliamentary item:
+
+```{r}
+#| eval: true
+decisions <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 50,
+  details_on = "decisions"
+)
+
+decisions |>
+  select(resolution_top, resolution_title, resolution_citation) |>
+  slice_head(n = 10)
+```
+
+### Timeline: the meeting's narrative arc
+
+`details_on = "timeline"` gives the most granular view — one row per event in the session's "Sitzungsverlauf" (course of proceedings). This captures the opening, each debate and vote, interruptions, and closing:
+
+```{r}
+#| eval: true
+timeline <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 50,
+  details_on = "timeline"
+)
+
+timeline |>
+  select(agenda_item, stage_text) |>
+  slice_head(n = 10)
+```
+
+The `statements` list-column in the timeline data contains nested tibbles with speaker names and their pro/contra positions — useful for reconstructing the debate structure at a glance.
+
+### Regular sessions vs. continuation sessions
+
+The Austrian Parliament distinguishes between regular sessions (`meeting_type == "S"`) and continuation sessions (`meeting_type == "ZU"`, Zusatzsitzungen). A continuation session is held "im Anschluss an" (immediately following) a regular session — it's part of the same parliamentary day but counted as a separate meeting. The function handles both types:
+
+```{r}
+#| eval: true
+# A regular session — full debate data
+regular <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 1,
+  details_on = "speakers"
+)
+nrow(regular)
+
+# A continuation session — no separate debates (they belong to the main session)
+continuation <- get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 2,
+  details_on = "speakers"
+)
+nrow(continuation)
+```
+
+The continuation session returns 0 speaker rows — which is correct, since its proceedings are recorded under the preceding regular session. The same applies to the timeline view:
+
+```{r}
+#| eval: true
+# Timeline for a continuation session — minimal, just the opening formalities
+get_plenary_meeting_details(
+  institution = "NR",
+  legis_period = 28,
+  meeting_number = 2,
+  details_on = "timeline"
+) |>
+  select(agenda_item, stage_text)
+```
+
+This distinction matters when aggregating across meetings. If you're counting speeches per session, you'll want to be aware that ZU meetings contribute zero speaker rows, and the actual debates are on the preceding S meeting.
+
+### Connecting `get_plenary_meetings()` and `get_plenary_meeting_details()`
+
+Just as `get_items()` feeds into `get_item_details()`, the renamed `get_plenary_meetings()` provides the meeting URLs that `get_plenary_meeting_details()` consumes:
+
+```{r}
+#| eval: true
+# Get plenary meetings from the current period
+meetings <- get_plenary_meetings(
+  institution = "NR",
+  legis_period = 28,
+  meeting_and_activities = "meetings"
+)
+
+# The result includes both regular (S) and continuation (ZU) sessions
+meetings |> count(meeting_type)
+
+# Retrieve speaker data for the first 5 meetings (mix of S and ZU)
+speaker_data <- meetings |>
+  slice_head(n = 5) |>
+  pull(meeting_url) |>
+  map(
+    \(url) {
+      get_plenary_meeting_details(url = url, details_on = "speakers")
+    },
+    .progress = TRUE
+  ) |>
+  list_rbind()
+
+# ZU meetings contribute 0 rows, S meetings have their full speaker list
+speaker_data |>
+  count(meeting_title, sort = TRUE)
+```
+
+## How the new functions fit in
+
+The package now has a clear two-level structure for items and plenary meetings:
+
+| Level    | Items                | Plenary meetings                |
+|----------|----------------------|---------------------------------|
+| Overview | `get_items()`        | `get_plenary_meetings()`        |
+| Detail   | `get_item_details()` | `get_plenary_meeting_details()` |
+
+The overview functions query the API and return tidy tibbles covering multiple items or meetings. The detail functions take a single URL (or identifier) and scrape the Parliament's detail page for richer, stage-level or speech-level data. This pattern keeps the interface predictable: search broadly, then drill down.
+
+Both detail functions are marked as [experimental](https://lifecycle.r-lib.org/articles/stages.html) — the Parliament's website structure can change, and the scraping logic may need to adapt. But the core data they expose is stable and well worth the minor API surface risk.
+
+## What else changed in v0.0.3
+
+Beyond the two new functions, version 0.0.3 includes:
+
+-   **Renamed functions**: `get_plenary_sessions()` is now `get_plenary_meetings()`, and `get_plenary_sessions_details()` is now `get_plenary_meeting_details()` — better reflecting what the data actually represents.
+-   **Performance improvements to `get_items()`**: Better handling of compact vs. sparse API export rows and improved progress messages via {cli}.
+-   **`get_mps()` improvements**: A new `date` column in the output and improved documentation for the `gender` and `mandate_detail` parameters.
+-   **`get_mandates()` fix**: The `name` and `pad_intern` parameters are now mutually exclusive, preventing ambiguous queries.
+
+The full changelog is on the [package website](https://werkstattcodes.github.io/ParlAT/news/index.html).
+
+## Getting started
+
+Install or update {ParlAT} from GitHub:
+
+``` r
+pak::pak("werkstattcodes/ParlAT")
+```
+
+The [function reference](https://werkstattcodes.github.io/ParlAT/reference/index.html) documents all parameters and return values. If you run into issues or have feature requests, the [issue tracker](https://github.com/werkstattcodes/ParlAT/issues) is the place.

@@ -30,11 +30,9 @@ library(ParlAT)
 library(tidyverse)
 ```
 
-Anyone who has followed this blog will know that I frequently rely on data published by the Austrian Parliament — whether it's for analysing [speeches](posts/2024-06-11-parliament-speech-length-limits/), tracing [calls to order](posts/2024-09-09-call-for-order/), or examining [the prior experience of MPs](posts/2024-10-24-mps-experience/). Until now, most of that work required custom scripts to query the Parliament's API and wrangle the JSON responses into tidy data frames. The [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) package is an attempt to bundle these steps into a consistent, reusable interface. Overall, though, the package was developed with the intent to make the data
-of the Parliament more accessible to anyone interested in the Parliament's affairs, be it researchers, students, journalists etc, and working in R.
+Anyone who has followed this blog will know that I frequently rely on data published by the Austrian Parliament — whether it's for analysing [speeches](posts/2024-06-11-parliament-speech-length-limits/), tracing [calls to order](posts/2024-09-09-call-for-order/), or examining [the prior experience of MPs](posts/2024-10-24-mps-experience/). Until now, most of that work required custom scripts to query the Parliament's API and wrangle the JSON responses into tidy data frames. The [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) package is an attempt to bundle these steps into a consistent, reusable interface. Overall, though, the package was developed with the intent to make the data of the Parliament more accessible to anyone interested in the Parliament's affairs, be it researchers, students, journalists etc, and working in R.
 
-At this point, special thanks to Simon Hofer, Open Data evangelist at the Austrian Parliament, who was super helpful when diving into the details of the API.
-However, please note that neither the package nor its author is affiliated with the Austrian Parliament.
+At this point, special thanks to Simon Hofer, Open Data evangelist at the Austrian Parliament, who was super helpful when diving into the details of the API. However, please note that neither the package nor its author is affiliated with the Austrian Parliament.
 
 The package is still in development, but most of the functionality (and quite a bit more) is in place. Below I showcase **only some** examples.
 
@@ -135,9 +133,7 @@ nrow(df_mps_br)
 
 ```
 
-Next to the data retrieval functions, there are some 
-auxiliary functions which hopefully come handy. 
-E.g. to find the relevant dates for a specific legislative period, `get_legis_periods()` provides the start and end dates. If i have a date, it returns the pertaining legislative period.
+Next to the data retrieval functions, there are some auxiliary functions which hopefully come handy. E.g. to find the relevant dates for a specific legislative period, `get_legis_periods()` provides the start and end dates. If i have a date, it returns the pertaining legislative period.
 
 ```{r}
 #| eval: true
@@ -231,7 +227,6 @@ get_pad_intern("Strache")
 get_names(pad_intern = 44127)
 ```
 
-
 ## Parliamentary items (Verhandlungsgegenstände)
 
 `get_items()` is arguably the most versatile function in the package. It covers a broad spectrum of parliamentary business — motions (Anträge), committee reports (Ausschussberichte), government bills (Regierungsvorlagen), written questions (Anfragen), EU submissions, citizen initiatives (Bürgerinitiativen), popular initiatives (Volksbegehren), and more — all controlled through the `item` parameter.
@@ -260,7 +255,6 @@ nrow(questions)
 ```
 
 The returned data includes metadata such as topic classification (`topics` is a list-column), sponsoring parliamentary group(s), and document type. This makes it straightforward to aggregate and visualise parliamentary activity — for example, counting questions by party and legislative period.
-
 
 ### Filtering by topic and parliamentary group
 
@@ -392,8 +386,6 @@ submitted_27 <- get_plenary_sessions(
 glimpse(submitted_27)
 ```
 
-
-
 ## Transcripts (Stenographische Protokolle)
 
 `get_transcripts()` provides access to stenographic protocols. Results include links to both HTML and PDF versions of the transcripts. For bulk downloads, the function supports PDF export
@@ -411,9 +403,8 @@ transcripts <- get_transcripts(
 
 glimpse(transcripts)
 ```
- 
-When defining a destination folder, the function
-provides for the download of the transcript files.
+
+When defining a destination folder, the function provides for the download of the transcript files.
 
 ```{r}
 #| eval: false
@@ -453,4 +444,4 @@ The helper function `aux_parl_group_names_standard()` expands party abbreviation
 
 The [Get Started vignette](https://werkstattcodes.github.io/ParlAT/articles/ParlAT.html) walks through several worked examples — from counting questions by party across eight legislative periods to visualising government bills by topic, tracing MP careers through mandates, and exploring committee structures. The full function reference is available on the [documentation site](https://werkstattcodes.github.io/ParlAT/).
 
-{ParlAT} is still in active development. If you encounter issues or have ideas for additional features, feel free to open an issue on [GitHub](https://github.com/werkstattcodes/ParlAT/issues). 
+{ParlAT} is still in active development. If you encounter issues or have ideas for additional features, feel free to open an issue on [GitHub](https://github.com/werkstattcodes/ParlAT/issues).
