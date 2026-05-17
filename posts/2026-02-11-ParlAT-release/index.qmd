@@ -3,20 +3,23 @@ title: "Introducing {ParlAT}: An R Package to access Open Data of the Austrian P
 date: 2026-02-14
 date-modified: last-modified
 author: Roland Schmidt
-description: "{ParlAT} is an R package that wraps the Austrian Parliament's Open Data API — making it straightforward to query data on MPs, legislative items, committees, plenary sessions, and more from R."
+description: |
+  {ParlAT} is an R package that wraps the Austrian Parliament's Open Data API —
+  making it straightforward to query data on MPs, legislative items, committees,
+  plenary sessions, and more from R.
 
 categories:
- - Austria
- - parliament
- - r-bloggers
+  - Austria
+  - parliament
+  - r-bloggers
 
 reference-location: margin
 knitr:
-  opts_chunk:
-    code-fold: show
-    collapse: true
-    dev: "ragg_png"
-draft: true
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: false
 ---
 
 ```{r}
@@ -27,7 +30,7 @@ library(ParlAT)
 library(tidyverse)
 ```
 
-Anyone who has followed this blog will know that I frequently rely on data published by the Austrian Parliament — whether it's for analysing [speeches](posts/2024-06-11-parliament-speech-length-limits/), tracing [calls to order](posts/2024-09-09-call-for-order/), or examining [the prior experience of MPs](posts/2024-10-24-mps-experience/). Until now, most of that work required custom scripts to query the Parliament's API and wrangle the JSON responses into tidy data frames. The [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) package is an attempt to bundle these steps into a consistent, reusable interface. Overall, though, the package was developed with the intent to make the data of the Parliament more accessible to anyone interested in the Parliament's affairs, be it researchers, students, journalists etc, and working in R.
+Anyone who has followed this blog will know that I frequently rely on data published by the Austrian Parliament — whether it's for analyzing [speeches](posts/2024-06-11-parliament-speech-length-limits/), tracing [calls to order](posts/2024-09-09-call-for-order/), or examining [the prior experience of MPs](posts/2024-10-24-mps-experience/). Until now, most of that work required custom scripts to query the Parliament's API and wrangle the JSON responses into tidy data frames. The [{ParlAT}](https://werkstattcodes.github.io/ParlAT/) package is an attempt to bundle these steps into a consistent, reusable interface. Overall, though, the package was developed with the intent to make the data of the Parliament more accessible to anyone interested in the Parliament's affairs, be it researchers, students, journalists etc, and working in R.
 
 At this point, special thanks to Simon Hofer, Open Data evangelist at the Austrian Parliament, who was super helpful when diving into the details of the API. However, please note that neither the package nor its author is affiliated with the Austrian Parliament.
 
@@ -56,7 +59,7 @@ The Austrian Parliament publishes [25 open datasets](https://www.parlament.gv.at
 | `get_mandates()` | All mandates of one or more individuals |
 | `get_items()` | Parliamentary items: bills, motions, questions, etc. |
 | `get_committees()` | Committees, optionally with member lists |
-| `get_plenary_sessions()` | Plenary session metadata |
+| `get_plenary_meetings()` | Plenary session metadata |
 | `get_transcripts()` | Stenographic protocols with PDF export |
 | `get_events()` | Parliamentary events and calendar |
 | `get_participation()` | Public participation / consultation data |
@@ -351,37 +354,53 @@ inquiry_committees |>
   count(legis_period, .drop = FALSE)
 ```
 
-## Plenary sessions
+## Plenary meetings
 
-`get_plenary_sessions()` retrieves metadata about plenary sessions — dates, session numbers, and links to agendas. It supports three modes via the `session_and_activities` parameter:
+`get_plenary_meetings()` retrieves information about plenary meetings from the Austrian Parliament's API. Data is available from the 20th legislative period onward, and covers the National Council (NR), the Federal Council (BR), and the Federal Assembly (BV).
 
--   `"sessions"`: Basic session metadata (dates, numbers, agenda URLs)
--   `"submitted"`: Items submitted during sessions (motions, questions, etc.)
--   `"held"`: Types of proceedings held (Question Hours, Government Declarations, etc.)
+The `meeting_and_activities` parameter controls what is returned:
+
+- `"meetings"`: Meeting metadata — dates, meeting numbers, agenda URLs, and meeting type
+- `"activities"`: Items that occurred during meetings — motions, questions, declarations, etc.
+
+Additional filters include `session_type` (`"N"` for ordinary, `"A"` for extraordinary sessions) and `meeting_type` (`"S"`, `"SO"`, `"ZU"`, `"N"`).
 
 ```{r}
 #| eval: true
-#| code-summary: "Plenary sessions"
-# Plenary sessions from the 20th to 27th period
-
-sessions <- get_plenary_sessions(
+#| code-summary: "Plenary meetings"
+# National Council meetings in the 28th legislative period
+meetings_28 <- get_plenary_meetings(
   institution = "NR",
-  legis_period = seq(20, 27),
-  session_and_activities = "sessions"
+  legis_period = 28,
+  meeting_and_activities = "meetings"
 )
 
-# Count sessions per legislative period
-sessions |> count(legis_period)
+glimpse(meetings_28)
 
-# What types of motions were submitted during 27th period sessions?
-submitted_27 <- get_plenary_sessions(
+# Count meetings per legislative period across multiple periods
+meetings_multi <- get_plenary_meetings(
+  institution = "NR",
+  legis_period = c(26, 27),
+  meeting_and_activities = "meetings"
+)
+
+meetings_multi |> count(legis_period)
+```
+
+```{r}
+#| eval: true
+#| code-summary: "Activities during plenary meetings"
+# Parliamentary activities during 27th period meetings
+activities_27 <- get_plenary_meetings(
   institution = "NR",
   legis_period = 27,
-  session_and_activities = "submitted",
-  submitted = "UEA" # Dependent resolution motions
+  meeting_and_activities = "activities"
 )
-glimpse(submitted_27)
+
+glimpse(activities_27)
 ```
+
+The Federal Assembly (Bundesversammlung), which convenes for presidential inaugurations and similar joint sessions, can be queried by setting `institution = "BV"` and `legis_period = NULL`.
 
 ## Transcripts (Stenographische Protokolle)
 
@@ -441,4 +460,8 @@ The helper function `aux_parl_group_names_standard()` expands party abbreviation
 
 The [Get Started vignette](https://werkstattcodes.github.io/ParlAT/articles/ParlAT.html) walks through several worked examples — from counting questions by party across eight legislative periods to visualising government bills by topic, tracing MP careers through mandates, and exploring committee structures. The full function reference is available on the [documentation site](https://werkstattcodes.github.io/ParlAT/).
 
-{ParlAT} is still in active development. If you encounter issues or have ideas for additional features, feel free to open an issue on [GitHub](https://github.com/werkstattcodes/ParlAT/issues).
+{ParlAT} is still a work in progress — the API surface of the Austrian Parliament is broad, documentation is sometimes sparse, and edge cases keep surfacing. That said, I hope the package is already a useful tool for anyone in the #rstats community working with Austrian parliamentary data, whether for research, journalism, teaching, or just curiosity about what happens in the Hohe Haus. 
+
+Feedback of any kind is very welcome: bug reports, questions, suggestions for new functions or better defaults, and pointers to use cases I haven't considered. The best place to reach me is the [GitHub issue tracker](https://github.com/werkstattcodes/ParlAT/issues) — opening an issue is the most reliable way to make sure nothing gets los - or contact me via direct message on [Bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}.
+
+
