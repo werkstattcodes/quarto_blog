@@ -6,7 +6,7 @@ author: Roland Schmidt
 description: |
   {ParlAT} is an R package that wraps the Austrian Parliament's Open Data API —
   making it straightforward to query data on MPs, legislative items, committees,
-  plenary sessions, and more from R.
+  plenary meetings, and more from R.
 
 categories:
   - Austria
@@ -19,7 +19,7 @@ knitr:
       code-fold: show
       collapse: true
       dev: "ragg_png"
-draft: false
+draft: true
 ---
 
 ```{r}
@@ -47,7 +47,7 @@ For the full function reference and a more detailed introductory vignette, see t
 
 ## What data is available?
 
-The Austrian Parliament publishes [25 open datasets](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html) — with some exceptions — under a CC BY 4.0 license. These cover a broad range of parliamentary activity: MP records going back to 1918, committee compositions and memberships, plenary session protocols, citizen initiatives (Bürgerinitiativen), government bills (Regierungsvorlagen), written questions (Schriftliche Anfragen), EU submissions, and more.
+The Austrian Parliament publishes [25 open datasets](https://www.parlament.gv.at/recherchieren/open-data/daten-und-lizenz/index.html) — with some exceptions — under a CC BY 4.0 license. These cover a broad range of parliamentary activity: MP records going back to 1918, committee compositions and memberships, plenary meeting protocols, citizen initiatives (Bürgerinitiativen), government bills (Regierungsvorlagen), written questions (Schriftliche Anfragen), EU submissions, and more.
 
 {ParlAT} mirrors the API's structure. Most datasets map directly to a dedicated function; some, like the many types of parliamentary items (Verhandlungsgegenstände), are accessed through `get_items()` with different `item` parameters. Here's a condensed overview of the main functions:
 
@@ -59,7 +59,7 @@ The Austrian Parliament publishes [25 open datasets](https://www.parlament.gv.at
 | `get_mandates()` | All mandates of one or more individuals |
 | `get_items()` | Parliamentary items: bills, motions, questions, etc. |
 | `get_committees()` | Committees, optionally with member lists |
-| `get_plenary_meetings()` | Plenary session metadata |
+| `get_plenary_meetings()` | Plenary meeting metadata |
 | `get_transcripts()` | Stenographic protocols with PDF export |
 | `get_events()` | Parliamentary events and calendar |
 | `get_participation()` | Public participation / consultation data |
@@ -400,7 +400,7 @@ activities_27 <- get_plenary_meetings(
 glimpse(activities_27)
 ```
 
-The Federal Assembly (Bundesversammlung), which convenes for presidential inaugurations and similar joint sessions, can be queried by setting `institution = "BV"` and `legis_period = NULL`.
+The Federal Assembly (Bundesversammlung), which convenes for presidential inaugurations and similar joint meetings, can be queried by setting `institution = "BV"` and `legis_period = NULL`.
 
 ## Transcripts (Stenographische Protokolle)
 
