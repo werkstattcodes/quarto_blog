@@ -25,5 +25,6 @@
         "Unterzeichnerin",
         "Unterzeichners",
         "Wortmeldung"
-    ]
+    ],
+    "positron.quarto.inlineOutput.enabled": false
 }

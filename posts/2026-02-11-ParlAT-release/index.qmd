@@ -1,12 +1,12 @@
 ---
 title: "Introducing {ParlAT}: An R Package to access Open Data of the Austrian Parliament"
 date: 2026-02-14
+draft: true
 date-modified: last-modified
 author: Roland Schmidt
 description: |
   {ParlAT} is an R package that wraps the Austrian Parliament's Open Data API —
-  making it straightforward to query data on MPs, legislative items, committees,
-  plenary meetings, and more from R.
+  making it straightforward to query data on MPs, legislative items, committees, plenary meetings, and more from R.
 
 categories:
   - Austria
@@ -19,7 +19,6 @@ knitr:
       code-fold: show
       collapse: true
       dev: "ragg_png"
-draft: true
 ---
 
 ```{r}
@@ -256,6 +255,61 @@ nrow(questions)
 
 The returned data includes metadata such as topic classification (`topics` is a list-column), sponsoring parliamentary group(s), and document type. This makes it straightforward to aggregate and visualise parliamentary activity — for example, counting questions by party and legislative period.
 
+```{r}
+#| label: fig-questions-by-party
+#| fig-cap: "Written and oral questions (J_JPR_M) filed per parliamentary group across legislative periods 20–27, National Council."
+#| eval: true
+#| code-summary: "Visualise questions by party across periods"
+
+party_colors <- c(
+  "FPÖ"        = "#0056A2",
+  "BZÖ"        = "#F5831F",
+  "GRÜNE"      = "#78A22F",
+  "JETZT/Pilz" = "#1C3A5E",
+  "NEOS"       = "#E84188",
+  "ÖVP"        = "#62C2CE",
+  "SPÖ"        = "#E2001A",
+  "Stronach"   = "#888888"
+)
+
+questions |>
+  tidyr::unnest(parl_group) |>
+  mutate(
+    party = case_match(
+      parl_group,
+      c("F", "F-BZÖ", "FPÖ") ~ "FPÖ",
+      "BZÖ"                   ~ "BZÖ",
+      "GRÜNE"                 ~ "GRÜNE",
+      c("JETZT", "PILZ")      ~ "JETZT/Pilz",
+      c("L", "NEOS-LIF", "NEOS") ~ "NEOS",
+      "ÖVP"                   ~ "ÖVP",
+      "SPÖ"                   ~ "SPÖ",
+      "STRONACH"              ~ "Stronach",
+      .default = NA_character_
+    ),
+    period_int = as.integer(as.roman(legis_period))
+  ) |>
+  filter(!is.na(party), institution == "NR") |>
+  count(period_int, party) |>
+  ggplot(aes(x = period_int, y = n, colour = party)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2.5) +
+  scale_colour_manual(values = party_colors, name = NULL) +
+  scale_x_continuous(breaks = 20:27) +
+  labs(
+    x = "Legislative period",
+    y = "Number of questions",
+    title = "Parliamentary questions by party, periods 20–27",
+    subtitle = "National Council — written and oral questions (J, JPR, M)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    legend.position     = "right",
+    panel.grid.minor    = element_blank()
+  )
+```
+
 ### Filtering by topic and parliamentary group
 
 Items can be filtered by topic (Thema), parliamentary group, EuroVoc terms, and more. The `parl_group_names_standard` argument expands party abbreviations to their historical variants — so searching for "FPÖ" also captures items filed under "F" or "F-BZÖ":
@@ -283,22 +337,1019 @@ spoe_health <- get_items(
 ```{r}
 #| eval: true
 #| code-summary: "Plenary speeches"
-# All plenary speeches by Sebastian Kurz in the National Council
+# All plenary speeches by Stephanie Krisper in the National Council
 get_pad_intern("Krisper")
 
 df_plenary_krisper <- get_mps_details(
   pad_intern = 2344,
   detail_type = "plenary",
-  institution = "NR"
+  institution = "NR",
+    echo=T
 )
 
-# Kurz held speeches in different capacities — Abgeordneter, Bundeskanzler, etc.
 df_plenary_krisper |>
   unnest(position_name) |>
   count(position_name, sort = TRUE)
 ```
 
 `get_mps_details()` returns all speeches regardless of the person's role at the time. The `position_name` list-column reveals which position(s) the person held when the speech was given.
+
+A natural follow-up is to visualise *when* those speeches happened. The `date` column maps directly onto a GitHub-style calendar heatmap:
+
+```{r}
+#| label: fig-krisper-calendar
+#| fig-cap: "GitHub-style calendar heatmap of Stephanie Krisper's plenary speeches. Each cell is one day; colour depth encodes speech count using GitHub's five-level contribution palette."
+#| eval: true
+#| code-summary: "Calendar heatmap of Krisper's speeches"
+#| fig-height: 7
+#| fig-width: 10
+
+# GitHub's five-level contribution palette
+gh_pal <- c(
+  "0"    = "#ebedf0",
+  "1"    = "#9be9a8",
+  "2–3"  = "#40c463",
+  "4–6"  = "#30a14e",
+  "7+"   = "#216e39"
+)
+
+# Full date spine — silent days render as lightest tile, not blank space
+date_min <- lubridate::floor_date(min(df_plenary_krisper$date), "year")
+date_max <- lubridate::ceiling_date(max(df_plenary_krisper$date), "year") - 1
+
+df_cal <- tibble(date = seq.Date(date_min, date_max, by = "day")) |>
+  mutate(
+    iso_year = lubridate::isoyear(date),  # keeps Dec/Jan ISO-week edge days in the right facet
+    week_no  = lubridate::isoweek(date),
+    dow      = lubridate::wday(date, label = TRUE, abbr = TRUE, week_start = 1)
+  ) |>
+  left_join(count(df_plenary_krisper, date, name = "n"), by = "date") |>
+  replace_na(list(n = 0)) |>
+  mutate(
+    n_cat = cut(n,
+                breaks = c(-Inf, 0, 1, 3, 6, Inf),
+                labels = names(gh_pal),
+                right  = TRUE)
+  )
+
+ggplot(df_cal, aes(x = week_no, y = fct_rev(dow), fill = n_cat)) +
+  geom_tile(width = 0.85, height = 0.85, colour = NA) +
+  facet_wrap(~ iso_year, ncol = 1, strip.position = "left") +
+  scale_fill_manual(values = gh_pal, name = "Speeches", drop = FALSE) +
+  scale_x_continuous(
+    breaks = c(1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48),
+    labels = month.abb,
+    expand = c(0.01, 0)
+  ) +
+  scale_y_discrete(
+    breaks = c("Mon", "Wed", "Fri"),  # GitHub only labels alternating days
+    expand = c(0, 0.5)
+  ) +
+  coord_fixed() +
+  labs(
+    x = NULL, y = NULL,
+    title    = "Stephanie Krisper — plenary speeches",
+    subtitle = "National Council"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title.position = "plot",
+    panel.grid        = element_blank(),
+    axis.ticks        = element_blank(),
+    strip.text.y.left = element_text(angle = 0, size = 9, hjust = 1),
+    legend.position   = "bottom",
+    legend.key.size   = unit(0.55, "cm"),
+    legend.direction  = "horizontal",
+    panel.spacing.y   = unit(0.6, "cm"),
+    plot.background   = element_rect(fill = "white", colour = NA)
+  )
+```
+
+To get a sense of what Krisper was actually speaking *about*, we can trace the exact items she debated. The `meeting_url` in the plenary data and `url_meeting` in `get_plenary_meetings()` refer to the same sessions but use different URL schemes (`/sitzung/` vs `/gegenstand/`), so a small normalisation step aligns them. That gives us `url_item` for each item in her sessions. We then call `get_item_details()` per item, which returns a `speeches` nested column listing every speaker per stage. Filtering to Krisper's name leaves only items she personally contributed to, each carrying `topics`, `headwords`, and `eurovoc`.
+
+```{r}
+#| label: fig-krisper-topics
+#| fig-cap: "Topics of parliamentary items where Stephanie Krisper personally gave a speech."
+#| eval: true
+#| cache: true
+#| code-summary: "Topics of items Krisper actually spoke on"
+
+# Legislative periods as integers
+krisper_periods <- df_plenary_krisper |>
+  distinct(legis_period) |>
+  mutate(p = as.integer(as.roman(legis_period))) |>
+  pull(p)
+
+# Step 1: Items on the agenda in all sessions where Krisper spoke
+df_meeting_acts <- map(
+  krisper_periods,
+  \(p) get_plenary_meetings(institution = "NR", legis_period = p,
+                            meeting_and_activities = "activities")
+) |>
+  list_rbind()
+
+# meeting_url uses /sitzung/XXVI/NRSITZ/7?selectedStage=111
+# url_meeting uses /gegenstand/XXVI/NRSITZ/7 — same meeting, different URL scheme
+# normalise: swap path prefix and strip query string before joining
+krisper_joined <- df_plenary_krisper |>
+  distinct(meeting_url) |>
+  mutate(
+    url_meeting_norm = meeting_url |>
+      str_replace("/sitzung/", "/gegenstand/") |>
+      str_remove("\\?.*")
+  ) |>
+  left_join(df_meeting_acts, by = c("url_meeting_norm" = "url_meeting"))
+
+unmatched_k <- krisper_joined |> filter(is.na(url_item)) |> pull(meeting_url)
+if (length(unmatched_k) > 0)
+  message(sprintf("%d meeting(s) unmatched in activities data:\n%s",
+                  length(unmatched_k), paste(unmatched_k, collapse = "\n")))
+
+krisper_item_urls <- krisper_joined |> filter(!is.na(url_item)) |> distinct(url_item)
+
+# Step 2: Scrape item details — one request per item; cache: true avoids re-running
+safe_results_k <- krisper_item_urls$url_item |>
+  map(safely(get_item_details))
+
+failed_k <- krisper_item_urls$url_item[map_lgl(safe_results_k, \(x) !is.null(x$error))]
+if (length(failed_k) > 0)
+  message(sprintf("%d item(s) failed to parse:\n%s", length(failed_k), paste(failed_k, collapse = "\n")))
+
+df_item_details <- safe_results_k |> map("result") |> compact() |> list_rbind()
+
+# Step 3: Find items where Krisper appears as a speaker in any stage
+spoke_items <- df_item_details |>
+  filter(!map_lgl(speeches, is.null)) |>
+  unnest(speeches) |>
+  filter(str_detect(speaker, "Krisper")) |>
+  distinct(item_url)
+
+# Step 4: One row per item (topics are item-level, replicated across stage rows)
+df_krisper_spoke <- df_item_details |>
+  semi_join(spoke_items, by = "item_url") |>
+  distinct(item_url, .keep_all = TRUE)
+
+# Visualise topics
+df_krisper_spoke |>
+  unnest(topics) |>
+  count(topics, sort = TRUE) |>
+  slice_head(n = 15) |>
+  mutate(topics = fct_reorder(topics, n)) |>
+  ggplot(aes(x = n, y = topics)) +
+  geom_col(fill = "#216e39") +
+  labs(
+    x = "Number of items",
+    y = NULL,
+    title = "What did Krisper actually speak about?",
+    subtitle = "Topics of parliamentary items where she personally contributed"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position  = "plot",
+    panel.grid.major.y   = element_blank()
+  )
+```
+
+The same analysis applies to any MP. Here is Ernst Gödl (ÖVP), offering a useful contrast to Krisper's profile:
+
+```{r}
+#| label: goedl-setup
+#| eval: true
+#| code-summary: "Gödl plenary speeches"
+get_pad_intern("Gödl")
+
+df_plenary_goedl <- get_mps_details(
+  pad_intern = 83409,
+  detail_type = "plenary",
+  institution = "NR"
+)
+
+df_plenary_goedl |>
+  unnest(position_name) |>
+  count(position_name, sort = TRUE)
+```
+
+```{r}
+#| label: fig-goedl-calendar
+#| fig-cap: "GitHub-style calendar heatmap of Ernst Gödl's plenary speeches in the National Council."
+#| eval: true
+#| code-summary: "Calendar heatmap of Gödl's speeches"
+#| fig-height: 7
+#| fig-width: 10
+
+gh_pal <- c(
+  "0"    = "#ebedf0",
+  "1"    = "#9be9a8",
+  "2–3"  = "#40c463",
+  "4–6"  = "#30a14e",
+  "7+"   = "#216e39"
+)
+
+date_min_g <- lubridate::floor_date(min(df_plenary_goedl$date), "year")
+date_max_g <- lubridate::ceiling_date(max(df_plenary_goedl$date), "year") - 1
+
+tibble(date = seq.Date(date_min_g, date_max_g, by = "day")) |>
+  mutate(
+    iso_year = lubridate::isoyear(date),
+    week_no  = lubridate::isoweek(date),
+    dow      = lubridate::wday(date, label = TRUE, abbr = TRUE, week_start = 1)
+  ) |>
+  left_join(count(df_plenary_goedl, date, name = "n"), by = "date") |>
+  replace_na(list(n = 0)) |>
+  mutate(
+    n_cat = cut(n, breaks = c(-Inf, 0, 1, 3, 6, Inf),
+                labels = names(gh_pal), right = TRUE)
+  ) |>
+  ggplot(aes(x = week_no, y = fct_rev(dow), fill = n_cat)) +
+  geom_tile(width = 0.85, height = 0.85, colour = NA) +
+  facet_wrap(~ iso_year, ncol = 1, strip.position = "left") +
+  scale_fill_manual(values = gh_pal, name = "Speeches", drop = FALSE) +
+  scale_x_continuous(
+    breaks = c(1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48),
+    labels = month.abb, expand = c(0.01, 0)
+  ) +
+  scale_y_discrete(breaks = c("Mon", "Wed", "Fri"), expand = c(0, 0.5)) +
+  coord_fixed() +
+  labs(x = NULL, y = NULL,
+       title = "Ernst Gödl — plenary speeches",
+       subtitle = "National Council") +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title.position = "plot",
+    panel.grid        = element_blank(),
+    axis.ticks        = element_blank(),
+    strip.text.y.left = element_text(angle = 0, size = 9, hjust = 1),
+    legend.position   = "bottom",
+    legend.key.size   = unit(0.55, "cm"),
+    legend.direction  = "horizontal",
+    panel.spacing.y   = unit(0.6, "cm"),
+    plot.background   = element_rect(fill = "white", colour = NA)
+  )
+```
+
+```{r}
+#| label: fig-goedl-topics
+#| fig-cap: "Topics of parliamentary items where Ernst Gödl personally gave a speech."
+#| eval: true
+#| cache: true
+#| code-summary: "Topics of items Gödl actually spoke on"
+
+goedl_periods <- df_plenary_goedl |>
+  distinct(legis_period) |>
+  mutate(p = as.integer(as.roman(legis_period))) |>
+  pull(p)
+
+df_meeting_acts_g <- map(
+  goedl_periods,
+  \(p) get_plenary_meetings(institution = "NR", legis_period = p,
+                            meeting_and_activities = "activities")
+) |>
+  list_rbind()
+
+goedl_joined <- df_plenary_goedl |>
+  distinct(meeting_url) |>
+  mutate(
+    url_meeting_norm = meeting_url |>
+      str_replace("/sitzung/", "/gegenstand/") |>
+      str_remove("\\?.*")
+  ) |>
+  left_join(df_meeting_acts_g, by = c("url_meeting_norm" = "url_meeting"))
+
+unmatched_g <- goedl_joined |> filter(is.na(url_item)) |> pull(meeting_url)
+if (length(unmatched_g) > 0)
+  message(sprintf("%d meeting(s) unmatched in activities data:\n%s",
+                  length(unmatched_g), paste(unmatched_g, collapse = "\n")))
+
+goedl_item_urls <- goedl_joined |> filter(!is.na(url_item)) |> distinct(url_item)
+
+safe_results_g <- goedl_item_urls$url_item |>
+  map(safely(get_item_details))
+
+failed_g <- goedl_item_urls$url_item[map_lgl(safe_results_g, \(x) !is.null(x$error))]
+if (length(failed_g) > 0)
+  message(sprintf("%d item(s) failed to parse:\n%s", length(failed_g), paste(failed_g, collapse = "\n")))
+
+df_item_details_g <- safe_results_g |> map("result") |> compact() |> list_rbind()
+
+spoke_items_g <- df_item_details_g |>
+  filter(!map_lgl(speeches, is.null)) |>
+  unnest(speeches) |>
+  filter(str_detect(speaker, "Gödl")) |>
+  distinct(item_url)
+
+df_goedl_spoke <- df_item_details_g |>
+  semi_join(spoke_items_g, by = "item_url") |>
+  distinct(item_url, .keep_all = TRUE)
+
+df_goedl_spoke |>
+  unnest(topics) |>
+  count(topics, sort = TRUE) |>
+  slice_head(n = 15) |>
+  mutate(topics = fct_reorder(topics, n)) |>
+  ggplot(aes(x = n, y = topics)) +
+  geom_col(fill = "#62C2CE") +
+  labs(
+    x = "Number of items",
+    y = NULL,
+    title = "What did Gödl actually speak about?",
+    subtitle = "Topics of parliamentary items where he personally contributed"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position  = "plot",
+    panel.grid.major.y   = element_blank()
+  )
+```
+
+And finally August Wöginger (ÖVP), the long-serving parliamentary club chairman — his profile as a senior government-side MP should look quite different again:
+
+```{r}
+#| label: woeginger-setup
+#| eval: true
+#| code-summary: "Wöginger plenary speeches"
+get_pad_intern("Wöginger")
+
+df_plenary_woeginger <- get_mps_details(
+  pad_intern = 14795,
+  detail_type = "plenary",
+  institution = "NR"
+)
+
+df_plenary_woeginger |>
+  unnest(position_name) |>
+  count(position_name, sort = TRUE)
+```
+
+```{r}
+#| label: fig-woeginger-calendar
+#| fig-cap: "GitHub-style calendar heatmap of August Wöginger's plenary speeches in the National Council."
+#| eval: true
+#| code-summary: "Calendar heatmap of Wöginger's speeches"
+#| fig-width: 10
+#| fig-height: 28
+
+gh_pal <- c(
+  "0"    = "#ebedf0",
+  "1"    = "#9be9a8",
+  "2–3"  = "#40c463",
+  "4–6"  = "#30a14e",
+  "7+"   = "#216e39"
+)
+
+date_min_w <- lubridate::floor_date(min(df_plenary_woeginger$date), "year")
+date_max_w <- lubridate::ceiling_date(max(df_plenary_woeginger$date), "year") - 1
+
+tibble(date = seq.Date(date_min_w, date_max_w, by = "day")) |>
+  mutate(
+    iso_year = lubridate::isoyear(date),
+    week_no  = lubridate::isoweek(date),
+    dow      = lubridate::wday(date, label = TRUE, abbr = TRUE, week_start = 1)
+  ) |>
+  left_join(count(df_plenary_woeginger, date, name = "n"), by = "date") |>
+  replace_na(list(n = 0)) |>
+  mutate(
+    n_cat = cut(n, breaks = c(-Inf, 0, 1, 3, 6, Inf),
+                labels = names(gh_pal), right = TRUE)
+  ) |>
+  ggplot(aes(x = week_no, y = fct_rev(dow), fill = n_cat)) +
+  geom_tile(width = 0.85, height = 0.85, colour = NA) +
+  facet_wrap(~ iso_year, ncol = 1, strip.position = "left") +
+  scale_fill_manual(values = gh_pal, name = "Speeches", drop = FALSE) +
+  scale_x_continuous(
+    breaks = c(1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48),
+    labels = month.abb, expand = c(0.01, 0)
+  ) +
+  scale_y_discrete(breaks = c("Mon", "Wed", "Fri"), expand = c(0, 0.5)) +
+  labs(x = NULL, y = NULL,
+       title = "August Wöginger — plenary speeches",
+       subtitle = "National Council") +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title.position = "plot",
+    panel.grid        = element_blank(),
+    axis.ticks        = element_blank(),
+    strip.text.y.left = element_text(angle = 0, size = 9, hjust = 1),
+    legend.position   = "bottom",
+    legend.key.size   = unit(0.55, "cm"),
+    legend.direction  = "horizontal",
+    panel.spacing.y   = unit(0.6, "cm"),
+    plot.background   = element_rect(fill = "white", colour = NA)
+  )
+```
+
+```{r}
+#| label: fig-woeginger-topics
+#| fig-cap: "Topics of parliamentary items where August Wöginger personally gave a speech."
+#| eval: true
+#| cache: true
+#| code-summary: "Topics of items Wöginger actually spoke on"
+
+woeginger_periods <- df_plenary_woeginger |>
+  distinct(legis_period) |>
+  mutate(p = as.integer(as.roman(legis_period))) |>
+  pull(p)
+
+df_meeting_acts_w <- map(
+  woeginger_periods,
+  \(p) get_plenary_meetings(institution = "NR", legis_period = p,
+                            meeting_and_activities = "activities")
+) |>
+  list_rbind()
+
+woeginger_joined <- df_plenary_woeginger |>
+  distinct(meeting_url) |>
+  mutate(
+    url_meeting_norm = meeting_url |>
+      str_replace("/sitzung/", "/gegenstand/") |>
+      str_remove("\\?.*")
+  ) |>
+  left_join(df_meeting_acts_w, by = c("url_meeting_norm" = "url_meeting"))
+
+unmatched_w <- woeginger_joined |> filter(is.na(url_item)) |> pull(meeting_url)
+if (length(unmatched_w) > 0)
+  message(sprintf("%d meeting(s) unmatched in activities data:\n%s",
+                  length(unmatched_w), paste(unmatched_w, collapse = "\n")))
+
+woeginger_item_urls <- woeginger_joined |> filter(!is.na(url_item)) |> distinct(url_item)
+
+safe_results_w <- woeginger_item_urls$url_item |>
+  map(safely(get_item_details))
+
+failed_w <- woeginger_item_urls$url_item[map_lgl(safe_results_w, \(x) !is.null(x$error))]
+if (length(failed_w) > 0)
+  message(sprintf("%d item(s) failed to parse:\n%s", length(failed_w), paste(failed_w, collapse = "\n")))
+
+df_item_details_w <- safe_results_w |> map("result") |> compact() |> list_rbind()
+
+spoke_items_w <- df_item_details_w |>
+  filter(!map_lgl(speeches, is.null)) |>
+  unnest(speeches) |>
+  filter(str_detect(speaker, "Wöginger")) |>
+  distinct(item_url)
+
+df_woeginger_spoke <- df_item_details_w |>
+  semi_join(spoke_items_w, by = "item_url") |>
+  distinct(item_url, .keep_all = TRUE)
+
+df_woeginger_spoke |>
+  unnest(topics) |>
+  count(topics, sort = TRUE) |>
+  slice_head(n = 15) |>
+  mutate(topics = fct_reorder(topics, n)) |>
+  ggplot(aes(x = n, y = topics)) +
+  geom_col(fill = "#62C2CE") +
+  labs(
+    x = "Number of items",
+    y = NULL,
+    title = "What did Wöginger actually speak about?",
+    subtitle = "Topics of parliamentary items where he personally contributed"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position  = "plot",
+    panel.grid.major.y   = element_blank()
+  )
+```
+
+With data on all three MPs in hand, we can compare their topical focus side by side. The chart below shows the relative composition of topics for items each MP personally spoke on, with the top 4 topics per MP labelled and everything else grouped as "Other".
+
+```{r}
+#| label: fig-mp-topics-comparison
+#| fig-cap: "Relative topical composition of parliamentary items each MP personally spoke on. Top 4 topics per MP shown individually; all others grouped as 'Other'."
+#| eval: true
+#| code-summary: "Comparative topic composition across MPs"
+#| fig-height: 4
+#| fig-width: 10
+
+# Combine topic counts for all three MPs
+df_all_topics <- bind_rows(
+  df_krisper_spoke   |> unnest(topics) |> count(topics) |> mutate(mp = "Krisper"),
+  df_goedl_spoke     |> unnest(topics) |> count(topics) |> mutate(mp = "Gödl"),
+  df_woeginger_spoke |> unnest(topics) |> count(topics) |> mutate(mp = "Wöginger")
+)
+
+# Per-MP top 4 topics
+top4_per_mp <- df_all_topics |>
+  group_by(mp) |>
+  slice_max(n, n = 4, with_ties = FALSE) |>
+  ungroup() |>
+  distinct(mp, topics)
+
+# Relabel non-top-4 as "Other" and aggregate
+df_plot <- df_all_topics |>
+  left_join(top4_per_mp |> mutate(keep = TRUE), by = c("mp", "topics")) |>
+  mutate(topic_label = if_else(is.na(keep), "Other", topics)) |>
+  summarise(n = sum(n), .by = c(mp, topic_label)) |>
+  mutate(pct = n / sum(n), .by = mp)
+
+# Order named topics by combined frequency; "Other" always last
+topic_order <- df_plot |>
+  filter(topic_label != "Other") |>
+  summarise(total = sum(n), .by = topic_label) |>
+  arrange(desc(total)) |>
+  pull(topic_label)
+
+df_plot <- df_plot |>
+  mutate(
+    topic_label = factor(topic_label, levels = c(topic_order, "Other")),
+    mp = factor(mp, levels = c("Wöginger", "Gödl", "Krisper"))
+  )
+
+# Colour palette — interpolated Set2 for named topics, grey for Other
+n_named <- length(topic_order)
+topic_colors <- setNames(
+  c(colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n_named), "#cccccc"),
+  c(topic_order, "Other")
+)
+
+ggplot(df_plot, aes(x = mp, y = pct, fill = topic_label)) +
+  geom_col(position = position_stack(reverse = TRUE), width = 0.6) +
+  geom_text(
+    aes(label = if_else(pct >= 0.05, scales::percent(pct, accuracy = 1), "")),
+    position = position_stack(vjust = 0.5, reverse = TRUE),
+    size = 3, colour = "white", fontface = "bold"
+  ) +
+  scale_fill_manual(values = topic_colors, name = NULL) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  coord_flip() +
+  labs(
+    x = NULL, y = NULL,
+    title = "Topical focus of plenary speeches",
+    subtitle = "Top 4 topics per MP; remaining topics grouped as 'Other'"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position  = "plot",
+    legend.position      = "bottom",
+    legend.key.size      = unit(0.45, "cm"),
+    panel.grid.major.y   = element_blank()
+  ) +
+  guides(fill = guide_legend(nrow = 2))
+```
+
+```{r}
+#| label: all-items-fetch
+#| cache: true
+df_all_items <- get_items(legis_period = seq(20, 27))
+```
+
+```{r}
+#| label: all-item-details-fetch
+#| cache: true
+
+item_urls_all <- df_all_items |> distinct(item_url) |> pull(item_url)
+
+safe_results_all <- item_urls_all |> map(safely(get_item_details))
+
+failed_all <- item_urls_all[map_lgl(safe_results_all, \(x) !is.null(x$error))]
+if (length(failed_all) > 0)
+  message(sprintf("%d item(s) failed to parse:\n%s",
+                  length(failed_all), paste(failed_all, collapse = "\n")))
+
+df_all_item_details <- safe_results_all |>
+  map("result") |>
+  compact() |>
+  list_rbind()
+```
+
+```{r}
+#| label: export-rds
+#| include: false
+saveRDS(df_all_items,        "df_all_items.rds")
+saveRDS(df_all_item_details, "df_all_item_details.rds")
+```
+
+```{r}
+#| label: fig-topics-by-year
+#| fig-cap: "Topical composition of all National Council items by year"
+#| fig-height: 6
+
+df_yearly <- df_all_items |>
+  mutate(year = lubridate::year(date)) |>
+  unnest(topics) |>
+  count(year, topics)
+
+top_topics <- df_yearly |>
+  summarise(total = sum(n), .by = topics) |>
+  slice_max(total, n = 6, with_ties = FALSE) |>
+  pull(topics)
+
+df_plot_yearly <- df_yearly |>
+  mutate(topic_label = if_else(topics %in% top_topics, topics, "Other")) |>
+  summarise(n = sum(n), .by = c(year, topic_label))
+
+topic_order <- df_plot_yearly |>
+  filter(topic_label != "Other") |>
+  summarise(total = sum(n), .by = topic_label) |>
+  arrange(desc(total)) |>
+  pull(topic_label)
+
+df_plot_yearly <- df_plot_yearly |>
+  mutate(topic_label = factor(topic_label, levels = c(topic_order, "Other")))
+
+n_named <- length(topic_order)
+topic_colors <- setNames(
+  c(colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n_named), "#cccccc"),
+  c(topic_order, "Other")
+)
+
+ggplot(df_plot_yearly, aes(x = year, y = n, fill = topic_label)) +
+  geom_col(position = position_stack(reverse = TRUE), width = 0.75) +
+  scale_fill_manual(values = topic_colors, name = NULL) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    x = NULL, y = "Number of items",
+    title = "How the topical focus of parliamentary work changed over time",
+    subtitle = "All item types, National Council, periods XX–XXVII; top 6 topics shown"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    legend.position     = "bottom",
+    legend.key.size     = unit(0.45, "cm"),
+    panel.grid.major.x  = element_blank()
+  ) +
+  guides(fill = guide_legend(nrow = 2))
+```
+
+```{r}
+#| label: fig-topics-by-year-weighted
+#| fig-cap: "Topical composition of National Council speeches by year (speech-weighted)"
+#| fig-height: 6
+
+df_yearly_weighted <- df_all_item_details |>
+  mutate(
+    year       = lubridate::year(date_introduced),
+    n_speeches = map_int(speeches, \(s) if (is.null(s)) 0L else nrow(s))
+  ) |>
+  filter(n_speeches > 0) |>
+  unnest(topics) |>
+  group_by(year, topics) |>
+  summarise(n = sum(n_speeches), .groups = "drop")
+
+df_plot_yearly_weighted <- df_yearly_weighted |>
+  mutate(topic_label = if_else(topics %in% top_topics, topics, "Other")) |>
+  summarise(n = sum(n), .by = c(year, topic_label)) |>
+  mutate(topic_label = factor(topic_label, levels = c(topic_order, "Other")))
+
+ggplot(df_plot_yearly_weighted, aes(x = year, y = n, fill = topic_label)) +
+  geom_col(position = position_stack(reverse = TRUE), width = 0.75) +
+  scale_fill_manual(values = topic_colors, name = NULL) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    x = NULL, y = "Number of speeches",
+    title = "How the intensity of parliamentary debate changed over time",
+    subtitle = "Items weighted by speeches held; all item types, National Council, periods XX–XXVII"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    legend.position     = "bottom",
+    legend.key.size     = unit(0.45, "cm"),
+    panel.grid.major.x  = element_blank()
+  ) +
+  guides(fill = guide_legend(nrow = 2))
+```
+
+## Speech-level analysis
+
+The charts above treat parliamentary items as the unit of analysis. But `get_plenary_meeting_details()` lets us go one level deeper — to individual speeches — and links each speech to the speaker, duration, and debate context. Combining this with `get_mps()` for gender and party affiliation produces a speech-level dataset that opens up a different class of questions: not just *what* was debated, but *who spoke*, *how long*, and *on what topic*.
+
+The dataset covers all 90,610 speeches delivered in the National Council across legislative periods XX–XXVII (1996–2024). Each row records the speaker's name, gender, party, the date and duration of the speech (in seconds), the debate type, and — where a formal resolution was adopted — the item-level topic classifications (topics, EuroVoc descriptors, keywords).
+
+```{r}
+#| label: speech-data-load
+#| include: false
+df_speeches <- readRDS("df_speech_dataset.rds")
+```
+
+### Do women and men speak for different lengths of time by topic?
+
+A first cut: average speech duration by gender and topic, limited to speeches with matched topic data.
+
+```{r}
+#| label: fig-speech-duration-gender
+#| fig-cap: "Mean speech duration by gender and topic"
+#| fig-height: 6
+
+df_speeches |>
+  filter(!is.na(gender), !map_lgl(topics, is.null), duration_sec > 10) |>
+  unnest(topics) |>
+  group_by(topics, gender) |>
+  summarise(mean_sec = mean(duration_sec), n = n(), .groups = "drop") |>
+  filter(n >= 30) |>
+  pivot_wider(names_from = gender, values_from = c(mean_sec, n)) |>
+  filter(!is.na(mean_sec_female), !is.na(mean_sec_male)) |>
+  mutate(
+    diff   = mean_sec_female - mean_sec_male,
+    topics = fct_reorder(topics, diff)
+  ) |>
+  ggplot(aes(x = diff, y = topics)) +
+  geom_col(aes(fill = diff > 0), width = 0.6, show.legend = FALSE) +
+  geom_vline(xintercept = 0, linewidth = 0.4) +
+  scale_fill_manual(values = c("TRUE" = "#4DAF4A", "FALSE" = "#E41A1C")) +
+  scale_x_continuous(labels = \(x) paste0(ifelse(x > 0, "+", ""), round(x), "s")) +
+  labs(
+    x = "Women − Men (seconds)",
+    y = NULL,
+    title = "Women speak longer on gender equality and family topics",
+    subtitle = "Raw difference in mean duration; positive = women speak longer"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+The raw picture shows women speaking longer on *Frauen und Gleichbehandlung* (+29 s), *Innovation* (+23 s), and *Familie* (+10 s), while men speak longer on *Landesverteidigung* (−18 s), *Europäische Union* (−18 s), and *Budget* (−13 s). But raw means conflate individual speaking style with topic effects — a handful of prolific male MPs dominating certain debates could drive the whole pattern.
+
+### Controlling for individual speaking style: a mixed effects model
+
+To isolate the topic-specific gender effect we fit a log-linear mixed effects model with a random intercept per MP (absorbing individual baseline speaking style), fixed effects for party, legislative period, debate type, and formal time limit:
+
+$$\log(\text{duration}) = \beta_0 + \beta_{\text{gender}} \times \text{topic} + \beta_{\text{party}} + \beta_{\text{period}} + \beta_{\text{type}} + \log(\text{limit}) + u_{\text{MP}} + \varepsilon$$
+
+```{r}
+#| label: speech-model-gender
+#| cache: true
+#| message: false
+
+library(nlme)
+
+df_model_gender <- df_speeches |>
+  filter(!is.na(gender), !map_lgl(topics, is.null), duration_sec > 10) |>
+  mutate(
+    limit_sec = suppressWarnings(as.integer(speech_limit) * 60L),
+    log_limit = if_else(!is.na(limit_sec) & limit_sec > 0, log(limit_sec), NA_real_),
+    log_dur   = log(duration_sec),
+    gender      = factor(gender, levels = c("female", "male")),
+    debate_type = factor(debate_type),
+    pad_intern  = factor(pad_intern)
+  ) |>
+  unnest(topics) |>
+  mutate(topics = factor(topics)) |>
+  filter(!is.na(log_limit))
+
+fit_gender <- lme(
+  log_dur ~ gender * topics + parl_group + period_int + debate_type + log_limit,
+  random    = ~ 1 | pad_intern,
+  data      = df_model_gender,
+  method    = "REML",
+  na.action = na.omit,
+  control   = lmeControl(opt = "optim", maxIter = 200)
+)
+
+# Extract tTable here while nlme is loaded; cached alongside the model
+tt_gender <- as.data.frame(summary(fit_gender)$tTable)
+tt_gender$term <- rownames(tt_gender)
+```
+
+```{r}
+#| label: fig-speech-model-gender
+#| fig-cap: "Gender × topic interactions from mixed effects model"
+#| fig-height: 6
+
+# tt_gender is pre-extracted in the cached speech-model-gender chunk
+
+# Overall gender effect (on reference topic)
+main_gender <- tt_gender["gendermale", ]
+cat(sprintf("Overall gender effect: β = %.3f, SE = %.3f, t = %.2f, p = %.3f\n",
+            main_gender$Value, main_gender$`Std.Error`,
+            main_gender$`t-value`, main_gender$`p-value`))
+
+# Gender:topic interactions
+gi <- tt_gender[grep("gendermale:topics", tt_gender$term), ]
+gi$topic <- sub("gendermale:topics", "", gi$term)
+gi$total_effect <- main_gender$Value + gi$Value  # total gender gap on this topic
+gi$topic <- fct_reorder(gi$topic, gi$total_effect)
+
+ggplot(gi, aes(x = total_effect, y = topic)) +
+  geom_vline(xintercept = 0, linewidth = 0.4) +
+  geom_vline(xintercept = main_gender$Value, linetype = "dashed",
+             colour = "grey50", linewidth = 0.4) +
+  geom_pointrange(
+    aes(xmin = total_effect - 1.96 * `Std.Error`,
+        xmax = total_effect + 1.96 * `Std.Error`,
+        colour = `p-value` < 0.05),
+    size = 0.4
+  ) +
+  scale_colour_manual(values = c("TRUE" = "#E41A1C", "FALSE" = "grey40"),
+                      name = "p < 0.05") +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    x = "Total gender effect on log(duration) — male vs female",
+    y = NULL,
+    title = "After controlling for MP style, topic-specific gender gaps vanish",
+    subtitle = "Dashed line = overall gender effect; red = significant at 5%"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+After accounting for individual speaking style, the apparent topic-level gender differences largely disappear. The overall effect is small but significant (β = −0.037, p = 0.046): on average women speak ~3.7% longer than men after controls. Only *Budget und Finanzen* shows a significant interaction (p = 0.037), where the gender gap narrows almost to zero — men speak nearly as long as women on budget topics, unlike most other areas where women are slightly longer.
+
+### Does party predict how long MPs speak by topic?
+
+Replacing gender with party affiliation tests whether ideological positioning shapes topic-specific speaking time. We restrict to the six parties with sufficient observations (ÖVP, SPÖ, FPÖ, GRÜNE, NEOS, BZÖ) and use ÖVP as the reference category.
+
+```{r}
+#| label: speech-model-party
+#| cache: true
+#| message: false
+
+harmonise_party <- function(x) case_when(
+  str_detect(x, "Volkspartei")                          ~ "ÖVP",
+  str_detect(x, "Sozialdemokratis")                     ~ "SPÖ",
+  str_detect(x, "Freiheitlich") & str_detect(x, "BZÖ") ~ "FPÖ/BZÖ",
+  str_detect(x, "Freiheitlich")                         ~ "FPÖ",
+  str_detect(x, "Grün")                                 ~ "GRÜNE",
+  str_detect(x, "NEOS")                                 ~ "NEOS",
+  str_detect(x, "BZÖ")                                  ~ "BZÖ",
+  TRUE                                                  ~ NA_character_
+)
+
+df_model_party <- df_speeches |>
+  filter(!is.na(parl_group), !map_lgl(topics, is.null), duration_sec > 10) |>
+  mutate(
+    party     = harmonise_party(parl_group),
+    limit_sec = suppressWarnings(as.integer(speech_limit) * 60L),
+    log_limit = if_else(!is.na(limit_sec) & limit_sec > 0, log(limit_sec), NA_real_),
+    log_dur   = log(duration_sec)
+  ) |>
+  filter(!is.na(party), !is.na(log_limit)) |>
+  unnest(topics) |>
+  mutate(
+    party       = factor(party, levels = c("ÖVP","SPÖ","FPÖ","GRÜNE","NEOS","BZÖ")),
+    topics      = factor(topics),
+    debate_type = factor(debate_type),
+    pad_intern  = factor(pad_intern)
+  )
+
+fit_party <- lme(
+  log_dur ~ party * topics + gender + period_int + debate_type + log_limit,
+  random    = ~ 1 | pad_intern,
+  data      = df_model_party,
+  method    = "REML",
+  na.action = na.omit,
+  control   = lmeControl(opt = "optim", maxIter = 300)
+)
+
+# Extract tTable here while nlme is loaded; cached alongside the model
+tt_party <- as.data.frame(summary(fit_party)$tTable)
+tt_party$term <- rownames(tt_party)
+```
+
+```{r}
+#| label: fig-speech-model-party
+#| fig-cap: "Main party effects on speech duration (vs ÖVP)"
+#| fig-height: 4
+
+# tt_party is pre-extracted in the cached speech-model-party chunk
+
+main_party <- tt_party[grepl("^party[A-Z]", tt_party$term) & !grepl(":", tt_party$term), ]
+main_party$party <- str_remove(main_party$term, "party")
+main_party$party <- fct_reorder(main_party$party, main_party$Value)
+
+ggplot(main_party, aes(x = Value, y = party)) +
+  geom_vline(xintercept = 0, linewidth = 0.4) +
+  geom_pointrange(
+    aes(xmin = Value - 1.96 * `Std.Error`,
+        xmax = Value + 1.96 * `Std.Error`,
+        colour = `p-value` < 0.05),
+    size = 0.5
+  ) +
+  scale_colour_manual(values = c("TRUE" = "#E41A1C", "FALSE" = "grey40"),
+                      name = "p < 0.05") +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    x = "Effect on log(duration) vs ÖVP",
+    y = NULL,
+    title = "SPÖ speaks significantly shorter than ÖVP across all topics",
+    subtitle = "Mixed effects model controlling for MP style, period, debate type, time limit"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+SPÖ is the only party that speaks significantly shorter than ÖVP (β = −0.056, p = 0.014, ~5.4% on the log scale). No other party differs significantly from ÖVP, and — crucially — none of the 110 party × topic interaction terms reach significance. The formal *Redezeit* allocation system, which distributes floor time proportionally to party size, appears to dominate over any ideological differences in how parties allocate their speaking time across topics.
+
+### Do female MPs speak at their representation rate?
+
+The gender gap in speech duration is one question; a different question is whether female MPs speak at all at the rate their numbers would predict. A party where 30% of MPs are women should, all else equal, see roughly 30% of its plenary speeches delivered by women. If the observed share is lower, female MPs are speaking below their representation rate — a signal of internal party culture, not just headcount.
+
+The analysis pairs the MP roster from `get_mps()` with the speech dataset to compute, for each party × legislative period, the ratio of speeches-per-female-MP to speeches-per-male-MP. A ratio of 1 means parity; below 1 means female MPs speak less per capita than their male colleagues.
+
+```{r}
+#| label: female-rate-data
+#| cache: true
+
+PARTIES_6 <- c("ÖVP", "SPÖ", "FPÖ", "GRÜNE", "NEOS", "BZÖ")
+
+df_mps_raw <- readRDS("_cache_mps_all.rds")
+
+df_roster <- df_mps_raw |>
+  unnest(mp_details) |>
+  ungroup() |>
+  mutate(
+    period_int = suppressWarnings(as.integer(legis_period)) |>
+      (\(v) if_else(is.na(v), as.integer(as.roman(legis_period)), v))(),
+    party = harmonise_party(parl_group)
+  ) |>
+  filter(!is.na(party), !is.na(gender), party %in% PARTIES_6) |>
+  distinct(pad_intern, period_int, party, gender) |>
+  ungroup() |>
+  count(party, period_int, gender, name = "n_mps")
+
+df_spk_counts <- df_speeches |>
+  filter(!is.na(gender), !is.na(parl_group), duration_sec > 10) |>
+  mutate(party = harmonise_party(parl_group)) |>
+  filter(!is.na(party), party %in% PARTIES_6) |>
+  count(party, period_int, gender, name = "n_speeches")
+
+df_ratio <- df_roster |>
+  left_join(df_spk_counts, by = c("party", "period_int", "gender")) |>
+  replace_na(list(n_speeches = 0L)) |>
+  mutate(rate = n_speeches / n_mps) |>
+  pivot_wider(names_from = gender,
+              values_from = c(n_mps, rate, n_speeches)) |>
+  filter(!is.na(rate_female), !is.na(rate_male),
+         rate_male > 0, n_mps_female >= 3) |>
+  mutate(
+    activity_ratio      = rate_female / rate_male,
+    female_mp_share     = n_mps_female / (n_mps_female + n_mps_male),
+    female_speech_share = n_speeches_female / (n_speeches_female + n_speeches_male),
+    period_label        = paste0("GP ", as.roman(period_int))
+  )
+```
+
+```{r}
+#| label: fig-female-rate-scatter
+#| fig-cap: "Female MP share vs female speech share by party and legislative period"
+#| fig-height: 5.5
+
+party_colors_6 <- c(
+  ÖVP = "#62a8e5", SPÖ = "#E41A1C", FPÖ = "#2171b5",
+  GRÜNE = "#4daf4a", NEOS = "#fa9fb5", BZÖ = "#ff7f00"
+)
+
+ggplot(df_ratio,
+       aes(x = female_mp_share, y = female_speech_share,
+           colour = party, label = period_label)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed",
+              colour = "grey50", linewidth = 0.5) +
+  geom_point(size = 2.5, alpha = 0.85) +
+  geom_text(size = 2.2, vjust = -0.7, show.legend = FALSE) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                     limits = c(0, NA), expand = expansion(mult = c(0.02, 0.05))) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+                     limits = c(0, NA), expand = expansion(mult = c(0.02, 0.05))) +
+  scale_colour_manual(values = party_colors_6, name = NULL) +
+  labs(
+    x = "Female share of MPs",
+    y = "Female share of plenary speeches",
+    title = "Are female MPs speaking at their representation rate?",
+    subtitle = "Each point = one party × legislative period; diagonal = parity (expected = actual)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", legend.position = "bottom")
+```
+
+```{r}
+#| label: fig-female-rate-ratio
+#| fig-cap: "Female-to-male speech activity ratio by party across legislative periods"
+#| fig-height: 5
+
+df_ratio |>
+  mutate(party = factor(party, levels = PARTIES_6)) |>
+  ggplot(aes(x = period_int, y = activity_ratio, colour = party)) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey50", linewidth = 0.5) +
+  geom_line(linewidth = 0.8, alpha = 0.8) +
+  geom_point(size = 2.5) +
+  scale_x_continuous(
+    breaks = 20:27,
+    labels = paste0("GP ", as.roman(20:27))
+  ) +
+  scale_y_continuous(labels = scales::label_number(suffix = "×")) +
+  scale_colour_manual(values = party_colors_6, name = NULL) +
+  labs(
+    x = NULL,
+    y = "Speeches per female MP / speeches per male MP",
+    title = "FPÖ women speak the least relative to their numbers; ÖVP women the most",
+    subtitle = "Ratio = 1 means parity; above 1 means female MPs speak more per capita than male MPs"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    axis.text.x         = element_text(size = 8),
+    legend.position     = "bottom"
+  )
+```
+
+The pattern is consistent across periods. GRÜNE women track close to or above parity in every period — the party's internal culture appears to actively support female participation. ÖVP women also sit close to the diagonal, though slightly below. SPÖ shows a modest but persistent gap that has widened in recent periods.
+
+FPÖ is the outlier in the other direction. In every period with sufficient female MPs, FPÖ women speak at well below half the rate of their male colleagues. Period XXII is extreme: the post-BZÖ split left a small rump group, and the female MPs in it appear to have delivered no speeches at all. NEOS entered parliament in period XXV with a marked gap that has since narrowed — plausible for a new party still establishing internal speaking norms.
+
+The parity line on the scatter makes the point directly: nearly all SPÖ, ÖVP, and GRÜNE points cluster around the diagonal; FPÖ points sit well below it regardless of how many women the party has in parliament.
 
 ### Parliamentary activities
 
@@ -450,6 +1501,265 @@ get_items(item = "RV", legis_period = 27, echo = TRUE)
 
 I find this useful for verification, for quickly sharing a specific query with someone who prefers the web interface, and for sanity-checking that the API query is doing what I expect. It's a small feature but it's saved me more than once.
 
+## FPÖ: A party in transformation
+
+Few parties in post-war Austrian history have undergone as dramatic a trajectory as the FPÖ. From a minor liberal-nationalist party in the 1950s, it was reshaped into a populist right-wing force under Jörg Haider in the 1980s and 1990s, entered government twice (2000–2005 and 2017–2019), survived an internal split that spawned the BZÖ, and re-emerged as the dominant opposition force after the 2019 Ibiza affair ended its second coalition. The ParlAT data — spanning legislative periods XX–XXVII (2002–2024) — captures the arc from post-Haider peak through opposition years, the Türkis-Blau government, and back into opposition.
+
+The party group name itself changed several times: "Klub der Freiheitlichen Partei Österreichs" in periods XX–XXI, "Freiheitlicher Parlamentsklub - BZÖ" in the first half of period XXII (before the April 2005 split), then "Freiheitlicher Parlamentsklub" from the split onwards through period XXVII. The analysis below treats all of these as "FPÖ", excluding the BZÖ breakaway faction which formed its own parliamentary group.
+
+```{r}
+#| label: fpoe-data-prep
+#| cache: true
+
+df_fpoe <- df_speeches |>
+  filter(!is.na(parl_group), duration_sec > 10) |>
+  mutate(
+    is_fpoe = str_detect(parl_group, "Freiheitlich") & !str_detect(parl_group, "BZÖ"),
+    year     = as.integer(format(date, "%Y"))
+  )
+
+# Legislative period labels (approx. start years)
+period_labels <- tibble(
+  period_int = 20:27,
+  period_label = paste0("GP ", as.roman(20:27)),
+  year_start = c(2002, 2003, 2006, 2008, 2013, 2017, 2019, 2024)
+)
+
+# Government annotations
+govt_spans <- tibble(
+  xmin  = c(2002.0, 2017.5),
+  xmax  = c(2005.3, 2019.5),
+  label = c("FPÖ in government\n(ÖVP–FPÖ I)", "FPÖ in government\n(ÖVP–FPÖ II)")
+)
+```
+
+```{r}
+#| label: fig-fpoe-presence
+#| fig-cap: "FPÖ parliamentary speech volume by year, 2002–2024"
+#| fig-height: 5
+
+df_fpoe |>
+  filter(is_fpoe, !is.na(year)) |>
+  count(year) |>
+  ggplot(aes(x = year, y = n)) +
+  annotate("rect",
+    xmin = govt_spans$xmin, xmax = govt_spans$xmax,
+    ymin = -Inf, ymax = Inf,
+    fill = "#2171b5", alpha = 0.10
+  ) +
+  annotate("text",
+    x = (govt_spans$xmin + govt_spans$xmax) / 2,
+    y = c(2700, 2700),
+    label = govt_spans$label,
+    size = 3, colour = "#2171b5", lineheight = 0.9
+  ) +
+  geom_vline(xintercept = 2019.35, linetype = "dashed", colour = "#cb181d", linewidth = 0.6) +
+  annotate("text", x = 2019.55, y = 2600, label = "Ibiza\nscandal",
+           hjust = 0, size = 3, colour = "#cb181d", lineheight = 0.9) +
+  geom_col(fill = "#2171b5", alpha = 0.7, width = 0.75) +
+  scale_x_continuous(breaks = seq(2002, 2024, 2)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    x = NULL, y = "Speeches",
+    title = "FPÖ speaks less when in government — opposition is its natural habitat",
+    subtitle = "Annual number of FPÖ plenary speeches, National Council, 2002–2024"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.x = element_blank())
+```
+
+When FPÖ is in government, its speech volume drops sharply — ministers speak for the government, and coalition discipline constrains backbencher activity. The pattern repeats across both coalition periods. The post-Ibiza years saw a rebound as the party returned to full-throated opposition.
+
+```{r}
+#| label: fpoe-topics-prep
+#| cache: true
+
+# Topics per legislative period, FPÖ only
+df_fpoe_topics <- df_fpoe |>
+  filter(is_fpoe, !map_lgl(topics, is.null), !is.na(period_int)) |>
+  unnest(topics) |>
+  count(period_int, topics)
+
+top_topics_fpoe <- df_fpoe_topics |>
+  summarise(total = sum(n), .by = topics) |>
+  slice_max(total, n = 7, with_ties = FALSE) |>
+  pull(topics)
+
+df_fpoe_pct <- df_fpoe_topics |>
+  mutate(topic_label = if_else(topics %in% top_topics_fpoe, topics, "Other")) |>
+  summarise(n = sum(n), .by = c(period_int, topic_label)) |>
+  group_by(period_int) |>
+  mutate(pct = n / sum(n)) |>
+  ungroup()
+
+topic_order_fpoe <- df_fpoe_pct |>
+  filter(topic_label != "Other") |>
+  summarise(total = sum(n), .by = topic_label) |>
+  arrange(desc(total)) |>
+  pull(topic_label)
+
+df_fpoe_pct <- df_fpoe_pct |>
+  mutate(topic_label = factor(topic_label, levels = c(topic_order_fpoe, "Other")))
+
+n_named_f <- length(topic_order_fpoe)
+fpoe_colors <- setNames(
+  c(colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n_named_f), "#cccccc"),
+  c(topic_order_fpoe, "Other")
+)
+
+period_x_labels <- c(
+  "20" = "GP XX\n2002–03",
+  "21" = "GP XXI\n2003–06",
+  "22" = "GP XXII\n2006–08",
+  "23" = "GP XXIII\n2008–13",
+  "24" = "GP XXIV\n2013–17",
+  "25" = "GP XXV\n2017–19",
+  "26" = "GP XXVI\n2019–24",
+  "27" = "GP XXVII\n2024–"
+)
+```
+
+```{r}
+#| label: fig-fpoe-topic-composition
+#| fig-cap: "FPÖ topic composition by legislative period"
+#| fig-height: 6
+
+ggplot(df_fpoe_pct,
+       aes(x = factor(period_int), y = pct, fill = topic_label)) +
+  geom_col(position = position_stack(reverse = TRUE), width = 0.8) +
+  scale_x_discrete(labels = period_x_labels) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+                     expand = expansion(mult = c(0, 0.02))) +
+  scale_fill_manual(values = fpoe_colors, name = NULL) +
+  labs(
+    x = NULL, y = "Share of matched speeches",
+    title = "How FPÖ's topical focus shifted across legislative periods",
+    subtitle = "Share of FPÖ plenary speeches per topic group; top 7 topics shown"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    legend.position     = "bottom",
+    legend.key.size     = unit(0.45, "cm"),
+    panel.grid.major.x  = element_blank()
+  ) +
+  guides(fill = guide_legend(nrow = 2))
+```
+
+```{r}
+#| label: fig-fpoe-overindex
+#| fig-cap: "FPÖ topic over-representation relative to parliament average"
+#| fig-height: 6
+
+# For each topic: FPÖ share of all speeches vs. overall FPÖ share
+fpoe_share_overall <- df_fpoe |>
+  filter(!map_lgl(topics, is.null)) |>
+  unnest(topics) |>
+  summarise(
+    n_fpoe  = sum(is_fpoe, na.rm = TRUE),
+    n_total = n(),
+    .by = topics
+  ) |>
+  mutate(
+    fpoe_share   = n_fpoe / n_total,
+    overall_fpoe = sum(n_fpoe) / sum(n_total),
+    over_index   = fpoe_share / overall_fpoe
+  ) |>
+  filter(n_total >= 100) |>
+  arrange(desc(over_index))
+
+top_n_show <- 18
+
+df_oi <- bind_rows(
+  slice_max(fpoe_share_overall, over_index, n = top_n_show %/% 2),
+  slice_min(fpoe_share_overall, over_index, n = top_n_show %/% 2)
+) |>
+  distinct(topics, .keep_all = TRUE) |>
+  mutate(
+    dir   = if_else(over_index >= 1, "over", "under"),
+    label = topics
+  )
+
+ggplot(df_oi, aes(x = over_index - 1, y = reorder(label, over_index),
+                  fill = dir)) +
+  geom_col(width = 0.7, alpha = 0.85) +
+  geom_vline(xintercept = 0, linewidth = 0.4) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_manual(values = c(over = "#cb181d", under = "#2171b5"), guide = "none") +
+  labs(
+    x = "Over-/under-representation vs. overall FPÖ speech share",
+    y = NULL,
+    title = "FPÖ dominates security, migration and EU topics; avoids social policy",
+    subtitle = "Topics where FPÖ's share of all speeches deviates most from its overall share"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+```{r}
+#| label: fig-fpoe-govt-vs-oppo
+#| fig-cap: "FPÖ topic profile: government vs. opposition periods"
+#| fig-height: 6
+
+# Government periods: GP XXI (period_int 21) and GP XXVI (period_int 26)
+# Approximate: period 21 = FPÖ entered government 2000 but our data starts 2002;
+# period 26 = 2017-19 coalition; year-based: 2002-2005 and 2017-2019
+
+df_role <- df_fpoe |>
+  filter(is_fpoe, !map_lgl(topics, is.null), !is.na(year)) |>
+  mutate(role = case_when(
+    year >= 2002 & year <= 2005 ~ "Government (2002–05)",
+    year >= 2017 & year <= 2019 ~ "Government (2017–19)",
+    TRUE                        ~ "Opposition"
+  )) |>
+  unnest(topics) |>
+  count(role, topics) |>
+  group_by(role) |>
+  mutate(pct = n / sum(n)) |>
+  ungroup()
+
+top_topics_role <- df_role |>
+  summarise(total = sum(n), .by = topics) |>
+  slice_max(total, n = 10, with_ties = FALSE) |>
+  pull(topics)
+
+df_role_top <- df_role |>
+  filter(topics %in% top_topics_role) |>
+  pivot_wider(id_cols = topics, names_from = role, values_from = pct, values_fill = 0) |>
+  mutate(oppo_minus_govt = Opposition - rowMeans(pick(starts_with("Government")))) |>
+  arrange(desc(abs(oppo_minus_govt)))
+
+df_role_plot <- df_role |>
+  filter(topics %in% top_topics_role) |>
+  mutate(
+    role_group = if_else(str_starts(role, "Government"), "Government", "Opposition"),
+    topics     = factor(topics, levels = df_role_top$topics)
+  ) |>
+  summarise(pct = mean(pct), .by = c(topics, role_group))
+
+ggplot(df_role_plot, aes(x = pct, y = topics, fill = role_group)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6, alpha = 0.85) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 0.1)) +
+  scale_fill_manual(
+    values = c("Government" = "#2171b5", "Opposition" = "#cb181d"),
+    name = NULL
+  ) +
+  labs(
+    x = "Share of FPÖ speeches on this topic",
+    y = NULL,
+    title = "In opposition, FPÖ talks more about migration and security",
+    subtitle = "Top-10 topics by speech count; government vs. opposition periods averaged"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    panel.grid.major.y  = element_blank(),
+    legend.position     = "top"
+  )
+```
+
+The contrast is stark. In opposition, FPÖ concentrates its speaking time on the topics most resonant with its voter base — migration, internal security, and European Union affairs. When in government, ministerial duties and coalition constraints push the party toward the full spectrum of policy, diluting the signature topics that define its brand. The data reflects a deliberate rhetorical strategy: maximise issue ownership pressure in opposition, manage policy breadth in government.
+
 ## Party names across history
 
 Anyone working with Austrian parliamentary data spanning multiple decades will run into the naming problem. The FPÖ has been listed under various abbreviations over the years — "FPÖ", "F", "F-BZÖ" — depending on the period and context. The same applies to other parties.
@@ -460,8 +1770,6 @@ The helper function `aux_parl_group_names_standard()` expands party abbreviation
 
 The [Get Started vignette](https://werkstattcodes.github.io/ParlAT/articles/ParlAT.html) walks through several worked examples — from counting questions by party across eight legislative periods to visualising government bills by topic, tracing MP careers through mandates, and exploring committee structures. The full function reference is available on the [documentation site](https://werkstattcodes.github.io/ParlAT/).
 
-{ParlAT} is still a work in progress — the API surface of the Austrian Parliament is broad, documentation is sometimes sparse, and edge cases keep surfacing. That said, I hope the package is already a useful tool for anyone in the #rstats community working with Austrian parliamentary data, whether for research, journalism, teaching, or just curiosity about what happens in the Hohe Haus. 
+{ParlAT} is still a work in progress — the API surface of the Austrian Parliament is broad, documentation is sometimes sparse, and edge cases keep surfacing. That said, I hope the package is already a useful tool for anyone in the #rstats community working with Austrian parliamentary data, whether for research, journalism, teaching, or just curiosity about what happens in the Hohe Haus.
 
 Feedback of any kind is very welcome: bug reports, questions, suggestions for new functions or better defaults, and pointers to use cases I haven't considered. The best place to reach me is the [GitHub issue tracker](https://github.com/werkstattcodes/ParlAT/issues) — opening an issue is the most reliable way to make sure nothing gets los - or contact me via direct message on [Bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}.
-
-
