@@ -1,0 +1,52 @@
+---
+title: "Voting Pattern"
+date: 2026-03-20
+date-modified: last-modified
+author: Roland Schmidt
+description: |
+  {ParlAT} v0.0.3 adds two new functions — `get_item_details()` and
+  `get_plenary_meeting_details()` — that let you drill into the legislative
+  stages of parliamentary items and the granular proceedings of plenary meetings.
+
+categories:
+  - Austria
+  - parliament
+  - r-bloggers
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: true
+---
+
+
+
+
+```{r}
+library(tidyverse)
+library(ParlAT)
+```
+
+
+
+```{r}
+items28 <- get_items(legis_period=28, institution="NR", echo = T)
+
+items_24_28 <- seq(24,28) %>%
+    map(., \(x) get_items(legis_period=x, institution="NR")) %>%
+    list_rbind()
+items_24_28 %>%
+    count(legis_period, item_type) %>%
+    pivot_wider(id_cols = item_type, names_from=item_type, values_from=n)
+
+items_24_28 %>%
+    count(legis_period, type_doc_long, type_doc) %>%
+    mutate(rel=n/sum(n), .by=legis_period) %>%
+    pivot_wider(id_cols = c(type_doc, type_doc_long), names_from=legis_period, values_from=rel) %>% 
+    mutate(across(where(is.numeric), \(x) x*100))
+
+
+```

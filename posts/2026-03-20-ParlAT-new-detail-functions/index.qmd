@@ -347,10 +347,10 @@ Both detail functions are marked as [experimental](https://lifecycle.r-lib.org/a
 
 Beyond the two new functions, version 0.0.3 includes:
 
--   **Renamed functions**: `get_plenary_sessions()` is now `get_plenary_meetings()`, and `get_plenary_sessions_details()` is now `get_plenary_meeting_details()` — better reflecting what the data actually represents.
--   **Performance improvements to `get_items()`**: Better handling of compact vs. sparse API export rows and improved progress messages via {cli}.
--   **`get_mps()` improvements**: A new `date` column in the output and improved documentation for the `gender` and `mandate_detail` parameters.
--   **`get_mandates()` fix**: The `name` and `pad_intern` parameters are now mutually exclusive, preventing ambiguous queries.
+- **Renamed functions**: `get_plenary_sessions()` is now `get_plenary_meetings()`, and `get_plenary_sessions_details()` is now `get_plenary_meeting_details()` — better reflecting what the data actually represents.
+- **Performance improvements to `get_items()`**: Better handling of compact vs. sparse API export rows and improved progress messages via {cli}.
+- **`get_mps()` improvements**: A new `date` column in the output and improved documentation for the `gender` and `mandate_detail` parameters.
+- **`get_mandates()` fix**: The `name` and `pad_intern` parameters are now mutually exclusive, preventing ambiguous queries.
 
 The full changelog is on the [package website](https://werkstattcodes.github.io/ParlAT/news/index.html).
 
