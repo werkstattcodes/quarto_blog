@@ -1760,6 +1760,217 @@ ggplot(df_role_plot, aes(x = pct, y = topics, fill = role_group)) +
 
 The contrast is stark. In opposition, FPÖ concentrates its speaking time on the topics most resonant with its voter base — migration, internal security, and European Union affairs. When in government, ministerial duties and coalition constraints push the party toward the full spectrum of policy, diluting the signature topics that define its brand. The data reflects a deliberate rhetorical strategy: maximise issue ownership pressure in opposition, manage policy breadth in government.
 
+## Roll-call voting patterns
+
+`get_item_details()` returns voting strings for items that received a plenary vote — recording which parties voted for and which voted against. This covers government bills (RV), parliamentary motions (ANTR), resolutions (E), and international treaty ratifications (RVS). Together these account for the full universe of contested legislative votes in the National Council.
+
+```{r}
+#| label: vote-data
+#| cache: true
+df_votes_raw  <- readRDS("_cache_vote_rows_gp28.rds")
+df_votes_long <- readRDS("_cache_votes_long_gp28.rds")
+
+df_divided <- df_votes_long |>
+  filter(vote_type == "divided", !is.na(vote))
+```
+
+### Party agreement
+
+How often do two parties cast the same vote on contested items? The matrix below counts, for every pair, the share of divided votes where they chose identically.
+
+```{r}
+#| label: fig-vote-agreement
+#| fig-cap: "Party vote agreement in the Austrian National Council, period XXVIII"
+#| fig-height: 5
+
+party_order <- c("ÖVP", "SPÖ", "FPÖ", "GRÜNE", "NEOS")
+
+agreement_matrix <- df_divided |>
+  select(item_url, party, vote) |>
+  inner_join(
+    df_divided |> select(item_url, party2 = party, vote2 = vote),
+    by = "item_url", relationship = "many-to-many"
+  ) |>
+  filter(party != party2) |>
+  group_by(party, party2) |>
+  summarise(
+    n_votes   = n(),
+    pct_agree = sum(vote == vote2) / n_votes,
+    .groups   = "drop"
+  )
+
+ggplot(
+  agreement_matrix |>
+    mutate(
+      party  = factor(party,  levels = party_order),
+      party2 = factor(party2, levels = rev(party_order))
+    ),
+  aes(x = party, y = party2, fill = pct_agree)
+) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(aes(label = scales::percent(pct_agree, accuracy = 1)),
+            size = 3.5, colour = "white", fontface = "bold") +
+  scale_fill_distiller(palette = "RdYlGn", direction = 1,
+                       limits = c(0, 1),
+                       labels = scales::percent_format(accuracy = 1),
+                       name = "Agreement") +
+  labs(
+    x = NULL, y = NULL,
+    title = "Party vote agreement in the Austrian National Council",
+    subtitle = sprintf(
+      "Share of contested votes cast identically, NR period XXVIII (n=%d contested votes)",
+      n_distinct(df_divided$item_url))
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    axis.text  = element_text(size = 11),
+    legend.position = "right",
+    panel.grid = element_blank()
+  )
+```
+
+The coalition bond between ÖVP and SPÖ is near-perfect (99%), and NEOS votes with the governing parties on virtually every contested item. FPÖ agrees with other parties roughly half the time — which sounds moderate until you consider the composition: most of that "agreement" comes from FPÖ voting against opposition motions from GRÜNE and NEOS that the coalition also rejects. On government-initiated legislation, FPÖ is consistently on the opposite side.
+
+### Who ends up on the winning side?
+
+A more direct measure of parliamentary power: for each party, how often does their vote align with the final outcome?
+
+```{r}
+#| label: fig-vote-win-rate
+#| fig-cap: "Win rate per party in contested votes, NR period XXVIII"
+#| fig-height: 4
+
+df_win_rate <- df_divided |>
+  mutate(on_winning_side =
+    (vote_result == "passed"   & vote == "for") |
+    (vote_result == "rejected" & vote == "against")) |>
+  group_by(party) |>
+  summarise(
+    n_votes  = n(),
+    pct_wins = sum(on_winning_side) / n_votes,
+    .groups  = "drop"
+  ) |>
+  arrange(pct_wins) |>
+  mutate(party = factor(party, levels = party))
+
+ggplot(df_win_rate, aes(x = pct_wins, y = party)) +
+  geom_segment(aes(x = 0, xend = pct_wins, yend = party),
+               colour = "grey75", linewidth = 1) +
+  geom_point(aes(colour = pct_wins), size = 5) +
+  geom_text(aes(label = scales::percent(pct_wins, accuracy = 1)),
+            hjust = -0.5, size = 3.5) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                     limits = c(0, 1.18),
+                     expand = expansion(mult = c(0, 0))) +
+  scale_colour_distiller(palette = "RdYlGn", direction = 1,
+                         limits = c(0, 1), guide = "none") +
+  coord_cartesian(clip = "off") +
+  labs(
+    x = "Share of contested votes on the winning side", y = NULL,
+    title = "Who wins in contested votes?",
+    subtitle = sprintf(
+      "Share of divided votes where party voted with the majority, NR period XXVIII (n=%d)",
+      n_distinct(df_divided$item_url))
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+ÖVP, SPÖ, and NEOS win roughly two-thirds of contested votes — they form the effective parliamentary majority. GRÜNE wins about half; FPÖ wins fewer than one in three. The election winner of 2024 is, in voting terms, the most isolated party in parliament.
+
+### How isolated is FPÖ?
+
+```{r}
+#| label: fig-vote-fpoe-isolation
+#| fig-cap: "FPÖ isolation in contested votes, NR period XXVIII"
+#| fig-height: 4
+
+fpoe_votes <- df_divided |>
+  filter(party == "FPÖ") |>
+  select(item_url, fpoe_vote = vote)
+
+fpoe_alignment <- fpoe_votes |>
+  left_join(
+    df_divided |> filter(party != "FPÖ") |> select(item_url, party, vote),
+    by = "item_url"
+  ) |>
+  group_by(item_url, fpoe_vote) |>
+  summarise(
+    n_same = sum(vote == fpoe_vote, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    alignment = case_when(
+      n_same == 4 ~ "All others agree",
+      n_same >= 2 ~ "Majority agrees",
+      n_same == 1 ~ "One party agrees",
+      n_same == 0 ~ "FPÖ alone"
+    )
+  )
+
+fpoe_alignment |>
+  count(alignment) |>
+  mutate(
+    alignment = factor(alignment,
+      levels = c("FPÖ alone", "One party agrees", "Majority agrees", "All others agree")),
+    pct = n / sum(n)
+  ) |>
+  ggplot(aes(x = pct, y = alignment, fill = alignment)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = paste0(scales::percent(pct, accuracy = 1), " (n=", n, ")")),
+            hjust = -0.1, size = 3.5) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1),
+                     expand = expansion(mult = c(0, 0.18))) +
+  scale_fill_manual(values = c(
+    "All others agree" = "#2171b5",
+    "Majority agrees"  = "#6baed6",
+    "One party agrees" = "#fdae6b",
+    "FPÖ alone"        = "#e6550d"
+  )) +
+  labs(
+    x = "Share of contested votes", y = NULL,
+    title = "How isolated is FPÖ in its voting positions?",
+    subtitle = "Contested votes in NR period XXVIII, by how many other parties voted with FPÖ"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+In more than a third of contested votes, FPÖ stands completely alone — no other party casts the same vote. In a further 17%, only one other party agrees. Only when all four other parties happen to be on FPÖ's side (26% of cases) does FPÖ find itself in a genuine majority — and those are mostly the bipartisan items that transcend day-to-day politics.
+
+### Where does parliament fight the most?
+
+In period XXVIII, virtually every contested vote has at least one party in opposition — a sign of how polarised the chamber is. Rather than measuring which topics are *more* contested than others, the more informative question is where legislative energy is concentrated: which topics generate the most contested votes by volume?
+
+```{r}
+#| label: fig-vote-topics
+#| fig-cap: "Topic areas with the most contested votes, NR period XXVIII"
+#| fig-height: 6
+
+df_topic_vol <- df_votes_raw |>
+  filter(!map_lgl(topics, is.null), vote_type == "divided") |>
+  unnest(topics) |>
+  count(topics, name = "n_divided") |>
+  slice_max(n_divided, n = 15) |>
+  mutate(topics = forcats::fct_reorder(topics, n_divided))
+
+ggplot(df_topic_vol, aes(x = n_divided, y = topics)) +
+  geom_col(fill = "#cb181d", alpha = 0.8, width = 0.7) +
+  geom_text(aes(label = n_divided), hjust = -0.3, size = 3.5) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.12))) +
+  labs(
+    x = "Number of contested votes",
+    y = NULL,
+    title = "Where does parliament fight the most?",
+    subtitle = "Topics with the most divided votes, NR period XXVIII"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title.position = "plot", panel.grid.major.y = element_blank())
+```
+
+Budget and finance dominate by sheer volume — the new coalition's fiscal agenda has generated more contested votes than any other area. Internal affairs, media, and climate/energy follow. Notably, many of these are areas where FPÖ has a strong ideological stake, and the high volume reflects both government-initiated legislation and FPÖ's counter-motions.
+
 ## Party names across history
 
 Anyone working with Austrian parliamentary data spanning multiple decades will run into the naming problem. The FPÖ has been listed under various abbreviations over the years — "FPÖ", "F", "F-BZÖ" — depending on the period and context. The same applies to other parties.
