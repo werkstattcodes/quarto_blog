@@ -5,12 +5,18 @@
 #   RV   (97)  — Government bills; plenary 3rd-reading vote
 #   ANTR (1225)— Parliamentary motions; nearly always a single plenary vote
 #   E    (85)  — Resolutions; single plenary vote
+#   RVS  (12)  — Treaty ratifications; plenary approval vote ("Genehmigung")
 #
 # Voting data lives in get_item_details()$stage_name as a two-line string:
-#   Line 1: session + stage description (angenommen / abgelehnt / Beschlossen)
+#   Line 1: session + stage description (angenommen / abgelehnt / Beschlossen /
+#            Genehmigung [RVS only])
 #   Line 2: "Dafür: ÖVP, SPÖ, dagegen: FPÖ, GRÜNE, NEOS"
 #              OR "Einstimmig"
 #              OR "wechselnde Mehrheiten ..."
+#
+# Coverage check (against BNR ground truth): adding RVS closes the main gap.
+# III (Ausschussberichte/Kenntnisnahme) and W (Wahlangelegenheiten) have some
+# vote strings but those are procedural noting-votes, not legislative votes.
 #
 # Period XXVIII government: ÖVP + SPÖ (coalition since Jan 2025)
 # Main opposition:          FPÖ (election winner 2024), GRÜNE, NEOS
@@ -35,13 +41,32 @@ HERE <- tryCatch(
 GP <- 28
 
 # ── 1. Fetch item URLs ────────────────────────────────────────────────────────
+ITEM_TYPES <- c("RV", "ANTR", "E", "RVS")
+
 cache_urls <- file.path(HERE, sprintf("_cache_vote_urls_gp%d.rds", GP))
 if (file.exists(cache_urls)) {
   df_items <- readRDS(cache_urls)
-  message("Loaded cached item URLs: ", nrow(df_items))
+  # Patch: add any types missing from the cached URL list (e.g. RVS added later)
+  missing_types <- setdiff(ITEM_TYPES, unique(df_items$item_type))
+  if (length(missing_types) > 0) {
+    message("Patching URL cache: fetching ", paste(missing_types, collapse = ", "))
+    extra <- map_dfr(missing_types, function(t) {
+      items <- tryCatch(
+        get_items(legis_period = GP, item = t),
+        error = function(e) { message("  failed: ", t); NULL }
+      )
+      if (is.null(items)) return(NULL)
+      items |> mutate(item_type = t) |> select(item_type, item_url)
+    })
+    df_items <- bind_rows(df_items, extra)
+    saveRDS(df_items, cache_urls)
+    message("Patched URL cache: now ", nrow(df_items), " item URLs")
+  } else {
+    message("Loaded cached item URLs: ", nrow(df_items))
+  }
 } else {
   message("Fetching item URLs...")
-  df_items <- map_dfr(c("RV", "ANTR", "E"), function(t) {
+  df_items <- map_dfr(ITEM_TYPES, function(t) {
     items <- tryCatch(
       get_items(legis_period = GP, item = t),
       error = function(e) { message("  failed: ", t); NULL }
@@ -57,8 +82,20 @@ if (file.exists(cache_urls)) {
 cache_details <- file.path(HERE, sprintf("_cache_vote_details_gp%d.rds", GP))
 if (file.exists(cache_details)) {
   df_details <- readRDS(cache_details)
-  message("Loaded cached details: ", nrow(df_details), " stage rows, ",
-          n_distinct(df_details$item_url), " items")
+  # Patch: fetch details for any item URLs not yet in the details cache
+  cached_urls   <- str_remove(unique(df_details$item_url), "https://www.parlament.gv.at")
+  missing_items <- df_items$item_url[!df_items$item_url %in% cached_urls]
+  if (length(missing_items) > 0) {
+    message("Patching details cache: fetching ", length(missing_items), " new items")
+    raw_extra <- map(missing_items, safely(get_item_details), .progress = TRUE)
+    df_extra  <- raw_extra |> map("result") |> compact() |> list_rbind()
+    df_details <- bind_rows(df_details, df_extra)
+    saveRDS(df_details, cache_details)
+    message("Patched details cache: now ", n_distinct(df_details$item_url), " items")
+  } else {
+    message("Loaded cached details: ", nrow(df_details), " stage rows, ",
+            n_distinct(df_details$item_url), " items")
+  }
 } else {
   message("Fetching item details (~15 min first run)...")
   raw <- map(df_items$item_url, safely(get_item_details), .progress = TRUE)
@@ -79,9 +116,9 @@ parse_vote_line <- function(stage_name) {
   vote_line  <- str_trim(parts[2])
 
   result <- case_when(
-    str_detect(header, "angenommen|Beschlossen") ~ "passed",
-    str_detect(header, "abgelehnt")              ~ "rejected",
-    TRUE                                         ~ NA_character_
+    str_detect(header, "angenommen|Beschlossen|Genehmigung") ~ "passed",
+    str_detect(header, "abgelehnt")                          ~ "rejected",
+    TRUE                                                     ~ NA_character_
   )
   if (is.na(result)) return(NULL)
 
