@@ -1,12 +1,13 @@
 ---
-title: "Voting Pattern"
-date: 2026-03-20
+title: "How Austrian parties vote together: a coalition alignment analysis"
+date: 2026-05-21
 date-modified: last-modified
 author: Roland Schmidt
 description: |
-  {ParlAT} v0.0.3 adds two new functions — `get_item_details()` and
-  `get_plenary_meeting_details()` — that let you drill into the legislative
-  stages of parliamentary items and the granular proceedings of plenary meetings.
+  Using the {ParlAT} package to analyse roll-call votes in the Austrian
+  National Council across nine legislative periods (1996–2025): agreement
+  matrices and UpSet plots reveal how coalition membership — not ideology —
+  drives parliamentary voting alignment.
 
 categories:
   - Austria
@@ -19,34 +20,512 @@ knitr:
       code-fold: show
       collapse: true
       dev: "ragg_png"
-draft: true
+draft: false
 ---
 
-
-
-
 ```{r}
+#| label: setup
+#| code-summary: "Load packages and configure parallel plan"
 library(tidyverse)
+library(ggupset)
+library(ggtext)
+library(tidytext)
 library(ParlAT)
+library(furrr)
 ```
-
-
 
 ```{r}
-items28 <- get_items(legis_period=28, institution="NR", echo = T)
+#| label: fetch-items
+#| code-summary: "Fetch National Council items and cache them"
+#| cache: true
+items_20_28 <- seq(20, 28) %>%
+  map(., \(x) get_items(legis_period = x, institution = "NR")) %>%
+  list_rbind()
+nrow(items_20_28)
 
-items_24_28 <- seq(24,28) %>%
-    map(., \(x) get_items(legis_period=x, institution="NR")) %>%
-    list_rbind()
-items_24_28 %>%
-    count(legis_period, item_type) %>%
-    pivot_wider(id_cols = item_type, names_from=item_type, values_from=n)
-
-items_24_28 %>%
-    count(legis_period, type_doc_long, type_doc) %>%
-    mutate(rel=n/sum(n), .by=legis_period) %>%
-    pivot_wider(id_cols = c(type_doc, type_doc_long), names_from=legis_period, values_from=rel) %>% 
-    mutate(across(where(is.numeric), \(x) x*100))
-
-
+readr::write_rds(
+  items_20_28,
+  here::here(
+    "posts",
+    "2026-05-21-ParlAT-votingPatterns",
+    "_data",
+    "items_20_28.rds"
+  )
+)
 ```
+
+```{r}
+#| label: summarise-items
+#| code-summary: "Read cached item data and inspect item types"
+items_20_28 <- readr::read_rds(here::here(
+  "posts",
+  "2026-05-21-ParlAT-votingPatterns",
+  "_data",
+  "items_20_28.rds"
+))
+
+items_20_28 %>%
+  count(legis_period, item_type) %>%
+  pivot_wider(id_cols = item_type, names_from = legis_period, values_from = n)
+
+items_20_28 %>%
+  count(legis_period, type_doc_long, type_doc) %>%
+  mutate(rel = n / sum(n), .by = legis_period) %>%
+  pivot_wider(
+    id_cols = c(type_doc, type_doc_long),
+    names_from = legis_period,
+    values_from = rel
+  ) %>%
+  mutate(across(where(is.numeric), \(x) x * 100))
+```
+
+```{r}
+#| label: define-item-scope
+#| code-summary: "Select legislative item types for voting analysis"
+items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
+  paste0(., collapse = "|")
+
+items_scope <- items_20_28 %>%
+  filter(str_detect(type_doc, regex(items_select)))
+
+nrow(items_scope)
+
+items_scope %>%
+  count(legis_period, type_doc_long, type_doc) %>%
+  mutate(rel = n / sum(n), .by = legis_period) %>%
+  pivot_wider(
+    id_cols = c(type_doc, type_doc_long),
+    names_from = legis_period,
+    values_from = rel
+  ) %>%
+  mutate(across(where(is.numeric), \(x) x * 100))
+```
+
+```{r}
+#| label: fetch-item-details
+#| code-summary: "Fetch item details with voting results and cache them"
+#| cache: true
+plan(multisession, workers = 4)
+
+item_urls <- items_scope %>%
+  pull(item_url)
+
+safe_get_item_details <- safely(get_item_details)
+
+item_details_raw <- item_urls %>%
+  future_map(
+    \(x) {
+      safe_result <- safe_get_item_details(item_url = x, votes = TRUE)
+      safe_result$item_url <- x
+      safe_result
+    },
+    .progress = TRUE,
+    .options = furrr_options(packages = c("ParlAT", "purrr", "tibble"))
+  )
+
+readr::write_rds(
+  item_details_raw,
+  here::here(
+    "posts",
+    "2026-05-21-ParlAT-votingPatterns",
+    "_data",
+    "item_details_raw.rds"
+  )
+)
+
+plan(sequential)
+```
+
+```{r}
+#| label: plot-agreement-matrix
+#| code-summary: "Build party agreement matrix from cached vote details"
+#| column: page
+#| fig-width: 16
+#| fig-height: 15
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svglite
+item_details_raw <- readr::read_rds(here::here(
+  "posts",
+  "2026-05-21-ParlAT-votingPatterns",
+  "_data",
+  "item_details_raw.rds"
+))
+
+
+failed_items <- item_details_raw %>%
+  keep(\(x) !is.null(x$error)) %>%
+  map(\(x) {
+    tibble(
+      item_url = x$item_url,
+      error = conditionMessage(x$error)
+    )
+  }) %>%
+  list_rbind()
+
+items_details <- item_details_raw %>%
+  keep(\(x) is.null(x$error)) %>%
+  map("result") %>%
+  list_rbind()
+
+nrow(items_details)
+nrow(items_scope)
+
+items_votes <- items_details %>%
+  unnest_wider(votes, names_sep = "_")
+class(items_votes$votes_result)
+
+items_votes <- items_votes %>%
+  filter(map_lgl(votes_result, \(x) !is.null(x))) %>%
+  unnest(votes_result)
+
+items_votes <- items_votes %>%
+  select(
+    item_url,
+    type = type_doc,
+    title,
+    item_number,
+    item_url,
+    legis_period,
+    text,
+    code,
+    party_infavor = infavor
+  )
+
+
+items_votes <- items_votes %>%
+  mutate(
+    text = case_when(
+      legis_period == "XXV" & text %in% c("NEOS", "NEOS-LIF") ~ "NEOS/NEOS-LIF",
+      legis_period == "XXVI" & text %in% c("JETZT", "PILZ") ~ "JETZT/PILZ",
+      TRUE ~ text
+    ),
+    code = case_when(
+      legis_period == "XXV" & text == "NEOS/NEOS-LIF" ~ "NEOS/NEOS-LIF",
+      legis_period == "XXVI" & text == "JETZT/PILZ" ~ "JETZT/PILZ",
+      TRUE ~ code
+    ),
+    vote_id = paste(legis_period, item_url, sep = "|")
+  )
+
+votes_contested <- items_votes %>%
+  group_by(vote_id, legis_period, item_url) %>%
+  summarise(vote_types_n = length(unique(party_infavor))) %>%
+  ungroup() %>%
+  mutate(contested = if_else(vote_types_n > 1, "contested", "not contested"))
+
+table(votes_contested$legis_period, votes_contested$contested)
+
+items_votes_combi <- items_votes %>%
+  left_join(., items_votes, by = "vote_id", suffix = c("_x", "_y")) %>%
+  mutate(
+    agreement = if_else(
+      party_infavor_x == party_infavor_y,
+      "agreement",
+      "disagreement"
+    )
+  )
+
+agreement_matrix <- items_votes_combi %>%
+  #  filter(text_x != text_y) %>%
+  group_by(legis_period_x, text_x, text_y, agreement, .drop = TRUE) %>%
+  summarise(
+    agreement_n = n(),
+  ) %>%
+  ungroup() %>%
+  mutate(
+    agreement_share = agreement_n / sum(agreement_n),
+    .by = c(legis_period_x, text_x, text_y)
+  ) %>%
+  filter(agreement == "agreement")
+
+agreement_matrix_wide <- agreement_matrix %>%
+  select(legis_period_x, text_x, text_y, agreement_share) %>%
+  pivot_wider(names_from = text_y, values_from = agreement_share)
+
+gov_parties <- tribble(
+  ~legis_period, ~text, ~gov_rank,
+  "XX",     "SPÖ",      1,
+  "XX",     "ÖVP",      2,
+  "XXI",    "ÖVP",      1,
+  "XXI",    "F",        2,
+  "XXII",   "ÖVP",      1,
+  "XXII",   "F",        2,
+  "XXII",   "F-BZÖ",    3,
+  "XXIII",  "SPÖ",      1,
+  "XXIII",  "ÖVP",      2,
+  "XXIV",   "SPÖ",      1,
+  "XXIV",   "ÖVP",      2,
+  "XXV",    "SPÖ",      1,
+  "XXV",    "ÖVP",      2,
+  "XXVI",   "ÖVP",      1,
+  "XXVI",   "FPÖ",      2,
+  "XXVII",  "ÖVP",      1,
+  "XXVII",  "GRÜNE",    2,
+  "XXVIII", "ÖVP",      1,
+  "XXVIII", "SPÖ",      2,
+  "XXVIII", "NEOS",     3
+)
+
+party_order <- agreement_matrix %>%
+  distinct(legis_period = legis_period_x, text = text_x) %>%
+  left_join(gov_parties, by = c("legis_period", "text")) %>%
+  mutate(is_gov = !is.na(gov_rank)) %>%
+  group_by(legis_period) %>%
+  arrange(!is_gov, gov_rank, text, .by_group = TRUE) %>%
+  mutate(party_order = row_number()) %>%
+  ungroup()
+
+agreement_matrix_ordered <- agreement_matrix %>%
+  left_join(
+    party_order %>% transmute(
+      legis_period_x = legis_period,
+      text_x = text,
+      is_gov_x = is_gov,
+      party_order_x = party_order
+    ),
+    by = c("legis_period_x", "text_x")
+  ) %>%
+  left_join(
+    party_order %>% transmute(
+      legis_period_x = legis_period,
+      text_y = text,
+      is_gov_y = is_gov,
+      party_order_y = party_order
+    ),
+    by = c("legis_period_x", "text_y")
+  ) %>%
+  mutate(
+    text_x = reorder_within(text_x, party_order_x, legis_period_x),
+    text_y = reorder_within(text_y, party_order_y, legis_period_x)
+  )
+
+items_label_str <- items_scope %>%
+  distinct(type_doc, type_doc_long) %>%
+  arrange(type_doc) %>%
+  mutate(label = paste0(type_doc_long, " (", type_doc, ")")) %>%
+  pull(label) %>%
+  paste(collapse = ", ")
+
+legis_period_fn <- getExportedValue(
+  "ParlAT",
+  if ("get_legis_period" %in% getNamespaceExports("ParlAT")) {
+    "get_legis_period"
+  } else {
+    "get_legis_periods"
+  }
+)
+
+legis_period_labels <- legis_period_fn() %>%
+  filter(legis_period_abbrev %in% unique(agreement_matrix_ordered$legis_period_x)) %>%
+  mutate(
+    years = if_else(
+      is.na(date_end),
+      paste0(format(date_start, "%Y"), "-present"),
+      paste0(format(date_start, "%Y"), "-", format(date_end, "%Y"))
+    ),
+    label = paste0(
+      "<span style=\"font-size:13pt; font-weight:700;\">", legis_period_abbrev, "</span><br>",
+      "<span style=\"font-size:10pt; font-weight:400;\">", years, "</span>"
+    )
+  ) %>%
+  select(name = legis_period_abbrev, value = label) %>%
+  tibble::deframe()
+
+data_cutoff <- {
+  d <- max(items_20_28$date, na.rm = TRUE)
+  paste0(
+    scales::ordinal(as.integer(format(d, "%d"))),
+    " of ",
+    format(d, "%B %Y")
+  )
+}
+
+label_vec_x <- agreement_matrix_ordered %>%
+  distinct(text_x, is_gov_x) %>%
+  mutate(
+    party = str_remove(as.character(text_x), "___.*$"),
+    label = if_else(is_gov_x, paste0("<b>", party, "</b>"), party)
+  ) %>%
+  select(name = text_x, value = label) %>%
+  mutate(name = as.character(name)) %>%
+  tibble::deframe()
+
+label_vec_y <- agreement_matrix_ordered %>%
+  distinct(text_y, is_gov_y) %>%
+  mutate(
+    party = str_remove(as.character(text_y), "___.*$"),
+    label = if_else(is_gov_y, paste0("<b>", party, "</b>"), party)
+  ) %>%
+  select(name = text_y, value = label) %>%
+  mutate(name = as.character(name)) %>%
+  tibble::deframe()
+
+p_agreement_matrix <- agreement_matrix_ordered %>%
+  mutate(
+    legis_period_x = factor(legis_period_x, levels = sort(unique(legis_period_x))),
+    label_colour = if_else(agreement_share <= 0.20 | agreement_share >= 0.85, "white", "grey15")
+  ) %>%
+  ggplot(aes(x = text_x, y = text_y, fill = agreement_share)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(
+    aes(
+      label = scales::number(agreement_share * 100, accuracy = 1),
+      colour = label_colour
+    ),
+    fontface = "plain",
+    size = 3.9
+  ) +
+  scale_colour_identity() +
+  scale_fill_distiller(
+    palette = "RdYlGn",
+    direction = 1,
+    limits = c(0, 1),
+    labels = scales::percent_format(accuracy = 1),
+    name = "Agreement"
+  ) +
+  facet_wrap(
+    ~legis_period_x,
+    ncol = 3,
+    scales = "free",
+    axes = "all",
+    axis.labels = "all",
+    labeller = labeller(legis_period_x = as_labeller(legis_period_labels))
+  ) +
+  scale_x_discrete(labels = label_vec_x, guide = guide_axis(n.dodge = 2)) +
+  scale_y_discrete(labels = label_vec_y) +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Party agreement matrix",
+    subtitle = paste0(
+      "Each tile compares two parliamentary party groups within one legislative period. ",
+      "Numbers are percentages: they show how often both groups took the same position on selected Nationalrat ",
+      "votes on legislative items in the third reading. The value does not distinguish whether both groups ",
+      "voted in favour of or against the item. Votes in earlier readings are out of scope. ",
+      "Darker green means stronger agreement; red means weaker agreement. ",
+      "Government parties are bold and ordered first by parliamentary size; opposition parties follow."
+    ),
+    caption = paste0(
+      "Voting on the following items was included: ", items_label_str,
+      "\n\nData: www.parlament.gv.at via ParlAT package, as of ",
+      data_cutoff,
+      "\nGraphic: Roland Schmidt, https://werk.statt.codes"
+    )
+  ) +
+  guides(fill = guide_colourbar(direction = "horizontal", title.position = "top", barwidth = grid::unit(8, "cm"), barheight = grid::unit(0.45, "cm"))) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    plot.title.position = "plot",
+    plot.caption.position = "panel",
+    plot.title = element_text(hjust = 0, size = 18, face = "bold", margin = margin(b = 8)),
+    plot.subtitle = ggtext::element_textbox_simple(size = 13, lineheight = 1.15, margin = margin(t = 4, b = 18)),
+    plot.caption = ggtext::element_textbox_simple(hjust = 0, halign = 0, size = 10, lineheight = 1.1, margin = margin(t = 8)),
+    strip.text = ggtext::element_markdown(size = 13, hjust = 0),
+    strip.text.x = ggtext::element_markdown(size = 13, hjust = 0),
+    axis.text.x = ggtext::element_markdown(size = 11),
+    axis.text.y = ggtext::element_markdown(size = 11),
+    axis.text.x.bottom = ggtext::element_markdown(size = 11),
+    axis.text.x.top = ggtext::element_markdown(size = 11),
+    axis.text.y.left = ggtext::element_markdown(size = 11),
+    axis.text.y.right = ggtext::element_markdown(size = 11),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    legend.position = "bottom",
+    legend.justification = "left",
+    legend.direction = "horizontal",
+    aspect.ratio = 1,
+    plot.margin = margin(t = 8, r = 8, b = 8, l = 8)
+  )
+
+p_agreement_matrix
+```
+
+```{r}
+#| label: plot-upset
+#| code-summary: "UpSet plot: party combinations voting in favour"
+#| column: page-right
+#| fig-width: 14
+#| fig-height: 16
+#| out-width: "100%"
+
+# For each contested vote, collect party sets for both stances
+vote_sets <- items_votes %>%
+  summarise(
+    parties = list(sort(unique(text))),
+    .by = c(vote_id, legis_period, party_infavor)
+  ) %>%
+  semi_join(
+    votes_contested %>% filter(contested == "contested"),
+    by = "vote_id"
+  ) %>%
+  mutate(
+    legis_period = factor(legis_period, levels = sort(unique(legis_period))),
+    vote_stance  = if_else(party_infavor, "In favour", "Against")
+  )
+
+p_upset <- vote_sets %>%
+  ggplot(aes(x = parties)) +
+  geom_bar(aes(fill = vote_stance)) +
+  scale_fill_manual(values = c("In favour" = "#4575b4", "Against" = "#d73027"), guide = "none") +
+  scale_x_upset(n_intersections = 12) +
+  facet_grid(vote_stance ~ legis_period, scales = "free") +
+  labs(
+    title = "Which party coalitions voted together?",
+    subtitle = "Most frequent combinations per legislative period (contested votes only)",
+    x = NULL,
+    y = "Number of votes",
+    caption = paste0(
+      "Data: www.parlament.gv.at via ParlAT package, as of ", data_cutoff, " | ",
+      "Graphic: Roland Schmidt, https://werk.statt.codes"
+    )
+  ) +
+  theme_minimal(base_size = 12) +
+  theme_combmatrix(
+    combmatrix.label.text = element_text(size = 9),
+    combmatrix.panel.point.size = 2.5
+  ) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 18, face = "bold"),
+    plot.subtitle = element_text(hjust = 0, size = 13),
+    plot.caption = element_text(size = 10),
+    strip.text = element_text(size = 11, face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+
+p_upset
+```
+
+## Results
+
+The agreement matrix reveals a consistent and striking pattern across all nine legislative periods: **coalition membership is by far the strongest predictor of voting alignment**, consistently producing agreement rates of 97–100% between governing parties, regardless of their ideological distance.
+
+### Grand coalition dominance (XX, XXIII, XXIV, XXV)
+
+In the four periods where SPÖ and ÖVP governed together, their agreement rates were near-perfect: 99.3%, 98.7%, 100%, and 98.9% respectively. This consistency is remarkable — across more than two decades and very different political contexts, the two parties voted in lockstep whenever they shared government. XXIII (2007–2008) is worth a brief note: a short transitional grand coalition after the collapse of the Schüssel II government, its SPÖ–ÖVP rate of 98.7% falls squarely in line with the others. What is notable in XXIII is that BZÖ and FPÖ — the two right-wing parties that had split in 2005 — still showed 77.5% alignment with each other in opposition, suggesting their ideological divergence had not yet fully materialised in voting behaviour.
+
+### The FPÖ government experiment (XXI, XXII)
+
+The ÖVP–FPÖ coalition under Schüssel produced equally tight coalition discipline: 99% in XXI and a perfect 100% in XXII. In XXII the FPÖ split into FPÖ and BZÖ mid-term — yet both splinter groups maintained 100% alignment with ÖVP, confirming both stayed in government. In opposition, SPÖ and GRÜNE found each other with \~83–85% alignment.
+
+### A counterintuitive finding in XX
+
+In the XX period (1996–1999), FPÖ under Haider was in opposition — and voted more closely with GRÜNE (70%) and the Liberal Forum (69%) than with either SPÖ (36%) or ÖVP (36%). For a right-wing populist party, this level of alignment with the Greens is striking, and likely reflects that opposition parties of any stripe frequently voted against the grand coalition's proposals regardless of ideology.
+
+### The first Türkis-Blau coalition (XXVI)
+
+The 2017–2019 ÖVP–FPÖ coalition under Sebastian Kurz produced an FPÖ–ÖVP agreement rate of 96.4% — high, but notably below the 100% seen in XXII. More striking is what happened to SPÖ: after voting in lockstep with ÖVP throughout the grand coalition years (98.9% in XXV), their agreement rate collapsed to just 42% in XXVI — the sharpest single-period drop in the entire dataset. The new opposition also saw the emergence of PILZ (later JETZT), which aligned closely with SPÖ at 90%, forming a de facto left bloc against the governing coalition.
+
+### The Türkis-Grün experiment (XXVII)
+
+The ÖVP–Greens coalition of 2019–2024 is perhaps the most remarkable case in the dataset. Despite being natural ideological opponents on many issues, ÖVP and GRÜNE achieved 100% voting agreement in parliament — identical to the most disciplined grand coalitions. Meanwhile FPÖ in opposition showed only 56% alignment with ÖVP, its lowest in any period where the two were not governing together. The opposition bloc (FPÖ, SPÖ, NEOS) was relatively undifferentiated, all clustering around 56–68% agreement with each other.
+
+### The current Dreierkoalition (XXVIII)
+
+The three-party ÖVP–SPÖ–NEOS coalition formed in 2024 shows near-perfect internal cohesion: ÖVP–SPÖ at 100%, ÖVP–NEOS at 98.6%, SPÖ–NEOS at 98.6%. FPÖ, now the sole opposition party, is clearly isolated — agreeing with governing parties only 37–38% of the time, the lowest opposition score across the entire dataset. GRÜNE, also in opposition, sit at \~69% with the coalition, positioning themselves as a more moderate opposition voice.
+
+::: callout-note
+The high overall agreement rates are partly a function of item type selection. Bills that reach a floor vote — especially treaty ratifications and budget items — tend to pass with broad consensus. Contested votes would show more differentiation.
+:::
