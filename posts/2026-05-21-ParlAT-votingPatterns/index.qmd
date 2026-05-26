@@ -208,6 +208,10 @@ items_votes <- items_votes %>%
     vote_id = paste(legis_period, item_url, sep = "|")
   )
 
+items_voted_n <- items_votes %>%
+  distinct(legis_period, vote_id) %>%
+  count(legis_period, name = "items_voted_n")
+
 votes_contested <- items_votes %>%
   group_by(vote_id, legis_period, item_url) %>%
   summarise(vote_types_n = length(unique(party_infavor))) %>%
@@ -318,6 +322,7 @@ legis_period_fn <- getExportedValue(
 
 legis_period_labels <- legis_period_fn() %>%
   filter(legis_period_abbrev %in% unique(agreement_matrix_ordered$legis_period_x)) %>%
+  left_join(items_voted_n, by = c("legis_period_abbrev" = "legis_period")) %>%
   mutate(
     years = if_else(
       is.na(date_end),
@@ -326,7 +331,10 @@ legis_period_labels <- legis_period_fn() %>%
     ),
     label = paste0(
       "<span style=\"font-size:13pt; font-weight:700;\">", legis_period_abbrev, "</span><br>",
-      "<span style=\"font-size:10pt; font-weight:400;\">", years, "</span>"
+      "<span style=\"font-size:10pt; font-weight:400;\">", years, "</span><br>",
+      "<span style=\"font-size:9pt; font-weight:400;\">Number of items voted on: ",
+      scales::number(items_voted_n, accuracy = 1),
+      "</span>"
     )
   ) %>%
   select(name = legis_period_abbrev, value = label) %>%
@@ -408,9 +416,9 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     ),
     caption = paste0(
       "Voting on the following items was included: ", items_label_str,
-      "\n\nData: www.parlament.gv.at via ParlAT package, as of ",
+      "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
       data_cutoff,
-      "\nGraphic: Roland Schmidt, https://werk.statt.codes"
+      "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes <span style=\"color:#1185FE;\">&#x1F98B; @zoowalk</span>"
     )
   ) +
   guides(fill = guide_colourbar(direction = "horizontal", title.position = "top", barwidth = grid::unit(8, "cm"), barheight = grid::unit(0.45, "cm"))) +
