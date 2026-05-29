@@ -27,45 +27,57 @@ draft: false
 
 # Context
 
-I have been recently tinkering with `get_item_details()` function of the ParlAT package. While a few things are still in flux (it’s version 0.0.4 after all), the main development is the inclusion of the ‘votes’ parameter into the function arguments. When set to TRUE the function now returns the voting result of the provided item (Verhandlungsgegenstand) in its third reading in the National Council (dritte Lesung im Nationalrat). 
+I have been recently tinkering with `get_item_details()` function of the ParlAT package. While a few things are still in flux (it’s version 0.0.4 after all), the main development is the inclusion of the `votes` parameter into the function arguments. When set to TRUE the function now returns the voting result of the provided item ('Verhandlungsgegenstand') in its third reading in the National Council ('dritte Lesung im Nationalrat'). 
 
-To get a clear picture of what I mean, look at this example. The function parses the data which lie behind the graph on the voting results. 
-Note that not every item type is actually subject to votes; not every item on which can be voted in fact reaches the third reading; and votes prior to the third reading are (at least for now) are not returned.  If the item does not feature a vote or a third reading, the returned vote column returns NULL.  I emphasize this so that the scope of what the function can deliver and what not is clear.
+To get a clear picture of what I mean, look at this [example](https://www.parlament.gv.at/gegenstand/XX/I/1833){target="_blank"} from the website of the Austrian Parliament. 
 
-To demonstrate the parameter’s utility, I will query the parties’ votes since the 20th legislative period (1996) until now, and will check 
-1)	How often do parties vote in favor or against an item in the third reading (relative frequency per legislative period).
-2)	With which other party does a party vote (either in favor or against).
-3)	What is the relative frequency of party-combinations for in-favor and not-in-favor votes for the different legislative periods. 
+![Voting result in the National Council in the third reading on Gefahrgutbeförderungsgesetz, Änderung (1833 d.B.)](_data/ScreenshotVotingResultWebsite.png)
+
+The `get_item_details()`  parses the data which lie behind the graph on the voting results. 
+
+Note that not every item type is actually subject to votes; not every item on which can be voted in fact reaches the third reading; and votes prior to the third reading are (at least for now) not returned.  If the item does not feature a vote or a third reading, the returned vote column returns NULL. I emphasize this so that the scope of what the function can deliver and what not is clear.
+
+To demonstrate the parameter’s utility, I will query in this blog post the parties’ votes since the 20th legislative period (1996) until now, and will check:
+
+1. How often do parties vote in favor or against an item in the third reading (relative frequency per legislative period)?
+2. With which other party does a party vote (either in favor or against)?
+3. What is the relative frequency of party-combinations for in-favor and not-in-favor votes for the different legislative periods?
 
 As you will see, the querying of the relevant data is rather straightforward. Most of the code presented was needed to create the three graphs, so don’t get distracted by this. 
 
-And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback; b) although  I am developing the ParlAT package, I don’t consider myself as an expert on the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, c) this is a blog post and does not pretend to be an academic output etc.
+And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback ([repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} or [bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}); b) although  I am developing the ParlAT package, I don’t consider myself as an expert on the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, c) this is a blog post and does not pretend to be an academic output etc.
 
-To give you an overview of the code, essentially, there are three steps needed (more details below) 
-1)	use get_items() to get a dataframe of the items for the legislative periods in question
-2)	feed the urls of the obtained items as input to the get_item_details(vote=TRUE) query
-3)	wrangle and filter the data and produce the graphs. 
+To give you an overview of the code, essentially, there are three steps needed (more details below):
+
+1. use `get_items()` to get a dataframe of the items for the legislative periods in question
+2. feed the urls of the obtained items as input to the `get_item_details(vote = TRUE)` query
+3. wrangle and filter the data and produce the graphs. 
+
+Enough rambling. Let's dive in...
 
 
 # Packages
 
+Get the necessary packages. 
+
 ```{r}
 #| label: setup
 #| code-summary: "Load packages and configure parallel plan"
-library(reactable)
-library(reactablefmtr)
-library(tidyverse)
-library(ggupset)
-library(ggtext)
-library(tidytext)
 library(ParlAT)
-library(furrr)
-library(patchwork)
+library(tidyverse)
+library(reactablefmtr) #table formater
+library(reactable) #creation of reactables
+library(ggupset) #upsetter plots
+library(ggtext) #text formatting in ggplots
+library(tidytext)
+library(furrr) #apply functions in parallel
+library(patchwork) #combine multiple plots into one
 ```
 
 # Get items
+## Query data
 
-To start with, let's get all items for the legislative periods 20 to 28. 
+To start with, let's get all items for the legislative periods 20 to 28. No big deal.
 
 ```{r}
 #| label: fetch-items
@@ -97,19 +109,50 @@ items_20_28 <- readr::read_rds(here::here(
 ))
 ```
 
-To get an overview over the (relative) frequency of the different item types, 
+To get an overview of the (relative) frequency of the different item types, 
 let's transform this data into two tables.
+
+## Fequency Tables
 
 ```{r}
 #| label: summarise-items
+#| include: true
+#| code-fold: true
 #| code-summary: "Read cached item data and inspect item types"
-# Use the available legislative periods as dynamic table columns and set a compact NYTimes theme.
+# Use the available legislative periods as dynamic table columns and set a compact table theme.
 period_cols <- sort(unique(items_20_28$legis_period))
-compact_nytimes_theme <- reactablefmtr::nytimes(
-  font_size = 12,
-  header_font_size = 10,
-  cell_padding = 3
+compact_table_theme <- reactablefmtr::fivethirtyeight(font_size = 12)
+table_source <- reactablefmtr::html(
+  "<span style=\x27font-size:8pt;color:grey30;font-family:Segoe UI !important;line-height:0.5\x27>Source: www.parlament.gv.at. Analysis: Roland Schmidt - @zoowalk - https://werk.statt.codes</span>"
 )
+
+style_reactable_table <- function(table, title, subtitle = NULL) {
+  styled_table <- table %>%
+    reactablefmtr::add_title(
+      title = reactablefmtr::html(paste0(
+        "<span style=\x27font-size:12pt;\x27>",
+        title,
+        "</span>"
+      ))
+    )
+
+  if (!is.null(subtitle)) {
+    styled_table <- styled_table %>%
+      reactablefmtr::add_subtitle(
+        subtitle = reactablefmtr::html(paste0(
+          "<span style=\x27font-size:10pt;line-height:0.5;\x27>",
+          subtitle,
+          "</span>"
+        )),
+        font_color = "grey30",
+        font_weight = "normal",
+        font_style = "italic"
+      )
+  }
+
+  styled_table %>%
+    reactablefmtr::add_source(source = table_source)
+}
 
 # Format legislative-period columns as right-aligned integer counts for the first table.
 period_count_cols <- setNames(
@@ -141,68 +184,126 @@ period_share_cols <- setNames(
   period_cols
 )
 
-# Count all item categories per legislative period and reshape to one row per item type.
-item_type_counts <- items_20_28 %>%
-  count(legis_period, item_type) %>%
-  pivot_wider(id_cols = item_type, names_from = legis_period, values_from = n)
+# Count document types per legislative period and reshape to one row per document type.
+type_abs_counts <- items_20_28 %>%
+  count(legis_period, type_doc_long, type_doc) %>%
+  pivot_wider(
+    id_cols = c(type_doc_long, type_doc),
+    names_from = legis_period,
+    values_from = n
+  )
 
 # Calculate each document type as a percentage of all items within its legislative period.
-type_doc_shares <- items_20_28 %>%
+type_rel_counts <- items_20_28 %>%
   count(legis_period, type_doc_long, type_doc) %>%
   mutate(rel = n / sum(n), .by = legis_period) %>%
   pivot_wider(
-    id_cols = c(type_doc, type_doc_long),
+    id_cols = c(type_doc_long, type_doc),
     names_from = legis_period,
     values_from = rel
   ) %>%
   mutate(across(where(is.numeric), \(x) x * 100))
 
-# Render the item-type counts as a compact interactive table.
-item_type_counts_table <- reactable(
-  item_type_counts,
+# Render the document-type counts as a compact interactive table.
+type_abs_counts_table <- reactable(
+  type_abs_counts,
   columns = c(
     list(
-      item_type = colDef(name = "Item type", align = "left", minWidth = 220)
-    ),
-    period_count_cols
-  ),
-  compact = TRUE,
-  theme = compact_nytimes_theme,
-  defaultPageSize = 10,
-  highlight = TRUE,
-  borderless = TRUE
-)
-
-# Render the document-type percentage shares as a compact interactive table.
-type_doc_shares_table <- reactable(
-  type_doc_shares,
-  columns = c(
-    list(
-      type_doc = colDef(name = "Code", align = "left", minWidth = 80),
       type_doc_long = colDef(
         name = "Document type",
         align = "left",
-        minWidth = 320
+        minWidth = 320,
+        filterable = TRUE,
+        sticky = "left"
+      ),
+      type_doc = colDef(
+        name = "Code",
+        align = "left",
+        minWidth = 80,
+        filterable = TRUE,
+        sticky = "left"
+      )
+    ),
+    period_count_cols
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = FALSE,
+  outlined = TRUE,
+  defaultPageSize = 23,
+  defaultSorted = "XXVIII",
+  defaultSortOrder = "desc",
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "ITEM TYPES BY LEGISLATIVE PERIOD",
+    "Absolute number of each item type per legislative period. Data as of 29 May 2026."
+  )
+
+# Render the document-type percentage shares as a compact interactive table.
+type_rel_counts_table <- reactable(
+  type_rel_counts,
+  columns = c(
+    list(
+      type_doc_long = colDef(
+        name = "Document type",
+        align = "left",
+        minWidth = 320,
+        filterable = TRUE,
+        sticky = "left"
+      ),
+      type_doc = colDef(
+        name = "Code",
+        align = "left",
+        minWidth = 80,
+        filterable = TRUE,
+        sticky = "left"
       )
     ),
     period_share_cols
   ),
+  fullWidth = TRUE,
   compact = TRUE,
-  theme = compact_nytimes_theme,
-  defaultPageSize = 10,
-  highlight = TRUE,
-  borderless = TRUE
-)
-
-# Return both HTML widgets from the chunk with a small spacer between them.
-htmltools::tagList(
-  item_type_counts_table,
-  htmltools::br(),
-  type_doc_shares_table
-)
+  highlight = FALSE,
+  outlined = TRUE,
+  defaultPageSize = 23,
+  defaultSorted = "XXVIII",
+  defaultSortOrder = "desc",
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "ITEM TYPES BY LEGISLATIVE PERIOD",
+    "Share of each type within all items in the legislative period. Data as of 29 May 2026."
+  )
 ```
 
-The get_item() call from above returned all (!) items. When interested in votes in the third reading, only a subset of items is relevant. Below we filter for them.
+:::: {.column-page-right}
+
+::: {.panel-tabset}
+
+### Items by absolute frequency per legis period
+
+```{r}
+#| label: item-type-counts-table
+#| echo: false
+type_abs_counts_table
+```
+
+### Items by relative frequency per legis period
+
+```{r}
+#| label: type-doc-shares-table
+#| echo: false
+type_rel_counts_table
+```
+
+:::
+
+::::
+
+## Keep items of interest
+
+The get_item() call from above returned all (!) items. When interested in votes in the third reading, only a subset of items is relevant. Below we filter for them. In case I missed any category here, please let me know.
 
 ```{r}
 #| label: define-item-scope
@@ -213,8 +314,17 @@ items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
 items_scope <- items_20_28 %>%
   filter(str_detect(type_doc, regex(items_select)))
 
-nrow(items_scope)
+items_scope %>%
+  distinct(type_doc_long, type_doc)
+```
 
+
+```{r}
+#| label: item-scope-freq-table
+#| code-summary: "Frequency table on item types for voting analysis"
+#| column: page-right
+#| eval: false
+#| include: false
 # Show the selected document types as percentage shares within each legislative period.
 items_scope_doc_shares <- items_scope %>%
   count(legis_period, type_doc_long, type_doc) %>%
@@ -231,29 +341,68 @@ items_scope_doc_shares_table <- reactable(
   items_scope_doc_shares,
   columns = c(
     list(
-      type_doc = colDef(name = "Code", align = "left", minWidth = 80),
+      type_doc = colDef(
+        name = "Code",
+        align = "left",
+        minWidth = 80,
+        filterable = TRUE,
+        sticky = "left"
+      ),
       type_doc_long = colDef(
         name = "Document type",
         align = "left",
-        minWidth = 320
+        minWidth = 320,
+        filterable = TRUE,
+        sticky = "left"
       )
     ),
     period_share_cols
   ),
+  fullWidth = TRUE,
   compact = TRUE,
-  theme = compact_nytimes_theme,
-  defaultPageSize = 10,
-  highlight = TRUE,
-  borderless = TRUE
-)
+  highlight = FALSE,
+  outlined = TRUE,
+  defaultPageSize = 23,
+  defaultSorted = "XXVIII",
+  defaultSortOrder = "desc",
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "SELECTED DOCUMENT TYPES FOR VOTING ANALYSIS",
+    "Share of the selected vote-relevant document types within each legislative period. Data as of 29 May 2026."
+  )
 
 items_scope_doc_shares_table
 ```
 
 # Get item details
 
-From the obtained subset, let's extract the urls of the items and feed them to `get_item_details()`. I wrap the function call in purrr's `safely` to collect any
-potential errors; and use the `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process. 
+## Single case example
+
+Before using our above obtained results to query to voting results, it might be instructive to demonstrate the return value of the new vote paramete with a single example. The item is the one for which we saw above the results. Note that the return value is a list column.
+
+```{r}
+#| code-summary: "Single case vote results"
+#| code-fold: false
+example <- get_item_details(
+  item_url = "https://www.parlament.gv.at/gegenstand/XX/I/1833?selectedStage=105",
+  votes = TRUE
+)
+
+#content of votes list column
+example$votes
+
+#content of interest
+example$votes[[1]]$result %>% select(text, infavor)
+```
+
+So as you can see from above, the returned votes column is a list column which contains
+again the list column `result`. From here, we can extract the party name (`text`) and the vote result (`infavor`). (Note, in a later version the function might get further streamlined so that the return value is already the nested result).
+
+## Query data
+
+To continue with our dataset from the 20th legislative period onwards, let's extract the urls of the items and feed them to `get_item_details()` with votes set to TRUE. I wrap the function call in purrr's `safely` to collect any
+potential errors; and use `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process. 
 
 ```{r}
 #| label: fetch-item-details
@@ -307,6 +456,7 @@ Below, I a) check for any failed calls, and b) combine the successful calls into
 ```{r}
 #| label: prepare-vote-agreement-data
 #| code-summary: "Build party agreement matrix from cached vote details"
+#check failed function calls
 failed_items <- item_details_raw %>%
   keep(\(x) !is.null(x$error)) %>%
   map(\(x) {
@@ -316,30 +466,69 @@ failed_items <- item_details_raw %>%
     )
   }) %>%
   list_rbind()
+nrow(failed_items)
 
+#combine successful calls into one single dataframe
 items_details <- item_details_raw %>%
   keep(\(x) is.null(x$error)) %>%
   map("result") %>%
   list_rbind()
 ```
 
-`get_item_details()` returns the vote results as a nested list column. Hence, it's content has to be unpacked. 
+As we can see, there were `r nrow(failed_items)` failed item calls.
+As already discussed, `get_item_details()` returns the vote results as a nested list column. Hence, it's content has to be unpacked. 
+
+As an intermediate step, let me cross-tabulate the presence of item votes and the procedural stage of the item. Remember that not every item does necessarily (yet) feature a vote during the third reading.
 
 ```{r}
-nrow(items_details)
-nrow(items_scope)
+#| code-summary: "How many items have a vote"
+#add vote presence indicator
+items_details <- items_details %>%
+  mutate(votes_present = map_lgl(votes, \(x) !is.null(x)))
 
-check <- items_details %>%
-  mutate(votes_present = map_lgl(votes, \(x) !is.null(x))) %>%
-  filter(votes_present) %>%
-  select(status_number, status_description, votes_present, item_url)
+vote_yn <- items_details %>%
+  count(votes_present) %>%
+  mutate(rel = n / sum(n))
+vote_yn
 
-table(check$status_number)
 
-get_item_details(
-  "https://www.parlament.gv.at/gegenstand/XX/III/205?selectedStage=105"
-)$votes
+items_details %>%
+  #filter(votes_present) %>%
+  select(status_number, status_description, votes_present, item_url) %>%
+  count(status_number, votes_present)
 
+table(items_details$status_number, check$votes_present)
+```
+
+As it turns out, `r scales::percent(vote_yn %>% filter(votes_present) %>% pull(rel), accuracy = 1)` of all items feature a vote. If we cross-tabulate this with status number (which is part of the API response), we see that almost all items with a vote are of category 5, i.e., are concluded. 
+
+So what about the other items which are also of status 5, but do not feature a vote. Unfortunately, at least that's my current understanding, there is no explicit return value indicating whether an item has reached the third reading. However, `get_item_details` also includes that 'stages' parameter which returns one row for each stage. The column `stage_name` has a description of the stage, and this can be searched for the presence of 'dritte Lesung'/third reading.
+
+Here the stages for our single case example:
+
+```{r}
+#|code-summary: "Example: check for third reading"
+example$stages[[1]]
+
+example$stages[[1]] %>%
+  filter(str_detect(stage_name, regex("dritte Lesung", ignore_case = T))) %>%
+  pull(stage_name)
+```
+
+Let's use this approach to check for our full `items_details` dataset. For this, I'll use an auxiliary function
+
+```{r}
+items_details <- items_details %>%
+  mutate(third_reading=map_lgl(stages, \(x) x %>% str_detect(stage_name, regex("dritte Lesung", ignore_case=T))))
+  
+```
+
+
+
+
+
+
+```{r}
 items_votes <- items_details %>%
   unnest_wider(votes, names_sep = "_")
 class(items_votes$votes_result)
@@ -660,19 +849,19 @@ p_party_vote_shares <- party_vote_shares %>%
       hjust = 0,
       size = 18,
       face = "bold",
-      margin = margin(b = 8)
+      margin = ggplot2::margin(b = 8)
     ),
     plot.subtitle = ggtext::element_textbox_simple(
       size = 13,
       lineheight = 1.15,
-      margin = margin(t = 4, b = 14)
+      margin = ggplot2::margin(t = 4, b = 14)
     ),
     plot.caption = ggtext::element_textbox_simple(
       hjust = 0,
       halign = 0,
       size = 10,
       lineheight = 1.1,
-      margin = margin(t = 8)
+      margin = ggplot2::margin(t = 8)
     ),
     strip.text = ggtext::element_markdown(size = 13, hjust = 0),
     axis.text.x = element_blank(),
@@ -680,7 +869,7 @@ p_party_vote_shares <- party_vote_shares %>%
     axis.text.y = element_text(size = 10),
     legend.position = "bottom",
     legend.justification = "left",
-    plot.margin = margin(t = 8, r = 8, b = 34, l = 8)
+    plot.margin = ggplot2::margin(t = 8, r = 8, b = 34, l = 8)
   )
 
 p_party_vote_shares
@@ -774,19 +963,19 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
       hjust = 0,
       size = 18,
       face = "bold",
-      margin = margin(b = 8)
+      margin = ggplot2::margin(b = 8)
     ),
     plot.subtitle = ggtext::element_textbox_simple(
       size = 13,
       lineheight = 1.15,
-      margin = margin(t = 4, b = 18)
+      margin = ggplot2::margin(t = 4, b = 18)
     ),
     plot.caption = ggtext::element_textbox_simple(
       hjust = 0,
       halign = 0,
       size = 10,
       lineheight = 1.1,
-      margin = margin(t = 8)
+      margin = ggplot2::margin(t = 8)
     ),
     strip.text = ggtext::element_markdown(size = 13, hjust = 0),
     strip.text.x = ggtext::element_markdown(size = 13, hjust = 0),
@@ -802,7 +991,7 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     legend.justification = "left",
     legend.direction = "horizontal",
     aspect.ratio = 1,
-    plot.margin = margin(t = 8, r = 8, b = 8, l = 8)
+    plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
   )
 
 p_agreement_matrix
@@ -899,7 +1088,7 @@ make_period_upset_plot <- function(period, vote_type) {
         size = 11,
         hjust = 0.5,
         face = "bold",
-        margin = margin(b = 4)
+        margin = ggplot2::margin(b = 4)
       ),
       axis.title.y = element_text(
         angle = 0,
@@ -907,12 +1096,12 @@ make_period_upset_plot <- function(period, vote_type) {
         vjust = 0.5,
         face = "bold",
         size = 10,
-        margin = margin(r = 8)
+        margin = ggplot2::margin(r = 8)
       ),
       axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
       axis.text.y = element_text(size = 7),
       panel.grid.minor = element_blank(),
-      plot.margin = margin(t = 4, r = 4, b = 4, l = 4)
+      plot.margin = ggplot2::margin(t = 4, r = 4, b = 4, l = 4)
     )
 }
 
@@ -949,19 +1138,19 @@ p_upset_period_percent <- wrap_plots(
         hjust = 0,
         size = 18,
         face = "bold",
-        margin = margin(b = 8)
+        margin = ggplot2::margin(b = 8)
       ),
       plot.subtitle = element_text(
         hjust = 0,
         size = 13,
-        margin = margin(b = 12)
+        margin = ggplot2::margin(b = 12)
       ),
       plot.caption = ggtext::element_textbox_simple(
         hjust = 0,
         halign = 0,
         size = 10,
         lineheight = 1.1,
-        margin = margin(t = 8)
+        margin = ggplot2::margin(t = 8)
       )
     )
   )
