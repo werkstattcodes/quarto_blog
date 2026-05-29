@@ -45,7 +45,7 @@ To demonstrate the parameter’s utility, I will query in this blog post the par
 
 As you will see, the querying of the relevant data is rather straightforward. Most of the code presented was needed to create the three graphs, so don’t get distracted by this. 
 
-And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback ([repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} or [bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}); b) although  I am developing the ParlAT package, I don’t consider myself as an expert on the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, c) this is a blog post and does not pretend to be an academic output etc.
+And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback ([repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} or [bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}); b) although  I am developing the ParlAT package, I don’t consider myself as an expert on the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, and c) this is a blog post and does not pretend to be an academic output etc.
 
 To give you an overview of the code, essentially, there are three steps needed (more details below):
 
@@ -303,7 +303,7 @@ type_rel_counts_table
 
 ## Keep items of interest
 
-The get_item() call from above returned all (!) items. When interested in votes in the third reading, only a subset of items is relevant. Below we filter for them. In case I missed any category here, please let me know.
+The `get_items()` call from above returned all (!) items. When interested in votes in the third reading, only a subset of items is relevant. Below we filter for them. In case I missed any category here, please let me know.
 
 ```{r}
 #| label: define-item-scope
@@ -379,7 +379,7 @@ items_scope_doc_shares_table
 
 ## Single case example
 
-Before using our above obtained results to query to voting results, it might be instructive to demonstrate the return value of the new vote paramete with a single example. The item is the one for which we saw above the results. Note that the return value is a list column.
+Before using our above obtained results to query voting results, it might be instructive to demonstrate the return value of the new vote parameter with a single example. The item is the one for which we saw above the results. Note that the return value for `votes` is a list column, it contains a dataframe with further data.
 
 ```{r}
 #| code-summary: "Single case vote results"
@@ -396,12 +396,12 @@ example$votes
 example$votes[[1]]$result %>% select(text, infavor)
 ```
 
-So as you can see from above, the returned votes column is a list column which contains
+So as you can see from the above chunk, the returned votes column is a list column which contains
 again the list column `result`. From here, we can extract the party name (`text`) and the vote result (`infavor`). (Note, in a later version the function might get further streamlined so that the return value is already the nested result).
 
 ## Query data
 
-To continue with our dataset from the 20th legislative period onwards, let's extract the urls of the items and feed them to `get_item_details()` with votes set to TRUE. I wrap the function call in purrr's `safely` to collect any
+To apply this approach to our dataframe comprising data from the 20th legislative period onwards, let's extract the urls of the items and feed them to `get_item_details()` with votes set to TRUE. I wrap the function call in purrr's `safely` to collect any
 potential errors; and use `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process. 
 
 ```{r}
@@ -451,7 +451,7 @@ item_details_raw <- readr::read_rds(here::here(
 ))
 ```
 
-Below, I a) check for any failed calls, and b) combine the successful calls into a single dataframe.
+Below, I a) check for any failed calls, and b) combine the successful calls into a single data frame.
 
 ```{r}
 #| label: prepare-vote-agreement-data
@@ -473,12 +473,14 @@ items_details <- item_details_raw %>%
   keep(\(x) is.null(x$error)) %>%
   map("result") %>%
   list_rbind()
+nrow(items_details)
 ```
 
-As we can see, there were `r nrow(failed_items)` failed item calls.
-As already discussed, `get_item_details()` returns the vote results as a nested list column. Hence, it's content has to be unpacked. 
+As we can see, there were `r nrow(failed_items)` failed item calls
 
-As an intermediate step, let me cross-tabulate the presence of item votes and the procedural stage of the item. Remember that not every item does necessarily (yet) feature a vote during the third reading.
+## Check votes & reading
+
+Before unpacking the nested `votes` column, a quick detour. As an intermediate step, let me cross-tabulate the presence of item votes and the procedural stage of the item. Remember that not every item does necessarily (yet) feature a vote during the third reading.
 
 ```{r}
 #| code-summary: "How many items have a vote"
@@ -491,52 +493,68 @@ vote_yn <- items_details %>%
   mutate(rel = n / sum(n))
 vote_yn
 
-
 items_details %>%
   #filter(votes_present) %>%
   select(status_number, status_description, votes_present, item_url) %>%
   count(status_number, votes_present)
 
-table(items_details$status_number, check$votes_present)
+table(items_details$status_number, items_details$votes_present)
 ```
 
 As it turns out, `r scales::percent(vote_yn %>% filter(votes_present) %>% pull(rel), accuracy = 1)` of all items feature a vote. If we cross-tabulate this with status number (which is part of the API response), we see that almost all items with a vote are of category 5, i.e., are concluded. 
 
-So what about the other items which are also of status 5, but do not feature a vote. Unfortunately, at least that's my current understanding, there is no explicit return value indicating whether an item has reached the third reading. However, `get_item_details` also includes that 'stages' parameter which returns one row for each stage. The column `stage_name` has a description of the stage, and this can be searched for the presence of 'dritte Lesung'/third reading.
-
-Here the stages for our single case example:
+So what about the other items which are also of status 5, but do not feature a vote. Unfortunately, at least that's my current understanding, there is no explicit return value indicating whether an item has reached the third reading. However, `get_item_details` also includes that 'stages' parameter which returns one row for each stage (and merit its own blog post). The column `stage_name` has a description of the stage, and this can be searched for the presence of 'dritte Lesung'/third reading.
+To demonstrate this, here the stages for our single case example:
 
 ```{r}
 #|code-summary: "Example: check for third reading"
+#show stages
 example$stages[[1]]
 
+#filter stage_name for 3rd reading
 example$stages[[1]] %>%
-  filter(str_detect(stage_name, regex("dritte Lesung", ignore_case = T))) %>%
+  filter(str_detect(stage_name, regex("dritter? Lesung", ignore_case = T))) %>%
   pull(stage_name)
 ```
 
-Let's use this approach to check for our full `items_details` dataset. For this, I'll use an auxiliary function
+As we can see above, the filter result reveals that the item has reached the third reading.
+Let's use this approach to check for our full `items_details` dataset. 
 
 ```{r}
+#| code-summary: "Check for third reading"
+# create 3rd reading indicator (TRUE if there's a match)
 items_details <- items_details %>%
-  mutate(third_reading=map_lgl(stages, \(x) x %>% str_detect(stage_name, regex("dritte Lesung", ignore_case=T))))
-  
+  mutate(
+    third_reading = map_lgl(stages, \(x) {
+      if (is.null(x) || !"stage_name" %in% names(x)) {
+        return(FALSE)
+      }
+      any(
+        str_detect(x$stage_name, regex("dritter? Lesung", ignore_case = TRUE)),
+        na.rm = TRUE
+      )
+    })
+  )
+
+#cross-tab third reading and vote presence
+items_details %>%
+  count(votes_present, third_reading)
 ```
 
-
-
-
-
+The last table in the chunk above is informative. Almost all items are either a (third reading AND have votes) OR (do not have votes AND are NOT third readings). There a two items which don't fit the pattern. I checked them an these are items where the second and the third reading were in the _same_ session (hence our search for 'dritte?r Lesung' had a match), but the item failed to cross the second reading (hence not vote.) Based on this result, we can confidently conclude that all our extracted votes pertain to a third reading. Let's unnest the data now to get the actual results.
 
 ```{r}
+#| code-summary: "Unnest vote results"
 items_votes <- items_details %>%
   unnest_wider(votes, names_sep = "_")
 class(items_votes$votes_result)
 
+#keep only those items where a vote took actually place
 items_votes <- items_votes %>%
   filter(map_lgl(votes_result, \(x) !is.null(x))) %>%
   unnest(votes_result)
 
+#keep only columns of interest
 items_votes <- items_votes %>%
   select(
     item_url,
@@ -547,13 +565,461 @@ items_votes <- items_votes %>%
     legis_period,
     text,
     code,
+    fraction,
     party_infavor = infavor
   )
 ```
 
-# Graphic 1: Relative Frequency of vote type
+# Results
+
+## Graphic 1: Split and unanimous votes
+
+With the data now available, let's see whether we can find anything meaningful.
+As a first step, I want to know how many items were passed on an unanimous vote vs split vote.
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Prepare graph data"
+# Classify each voted item as unanimous or split across party groups.
+votes_contested <- items_votes %>%
+  mutate(vote_id = paste(legis_period, item_url, sep = "|")) %>%
+  group_by(vote_id, legis_period, item_url) %>%
+  summarise(
+    vote_types_n = n_distinct(party_infavor),
+    vote_record = paste(paste(text, party_infavor, sep = ":"), collapse = "; "),
+    # vote_favor_share = sum(fraction[party_infavor], na.rm = TRUE) /
+    #   sum(fraction, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(contested = if_else(vote_types_n > 1, "split", "unanimous"))
+
+
+# Count voted items per legislative period for plot annotations and facet labels.
+items_voted_n <- items_votes %>%
+  mutate(vote_id = paste(legis_period, item_url, sep = "|")) %>%
+  distinct(legis_period, vote_id) %>%
+  count(legis_period, name = "items_voted_n") %>%
+  mutate(items_voted_label = glue::glue("n={items_voted_n}"))
+
+# Define governing parties by legislative period for facet labels and party ordering.
+gov_parties <- tribble(
+  ~legis_period , ~text   , ~gov_rank ,
+  "XX"          , "SPÖ"   ,         1 ,
+  "XX"          , "ÖVP"   ,         2 ,
+  "XXI"         , "ÖVP"   ,         1 ,
+  "XXI"         , "F"     ,         2 ,
+  "XXII"        , "ÖVP"   ,         1 ,
+  "XXII"        , "F"     ,         2 ,
+  "XXII"        , "F-BZÖ" ,         3 ,
+  "XXIII"       , "SPÖ"   ,         1 ,
+  "XXIII"       , "ÖVP"   ,         2 ,
+  "XXIV"        , "SPÖ"   ,         1 ,
+  "XXIV"        , "ÖVP"   ,         2 ,
+  "XXV"         , "SPÖ"   ,         1 ,
+  "XXV"         , "ÖVP"   ,         2 ,
+  "XXVI"        , "ÖVP"   ,         1 ,
+  "XXVI"        , "FPÖ"   ,         2 ,
+  "XXVII"       , "ÖVP"   ,         1 ,
+  "XXVII"       , "GRÜNE" ,         2 ,
+  "XXVIII"      , "ÖVP"   ,         1 ,
+  "XXVIII"      , "SPÖ"   ,         2 ,
+  "XXVIII"      , "NEOS"  ,         3
+)
+
+# Collapse governing parties into one display label per legislative period.
+gov_party_labels <- gov_parties %>%
+  arrange(legis_period, gov_rank) %>%
+  summarise(
+    gov_parties = paste(text, collapse = " + "),
+    .by = legis_period
+  )
+
+# Build reusable facet labels with period years, government parties, and total items.
+legis_period_labels <- ParlAT::get_legis_periods() %>%
+  filter(legis_period_abbrev %in% unique(items_votes$legis_period)) %>%
+  left_join(items_voted_n, by = c("legis_period_abbrev" = "legis_period")) %>%
+  left_join(
+    gov_party_labels,
+    by = c("legis_period_abbrev" = "legis_period")
+  ) %>%
+  mutate(
+    years = if_else(
+      is.na(date_end),
+      paste0(format(date_start, "%Y"), "-present"),
+      paste0(format(date_start, "%Y"), "-", format(date_end, "%Y"))
+    ),
+    label = paste0(
+      "<b>",
+      legis_period_abbrev,
+      "</b>",
+      " (",
+      years,
+      ")",
+      "<br>",
+      "Gov: ",
+      gov_parties,
+      " | Total items: ",
+      scales::number(items_voted_n, accuracy = 1)
+    )
+  ) %>%
+  select(name = legis_period_abbrev, value = label) %>%
+  tibble::deframe()
+
+# Create a compact description of included item types for graph captions.
+items_label_str <- items_scope %>%
+  distinct(type_doc, type_doc_long) %>%
+  arrange(type_doc) %>%
+  mutate(label = paste0(type_doc_long, " (", type_doc, ")")) %>%
+  pull(label) %>%
+  paste(collapse = ", ")
+
+# Record the latest item date represented in the source data.
+data_cutoff <- {
+  d <- max(items_20_28$date, na.rm = TRUE)
+  paste0(
+    scales::ordinal(as.integer(format(d, "%d"))),
+    " of ",
+    format(d, "%B %Y")
+  )
+}
+
+# Define one shared caption used by all vote visualisations.
+vote_graph_caption <- paste0(
+  "Voting on the following items was included: ",
+  items_label_str,
+  "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
+  data_cutoff,
+  "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes <span style=\"color:#1185FE;\">&#x1F98B; @zoowalk</span>"
+)
+
+
+# Calculate relative shares of unanimous and split votes per legislative period.
+votes_contested_shares <- votes_contested %>%
+  mutate(
+    contested = factor(contested, levels = c("unanimous", "split"))
+  ) %>%
+  count(legis_period, contested, name = "votes_n") %>%
+  mutate(
+    vote_share = votes_n / sum(votes_n),
+    vote_share_label = scales::percent(vote_share, accuracy = 1),
+    .by = legis_period
+  ) %>%
+  left_join(items_voted_n, by = "legis_period")
+```
+
+```{r}
+#| label: plot-contested-vote-shares
+#| code-fold: true
+#| code-summary: "Stacked split vote shares"
+#| column: page-right
+#| fig-width: 9
+#| fig-height: 5.5
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svglite
+p_votes_contested <- votes_contested_shares %>%
+  ggplot(aes(x = legis_period, y = vote_share, fill = contested)) +
+  geom_col(width = 0.75, colour = "white", linewidth = 0.35) +
+  geom_text(
+    aes(label = vote_share_label),
+    position = position_stack(vjust = 0.5),
+    colour = "white",
+    size = 3.2,
+    fontface = "bold"
+  ) +
+  geom_text(
+    data = items_voted_n,
+    aes(x = legis_period, y = 1.04, label = items_voted_label),
+    inherit.aes = FALSE,
+    size = 3.2,
+    fontface = "bold",
+    colour = "grey20"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = seq(0, 1, by = 0.25),
+    expand = expansion(mult = c(0, 0.02))
+  ) +
+  scale_fill_manual(
+    values = c("unanimous" = "#1b9e77", "split" = "#d95f02"),
+    breaks = c("unanimous", "split"),
+    labels = c("Unanimous", "Split"),
+    name = NULL
+  ) +
+  coord_cartesian(ylim = c(0, 1.08), clip = "off") +
+  labs(
+    x = NULL,
+    y = "Share of voted items",
+    title = "Split votes by legislative period",
+    subtitle = paste0(
+      "Share of selected Nationalrat third-reading item votes by whether parliamentary party groups ",
+      "split in their position or voted unanimously. Labels above bars show the total number of voted items."
+    ),
+    caption = vote_graph_caption
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot",
+    plot.caption.position = "panel",
+    plot.title = element_text(
+      hjust = 0,
+      size = 15,
+      face = "bold",
+      margin = ggplot2::margin(b = 6)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10.5,
+      lineheight = 1.12,
+      margin = ggplot2::margin(t = 3, b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      hjust = 0,
+      halign = 0,
+      size = 8.5,
+      lineheight = 1.05,
+      margin = ggplot2::margin(t = 6)
+    ),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+    legend.position = "bottom",
+    legend.justification = "left",
+    plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
+  )
+
+p_votes_contested
+```
+
+## Graphic 2: Median support share
+
+The above graph was relative crude in the sense, that it only differentiated between unanimous and split votes. In the following step, I calculate the in-favor vote share for every item. Taken together for each legislative period, we can calculate the median, mean, and standard deviation of these vote shares. This should allow us to compare the average support for an item voted at during the thrid reading. 
+
+```{r}
+#| code-summary: "Calculate in-favor vote share"
+support_share <- items_votes %>%
+  mutate(vote_id = paste(legis_period, item_url, sep = "|")) %>%
+  group_by(vote_id, legis_period, item_url) %>%
+  summarise(
+    vote_favor_share = sum(fraction[party_infavor], na.rm = TRUE) /
+      sum(fraction, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+support_share_avg <- support_share %>%
+  group_by(legis_period) %>%
+  summarise(
+    median_support = median(vote_favor_share, na.rm = T),
+    q25_support = as.numeric(quantile(vote_favor_share, 0.25, na.rm = T)),
+    q75_support = as.numeric(quantile(vote_favor_share, 0.75, na.rm = T))
+  )
+```
+
+
+```{r}
+#| label: plot-support-share-summary
+#| code-fold: true
+#| code-summary: "Median support share by legislative period"
+#| column: page-right
+#| fig-width: 9
+#| fig-height: 5.5
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svglite
+support_share_avg_plot <- support_share_avg %>%
+  mutate(
+    legis_period = factor(legis_period, levels = sort(unique(legis_period)))
+  )
+
+support_share_labels <- bind_rows(
+  support_share_avg_plot %>% slice_min(legis_period, n = 1, with_ties = FALSE),
+  support_share_avg_plot %>% slice_max(legis_period, n = 1, with_ties = FALSE),
+  support_share_avg_plot %>%
+    slice_min(median_support, n = 1, with_ties = FALSE),
+  support_share_avg_plot %>% slice_max(median_support, n = 1, with_ties = FALSE)
+) %>%
+  distinct(legis_period, .keep_all = TRUE) %>%
+  mutate(median_support_label = scales::percent(median_support, accuracy = 1))
+
+p_support_share_summary <- support_share_avg_plot %>%
+  ggplot(aes(x = legis_period, y = median_support)) +
+  geom_errorbar(
+    aes(ymin = q25_support, ymax = q75_support),
+    width = 0.18,
+    colour = "grey45",
+    linewidth = 0.55
+  ) +
+  geom_line(aes(group = 1), colour = "#1185FE", linewidth = 0.9) +
+  geom_point(
+    colour = "#1185FE",
+    size = 2.7,
+    stroke = 0.8
+  ) +
+  geom_point(
+    data = support_share_labels,
+    colour = "#1185FE",
+    fill = "#1185FE",
+    shape = 21,
+    size = 7.8,
+    stroke = 0.8
+  ) +
+  geom_text(
+    data = support_share_labels,
+    aes(label = median_support_label),
+    colour = "white",
+    size = 2.4,
+    fontface = "bold"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.1),
+    expand = expansion(mult = c(0, 0.04))
+  ) +
+  labs(
+    x = NULL,
+    y = "Share voting in favour",
+    title = "Typical support share by legislative period",
+    subtitle = paste0(
+      "Median vote-level support shares across selected Nationalrat third-reading item votes. ",
+      "Vertical bars show the interquartile range."
+    ),
+    caption = vote_graph_caption
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.title = element_text(
+      hjust = 0,
+      size = 17,
+      face = "bold",
+      margin = ggplot2::margin(b = 7)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 12,
+      lineheight = 1.12,
+      margin = ggplot2::margin(t = 3, b = 12)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      hjust = 0,
+      halign = 0,
+      size = 9,
+      lineheight = 1.05,
+      margin = ggplot2::margin(t = 6)
+    ),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+    plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
+  )
+
+p_support_share_summary
+```
+
+
+## Graphic: Histogram
+
+```{r}
+#| label: plot-support-share-histogram
+#| code-fold: true
+#| code-summary: "Precomputed support share histogram by legislative period"
+#| column: page-right
+#| fig-width: 9
+#| fig-height: 10
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svglite
+histogram_support_breaks <- seq(0.5, 1, by = 0.05)
+histogram_support_bin_labels <- paste0(
+  scales::percent(head(histogram_support_breaks, -1), accuracy = 1),
+  "-",
+  scales::percent(tail(histogram_support_breaks, -1), accuracy = 1)
+)
+
+support_share_histogram <- support_share %>%
+  filter(vote_favor_share >= 0.5) %>%
+  mutate(
+    legis_period = factor(legis_period, levels = sort(unique(legis_period))),
+    support_bin = cut(
+      vote_favor_share,
+      breaks = histogram_support_breaks,
+      labels = histogram_support_bin_labels,
+      include.lowest = TRUE,
+      right = TRUE
+    )
+  ) %>%
+  count(legis_period, support_bin, name = "votes_n") %>%
+  mutate(vote_share = votes_n / sum(votes_n), .by = legis_period)
+
+p_support_share_histogram <- support_share_histogram %>%
+  ggplot(aes(x = support_bin, y = vote_share)) +
+  geom_col(
+    colour = "white",
+    fill = "#1185FE",
+    linewidth = 0.25,
+    width = 0.95
+  ) +
+  facet_wrap(
+    ~legis_period,
+    ncol = 3,
+    labeller = labeller(legis_period = as_labeller(legis_period_labels))
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    expand = expansion(mult = c(0, 0.05))
+  ) +
+  labs(
+    x = "Share voting in favour",
+    y = "Share of votes within legislative period",
+    title = "Support share histograms by legislative period",
+    subtitle = paste0(
+      "Each panel shows the distribution of vote-level support shares from 50% to 100% in five percentage-point bins. ",
+      "Bar heights sum to 100% within each legislative period."
+    ),
+    caption = vote_graph_caption
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.title = element_text(
+      hjust = 0,
+      size = 17,
+      face = "bold",
+      margin = ggplot2::margin(b = 7)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 12,
+      lineheight = 1.12,
+      margin = ggplot2::margin(t = 3, b = 12)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      hjust = 0,
+      halign = 0,
+      size = 9,
+      lineheight = 1.05,
+      margin = ggplot2::margin(t = 6)
+    ),
+    strip.text = ggtext::element_markdown(size = 10.5, hjust = 0),
+    panel.spacing.y = grid::unit(1.1, "lines"),
+    axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 9),
+    plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
+  )
+
+p_support_share_histogram
+```
+
+## Prepare remaining visualisations
+
+```{r}
+#| code-summary: "Prepare data for visualisations"
+#| code-fold: true
+#harmonize/collapse some party names
 items_votes <- items_votes %>%
   mutate(
     text = case_when(
@@ -569,17 +1035,6 @@ items_votes <- items_votes %>%
     vote_id = paste(legis_period, item_url, sep = "|")
   )
 
-items_voted_n <- items_votes %>%
-  distinct(legis_period, vote_id) %>%
-  count(legis_period, name = "items_voted_n")
-
-votes_contested <- items_votes %>%
-  group_by(vote_id, legis_period, item_url) %>%
-  summarise(vote_types_n = length(unique(party_infavor))) %>%
-  ungroup() %>%
-  mutate(contested = if_else(vote_types_n > 1, "contested", "not contested"))
-
-table(votes_contested$legis_period, votes_contested$contested)
 
 # self-join to get party-pary combinations
 items_votes_combi <- items_votes %>%
@@ -608,30 +1063,6 @@ agreement_matrix <- items_votes_combi %>%
 agreement_matrix_wide <- agreement_matrix %>%
   select(legis_period_x, text_x, text_y, agreement_share) %>%
   pivot_wider(names_from = text_y, values_from = agreement_share)
-
-gov_parties <- tribble(
-  ~legis_period , ~text   , ~gov_rank ,
-  "XX"          , "SPÖ"   ,         1 ,
-  "XX"          , "ÖVP"   ,         2 ,
-  "XXI"         , "ÖVP"   ,         1 ,
-  "XXI"         , "F"     ,         2 ,
-  "XXII"        , "ÖVP"   ,         1 ,
-  "XXII"        , "F"     ,         2 ,
-  "XXII"        , "F-BZÖ" ,         3 ,
-  "XXIII"       , "SPÖ"   ,         1 ,
-  "XXIII"       , "ÖVP"   ,         2 ,
-  "XXIV"        , "SPÖ"   ,         1 ,
-  "XXIV"        , "ÖVP"   ,         2 ,
-  "XXV"         , "SPÖ"   ,         1 ,
-  "XXV"         , "ÖVP"   ,         2 ,
-  "XXVI"        , "ÖVP"   ,         1 ,
-  "XXVI"        , "FPÖ"   ,         2 ,
-  "XXVII"       , "ÖVP"   ,         1 ,
-  "XXVII"       , "GRÜNE" ,         2 ,
-  "XXVIII"      , "ÖVP"   ,         1 ,
-  "XXVIII"      , "SPÖ"   ,         2 ,
-  "XXVIII"      , "NEOS"  ,         3
-)
 
 party_order <- agreement_matrix %>%
   distinct(legis_period = legis_period_x, text = text_x) %>%
@@ -668,57 +1099,6 @@ agreement_matrix_ordered <- agreement_matrix %>%
     text_y = reorder_within(text_y, party_order_y, legis_period_x)
   )
 
-items_label_str <- items_scope %>%
-  distinct(type_doc, type_doc_long) %>%
-  arrange(type_doc) %>%
-  mutate(label = paste0(type_doc_long, " (", type_doc, ")")) %>%
-  pull(label) %>%
-  paste(collapse = ", ")
-
-legis_period_fn <- getExportedValue(
-  "ParlAT",
-  if ("get_legis_period" %in% getNamespaceExports("ParlAT")) {
-    "get_legis_period"
-  } else {
-    "get_legis_periods"
-  }
-)
-
-legis_period_labels <- legis_period_fn() %>%
-  filter(
-    legis_period_abbrev %in% unique(agreement_matrix_ordered$legis_period_x)
-  ) %>%
-  left_join(items_voted_n, by = c("legis_period_abbrev" = "legis_period")) %>%
-  mutate(
-    years = if_else(
-      is.na(date_end),
-      paste0(format(date_start, "%Y"), "-present"),
-      paste0(format(date_start, "%Y"), "-", format(date_end, "%Y"))
-    ),
-    label = paste0(
-      "<span style=\"font-size:13pt; font-weight:700;\">",
-      legis_period_abbrev,
-      "</span><br>",
-      "<span style=\"font-size:10pt; font-weight:400;\">",
-      years,
-      "</span><br>",
-      "<span style=\"font-size:9pt; font-weight:400;\">Number of items voted on: ",
-      scales::number(items_voted_n, accuracy = 1),
-      "</span>"
-    )
-  ) %>%
-  select(name = legis_period_abbrev, value = label) %>%
-  tibble::deframe()
-
-data_cutoff <- {
-  d <- max(items_20_28$date, na.rm = TRUE)
-  paste0(
-    scales::ordinal(as.integer(format(d, "%d"))),
-    " of ",
-    format(d, "%B %Y")
-  )
-}
-
 label_vec_x <- agreement_matrix_ordered %>%
   distinct(text_x, is_gov_x) %>%
   mutate(
@@ -739,16 +1119,17 @@ label_vec_y <- agreement_matrix_ordered %>%
   mutate(name = as.character(name)) %>%
   tibble::deframe()
 ```
- 
 
 
- 
+## Graphic 3: Relative Frequency of vote type
+
 ```{r}
 #| label: plot-party-vote-shares
+#| code-fold: true
 #| code-summary: "Stacked party vote-position shares"
-#| column: page
+#| column: page-right
 #| fig-width: 16
-#| fig-height: 10
+#| fig-height: 12.5
 #| out-width: "100%"
 #| fig-align: "center"
 #| dev: svglite
@@ -787,12 +1168,12 @@ p_party_vote_shares <- party_vote_shares %>%
     data = party_vote_shares %>% filter(vote_stance == "Not in favour"),
     aes(y = vote_share / 2, label = vote_share_label),
     colour = "white",
-    size = 3,
+    size = 3.6,
     na.rm = TRUE
   ) +
   ggtext::geom_richtext(
     data = party_vote_axis_labels,
-    aes(x = party_order, y = -0.07, label = label),
+    aes(x = party_order, y = -0.10, label = label),
     inherit.aes = FALSE,
     size = 3.1,
     label.colour = NA,
@@ -822,7 +1203,7 @@ p_party_vote_shares <- party_vote_shares %>%
     breaks = c("Not in favour", "In favour"),
     name = NULL
   ) +
-  coord_cartesian(ylim = c(0, 1), clip = "off") +
+  coord_cartesian(ylim = c(-0.18, 1), clip = "off") +
   labs(
     x = NULL,
     y = "Share of votes",
@@ -831,13 +1212,7 @@ p_party_vote_shares <- party_vote_shares %>%
       "Share of selected Nationalrat third-reading item votes cast in favour or not in favour, ",
       "by parliamentary party group and legislative period. Government parties are bold and ordered first."
     ),
-    caption = paste0(
-      "Voting on the following items was included: ",
-      items_label_str,
-      "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-      data_cutoff,
-      "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes <span style=\"color:#1185FE;\">&#x1F98B; @zoowalk</span>"
-    )
+    caption = vote_graph_caption
   ) +
   theme_minimal(base_size = 13) +
   theme(
@@ -864,6 +1239,7 @@ p_party_vote_shares <- party_vote_shares %>%
       margin = ggplot2::margin(t = 8)
     ),
     strip.text = ggtext::element_markdown(size = 13, hjust = 0),
+    panel.spacing.y = grid::unit(1.4, "lines"),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
     axis.text.y = element_text(size = 10),
@@ -875,12 +1251,13 @@ p_party_vote_shares <- party_vote_shares %>%
 p_party_vote_shares
 ```
 
-# Graph 2: Party-Pairs
+## Graphic 4: Party-Pairs
 
 ```{r}
 #| label: plot-agreement-matrix
+#| code-fold: true
 #| code-summary: "Plot party agreement matrix"
-#| column: page
+#| column: page-right
 #| fig-width: 16
 #| fig-height: 15
 #| out-width: "100%"
@@ -938,13 +1315,7 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
       "Darker green means stronger agreement; red means weaker agreement. ",
       "Government parties are bold and ordered first by parliamentary size; opposition parties follow."
     ),
-    caption = paste0(
-      "Voting on the following items was included: ",
-      items_label_str,
-      "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-      data_cutoff,
-      "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes <span style=\"color:#1185FE;\">&#x1F98B; @zoowalk</span>"
-    )
+    caption = vote_graph_caption
   ) +
   guides(
     fill = guide_colourbar(
@@ -997,12 +1368,13 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
 p_agreement_matrix
 ```
 
-# Graph 3: Upset Plot
+## Graphic 5: Upset Plot
 
 ```{r}
 #| label: plot-upset-period-percent
+#| code-fold: true
 #| code-summary: "Percentage UpSet plots by legislative period and vote type"
-#| column: page
+#| column: page-inset
 #| fig-width: 18
 #| fig-height: 28
 #| out-width: "100%"
@@ -1126,13 +1498,7 @@ p_upset_period_percent <- wrap_plots(
       "Rows show legislative periods; columns show whether the party combination voted in favour or not in favour. ",
       "Bars show each party combination share within that row-column vote universe."
     ),
-    caption = paste0(
-      "Voting on the following items was included: ",
-      items_label_str,
-      "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-      data_cutoff,
-      "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes @zoowalk"
-    ),
+    caption = vote_graph_caption,
     theme = theme(
       plot.title = element_text(
         hjust = 0,
@@ -1157,6 +1523,17 @@ p_upset_period_percent <- wrap_plots(
 
 p_upset_period_percent
 ```
+
+
+# Wrap up
+
+The intent of this post was to demonstrate the utility of ParlAT's `get_item_details()` function and the newly added `votes` parameter. I hope the above use cases lived up to this intention. The function  
+
+
+
+
+
+
 
 
 
@@ -1189,5 +1566,5 @@ The ÖVP–Greens coalition of 2019–2024 is perhaps the most remarkable case i
 The three-party ÖVP–SPÖ–NEOS coalition formed in 2024 shows near-perfect internal cohesion: ÖVP–SPÖ at 100%, ÖVP–NEOS at 98.6%, SPÖ–NEOS at 98.6%. FPÖ, now the sole opposition party, is clearly isolated — agreeing with governing parties only 37–38% of the time, the lowest opposition score across the entire dataset. GRÜNE, also in opposition, sit at \~69% with the coalition, positioning themselves as a more moderate opposition voice.
 
 ::: callout-note
-The high overall agreement rates are partly a function of item type selection. Bills that reach a floor vote — especially treaty ratifications and budget items — tend to pass with broad consensus. Contested votes would show more differentiation.
+The high overall agreement rates are partly a function of item type selection. Bills that reach a floor vote — especially treaty ratifications and budget items — tend to pass with broad consensus. Split votes would show more differentiation.
 :::
