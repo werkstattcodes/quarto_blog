@@ -709,7 +709,8 @@ legis_period_labels <- ParlAT::get_legis_periods() %>%
       "<br>",
       "Gov: ",
       gov_parties,
-      " | Total items: ",
+      "<br>",
+      "Total items: ",
       scales::number(items_voted_n, accuracy = 1)
     )
   ) %>%
@@ -740,11 +741,21 @@ vote_graph_caption <- paste0(
 gg_fig_width <- 11 # set as fig-width in every plot chunk header
 gg_base_size <- 12
 gg_title_size <- 17
-gg_subtitle_size <- 13
+gg_subtitle_size <- 13.5
 gg_caption_size <- 10.5
 gg_strip_size <- 12
 gg_axis_size <- 10
 gg_annot_size <- 3.7 # geom_text data-label size (mm)
+
+vote_stance_colors <- c(
+  "In favour" = "#4575b4",
+  "Not in favour" = "#d73027"
+)
+
+vote_split_colors <- c(
+  "unanimous" = "#7f7f7f",
+  "split" = "#e69f00"
+)
 
 # Shared theme applied to every plot; per-plot specifics are layered on top.
 theme_vote_plot <- function(base_size = gg_base_size) {
@@ -833,7 +844,7 @@ p_votes_contested <- votes_contested_shares %>%
     expand = expansion(mult = c(0, 0.02))
   ) +
   scale_fill_manual(
-    values = c("unanimous" = "#1b9e77", "split" = "#d95f02"),
+    values = vote_split_colors,
     breaks = c("unanimous", "split"),
     labels = c("Unanimous", "Split"),
     name = NULL
@@ -1236,7 +1247,7 @@ p_party_vote_shares <- party_vote_shares %>%
     expand = expansion(mult = c(0, 0.02))
   ) +
   scale_fill_manual(
-    values = c("In favour" = "#1b9e77", "Not in favour" = "#d95f02"),
+    values = vote_stance_colors,
     breaks = c("Not in favour", "In favour"),
     name = NULL
   ) +
@@ -1438,6 +1449,11 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     legend.title = element_text(size = gg_axis_size + 2),
     legend.text = element_text(size = gg_axis_size + 1),
     legend.direction = "horizontal",
+    strip.text = ggtext::element_markdown(
+      size = gg_strip_size - 2,
+      lineheight = 0.9,
+      hjust = 0
+    ),
     aspect.ratio = 1
   )
 
@@ -1491,7 +1507,7 @@ upset_y_max <- max(vote_sets_percent$vote_share, na.rm = TRUE)
 vote_stance_levels <- levels(vote_sets_percent$vote_stance)
 
 #define function to create plot per legislative period
-make_period_upset_plot <- function(period, vote_type) {
+make_period_upset_plot <- function(period, vote_type, show_period_label) {
   period_parties <- party_order %>%
     filter(legis_period == period) %>%
     arrange(party_order) %>%
@@ -1502,7 +1518,7 @@ make_period_upset_plot <- function(period, vote_type) {
     mutate(
       vote_share_label = if_else(
         vote_share >= 0.05,
-        scales::percent(vote_share, accuracy = 1),
+        scales::number(vote_share * 100, accuracy = 1),
         NA_character_
       )
     )
@@ -1528,7 +1544,7 @@ make_period_upset_plot <- function(period, vote_type) {
       order_by = "freq"
     ) +
     scale_fill_manual(
-      values = c("In favour" = "#4575b4", "Not in favour" = "#d73027"),
+      values = vote_stance_colors,
       guide = "none"
     ) +
     scale_y_continuous(
@@ -1537,9 +1553,9 @@ make_period_upset_plot <- function(period, vote_type) {
       expand = expansion(mult = c(0, 0.05))
     ) +
     labs(
-      title = paste(period, vote_type, sep = " - "),
+      title = vote_type,
       x = NULL,
-      y = NULL
+      y = if (show_period_label) period else NULL
     ) +
     theme_minimal(base_size = 9) +
     theme_combmatrix(
@@ -1556,6 +1572,16 @@ make_period_upset_plot <- function(period, vote_type) {
       axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
       axis.text.y = element_text(size = 7),
       panel.grid.minor = element_blank(),
+      axis.title.y = if (show_period_label) {
+        element_text(
+          size = 11,
+          face = "bold",
+          angle = 90,
+          margin = ggplot2::margin(r = 5)
+        )
+      } else {
+        element_blank()
+      },
       plot.margin = ggplot2::margin(t = 4, r = 4, b = 4, l = 4)
     )
 }
@@ -1563,12 +1589,16 @@ make_period_upset_plot <- function(period, vote_type) {
 period_vote_type_grid <- tidyr::expand_grid(
   legis_period = legis_period_levels,
   vote_stance = vote_stance_levels
-)
+) %>%
+  mutate(show_period_label = vote_stance == first(vote_stance_levels))
 
 #produce plot for each legislative period
-period_upset_plots <- map2(
-  period_vote_type_grid$legis_period,
-  period_vote_type_grid$vote_stance,
+period_upset_plots <- pmap(
+  list(
+    period_vote_type_grid$legis_period,
+    period_vote_type_grid$vote_stance,
+    period_vote_type_grid$show_period_label
+  ),
   make_period_upset_plot
 )
 
@@ -1590,7 +1620,7 @@ p_upset_period_percent <- wrap_plots(
       "Rows show legislative periods; columns show whether the party combination voted ",
       "in favour or not in favour. Inside each facet, the lower pane indicates party ",
       "combinations by dots. Bars show each party combination's share of all voted items ",
-      "in that legislative period.",
+      "in that legislative period; bar labels are percentages.",
       "<br><br>",
       "Example 1: In the XX legislative period, the FPÖ was the only party to vote against ",
       "the item in 17% of all items voted on. As of ",
