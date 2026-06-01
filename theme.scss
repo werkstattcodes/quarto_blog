@@ -430,12 +430,16 @@ a {
 }
 
 /* removed [target] */
-p a:hover {
+p a:not(.lightbox):hover {
     color:#9cd321;
     background-color: black;
     /* text-decoration-line: underline;
     text-decoration: underline;
     text-decoration-color: orange; */
+}
+
+p a.lightbox:hover {
+    background-color: transparent;
 }
 
 /* make hamburger icon rectancle in mobile view */
