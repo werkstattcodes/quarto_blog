@@ -1404,6 +1404,7 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     labels = scales::percent_format(accuracy = 1),
     name = "Agreement"
   ) +
+  guides(fill = "none") +
   facet_wrap(
     ~legis_period_x,
     ncol = 3,
@@ -1428,14 +1429,6 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     ),
     caption = vote_graph_caption
   ) +
-  guides(
-    fill = guide_colourbar(
-      direction = "horizontal",
-      title.position = "top",
-      barwidth = grid::unit(8, "cm"),
-      barheight = grid::unit(0.45, "cm")
-    )
-  ) +
   theme_vote_plot() +
   theme(
     panel.grid = element_blank(),
@@ -1446,9 +1439,6 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
     axis.text.x.top = ggtext::element_markdown(size = gg_axis_size),
     axis.text.y.left = ggtext::element_markdown(size = gg_axis_size),
     axis.text.y.right = ggtext::element_markdown(size = gg_axis_size),
-    legend.title = element_text(size = gg_axis_size + 2),
-    legend.text = element_text(size = gg_axis_size + 1),
-    legend.direction = "horizontal",
     strip.text = ggtext::element_markdown(
       size = gg_strip_size - 2,
       lineheight = 0.9,
@@ -1523,12 +1513,13 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
       )
     )
 
-  panel_data <- label_data %>%
-    mutate(vote_share_piece = vote_share / votes_n) %>%
-    tidyr::uncount(votes_n)
+  period_intersections <- label_data %>%
+    mutate(parties_key = map_chr(parties, paste, collapse = "|")) %>%
+    arrange(desc(votes_n), parties_key) %>%
+    pull(parties)
 
-  panel_data %>%
-    ggplot(aes(x = parties, y = vote_share_piece, fill = vote_stance)) +
+  label_data %>%
+    ggplot(aes(x = parties, y = vote_share, fill = vote_stance)) +
     geom_col(width = 0.75) +
     geom_text(
       data = label_data,
@@ -1540,8 +1531,8 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
     ) +
     scale_x_upset(
       sets = period_parties,
-      n_intersections = Inf,
-      order_by = "freq"
+      intersections = period_intersections,
+      n_intersections = Inf
     ) +
     scale_fill_manual(
       values = vote_stance_colors,
