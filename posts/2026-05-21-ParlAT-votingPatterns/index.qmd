@@ -25,42 +25,55 @@ draft: false
 
 # Just the results, please
 
+::: {layout-ncol="2"}
+![Share of unanimous and split votes by legislative period](index_files/figure-html/plot-contested-vote-shares-1.svg){group="voting_patterns_gallery"}
+
+![Median support share by legislative period](index_files/figure-html/plot-support-share-summary-1.svg){group="voting_patterns_gallery"}
+
+![Distribution of support shares by legislative period](index_files/figure-html/plot-support-share-histogram-1.svg){group="voting_patterns_gallery"}
+
+![Party-level in-favour and not-in-favour vote shares](index_files/figure-html/plot-party-vote-shares-1.svg){group="voting_patterns_gallery"}
+
+![Party agreement matrix by legislative period](index_files/figure-html/plot-agreement-matrix-1.svg){group="voting_patterns_gallery"}
+
+![UpSet plot of party vote combinations by legislative period](index_files/figure-html/plot-upset-period-percent-1.svg){group="voting_patterns_gallery"}
+:::
+
 # Context
 
-I have been recently tinkering with `get_item_details()` function of the ParlAT package. While a few things are still in flux (it’s version 0.0.4 after all), the main development is the inclusion of the `votes` parameter into the function arguments. When set to TRUE the function now returns the voting result of the provided item ('Verhandlungsgegenstand') in its third reading in the National Council ('dritte Lesung im Nationalrat'). 
+I have been recently tinkering with the `get_item_details()` function of the [ParlAT package](https://werkstattcodes.github.io/ParlAT/index.html "Open ParlAT page"){target="_blank"}. While a few things are still in flux (it’s version 0.0.4 after all), the main development is the inclusion of the `votes` parameter into the function arguments. When set to TRUE the function now returns the voting result of the provided item ('Verhandlungsgegenstand') in its third reading in the National Council ('dritte Lesung im Nationalrat').
 
-To get a clear picture of what I mean, look at this [example](https://www.parlament.gv.at/gegenstand/XX/I/1833){target="_blank"} from the website of the Austrian Parliament. 
+To get a clear picture of what I mean, look at this [example](https://www.parlament.gv.at/gegenstand/XX/I/1833){target="_blank"} from the website of the Austrian Parliament.
 
 ![Voting result in the National Council in the third reading on Gefahrgutbeförderungsgesetz, Änderung (1833 d.B.)](_data/ScreenshotVotingResultWebsite.png)
 
-The `get_item_details()`  parses the data which lie behind the graph on the voting results. 
+The `get_item_details()` parses the data which lie behind the graph on the voting results, i.e. it returns the number of MPs per party who votes in favor or against the specific item.
 
-Note that not every item type is actually subject to votes; not every item on which can be voted in fact reaches the third reading; and votes prior to the third reading are (at least for now) not returned.  If the item does not feature a vote or a third reading, the returned vote column returns NULL. I emphasize this so that the scope of what the function can deliver and what not is clear.
+Note that not every item type is actually subject to votes; not every item on which can be voted in fact reaches the third reading; and votes prior to the third reading are (at least for now) not returned. If the item does not feature a vote or a third reading, the returned vote column returns NULL. I emphasize this so that the scope of what the function can deliver and what not is clear.
 
 To demonstrate the parameter’s utility, I will query in this blog post the parties’ votes since the 20th legislative period (1996) until now, and will check:
 
-1. How often do parties vote in favor or against an item in the third reading (relative frequency per legislative period)?
-2. With which other party does a party vote (either in favor or against)?
-3. What is the relative frequency of party-combinations for in-favor and not-in-favor votes for the different legislative periods?
+1.  How often do parties vote in favor or against an item in the third reading (relative frequency per legislative period)?
+2.  With which other party does a party vote (either in favor or against)? This should return an agreement matrix for every party-pair.
+3.  What is the relative frequency of party-combinations for in-favor and not-in-favor votes for the different legislative periods? In other words, what are the sets of parties voting together in which frequency and how (in-favor/against).
 
 Additionally, there are some 'low-hanging fruits' along the way, which I will also take up.
 
-As you will see, the querying of the relevant data is rather straightforward. Most of the code presented was needed to create the graphs, so don’t get distracted by this. 
+As you will see, the querying of the relevant data is rather straightforward. Most of the code presented was needed to create the graphs, so don’t get distracted by some length code chunks.
 
-And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback ([repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} or [bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}); b) although  I am developing the ParlAT package, I don’t consider myself as an expert on the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, and c) this is a blog post and does not pretend to be an academic output etc.
+And before I finally dive into the actual code, the usual caveat apply a) this is work in progress, if you see any error, have suggestion etc. do not hesitate to contact me with feedback ([bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} if directly related to ParlAT); b) although I am developing the ParlAT package, I don’t consider myself as an expert on all the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, and c) this is a blog post and does not pretend to be an academic output etc.
 
-To give you an overview of the code, essentially, there are three steps needed (more details below):
+To give you an overview of the code below, essentially, there are three steps (more details below):
 
-1. use `get_items()` to get a dataframe of the items for the legislative periods in question
-2. feed the urls of the obtained items as input to the `get_item_details(vote = TRUE)` query
-3. wrangle and filter the data and produce the graphs. 
+1.  use `get_items()` to get a data frame of the items for the legislative periods in question
+2.  feed the urls of the obtained items as input to the `get_item_details(vote = TRUE)` query
+3.  wrangle and filter the data and produce the graphs.
 
 Enough rambling. Let's dive in...
 
-
 # Packages
 
-Get the necessary packages. 
+Get the necessary packages.
 
 ```{r}
 #| label: setup
@@ -78,6 +91,7 @@ library(patchwork) #combine multiple plots into one
 ```
 
 # Get items
+
 ## Query data
 
 To start with, let's get all items for the legislative periods 20 to 28. No big deal.
@@ -93,7 +107,7 @@ items_20_28 <- seq(20, 28) %>%
   list_rbind()
 nrow(items_20_28)
 ```
- 
+
 ```{r}
 #| label: load-items-cache
 #| include: false
@@ -114,15 +128,14 @@ items_20_28 <- readr::read_rds(here::here(
   "items_20_28.rds"
 ))
 
-# Record the latest item date represented in the source data.
+# Record the latest item date represented in the source data. Will be used later in the graph's text.
 data_cutoff <- {
   d <- max(items_20_28$date, na.rm = TRUE)
   sub("^0", "", format(d, "%d %B %Y"))
 }
 ```
 
-To get an overview of the (relative) frequency of the different item types, 
-let's transform this data into two tables.
+To get an overview of the (relative) frequency of the different item types, let's transform this data into two tables. Maybe that's of interest to some.
 
 ## Fequency Tables
 
@@ -297,10 +310,8 @@ type_rel_counts_table <- reactable(
   )
 ```
 
-:::: {.column-page-right}
-
-::: {.panel-tabset}
-
+:::: column-page-right
+::: panel-tabset
 ### Items by absolute frequency per legis period
 
 ```{r}
@@ -318,9 +329,7 @@ type_abs_counts_table
 # Render the relative item-type shares table.
 type_rel_counts_table
 ```
-
 :::
-
 ::::
 
 ## Keep items of interest
@@ -340,7 +349,6 @@ items_scope <- items_20_28 %>%
 items_scope %>%
   distinct(type_doc_long, type_doc)
 ```
-
 
 ```{r}
 #| label: item-scope-freq-table
@@ -406,7 +414,7 @@ items_scope_doc_shares_table
 
 ## Single case example
 
-Before using our above obtained results to query voting results, it might be instructive to demonstrate the return value of the new vote parameter with a single example. The item is the one for which we saw above the results. Note that the return value for `votes` is a list column, it contains a dataframe with further data.
+Before using our above obtained results to query the voting results, it might be instructive to demonstrate the return value of the new \`vote parameter with a single item. The item is the one for which we saw above the results. Note that the return value for `votes` is a list column, it contains a data frame with nested data.
 
 ```{r}
 #| label: single-case-vote-result
@@ -425,13 +433,11 @@ example$votes
 example$votes[[1]]$result %>% select(text, infavor)
 ```
 
-So as you can see from the above chunk, the returned votes column is a list column which contains
-again the list column `result`. From here, we can extract the party name (`text`) and the vote result (`infavor`). (Note, in a later version the function might get further streamlined so that the return value is already the nested result).
+So as you can see from the above chunk, the returned votes column is a list column which contains again the list column `result`. From here, we can extract the party name (`text`) and the vote result (`infavor`). (Note, in a later version the function might get further streamlined so that the return value is already the nested result).
 
 ## Query data
 
-To apply this approach to our dataframe comprising data from the 20th legislative period onwards, let's extract the urls of the items and feed them to `get_item_details()` with votes set to TRUE. I wrap the function call in purrr's `safely` to collect any
-potential errors; and use `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process. 
+To apply this approach to our data frame comprising data from the 20th legislative period onwards, let's extract the urls of the items and feed them to `get_item_details()` with votes set to TRUE. I wrap the function call in purrr's `safely` to collect any potential errors; and use `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process.
 
 ```{r}
 #| label: fetch-item-details
@@ -457,7 +463,7 @@ item_details_raw <- item_urls %>%
     .options = furrr_options(packages = c("ParlAT", "purrr", "tibble"))
   )
 ```
- 
+
 ```{r}
 #| label: load-item-details-cache
 #| eval: true
@@ -508,36 +514,36 @@ items_details <- item_details_raw %>%
 nrow(items_details)
 ```
 
-As we can see, there were `r nrow(failed_items)` failed item calls
+As we can see, there were `r nrow(failed_items)` failed item calls. And the successful calls returned `r nrow(items_details)` item details.
 
-## Check votes & reading
+## Check votes & reading stage
 
 Before unpacking the nested `votes` column, a quick detour. As an intermediate step, let me cross-tabulate the presence of item votes and the procedural stage of the item. Remember that not every item does necessarily (yet) feature a vote during the third reading.
 
 ```{r}
 #| label: summarise-vote-presence
 #| code-summary: "How many items have a vote"
-# Summarise which item details include voting results.
+# Add indicator of item has vote data yes/no.
 items_details <- items_details %>%
   mutate(votes_present = map_lgl(votes, \(x) !is.null(x)))
 
+# Count vote indicator
 vote_yn <- items_details %>%
   count(votes_present) %>%
   mutate(rel = n / sum(n))
 vote_yn
 
+# Vote presence and item's status number
 items_details %>%
-  #filter(votes_present) %>%
   select(status_number, status_description, votes_present, item_url) %>%
   count(status_number, votes_present)
 
 table(items_details$status_number, items_details$votes_present)
 ```
 
-As it turns out, `r scales::percent(vote_yn %>% filter(votes_present) %>% pull(rel), accuracy = 1)` of all items feature a vote. If we cross-tabulate this with status number (which is part of the API response), we see that almost all items with a vote are of category 5 out of 5, i.e., are concluded. 
+As it turns out, `r scales::percent(vote_yn %>% filter(votes_present) %>% pull(rel), accuracy = 1)` of all retrieved items feature a vote. If we cross-tabulate this with the status number (which is part of the API response), we see that almost all items with a vote are of category 5 (out of 5), i.e., are concluded.
 
-So what about the other items which are also of status 5, but do not feature a vote. Unfortunately, at least that's my current understanding, there is no explicit return value indicating whether an item has reached the third reading. However, `get_item_details()` also includes that `stages` parameter which returns one row for each stage (and merit its own blog post). The column `stage_name` has a description of the stage, and this can be searched for the presence of 'dritte Lesung'/third reading.
-To demonstrate this, here the stages for our single case example:
+So what about the other items which are also of status 5, but do not feature a vote. Unfortunately, at least that's my current understanding, there is no explicit return value indicating whether an item has reached the third reading. However, I also incorporated the `stages` parameter into `get_item_details()` which returns one row for each stage (and merit its own blog post). The column `stage_name` has a description of the stage, and this string can be searched for the presence of 'dritte Lesung'/third reading. To demonstrate this, here the stages for our single case example:
 
 ```{r}
 #| label: example-third-reading-stage
@@ -551,8 +557,7 @@ example$stages[[1]] %>%
   pull(stage_name)
 ```
 
-As we can see above, the filter result reveals that the item has reached the third reading.
-Let's use this approach to check for our full `items_details` dataset. 
+As we can see above, the filter result reveals that the example item has reached the third reading. Let's use this approach to check for our full dataset.
 
 ```{r}
 #| label: detect-third-reading
@@ -576,7 +581,7 @@ items_details %>%
   count(votes_present, third_reading)
 ```
 
-The last table in the chunk above is informative. Almost all items are either a (third reading AND have votes) OR (do not have votes AND are NOT third readings). There a two items which don't fit the pattern. I checked them manually and these are items where the second and the third reading were in the _same_ session (hence our search for 'dritte?r Lesung' had a match), but the item failed to cross the second reading (hence no vote.) Based on this result, we can confidently conclude that all our extracted votes pertain to a third reading! Let's unnest the data now to get the actual results.
+The last table in the chunk above is important. Almost all items are either a (third reading AND have votes) OR (are NOT third readings AND do not have votes). There a two items which don't fit the pattern. I checked them manually and these are items where the second and the third reading were in the *same* session (hence our search for 'dritter? Lesung' had a match), but the item failed to cross the second reading (hence no vote.) Based on this result, we can confidently conclude that all our extracted votes pertain to a third reading. Let's unnest the data now to get the actual results.
 
 ```{r}
 #| label: unnest-vote-results
@@ -624,13 +629,12 @@ items_details <- readr::read_rds(here::here(
 
 ## Graphic 1: Split and unanimous votes
 
-With the data now available, let's see whether we can find anything meaningful.
-As a first step, I want to know how many items were passed on an unanimous vote vs split vote.
+With the data now available, let's see whether we can find anything meaningful. As a first step, I want to know how many items were passed on an unanimous vote vs split vote.
 
 ```{r}
 #| label: prepare-contested-vote-data
 #| code-fold: true
-#| code-summary: "Prepare graph data"
+#| code-summary: "Prepare graph data, general annotations etc."
 # Prepare contested-vote classifications and shared plot metadata.
 votes_contested <- items_votes %>%
   mutate(vote_id = paste(legis_period, item_url, sep = "|")) %>%
@@ -652,7 +656,7 @@ items_voted_n <- items_votes %>%
   count(legis_period, name = "items_voted_n") %>%
   mutate(items_voted_label = glue::glue("n={items_voted_n}"))
 
-# Define governing parties by legislative period for facet labels and party ordering.
+# Define governing parties by legislative period for facet labels and party ordering. This could be also done programmatically with ParlAT's get_mps, but I wanted to keep as direct as possible here.
 gov_parties <- tribble(
   ~legis_period , ~text   , ~gov_rank ,
   "XX"          , "SPÖ"   ,         1 ,
@@ -677,7 +681,7 @@ gov_parties <- tribble(
   "XXVIII"      , "NEOS"  ,         3
 )
 
-# Collapse governing parties into one display label per legislative period.
+# Collapse governing parties into one display label per legislative period. Will be used for annotations later.
 gov_party_labels <- gov_parties %>%
   arrange(legis_period, gov_rank) %>%
   summarise(
@@ -727,7 +731,7 @@ items_label_str <- items_scope %>%
 
 # Define one shared caption used by all vote visualisations.
 vote_graph_caption <- paste0(
-  "Voting on the following items was included: ",
+  "Voting on the following items ('Verhandlungsgegenstände') was included: ",
   items_label_str,
   "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
   data_cutoff,
@@ -868,11 +872,13 @@ p_votes_contested <- votes_contested_shares %>%
 p_votes_contested
 ```
 
-I guess it's not a huge surprise that the vast majority of votes were not  unanimous. What is maybe noteworthy is the high rate of unanimious votes in 22nd legilative period. After all, this was the rather tumulteous government formed by the ÖVP, the FPÖ and at one point the BZÖ. 
+I guess it's not a huge surprise that the vast majority of votes were not unanimous. Split votes dominate in almost every legislative period, usually making up roughly 60 to 70 percent of all votes.
+
+The exception is the XXII legislative period, where unanimous votes slightly outnumber split votes. That is maybe the most noteworthy result in this first graph. After all, this was the rather tumultuous ÖVP-FPÖ government period in which the FPÖ split and the BZÖ emerged. I have to admit this is a result contrary to what I expected.
 
 ## Graphic 2: Median support share
 
-The above graph was relative crude in the sense, that it only differentiated between unanimous and split votes. In the following step, I calculate the in-favor vote share for every item, i.e. the share of MPs  who voted in favor for the item in question. The vote numbers are also available from the data returned by `get_item_details()`. Taken together for each legislative period, we can calculate the median and IQR of these vote shares. This should allow us to compare the support for an average item voted at during the thrid reading. 
+The above graph was relative crude in the sense, that it only differentiated between unanimous and split votes. In the following step, I calculate the in-favor vote share for every item, i.e. the share of MPs who voted in favor for the item in question. The vote numbers are also available from the data returned by `get_item_details()`. Taken together for each legislative period, we can calculate the median and IQR of these vote shares. This should allow us to compare the support for an average item voted at during the third reading.
 
 ```{r}
 #| label: calculate-support-share
@@ -896,7 +902,6 @@ support_share_avg <- support_share %>%
     q75_support = as.numeric(quantile(vote_favor_share, 0.75, na.rm = T))
   )
 ```
-
 
 ```{r}
 #| label: plot-support-share-summary
@@ -977,7 +982,9 @@ p_support_share_summary <- support_share_avg_plot %>%
 p_support_share_summary
 ```
 
-At this point, it might be good to do some data sanity check again. Let's aggregate all votes per item. We would expect that the number is never higher than 183, i.e., the total number of MPs in the National Council.
+The median support share gives a slightly different perspective than the split/unanimous distinction above. XXI and the grand-coalition periods XXIII and XXIV also show high typical support, with median values well above 85 percent. By contrast, XXVI and XXVIII stand out for their lower median support shares. In both periods, a typical item was passed with something much closer to a governing majority.
+
+At this point, it might be good to do some *data sanity check* again. Let's aggregate all votes per item. We would expect that the number is never higher than 183, i.e., the total number of MPs in the National Council.
 
 ```{r}
 #| label: check-item-total-votes
@@ -1005,7 +1012,11 @@ Surprisingly, there are `r item_votes_totals %>% filter(mp_count > 183) %>% nrow
 item_votes_totals %>% filter(mp_count > 183) %>% select(item_url)
 ```
 
-What this check also demonstrated is that `get_item_details(votes=TRUE)` implictly returns participation data, i.e., how many MPs were actually present during the vote. I could imagine that it might be interesting to check, e.g., when participation was particularly low etc. I won't do this here, but still a quick overview table on this. No idea why the the turnout in the legislative period XXVII was never 100 % (data quality issue?).
+What this check also demonstrated is that `get_item_details(votes=TRUE)` implicitly returns participation data, i.e., how many MPs were actually present during the vote. I could imagine that it might be interesting to check, e.g., when participation was particularly low etc. 
+
+::: {.callout-important}
+HOWEVER, the table below also reveals that the data for the XXVII and XXVII legislative period feature suspiciousyl stable data/most likely wrong data. It seems as if the mode of repoting has changed. This is a significatn limitation when dealing with questions which need the exact count for every party. Wonder what's the reason behind.
+:::
 
 ```{r}
 #| label: summarise-turnout
@@ -1014,19 +1025,17 @@ What this check also demonstrated is that `get_item_details(votes=TRUE)` implict
 item_votes_totals %>%
   group_by(legis_period) %>%
   summarise(
+    items_n = n(),
     turnout_mean = mean(turnout),
-    turnout_median = median(turnout),
     turnout_sd = sd(turnout),
     turnout_max = max(turnout),
     turnout_min = min(turnout)
   )
 ```
 
-
 ## Graphic 3: Support share histogram
 
-Let's continue with the analysis of the in-favor votes. Above I showed the median, but the median is also only a summary statistic and conceals the shape of the underlying distribution. To remedy this, the histogram below puts each vote into a bin corresponding to its vote-in-favor share. The x-axis shows five percentage-point bins of the item's in-favor vote share (e.g. 60-65 %). The y-axis is the relative frequency of the items in the relevant bin within a legislative period. Within a facet, all bars amount to 100 %. The red dotted line marks parliamentary vote share of the governing parties in that legislative period. 
-
+Bearing in mind tha above caveat for the last two legislative periods, let's continue with the analysis of the in-favor votes. Above I showed the median, but the median is also only a summary statistic and conceals the shape of the underlying distribution. To remedy this, the histogram below puts each vote into a bin corresponding to its vote-in-favor share. The x-axis shows five percentage-point bins of the item's in-favor vote share (e.g. 60-65 %). The y-axis is the relative frequency of the items in the relevant bin within a legislative period. Within a facet, all bars amount to 100 %. The red dotted line marks parliamentary vote share of the governing parties in that legislative period (it's not perfectly aligned, but you get the idea).
 
 ```{r}
 #| label: plot-support-share-histogram
@@ -1113,14 +1122,16 @@ p_support_share_histogram <- support_share_histogram %>%
     y = "Share of votes within legislative period",
     title = "Support share histograms by legislative period",
     subtitle = paste0(
-      "Each panel shows the distribution of vote-level support shares from 50% to 100% in five percentage-point bins. ",
-      "Bar heights sum to 100% within each legislative period; the red dotted line marks the most common observed government-party vote share."
+      "Items are approved with a specific share of in-favor votes. Depending on this share the item is categorized into a specific bin on the x axis. Overall, the resulting bar graph provides the relative frequency of vote-level support shares, i.e., whether it was relative frequent or not that items were passed with a low/high vote share.
+      Each panel shows the distribution of vote-level support shares from 50% to 100% in five percentage-point bins. ",
+      "Bar heights sum to 100% within each legislative period; the red dotted line marks the most common observed government-party vote share. Note: Data for legislative periodsXXVII and XXVIII suffer from data quality issue."
     ),
     caption = vote_graph_caption
   ) +
   theme_vote_plot() +
   theme(
     panel.grid.major.x = element_blank(),
+    panel.spacing.x = grid::unit(1.3, "lines"),
     panel.spacing.y = grid::unit(1.1, "lines"),
     axis.text.x = element_text(size = gg_axis_size - 2)
   )
@@ -1128,15 +1139,15 @@ p_support_share_histogram <- support_share_histogram %>%
 p_support_share_histogram
 ```
 
-If pressed, I would identify two rough patterns: *a bimodal/U-shaped* one and a *unimodal/left-skewed *one. The first category covers all governments where a government is ÖVP-led (with the exception of XXVII); the latter category seems to cover mainly the SPÖ+ÖVP governments in the 2000s and the ÖVP + Green gov from 2019 to 2024. I am not yet entirely sure what to make out of it, but the U-shaped/bimodal form indicates that next to those items which got unanimous support, there were also relatively many items which were passed with minimum or close to minimum support, e.g. only with the votes of the government parties. In contrast, unimodal/left-skewed graphs indicated that next to those items which got universal support, the government was also regularly able to solicit support from across the aisle and did not have to rely only on its own parliamentarian majority to pass items. Important to bear in mind, that this is also a function of the actual number of parties in parliament what influences the ability to strike different cross-party support. But these are just thoughts at the top of my head.
+If pressed, I would identify two rough patterns: a *bimodal/U-shaped* one and a *unimodal/left-skewed* one. The U-shaped pattern is clearest in XXI, XXII, XXVI, and XXVIII: there are relatively many unanimous or near-unanimous votes, but also relatively many votes close to the governing majority threshold. In substantive terms, this suggests a mix of uncontroversial items and items carried mainly by the government majority.
 
-One further thing - note that there is an oddity in the graph on the XXV legilative period. Some items passed with a lower vote share than the share of government parties. The explenation for this is that the red line reflects the share of goernment party MPs if all 183 are present. With a reduced turnout, a bill can be passed by the MPs of the government parties also below that ratio, i.e. not all MPs of the gov parties were present, but still enough to pass the bill.
+The left-skewed pattern is more visible in XXIII, XXIV, and XXVII. Here, the distribution leans more strongly toward high support shares, meaning that a larger share of items attracted votes from across the aisle. 
+
+One further thing: note that there is an oddity in the graph on the XXIII and XXV legislative periods. Some items passed with a lower vote share than the share of government parties. The explanation is that the red line reflects the share of government-party MPs if all 183 MPs are present. With reduced turnout, a bill can be passed by the MPs of the government parties also below that ratio, i.e. not all MPs of the government parties were present, but still enough to pass the bill.
 
 ## Graphic 4: Relative frequency of vote type
 
-In the next graph, i want to depict the relative requency of in-favor and against votes by party and legislative period. For this some pary name standardization is needed.
-
-Unsurprisingly, the graph demonstrates that coalition parties almost always vote in favor of items. What's noteworthy, at least to me, is the high no-ratio of the current FPÖ fraction, which is only exceeded by the ratio of the FPÖ in the XX legislative period, i.e., during the 'Haider years' (if that's a term). 
+In the next graph, I want to depict the relative frequency of in-favor and against votes by party and legislative period. For this some party name standardization is needed.
 
 ```{r}
 #| label: standardise-party-names
@@ -1168,7 +1179,6 @@ party_order <- items_votes %>%
   mutate(party_order = row_number()) %>%
   ungroup()
 ```
-
 
 ```{r}
 #| label: plot-party-vote-shares
@@ -1258,7 +1268,8 @@ p_party_vote_shares <- party_vote_shares %>%
     title = "Party vote positions",
     subtitle = paste0(
       "Share of selected Nationalrat third-reading item votes cast in favour or not in favour, ",
-      "by parliamentary party group and legislative period. Government parties are bold and ordered first."
+      "by parliamentary party group and legislative period. Government parties are bold and ordered first.",
+      "Example: In 65 % of all items voted on in the third reading during the XX legislative period, the FPÖ voted against."
     ),
     caption = vote_graph_caption
   ) +
@@ -1274,12 +1285,17 @@ p_party_vote_shares <- party_vote_shares %>%
 p_party_vote_shares
 ```
 
+Unsurprisingly, the graph demonstrates that coalition parties almost always vote in favor of items. This is visible across very different government constellations: grand coalitions, ÖVP-FPÖ, ÖVP-Greens, and the current three-party coalition all show very low no-vote shares among governing parties. 
+
+What's noteworthy, at least to me, is the high no-ratio of the current FPÖ fraction. It is only exceeded by the FPÖ in the XX legislative period, i.e., during the Haider years, where the party voted against almost two thirds of the items covered here.
+
+There are also interesting opposition differences. In XXVI, JETZT/PILZ and SPÖ voted no more often than NEOS, suggesting a clearer left-opposition profile against the ÖVP-FPÖ government. In XXVII, by contrast, FPÖ and NEOS have similarly high no-vote shares, while SPÖ is somewhat less oppositional on this simple yes/no measure.
+
 ## Graphic 5: Party-pairs
 
-If you are still reading, congrats! I hope the remainig graphs will be enough of a reward. 
+If you are still reading, congrats! I hope the remaining graphs will be enough of a reward.
 
-Next, i wanted to took the vote results and see how often one party voted together with another party,  and this irrespective if the vote would be in-favor or against a particular item. The result is the party-pair-matrix below. I believe there's quite bit in it, and others who have more time and work on this professionally may want to take this up, but what stood out to me, is again the FPÖ of the current 28th and the 20th legislative period. The FPÖ votes, compared to other parties but also when compared to itself in other legislative periods, comparativly seldomly together with other parties. A bit of a loner. Again, low rates as we see now for the 28 legislative period, we can only find during the 20th. I found that quite remarkable.
-
+Next, I wanted to take the vote results and see how often one party voted together with another party, and this irrespective if the vote would be in favor or against a particular item. The result is the party-pair matrix below.
 
 ```{r}
 #| label: prepare-agreement-matrix
@@ -1361,7 +1377,6 @@ label_vec_y <- agreement_matrix_ordered %>%
   mutate(name = as.character(name)) %>%
   tibble::deframe()
 ```
-
 
 ```{r}
 #| label: plot-agreement-matrix
@@ -1450,16 +1465,21 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
 p_agreement_matrix
 ```
 
+I believe there's quite a bit in it, and others who have more time and work on this professionally may want to take this up. What stands out to me is again the FPÖ of the current XXVIII and the XX legislative period. The FPÖ votes, compared to other parties but also when compared to itself in other legislative periods, comparatively seldom together with other parties. A bit of a loner.
+
+The other clear pattern is the near-perfect agreement among governing parties. This holds for SPÖ-ÖVP grand coalitions, ÖVP-FPÖ governments, the ÖVP-Greens coalition, and the current ÖVP-SPÖ-NEOS coalition. In other words, coalition membership appears to be much more predictive of voting alignment than broad ideological distance.
+
+The matrix also shows how quickly alignments can change once parties move between government and opposition. SPÖ and ÖVP vote almost in lockstep during grand-coalition periods, but their agreement drops sharply in XXVI once ÖVP governs with FPÖ. That makes the graph useful not only as a measure of ideological proximity, but also as a map of parliamentary roles.
+
 ## Graphic 6: UpSet plot
 
-In the graph above we looked at the relative frequency of how often pairs of parties voted together, irrespective if the vote would be in-favor or against the item at stake. In the next step, I 1) move beyond pairs and look at party combinations and 2) distinguish between in-favor and against votes. 
+In the graph above we looked at the relative frequency of how often pairs of parties voted together, irrespective if the vote would be in-favor or against the item at stake. In the next step, I 1) move beyond pairs and look at party combinations and 2) distinguish between in-favor and against votes.
 
-To do so, I use the `ggupset` package, which creates this IMHO quite powerful up-set plots. How to read them? The lower pane shows the combination of parties who voted together. Each party is identified by a dot. The upper pane presents the percentage of all voted items in the respective legislative period which was voted for/against by that party combination. 
+To do so, I use the `ggupset` package, which creates this IMHO quite powerful up-set plots. How to read them? The lower pane shows the combination of parties who voted together. Each party is identified by a dot. The upper pane presents the percentage of all voted items in the respective legislative period which was voted for/against by that party combination.
 
-To make this more concrete, here an example. In the current 28th legislative period, 26 % of all items voted on in the third reading got in-favour votes by (and only by) the three government parties ÖVP, SPÖ, and NEOS. In 30 % of all items subject to a vote, all parties voted in favour (what also corresponds to our first plot in this post). What stands out for me are the 36 % of against-votes by the FPÖ alone. This is the highest rate across all the legislative periods covered in this post (even if i add up FPÖ-BZÖ joint and sinlge against-votes in the 23rd legislative period). To put it in other words, in 36 % of all items voted on during a third legislative period, the FPÖ was the only party saying no. The Greens did so in only 6 % of all votes.  
+To make this more concrete, here an example. In the current 28th legislative period, 26 % of all items voted on in the third reading got in-favor votes by (and only by) the three government parties ÖVP, SPÖ, and NEOS. In 30 % of all items subject to a vote, all parties voted in favor (what also corresponds to our first plot in this post). What stands out for me are the 36 % of against-votes by the FPÖ alone. This is the highest rate across all the legislative periods covered in this post (even if I add up FPÖ-BZÖ joint and single against-votes in the 23rd legislative period). To put it in other words, in 36 % of all items voted on during the current legislative period, the FPÖ was the only party saying no. The Greens did so in only 6 % of all votes.
 
-Note that the percentages within a legislative period do *not* add up to 100%. This is by definition. E.g. the 30 % in which the FPÖ was the sole party to vote no, we have anohter 30 % where all other parties voted yes. Hence, the same items show up two times in the graph.
-
+Note that the percentages within a legislative period do *not* add up to 100%. This is by definition. E.g. the 30 % in which the FPÖ was the sole party to vote no, we have another 30 % where all other parties voted yes. Hence, the same items show up two times in the graph.
 
 ```{r}
 #| label: plot-upset-period-percent
@@ -1493,6 +1513,7 @@ vote_sets_percent <- items_votes %>%
 
 # get max hight of y bar to standardize across plots
 upset_y_max <- max(vote_sets_percent$vote_share, na.rm = TRUE)
+upset_label_offset <- 0.05
 
 vote_stance_levels <- levels(vote_sets_percent$vote_stance)
 
@@ -1506,9 +1527,15 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
   label_data <- vote_sets_percent %>%
     filter(legis_period == period, vote_stance == vote_type) %>%
     mutate(
-      vote_share_label = if_else(
+      vote_share_label = scales::number(vote_share * 100, accuracy = 1),
+      vote_share_label_inside = if_else(
         vote_share >= 0.05,
-        scales::number(vote_share * 100, accuracy = 1),
+        vote_share_label,
+        NA_character_
+      ),
+      vote_share_label_above = if_else(
+        vote_share < 0.05,
+        vote_share_label,
         NA_character_
       )
     )
@@ -1523,8 +1550,16 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
     geom_col(width = 0.75) +
     geom_text(
       data = label_data,
-      aes(y = vote_share / 2, label = vote_share_label),
+      aes(y = vote_share / 2, label = vote_share_label_inside),
       colour = "white",
+      size = gg_annot_size,
+      fontface = "plain",
+      na.rm = TRUE
+    ) +
+    geom_text(
+      data = label_data,
+      aes(y = vote_share + upset_label_offset, label = vote_share_label_above),
+      colour = "grey20",
       size = gg_annot_size,
       fontface = "plain",
       na.rm = TRUE
@@ -1540,7 +1575,7 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
     ) +
     scale_y_continuous(
       labels = scales::percent_format(accuracy = 1),
-      limits = c(0, upset_y_max),
+      limits = c(0, upset_y_max + upset_label_offset),
       expand = expansion(mult = c(0, 0.05))
     ) +
     labs(
@@ -1649,47 +1684,12 @@ p_upset_period_percent <- wrap_plots(
 p_upset_period_percent
 ```
 
+The UpSet plot makes the same basic story more concrete because it shows the actual party combinations behind the aggregate shares. In XXVIII, the two largest patterns are especially telling: FPÖ-alone no votes and government-plus-Greens yes votes. This indicates that the current opposition is not symmetrical; the FPÖ is much more often isolated in the no camp than the Greens.
+
+Government-only yes coalitions are another recurring pattern. In XXI and XXII this means ÖVP-FPÖ, in XXVI again ÖVP-FPÖ, and in XXVIII ÖVP-SPÖ-NEOS. These bars are the clearest visual counterpart to the support-share histograms: they are the items that pass with the governing majority rather than with broader parliamentary backing.
+
+Finally, the in-favor and not-in-favor sides should be read together. A vote where only the FPÖ says no will usually produce a corresponding yes-combination made up of all other parties. That is why the percentages within a legislative period do not add up to 100 percent; the graph is showing both sides of the same roll-call structure.
 
 # Wrap up
 
-The intent of this post was to demonstrate the utility of ParlAT's `get_item_details()` function and the newly added `votes` parameter. I hope the above use cases lived up to this intention. The function  
-
-
-
-
-
-
-
-
-
-## Results
-
-The agreement matrix reveals a consistent and striking pattern across all nine legislative periods: **coalition membership is by far the strongest predictor of voting alignment**, consistently producing agreement rates of 97–100% between governing parties, regardless of their ideological distance.
-
-### Grand coalition dominance (XX, XXIII, XXIV, XXV)
-
-In the four periods where SPÖ and ÖVP governed together, their agreement rates were near-perfect: 99.3%, 98.7%, 100%, and 98.9% respectively. This consistency is remarkable — across more than two decades and very different political contexts, the two parties voted in lockstep whenever they shared government. XXIII (2007–2008) is worth a brief note: a short transitional grand coalition after the collapse of the Schüssel II government, its SPÖ–ÖVP rate of 98.7% falls squarely in line with the others. What is notable in XXIII is that BZÖ and FPÖ — the two right-wing parties that had split in 2005 — still showed 77.5% alignment with each other in opposition, suggesting their ideological divergence had not yet fully materialised in voting behaviour.
-
-### The FPÖ government experiment (XXI, XXII)
-
-The ÖVP–FPÖ coalition under Schüssel produced equally tight coalition discipline: 99% in XXI and a perfect 100% in XXII. In XXII the FPÖ split into FPÖ and BZÖ mid-term — yet both splinter groups maintained 100% alignment with ÖVP, confirming both stayed in government. In opposition, SPÖ and GRÜNE found each other with \~83–85% alignment.
-
-### A counterintuitive finding in XX
-
-In the XX period (1996–1999), FPÖ under Haider was in opposition — and voted more closely with GRÜNE (70%) and the Liberal Forum (69%) than with either SPÖ (36%) or ÖVP (36%). For a right-wing populist party, this level of alignment with the Greens is striking, and likely reflects that opposition parties of any stripe frequently voted against the grand coalition's proposals regardless of ideology.
-
-### The first Türkis-Blau coalition (XXVI)
-
-The 2017–2019 ÖVP–FPÖ coalition under Sebastian Kurz produced an FPÖ–ÖVP agreement rate of 96.4% — high, but notably below the 100% seen in XXII. More striking is what happened to SPÖ: after voting in lockstep with ÖVP throughout the grand coalition years (98.9% in XXV), their agreement rate collapsed to just 42% in XXVI — the sharpest single-period drop in the entire dataset. The new opposition also saw the emergence of PILZ (later JETZT), which aligned closely with SPÖ at 90%, forming a de facto left bloc against the governing coalition.
-
-### The Türkis-Grün experiment (XXVII)
-
-The ÖVP–Greens coalition of 2019–2024 is perhaps the most remarkable case in the dataset. Despite being natural ideological opponents on many issues, ÖVP and GRÜNE achieved 100% voting agreement in parliament — identical to the most disciplined grand coalitions. Meanwhile FPÖ in opposition showed only 56% alignment with ÖVP, its lowest in any period where the two were not governing together. The opposition bloc (FPÖ, SPÖ, NEOS) was relatively undifferentiated, all clustering around 56–68% agreement with each other.
-
-### The current Dreierkoalition (XXVIII)
-
-The three-party ÖVP–SPÖ–NEOS coalition formed in 2024 shows near-perfect internal cohesion: ÖVP–SPÖ at 100%, ÖVP–NEOS at 98.6%, SPÖ–NEOS at 98.6%. FPÖ, now the sole opposition party, is clearly isolated — agreeing with governing parties only 37–38% of the time, the lowest opposition score across the entire dataset. GRÜNE, also in opposition, sit at \~69% with the coalition, positioning themselves as a more moderate opposition voice.
-
-::: callout-note
-The high overall agreement rates are partly a function of item type selection. Bills that reach a floor vote — especially treaty ratifications and budget items — tend to pass with broad consensus. Split votes would show more differentiation.
-:::
+The intent of this post was to demonstrate the utility of ParlAT's `get_item_details()` function and the newly added `votes` parameter. I hope the above use cases lived up to this intention. The function already opens up a number of descriptive routes into parliamentary voting behaviour, and there is clearly more to explore once additional vote stages and item types are brought into view.
