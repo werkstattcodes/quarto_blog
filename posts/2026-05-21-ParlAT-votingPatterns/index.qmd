@@ -1,6 +1,6 @@
 ---
 title: "How do Austrian parties vote in the National Council?"
-date: 2026-06-02
+date: 2026-06-04
 date-modified: last-modified
 author: Roland Schmidt
 description: |
@@ -22,7 +22,7 @@ knitr:
 draft: false
 ---
 
-# Just the results, please
+# Just the results, please {.unnumbered}
 
 ::: {layout-ncol="2"}
 ![Share of unanimous and split votes by legislative period](index_files/figure-html/plot-contested-vote-shares-1.svg){group="voting_patterns_gallery"}
@@ -40,11 +40,11 @@ draft: false
 
 # Context
 
-I have recently been tinkering with the `get_item_details()` function of the [ParlAT package](https://werkstattcodes.github.io/ParlAT/index.html "Open ParlAT page"){target="_blank"}. While a few things are still in flux (it’s version 0.0.4 after all), the main development is the inclusion of the `votes` parameter into the function arguments. When set to `TRUE`, the function now returns the voting result of the provided item ('Verhandlungsgegenstand') in its third reading in the National Council ('dritte Lesung im Nationalrat').
+I have recently been tinkering with the `get_item_details()` function of the [ParlAT package](https://werkstattcodes.github.io/ParlAT/index.html "Open ParlAT page"){target="_blank"}. While a few things are still in flux (it’s version 0.0.5 after all), the main development is the inclusion of the `votes` parameter into the function arguments. When set to `TRUE`, the function now returns the voting result of the provided item ('Verhandlungsgegenstand') in its third reading in the National Council ('dritte Lesung im Nationalrat').
 
 To get a clear picture of what I mean, look at this [example](https://www.parlament.gv.at/gegenstand/XX/I/1833){target="_blank"} from the website of the Austrian Parliament.
 
-![Voting result in the National Council in the third reading on Gefahrgutbeförderungsgesetz, Änderung (1833 d.B.)](_data/ScreenshotVotingResultWebsite.png)
+![Voting result in the National Council in the third reading on Gefahrgutbeförderungsgesetz, Änderung (1833 d.B.)](_data/ScreenshotVotingResultWebsite.png){width="50%"}
 
 The `get_item_details()` parses the data that lie behind the graph on the voting results, i.e. it returns the number of MPs per party who vote in favor or against the specific item.
 
