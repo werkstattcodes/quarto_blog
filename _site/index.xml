@@ -9,18 +9,18 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.7.32</generator>
-<lastBuildDate>Fri, 13 Feb 2026 23:00:00 GMT</lastBuildDate>
+<generator>quarto-1.9.37</generator>
+<lastBuildDate>Wed, 03 Jun 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Introducing {ParlAT}: An R Package to access Open Data of the Austrian Parliament</title>
+  <title>How do Austrian parties vote in the National Council?</title>
   <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2026-02-11-ParlAT-release/</link>
-  <description><![CDATA[ {ParlAT} is an R package that wraps the Austrian Parliament’s Open Data API — making it straightforward to query data on MPs, legislative items, committees, plenary meetings, and more from R. ]]></description>
+  <link>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</link>
+  <description><![CDATA[ The latest release of the {ParlAT} package introduces the ability to extract parties’ votes on items discussed in the third reading of the Austrian National Council. This post introduces the new feature by presenting some exemplary queries on the voting from the 20th to the current 28th legislative period. ]]></description>
   <category>Austria</category>
   <category>parliament</category>
-  <category>r-bloggers</category>
-  <guid>https://werk.statt.codes/posts/2026-02-11-ParlAT-release/</guid>
-  <pubDate>Fri, 13 Feb 2026 23:00:00 GMT</pubDate>
+  <category>ParlAT</category>
+  <guid>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</guid>
+  <pubDate>Wed, 03 Jun 2026 22:00:00 GMT</pubDate>
 </item>
 <item>
   <title>28th Austrian National Council: Prior Experiences as MPs.</title>
