@@ -12,7 +12,7 @@
 <generator>quarto-1.9.37</generator>
 <lastBuildDate>Wed, 03 Jun 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>How do Austrian parties vote in the National Council?</title>
+  <title>How do Parties vote in the Austrian National Council?</title>
   <dc:creator>Roland Schmidt</dc:creator>
   <link>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</link>
   <description><![CDATA[ The latest release of the {ParlAT} package introduces the ability to extract parties’ votes on items discussed in the third reading of the Austrian National Council. This post introduces the new feature by presenting some exemplary queries on the voting from the 20th to the current 28th legislative period. ]]></description>

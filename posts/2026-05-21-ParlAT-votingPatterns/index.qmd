@@ -1,5 +1,5 @@
 ---
-title: "How do Austrian parties vote in the National Council?"
+title: "How do Parties vote in the Austrian National Council?"
 date: 2026-06-04
 date-modified: last-modified
 author: Roland Schmidt
@@ -748,7 +748,29 @@ gg_subtitle_size <- 13.5
 gg_caption_size <- 10.5
 gg_strip_size <- 12
 gg_axis_size <- 10
+gg_axis_colour <- "#4D4D4D"
 gg_annot_size <- 3.7 # geom_text data-label size (mm)
+gg_plot_family <- "Noto Sans"
+
+noto_sans_svg_fonts <- list(
+  systemfonts::fonts_as_import(
+    gg_plot_family,
+    weight = c("normal", "bold"),
+    type = "import",
+    repositories = NULL,
+    may_embed = TRUE
+  )
+)
+
+svg_noto <- function(filename, width, height, ...) {
+  svglite::svglite(
+    filename = filename,
+    width = width,
+    height = height,
+    web_fonts = noto_sans_svg_fonts,
+    ...
+  )
+}
 
 vote_stance_colors <- c(
   "In favour" = "#4575b4",
@@ -762,7 +784,7 @@ vote_split_colors <- c(
 
 # Shared theme applied to every plot; per-plot specifics are layered on top.
 theme_vote_plot <- function(base_size = gg_base_size) {
-  theme_minimal(base_size = base_size) +
+  theme_minimal(base_size = base_size, base_family = gg_plot_family) +
     theme(
       panel.grid.minor = element_blank(),
       plot.title.position = "plot",
@@ -770,11 +792,13 @@ theme_vote_plot <- function(base_size = gg_base_size) {
       plot.title = element_text(
         hjust = 0,
         size = gg_title_size,
+        family = gg_plot_family,
         face = "bold",
         margin = ggplot2::margin(b = 8)
       ),
       plot.subtitle = ggtext::element_textbox_simple(
         size = gg_subtitle_size,
+        family = gg_plot_family,
         lineheight = 1.15,
         margin = ggplot2::margin(t = 4, b = 12)
       ),
@@ -782,15 +806,25 @@ theme_vote_plot <- function(base_size = gg_base_size) {
         hjust = 0,
         halign = 0,
         size = gg_caption_size,
+        family = gg_plot_family,
         lineheight = 1.1,
-        margin = ggplot2::margin(t = 8)
+        margin = ggplot2::margin(t = 14)
       ),
       strip.text = ggtext::element_markdown(
         size = gg_strip_size,
+        family = gg_plot_family,
         lineheight = 1.2,
         hjust = 0
       ),
-      axis.text = element_text(size = gg_axis_size),
+      axis.text = element_text(
+        size = gg_axis_size,
+        family = gg_plot_family,
+        colour = gg_axis_colour
+      ),
+      axis.title = element_text(
+        family = gg_plot_family,
+        colour = gg_axis_colour
+      ),
       legend.position = "bottom",
       legend.justification = "left",
       plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
@@ -821,7 +855,8 @@ votes_contested_shares <- votes_contested %>%
 #| fig-height: 6.5
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot the share of unanimous and split votes by legislative period.
 p_votes_contested <- votes_contested_shares %>%
   ggplot(aes(x = legis_period, y = vote_share, fill = contested)) +
@@ -831,6 +866,7 @@ p_votes_contested <- votes_contested_shares %>%
     position = position_stack(vjust = 0.5),
     colour = "white",
     size = gg_annot_size,
+    family = gg_plot_family,
     fontface = "bold"
   ) +
   geom_text(
@@ -838,6 +874,7 @@ p_votes_contested <- votes_contested_shares %>%
     aes(x = legis_period, y = 1.04, label = items_voted_label),
     inherit.aes = FALSE,
     size = gg_annot_size,
+    family = gg_plot_family,
     fontface = "bold",
     colour = "grey20"
   ) +
@@ -855,7 +892,7 @@ p_votes_contested <- votes_contested_shares %>%
   coord_cartesian(ylim = c(0, 1.08), clip = "off") +
   labs(
     x = NULL,
-    y = "Share",
+    y = NULL,
     title = "Austrian National Council: Share of unanimous and split votes",
     subtitle = paste0(
       "Share of selected Nationalrat third-reading item votes by whether parliamentary party groups ",
@@ -865,7 +902,13 @@ p_votes_contested <- votes_contested_shares %>%
   ) +
   theme_vote_plot() +
   theme(
-    panel.grid.major.x = element_blank()
+    panel.grid.major.x = element_blank(),
+    legend.spacing.x = grid::unit(2.0, "lines"),
+    legend.key.width = grid::unit(1, "lines"),
+    legend.text = element_text(
+      family = gg_plot_family,
+      margin = ggplot2::margin(r = 16)
+    )
   )
 
 p_votes_contested
@@ -911,7 +954,8 @@ support_share_avg <- support_share %>%
 #| fig-height: 6.5
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot median support shares and interquartile ranges by legislative period.
 support_share_avg_plot <- support_share_avg %>%
   mutate(
@@ -955,6 +999,7 @@ p_support_share_summary <- support_share_avg_plot %>%
     aes(label = median_support_label),
     colour = "white",
     size = gg_annot_size,
+    family = gg_plot_family,
     fontface = "bold"
   ) +
   scale_y_continuous(
@@ -1045,7 +1090,8 @@ Bearing in mind the above caveat for the last two legislative periods, let's con
 #| fig-height: 12
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot support-share histograms with government vote-share reference lines.
 histogram_support_breaks <- seq(0.5, 1, by = 0.05)
 histogram_bin_width <- diff(histogram_support_breaks)[1]
@@ -1133,7 +1179,16 @@ p_support_share_histogram <- support_share_histogram %>%
     panel.grid.major.x = element_blank(),
     panel.spacing.x = grid::unit(1.3, "lines"),
     panel.spacing.y = grid::unit(1.1, "lines"),
-    axis.text.x = element_text(size = gg_axis_size - 2)
+    axis.text.x = element_text(
+      size = gg_axis_size - 2,
+      family = gg_plot_family,
+      colour = gg_axis_colour
+    ),
+    axis.title.y = element_text(
+      family = gg_plot_family,
+      colour = gg_axis_colour,
+      margin = ggplot2::margin(r = 12)
+    )
   )
 
 p_support_share_histogram
@@ -1189,7 +1244,8 @@ party_order <- items_votes %>%
 #| fig-height: 13
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot party-level in-favour and not-in-favour vote shares.
 max_party_slots <- max(party_order$party_order, na.rm = TRUE)
 legis_period_levels <- sort(unique(party_order$legis_period))
@@ -1227,6 +1283,7 @@ p_party_vote_shares <- party_vote_shares %>%
     aes(y = vote_share / 2, label = vote_share_label),
     colour = "white",
     size = gg_annot_size,
+    family = gg_plot_family,
     na.rm = TRUE
   ) +
   ggtext::geom_richtext(
@@ -1234,6 +1291,7 @@ p_party_vote_shares <- party_vote_shares %>%
     aes(x = party_order, y = -0.10, label = label),
     inherit.aes = FALSE,
     size = gg_annot_size,
+    family = gg_plot_family,
     label.colour = NA,
     fill = NA,
     label.padding = grid::unit(rep(0, 4), "pt"),
@@ -1386,7 +1444,8 @@ label_vec_y <- agreement_matrix_ordered %>%
 #| fig-height: 13
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot party pair agreement matrices by legislative period.
 p_agreement_matrix <- agreement_matrix_ordered %>%
   mutate(
@@ -1408,7 +1467,8 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
       colour = label_colour
     ),
     fontface = "plain",
-    size = gg_annot_size
+    size = gg_annot_size,
+    family = gg_plot_family
   ) +
   scale_colour_identity() +
   scale_fill_distiller(
@@ -1446,14 +1506,33 @@ p_agreement_matrix <- agreement_matrix_ordered %>%
   theme(
     panel.grid = element_blank(),
     # element_markdown needed so bold government party labels render
-    axis.text.x = ggtext::element_markdown(size = gg_axis_size),
-    axis.text.y = ggtext::element_markdown(size = gg_axis_size),
-    axis.text.x.bottom = ggtext::element_markdown(size = gg_axis_size),
-    axis.text.x.top = ggtext::element_markdown(size = gg_axis_size),
-    axis.text.y.left = ggtext::element_markdown(size = gg_axis_size),
-    axis.text.y.right = ggtext::element_markdown(size = gg_axis_size),
+    axis.text.x = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
+    axis.text.y = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
+    axis.text.x.bottom = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
+    axis.text.x.top = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
+    axis.text.y.left = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
+    axis.text.y.right = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family
+    ),
     strip.text = ggtext::element_markdown(
       size = gg_strip_size - 2,
+      family = gg_plot_family,
       lineheight = 0.9,
       hjust = 0
     ),
@@ -1486,7 +1565,8 @@ Note that the percentages within a legislative period do *not* add up to 100%. T
 #| fig-height: 21
 #| out-width: "100%"
 #| fig-align: "center"
-#| dev: svglite
+#| dev: svg_noto
+#| fig-ext: svg
 # Plot UpSet charts of party combinations by vote stance.
 vote_sets_percent <- items_votes %>%
   distinct(vote_id, legis_period, text, party_infavor) %>%
@@ -1549,6 +1629,7 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
       aes(y = vote_share / 2, label = vote_share_label_inside),
       colour = "white",
       size = gg_annot_size,
+      family = gg_plot_family,
       fontface = "plain",
       na.rm = TRUE
     ) +
@@ -1557,6 +1638,7 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
       aes(y = vote_share + upset_label_offset, label = vote_share_label_above),
       colour = "grey20",
       size = gg_annot_size,
+      family = gg_plot_family,
       fontface = "plain",
       na.rm = TRUE
     ) +
@@ -1579,24 +1661,31 @@ make_period_upset_plot <- function(period, vote_type, show_period_label) {
       x = NULL,
       y = if (show_period_label) period else NULL
     ) +
-    theme_minimal(base_size = 9) +
+    theme_minimal(base_size = 9, base_family = gg_plot_family) +
     theme_combmatrix(
-      combmatrix.label.text = element_text(size = 7),
+      combmatrix.label.text = element_text(size = 7, family = gg_plot_family),
       combmatrix.panel.point.size = 1.8
     ) +
     theme(
       plot.title = element_text(
         size = 11,
         hjust = 0.5,
+        family = gg_plot_family,
         face = "bold",
         margin = ggplot2::margin(b = 4)
       ),
-      axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
-      axis.text.y = element_text(size = 7),
+      axis.text.x = element_text(
+        size = 7,
+        angle = 45,
+        hjust = 1,
+        family = gg_plot_family
+      ),
+      axis.text.y = element_text(size = 7, family = gg_plot_family),
       panel.grid.minor = element_blank(),
       axis.title.y = if (show_period_label) {
         element_text(
           size = 11,
+          family = gg_plot_family,
           face = "bold",
           angle = 90,
           margin = ggplot2::margin(r = 5)
@@ -1658,21 +1747,24 @@ p_upset_period_percent <- wrap_plots(
       plot.title = element_text(
         hjust = 0,
         size = gg_title_size,
+        family = gg_plot_family,
         face = "bold",
-        margin = ggplot2::margin(b = 8)
+        margin = ggplot2::margin(b = 18)
       ),
       plot.subtitle = ggtext::element_textbox_simple(
         hjust = 0,
         size = gg_subtitle_size,
+        family = gg_plot_family,
         lineheight = 1.15,
-        margin = ggplot2::margin(t = 4, b = 12)
+        margin = ggplot2::margin(t = 8, b = 12)
       ),
       plot.caption = ggtext::element_textbox_simple(
         hjust = 0,
         halign = 0,
         size = gg_caption_size,
+        family = gg_plot_family,
         lineheight = 1.1,
-        margin = ggplot2::margin(t = 8)
+        margin = ggplot2::margin(t = 14)
       )
     )
   )
