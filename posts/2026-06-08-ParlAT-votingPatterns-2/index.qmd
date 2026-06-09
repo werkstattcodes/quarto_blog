@@ -213,3 +213,64 @@ item_stages_votes <- readr::read_rds(here::here(
   "item_stages_votes.rds"
 ))
 ```
+
+# Vote flips across readings
+
+## Build flip dataset
+
+```{r}
+#| label: build-flips
+#| code-summary: "Identify parties that flipped position between zweite and dritte Lesung"
+# For bundled items with multiple votes per reading, keep the first only
+readings_23 <- item_stages_votes |>
+  filter(reading %in% c("zweite", "dritte")) |>
+  slice_head(n = 1, by = c(item_url, reading)) |>
+  filter(n_distinct(reading) == 2, .by = item_url)
+
+# self-join to get zweite and dritte side by side per item
+zweite <- readings_23 |>
+  filter(reading == "zweite") |>
+  select(item_url, legis_period, type_doc, title, item_number,
+         vote_text_zweite = vote_text_list)
+
+dritte <- readings_23 |>
+  filter(reading == "dritte") |>
+  select(item_url, vote_text_dritte = vote_text_list)
+
+flips <- inner_join(zweite, dritte, by = "item_url") |>
+  mutate(
+    dafuer_zweite = map(vote_text_zweite, "dafuer"),
+    gegen_zweite  = map(vote_text_zweite, "gegen"),
+    dafuer_dritte = map(vote_text_dritte, "dafuer"),
+    gegen_dritte  = map(vote_text_dritte, "gegen"),
+
+    # gegen in zweite -> dafuer in dritte
+    flip_pos = map2(gegen_zweite, dafuer_dritte, intersect),
+    # dafuer in zweite -> gegen in dritte
+    flip_neg = map2(dafuer_zweite, gegen_dritte, intersect),
+
+    n_flip_pos = map_int(flip_pos, length),
+    n_flip_neg = map_int(flip_neg, length)
+  ) |>
+  select(-vote_text_zweite, -vote_text_dritte)
+```
+
+```{r}
+#| label: cache-flips
+#| include: false
+# readr::write_rds(
+#   flips,
+#   here::here(
+#     "posts",
+#     "2026-06-08-ParlAT-votingPatterns-2",
+#     "_data",
+#     "flips.rds"
+#   )
+# )
+flips <- readr::read_rds(here::here(
+  "posts",
+  "2026-06-08-ParlAT-votingPatterns-2",
+  "_data",
+  "flips.rds"
+))
+```
