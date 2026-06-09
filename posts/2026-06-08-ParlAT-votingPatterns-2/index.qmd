@@ -1,0 +1,215 @@
+---
+title: "How do Parties vote in the Austrian National Council? Part II"
+date: 2026-06-08
+date-modified: last-modified
+author: Roland Schmidt
+description: |
+  A follow-up to the voting patterns post, ...
+
+categories:
+  - Austria
+  - parliament
+  - ParlAT
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+draft: true
+---
+
+# Packages
+
+```{r}
+#| label: setup
+#| code-summary: "Load packages"
+library(ParlAT)
+library(tidyverse)
+library(furrr)
+```
+
+# Get items
+
+## Query data
+
+```{r}
+#| label: fetch-items
+#| code-summary: "Fetch National Council items and cache them"
+#| cache: true
+#| eval: false
+items_20_28 <- seq(20, 28) %>%
+  map(., \(x) get_items(legis_period = x, institution = "NR")) %>%
+  list_rbind()
+nrow(items_20_28)
+```
+
+```{r}
+#| label: load-items-cache
+#| include: false
+# readr::write_rds(
+#   items_20_28,
+#   here::here(
+#     "posts",
+#     "2026-06-08-ParlAT-votingPatterns-2",
+#     "_data",
+#     "items_20_28.rds"
+#   )
+# )
+items_20_28 <- readr::read_rds(here::here(
+  "posts",
+  "2026-06-08-ParlAT-votingPatterns-2",
+  "_data",
+  "items_20_28.rds"
+))
+
+data_cutoff <- {
+  d <- max(items_20_28$date, na.rm = TRUE)
+  sub("^0", "", format(d, "%d %B %Y"))
+}
+```
+
+## Keep items of interest
+
+```{r}
+#| label: define-item-scope
+#| code-summary: "Select legislative item types"
+items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
+  paste0(., collapse = "|")
+
+items_scope <- items_20_28 %>%
+  filter(str_detect(type_doc, regex(items_select)))
+
+items_scope %>%
+  distinct(type_doc_long, type_doc)
+```
+
+# Get item details
+
+## Query data
+
+```{r}
+#| label: fetch-item-details
+#| code-summary: "Fetch item details with stages and cache them"
+#| cache: true
+#| eval: false
+plan(multisession, workers = 4)
+
+item_urls <- items_scope %>%
+  pull(item_url)
+
+safe_get_item_details <- safely(get_item_details)
+
+item_details_raw <- item_urls %>%
+  future_map(
+    \(x) {
+      safe_result <- safe_get_item_details(item_url = x, stages = TRUE)
+      safe_result$item_url <- x
+      safe_result
+    },
+    .progress = TRUE,
+    .options = furrr_options(packages = c("ParlAT", "purrr", "tibble"))
+  )
+```
+
+```{r}
+#| label: load-item-details-cache
+#| eval: true
+#| include: false
+# readr::write_rds(
+#   item_details_raw,
+#   here::here(
+#     "posts",
+#     "2026-06-08-ParlAT-votingPatterns-2",
+#     "_data",
+#     "item_details_raw.rds"
+#   )
+# )
+
+# plan(sequential)
+
+item_details_raw <- readr::read_rds(here::here(
+  "posts",
+  "2026-06-08-ParlAT-votingPatterns-2",
+  "_data",
+  "item_details_raw.rds"
+))
+```
+
+## Prepare stages data
+
+```{r}
+#| label: prepare-stages-data
+#| code-summary: "Unnest stages, filter vote rows, add reading and vote_text_list columns"
+failed_items <- item_details_raw |>
+  keep(\(x) !is.null(x$error)) |>
+  map(\(x) tibble(item_url = x$item_url, error = conditionMessage(x$error))) |>
+  list_rbind()
+
+item_details <- item_details_raw |>
+  keep(\(x) is.null(x$error)) |>
+  map("result") |>
+  list_rbind()
+
+# unnest stages into one row per stage per item
+item_stages <- item_details |>
+  select(item_url, legis_period, type_doc, title, item_number,
+         status_number, status_description, stages) |>
+  filter(map_lgl(stages, \(x) !is.null(x))) |>
+  unnest(stages)
+
+# keep only rows that contain vote results, then parse them
+item_stages_votes <- item_stages |>
+  filter(str_detect(stage_name, "\nDafür:")) |>
+  mutate(
+    stage_description = str_extract(stage_name, "^[^\n]+"),
+    vote_text         = str_extract(stage_name, "(?<=\n)Dafür:.+"),
+
+    reading = case_when(
+      str_detect(stage_description, regex("dritter? Lesung",   ignore_case = TRUE)) ~ "dritte",
+      str_detect(stage_description, regex("zweiter? Lesung",   ignore_case = TRUE)) ~ "zweite",
+      str_detect(stage_description, regex("erste[rn]? Lesung", ignore_case = TRUE)) ~ "erste",
+      str_detect(phase,             regex("Ausschuss",         ignore_case = TRUE)) ~ "Ausschuss",
+      str_detect(stage_description, regex("Entschlie.*?ungsantrag", ignore_case = TRUE)) ~ "Entschließungsantrag",
+      str_detect(stage_description, regex("Ab.*?nderungsantrag",    ignore_case = TRUE)) ~ "Abänderungsantrag",
+      str_detect(stage_description, regex("Antrag auf besondere Kundmachung", ignore_case = TRUE)) ~ "Antrag auf bes. Kundmachung",
+      str_detect(stage_description, regex("Wiederholung",      ignore_case = TRUE)) ~ "Wiederholung",
+      str_detect(stage_description, regex("Genehmigung",       ignore_case = TRUE)) ~ "Genehmigung",
+      str_detect(stage_description, regex("Erm.*?chtigung",    ignore_case = TRUE)) ~ "Ermächtigung",
+      str_detect(stage_description, regex("Abstimmung",        ignore_case = TRUE)) ~ "Abstimmung",
+      str_detect(stage_description, regex("Beschluss",         ignore_case = TRUE)) ~ "Beschluss",
+      str_detect(stage_description, regex("Antrag",            ignore_case = TRUE)) ~ "Antrag",
+      TRUE ~ NA_character_
+    ),
+
+    vote_text_list = map(vote_text, function(vt) {
+      vt_norm <- str_replace(vt, fixed(". Dagegen:"), ", dagegen:")
+      parts   <- str_split(vt_norm, ", dagegen:", n = 2)[[1]]
+      dafuer  <- parts[1] |> str_remove("^Dafür: ") |> str_split(", ") |> unlist() |> str_trim()
+      gegen   <- if (length(parts) == 2) parts[2] |> str_split(", ") |> unlist() |> str_trim() else character(0)
+      list(dafuer = dafuer, gegen = gegen)
+    })
+  ) |>
+  select(-stage_name, -speeches)
+```
+
+```{r}
+#| label: cache-stages-votes
+#| include: false
+# readr::write_rds(
+#   item_stages_votes,
+#   here::here(
+#     "posts",
+#     "2026-06-08-ParlAT-votingPatterns-2",
+#     "_data",
+#     "item_stages_votes.rds"
+#   )
+# )
+item_stages_votes <- readr::read_rds(here::here(
+  "posts",
+  "2026-06-08-ParlAT-votingPatterns-2",
+  "_data",
+  "item_stages_votes.rds"
+))
+```
