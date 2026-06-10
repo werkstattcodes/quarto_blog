@@ -1,5 +1,12 @@
 project:
   type: website
+  render:
+    - "*.qmd"
+    - "posts/**/*.qmd"
+    - "!_site/"
+    - "!_freeze/"
+    - "!.quarto/"
+    - "!**/*_cache/"
 
 website:
   title: "werk.statt.codes"

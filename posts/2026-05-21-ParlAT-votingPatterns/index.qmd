@@ -2,7 +2,6 @@
 title: "How do Parties vote in the Austrian National Council?"
 date: 2026-06-04
 date-modified: last-modified
-author: Roland Schmidt
 description: |
   The latest release of the {ParlAT} package introduces the ability to extract
   parties' votes on items discussed in the third reading of the Austrian National Council.
@@ -60,7 +59,7 @@ Additionally, there are some 'low-hanging fruits' along the way, which I will al
 
 As you will see, the querying of the relevant data is rather straightforward. Most of the code presented was needed to create the graphs, so don’t get distracted by some lengthy code chunks.
 
-And before I finally dive into the actual code, the usual caveats apply a) this is work in progress, if you see any errors or have suggestions etc. do not hesitate to contact me with feedback ([bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} if directly related to ParlAT); b) although I am developing the ParlAT package, I don’t consider myself as an expert on all the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, and c) this is a blog post and does not pretend to be an academic output etc, and d) full disclosure, I used  LLM assistance to iron-out some details of the graphs and review the writing of the blog post.
+And before I finally dive into the actual code, the usual caveats apply a) this is work in progress, if you see any errors or have suggestions etc. do not hesitate to contact me with feedback ([bluesky direct msg](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [repo forum](https://github.com/werkstattcodes/ParlAT/discussions){target="_blank"} if directly related to ParlAT); b) although I am developing the ParlAT package, I don’t consider myself as an expert on all the ins-and-outs of the Austrian Parliament. The main motivation is to provide a tool which makes researching the Austrian Parliament a bit easier, and c) this is a blog post and does not pretend to be an academic output etc, and d) full disclosure, I used LLM assistance to iron-out some details of the graphs and review the writing of the blog post.
 
 To give you an overview of the code below, essentially, there are three steps (more details below):
 
@@ -99,7 +98,7 @@ To start with, let's get all items for the legislative periods 20 to 28. No big 
 #| label: fetch-items
 #| code-summary: "Fetch National Council items and cache them"
 #| cache: true
-#| eval: false
+#| eval: true
 # Fetch National Council items for legislative periods 20 to 28.
 items_20_28 <- seq(20, 28) %>%
   map(., \(x) get_items(legis_period = x, institution = "NR")) %>%
@@ -111,15 +110,15 @@ nrow(items_20_28)
 #| label: load-items-cache
 #| include: false
 # Load cached item metadata used by the post.
-# readr::write_rds(
-#   items_20_28,
-#   here::here(
-#     "posts",
-#     "2026-05-21-ParlAT-votingPatterns",
-#     "_data",
-#     "items_20_28.rds"
-#   )
-# )
+readr::write_rds(
+  items_20_28,
+  here::here(
+    "posts",
+    "2026-05-21-ParlAT-votingPatterns",
+    "_data",
+    "items_20_28.rds"
+  )
+)
 items_20_28 <- readr::read_rds(here::here(
   "posts",
   "2026-05-21-ParlAT-votingPatterns",
@@ -353,7 +352,7 @@ items_scope %>%
 #| label: item-scope-freq-table
 #| code-summary: "Frequency table on item types for voting analysis"
 #| column: page-right
-#| eval: false
+#| eval: true
 #| include: false
 # Prepare and render item-scope frequency and share tables.
 items_scope_doc_shares <- items_scope %>%
@@ -442,7 +441,7 @@ To apply this approach to our data frame comprising data from the 20th legislati
 #| label: fetch-item-details
 #| code-summary: "Fetch item details with voting results and cache them"
 #| cache: true
-#| eval: false
+#| eval: true
 # Fetch voting details for all selected item URLs.
 plan(multisession, workers = 4)
 
@@ -468,15 +467,15 @@ item_details_raw <- item_urls %>%
 #| eval: true
 #| include: false
 # Load cached item-detail API results.
-# readr::write_rds(
-#   item_details_raw,
-#   here::here(
-#     "posts",
-#     "2026-05-21-ParlAT-votingPatterns",
-#     "_data",
-#     "item_details_raw.rds"
-#   )
-# )
+readr::write_rds(
+  item_details_raw,
+  here::here(
+    "posts",
+    "2026-05-21-ParlAT-votingPatterns",
+    "_data",
+    "item_details_raw.rds"
+  )
+)
 
 # plan(sequential)
 
@@ -615,7 +614,7 @@ items_votes <- items_votes %>%
 #| label: load-item-votes-cache
 #| include: false
 # Load cached item details with third-reading flags.
-#readr::write_rds(items_details, here::here("posts","2026-05-21-ParlAT-votingPatterns","_data","item_votes.rds"))
+readr::write_rds(items_details, here::here("posts","2026-05-21-ParlAT-votingPatterns","_data","item_votes.rds"))
 items_details <- readr::read_rds(here::here(
   "posts",
   "2026-05-21-ParlAT-votingPatterns",
@@ -1056,9 +1055,9 @@ Surprisingly, there are `r item_votes_totals %>% filter(mp_count > 183) %>% nrow
 item_votes_totals %>% filter(mp_count > 183) %>% select(item_url)
 ```
 
-What this check also demonstrated is that `get_item_details(votes=TRUE)` implicitly returns participation data, i.e., how many MPs were actually present during the vote. I could imagine that it might be interesting to check, e.g., when participation was particularly low etc. 
+What this check also demonstrated is that `get_item_details(votes=TRUE)` implicitly returns participation data, i.e., how many MPs were actually present during the vote. I could imagine that it might be interesting to check, e.g., when participation was particularly low etc.
 
-::: {.callout-important}
+::: callout-important
 HOWEVER, the table below also reveals that the data for the XXVII and XXVIII legislative period feature suspiciously stable data/most likely wrong data. It seems as if the mode of reporting has changed. This is a significant limitation when dealing with questions which need the exact count for every party. I wonder what the reason is.
 :::
 
@@ -1198,7 +1197,7 @@ If pressed, I would identify two rough patterns: a *bimodal/U-shaped* one and a 
 
 The left-skewed pattern is more visible in legislative period XXIII, XXIV, XXV, and XXVII. Here, the distribution leans more strongly toward high support shares, meaning that a larger share of items attracted votes from across the aisle.
 
-Two further points: 1) note that there is an oddity in the graph on the XXIII and XXV legislative periods. Some items passed with a lower vote share than the share of government parties. The explanation is that the red line reflects the share of government-party MPs if all 183 MPs are present. With reduced turnout, a bill can be passed by the MPs of the government parties also below that ratio, i.e. not all MPs of the government parties were present, but still enough to pass the bill. 2) the shape of these distributions also depends on the number and relative size of parties in the National Council. Imagine a chamber with three parties, two governing parties and one opposition party, a U-shaped distribution would be almost unavoidable: items would  pass either with the governing majority alone or with unanimous support. As the number of parties increases, especially when parties are of similar size, the range between a bare government majority and unanimity is more likely to be filled. But this is just a general qualification, I am sure others have more thoroughly thought about this.
+Two further points: 1) note that there is an oddity in the graph on the XXIII and XXV legislative periods. Some items passed with a lower vote share than the share of government parties. The explanation is that the red line reflects the share of government-party MPs if all 183 MPs are present. With reduced turnout, a bill can be passed by the MPs of the government parties also below that ratio, i.e. not all MPs of the government parties were present, but still enough to pass the bill. 2) the shape of these distributions also depends on the number and relative size of parties in the National Council. Imagine a chamber with three parties, two governing parties and one opposition party, a U-shaped distribution would be almost unavoidable: items would pass either with the governing majority alone or with unanimous support. As the number of parties increases, especially when parties are of similar size, the range between a bare government majority and unanimity is more likely to be filled. But this is just a general qualification, I am sure others have more thoroughly thought about this.
 
 ## Graphic 4: Relative frequency of vote type
 
@@ -1344,7 +1343,7 @@ p_party_vote_shares <- party_vote_shares %>%
 p_party_vote_shares
 ```
 
-Unsurprisingly, the graph demonstrates that coalition parties almost always vote in favor of items. This is visible across very different government constellations: grand coalitions, ÖVP-FPÖ, ÖVP-Greens, and the current three-party coalition all show very low no-vote shares among governing parties. 
+Unsurprisingly, the graph demonstrates that coalition parties almost always vote in favor of items. This is visible across very different government constellations: grand coalitions, ÖVP-FPÖ, ÖVP-Greens, and the current three-party coalition all show very low no-vote shares among governing parties.
 
 What's noteworthy, at least to me, is the high no-ratio of the current FPÖ parliamentary group. It is only exceeded by the FPÖ in the XX legislative period, i.e., during the Haider years, where the party voted against almost two thirds of the items covered here.
 
