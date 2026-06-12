@@ -28,6 +28,41 @@ draft: false
 library(ParlAT)
 library(tidyverse)
 library(furrr)
+library(reactable)
+library(reactablefmtr)
+
+compact_table_theme <- reactablefmtr::fivethirtyeight(font_size = 12)
+table_source <- reactablefmtr::html(
+  "<span style='font-size:8pt;color:grey30;font-family:Segoe UI !important;line-height:0.5'>Source: www.parlament.gv.at. Analysis: Roland Schmidt - @zoowalk.bsky.social - https://werk.statt.codes</span>"
+)
+
+style_reactable_table <- function(table, title, subtitle = NULL) {
+  styled_table <- table %>%
+    reactablefmtr::add_title(
+      title = reactablefmtr::html(paste0(
+        "<span style='font-size:12pt;'>",
+        title,
+        "</span>"
+      ))
+    )
+
+  if (!is.null(subtitle)) {
+    styled_table <- styled_table %>%
+      reactablefmtr::add_subtitle(
+        subtitle = reactablefmtr::html(paste0(
+          "<span style='font-size:10pt;line-height:0.5;'>",
+          subtitle,
+          "</span>"
+        )),
+        font_color = "grey30",
+        font_weight = "normal",
+        font_style = "italic"
+      )
+  }
+
+  styled_table %>%
+    reactablefmtr::add_source(source = table_source)
+}
 ```
 
 # Get items
@@ -139,6 +174,10 @@ item_details_raw <- readr::read_rds(here::here(
 
 ## Prepare stages data
 
+- check for failed extractions
+- combine successful extractions into single dataframe
+- combined dataframe still contains all rows for each item (also rows without a vote)
+
 ```{r}
 #| label: prepare-stages-data
 #| code-summary: "Unnest stages, filter vote rows, add reading and vote_text_list columns"
@@ -166,17 +205,29 @@ item_stages <- item_details |>
     votes
   ) |>
   filter(map_lgl(stages, \(x) !is.null(x))) |>
-  unnest(stages)
+  unnest(stages) %>%
+  mutate(stage_date = lubridate::dmy(stage_date))
 
-# keep only rows that contain vote results, then parse them
-item_stages_votes <- item_stages |>
-  #filter(item_url == "https://www.parlament.gv.at/gegenstand/XX/A/1145") %>%
-  filter(str_detect(phase, regex("NR"))) %>%
-  filter(str_detect(
-    stage_name,
-    regex("Dafür|(wechselnden? Mehrheiten)", ignore_case = T)
-  )) %>%
-  filter(str_detect(stage_name, "(dritter?|zweiter?) Lesung")) %>%
+
+data_cutoff <- max(item_stages$stage_date)
+```
+
+# Get items in scope
+
+Categorize each extracted row.
+
+\- only NR
+
+\- only where votes were casted
+
+\- which reading
+
+\- how are votes reported
+
+```{r}
+items_scope <- item_stages |>
+  filter(str_detect(phase, regex("NR"))) %>% #only NR
+  filter(str_detect(stage_name, "(dritter?|zweiter?) Lesung")) %>% #only 2nd and 3rd reading
   mutate(
     reading = case_when(
       str_detect(stage_name, regex("zweite")) &
@@ -186,41 +237,257 @@ item_stages_votes <- item_stages |>
       .default = NULL
     )
   ) %>%
+  filter(str_detect(
+    stage_name,
+    regex(
+      "dafür|wechselnde Mehrheit|getrennte Abstimmung|namentliche Abstimmung|abgelehnt|mehrstimmig",
+      ignore_case = T
+    )
+  )) %>%
   mutate(
-    #check whether vote call was named based; will be dropped
-    vote_name = map_lgl(
-      votes,
-      \(v) {
-        if (is.null(v) || !"text" %in% names(v)) {
-          return(FALSE)
-        }
-        any(
-          str_detect(v$text, regex("namentlich", ignore_case = TRUE)),
-          na.rm = TRUE
+    vote_report_type = case_when(
+      str_detect(stage_name, regex("dafür", ignore_case = T)) &
+        str_detect(stage_name, regex("dagegen", ignore_case = T)) ~ "regular",
+      str_detect(
+        stage_name,
+        regex("wechselnde Mehrheit", ignore_case = T)
+      ) ~ "wechselnde Mehrheit",
+      str_detect(
+        stage_name,
+        regex("namentliche Abstimmung", ignore_case = T)
+      ) ~ "namentliche Abstimmung",
+      str_detect(
+        stage_name,
+        regex("getrennte Abstimmung", ignore_case = T)
+      ) ~ "getrennte Abstimmung",
+      str_detect(stage_name, regex("abgelehnt", ignore_case = T)) ~ "abgelehnt",
+      str_detect(
+        stage_name,
+        regex("mehrstimmig", ignore_case = T)
+      ) ~ "mehrstimmig",
+      .default = NA
+    )
+  )
+#sequence of vote_reporting_type clauses important. Keep regular at top.
+
+nrow(items_scope)
+nrow(item_stages)
+
+items_scope %>%
+  count(vote_report_type, sort = T) %>%
+  mutate(rel = n / sum(n) * 100)
+```
+
+## Check pairs
+
+```{r}
+non_pairs <- items_scope %>%
+  count(legis_period, item_url, name = "n_obs") %>%
+  filter(n_obs != 2)
+n_distinct(non_pairs$item_url)
+```
+
+We would expect that every time has by now only two rows, i.e., one for the second and one for the third reading.
+However, there are `r n_distinct(non_pairs$item_url)` out of `r n_distinct(items_scope$item_url)` which feature more than two rows.
+
+```{r}
+non_pairs_details <- items_scope %>%
+  semi_join(non_pairs, by = c("legis_period", "item_url")) %>%
+  distinct() %>%
+  select(
+    legis_period,
+    item_url,
+    stage_date,
+    stage_name,
+    vote_report_type
+  ) %>%
+  mutate(n_obs = n(), .by = c("legis_period", "item_url"))
+
+non_pairs_details_display <- non_pairs_details %>%
+  arrange(desc(n_obs), legis_period, item_url, stage_date) %>%
+  mutate(
+    item_ref = item_url %>%
+      str_remove("^https://www\\.parlament\\.gv\\.at/gegenstand/") %>%
+      str_remove("\\?.*$")
+  ) %>%
+  select(
+    legis_period,
+    item_ref,
+    stage_date,
+    stage_name,
+    vote_report_type,
+    n_obs,
+    item_url
+  )
+
+non_pairs_details_table <- reactable(
+  non_pairs_details_display,
+  columns = list(
+    legis_period = colDef(
+      name = "Legis. period",
+      align = "right",
+      minWidth = 90,
+      filterable = TRUE
+    ),
+    item_ref = colDef(
+      name = "Item",
+      minWidth = 125,
+      filterable = TRUE,
+      cell = function(value, index) {
+        htmltools::tags$a(
+          href = non_pairs_details_display$item_url[index],
+          target = "_blank",
+          value
         )
       }
+    ),
+    stage_date = colDef(
+      name = "Stage date",
+      align = "left",
+      minWidth = 110,
+      filterable = TRUE
+    ),
+    stage_name = colDef(
+      name = "Stage",
+      minWidth = 540,
+      filterable = TRUE,
+      style = list(whiteSpace = "normal", lineHeight = "1.35")
+    ),
+    vote_report_type = colDef(
+      name = "Vote report type",
+      minWidth = 155,
+      filterable = TRUE
+    ),
+    n_obs = colDef(
+      name = "Rows per item",
+      align = "right",
+      minWidth = 130,
+      format = colFormat(digits = 0)
+    ),
+    item_url = colDef(show = FALSE)
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = FALSE,
+  outlined = TRUE,
+  searchable = TRUE,
+  defaultPageSize = 10,
+  defaultSorted = "n_obs",
+  defaultSortOrder = "desc",
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "ITEMS WITH NON-STANDARD VOTE-STAGE PAIRS",
+    paste0(
+      "Items with more or fewer than the expected two vote-stage rows. Data as of ",
+      data_cutoff,
+      "."
     )
   )
 
-table(item_stages_votes$vote_name, item_stages_votes$reading)
+non_pairs_details_table
+```
 
-item_stages_votes %>%
-  filter(!vote_name) %>%
-  count(reading)
+As it turns out, some are duplicates in the data source, e.g. here: https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105. The votes in the second and third reading are reported twice. Others are reported mulitple times because an item was within one single reading party approved/not approved and hence got two rows in the data source, i.e. https://www.parlament.gv.at/gegenstand/XXVIII/I/403
 
-# more third readings than second readings ?
-item_stages_votes %>%
-  count(reading)
+```{r}
+items_scope_pairs <- items_scope %>%
+  anti_join(., non_pairs, by = c("legis_period", "item_url"))
+nrow(items_scope_pairs)
 
+#check if every item has only two rows
+items_scope_pairs %>%
+  mutate(n_obs = n(), .by = c("legis_period", "item_url")) %>%
+  filter(n_obs != 2) %>%
+  nrow()
+
+table(items_scope_pairs$reading) #TODO
+
+items_scope_pairs_regular <-  items_scope_pairs %>%
+  filter(vote_report_type=="regular")
+
+nrow(items_scope_pairs)
+nrow(items_scope_pairs_regular)
+nrow(items_scope_pairs_regular)/nrow(items_scope)
+```
+
+
+# Extract votes
+
+```{r}
+#define function to extract reported votes
+#only extract votes from vote_report_type "regular"
+
+fn_get_votes <- function(vt) {
+  vt_norm <- str_replace(
+    vt,
+    regex("\\.\\s*Dagegen:", ignore_case = TRUE),
+    ", dagegen:"
+  )
+
+  parts <- str_split(
+    vt_norm,
+    regex(",\\s*dagegen:", ignore_case = TRUE),
+    n = 2
+  )[[1]]
+
+  if (length(parts) != 2) {
+    stop("Regular vote text does not contain both Dafür and Dagegen parts.")
+  }
+
+  if (!str_detect(parts[1], regex("Dafür:", ignore_case = TRUE))) {
+    stop("Regular vote text does not contain a Dafür part.")
+  }
+
+  yes_raw <- parts[1] |>
+    str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
+
+  no_raw <- parts[2]
+  vote_no <- if (str_trim(no_raw) == "-") {
+    character(0)
+  } else {
+    split_vote_parties(no_raw)
+  }
+
+  list(
+    vote_yes = split_vote_parties(yes_raw),
+    vote_no = vote_no
+  )
+}
+```
+
+
+
+
+
+```{r}
 # fn to extract votes (which party voted yes/no)
 valid_parties <- c(
-  "SPÖ", "ÖVP", "F", "FPÖ", "GRÜNE", "L", "BZÖ", "STRONACH",
-  "NEOS", "NEOS-LIF", "F-BZÖ", "JETZT", "PILZ",
-  "NEOS/NEOS-LIF", "JETZT/PILZ", "S", "V", "N", "G"
+  "SPÖ",
+  "ÖVP",
+  "F",
+  "FPÖ",
+  "GRÜNE",
+  "L",
+  "BZÖ",
+  "STRONACH",
+  "NEOS",
+  "NEOS-LIF",
+  "F-BZÖ",
+  "JETZT",
+  "PILZ",
+  "NEOS/NEOS-LIF",
+  "JETZT/PILZ",
+  "S",
+  "V",
+  "N",
+  "G"
 )
 
 extract_vote_tokens <- function(x) {
-  if (is.na(x) || str_trim(x) == "-") return(character(0))
+  if (is.na(x) || str_trim(x) == "-") {
+    return(character(0))
+  }
 
   x |>
     str_split(",\\s*") |>
@@ -231,56 +498,58 @@ extract_vote_tokens <- function(x) {
     discard(\(p) p %in% c("", "-"))
 }
 
+is_party_token <- function(x) {
+  str_detect(x, regex("^[[:upper:]ÄÖÜ]+(?:[-/][[:upper:]ÄÖÜ]+)*$"))
+}
+
 extract_vote_token_candidates <- function(vt) {
   vt_norm <- str_replace(
     vt,
     regex("\\.\\s*Dagegen:", ignore_case = TRUE),
     ", dagegen:"
   )
-  parts <- str_split(vt_norm, regex(",\\s*dagegen:", ignore_case = TRUE), n = 2)[[1]]
+  parts <- str_split(
+    vt_norm,
+    regex(",\\s*dagegen:", ignore_case = TRUE),
+    n = 2
+  )[[1]]
   dafuer_raw <- parts[1] |>
     str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
-  dafuer_parts <- str_split(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))[[1]]
-  raw_parts <- if (length(parts) == 2) c(dafuer_parts, parts[2]) else dafuer_parts
+  dafuer_parts <- str_split(
+    dafuer_raw,
+    regex("\\bbzw\\.?", ignore_case = TRUE)
+  )[[1]]
+  raw_parts <- if (length(parts) == 2) {
+    c(dafuer_parts, parts[2])
+  } else {
+    dafuer_parts
+  }
 
   reduce(map(raw_parts, extract_vote_tokens), union)
 }
 
 split_vote_parties <- function(x) {
   extract_vote_tokens(x) |>
+    keep(is_party_token) |>
     keep(\(p) p %in% valid_parties)
 }
 
 fn_get_votes <- function(vt) {
-  # Classify irregular patterns first (no parseable dafür/dagegen anchor)
-  if (str_detect(vt, regex("wechselnde Mehrheiten", ignore_case = TRUE))) {
-    return(list(vote_yes = character(0), vote_no = character(0), report_type = "wechselnde"))
-  }
-  if (str_detect(vt, regex("getrennte Abstimmung", ignore_case = TRUE))) {
-    return(list(vote_yes = character(0), vote_no = character(0), report_type = "getrennte"))
-  }
-  if (str_detect(vt, regex("mehrstimmig", ignore_case = TRUE))) {
-    return(list(vote_yes = character(0), vote_no = character(0), report_type = "mehrstimmig"))
-  }
-
   vt_norm <- str_replace(
     vt,
     regex("\\.\\s*Dagegen:", ignore_case = TRUE),
     ", dagegen:"
   )
-  parts <- str_split(vt_norm, regex(",\\s*dagegen:", ignore_case = TRUE), n = 2)[[1]]
+  parts <- str_split(
+    vt_norm,
+    regex(",\\s*dagegen:", ignore_case = TRUE),
+    n = 2
+  )[[1]]
   dafuer_raw <- parts[1] |>
     str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
 
   has_dagegen <- length(parts) == 2
-  has_bzw     <- str_detect(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))
-
-  report_type <- case_when(
-    has_bzw & has_dagegen  ~ "mixed",
-    has_bzw & !has_dagegen ~ "mixed",
-    !has_dagegen            ~ "no_dagegen",
-    TRUE                    ~ "regular"
-  )
+  has_bzw <- str_detect(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))
 
   dafuer_parts <- if (has_bzw) {
     str_split(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))[[1]]
@@ -289,22 +558,29 @@ fn_get_votes <- function(vt) {
   }
 
   list(
-    vote_yes    = reduce(map(dafuer_parts, split_vote_parties), union),
-    vote_no     = if (has_dagegen) split_vote_parties(parts[2]) else character(0),
-    report_type = report_type
+    vote_yes = reduce(map(dafuer_parts, split_vote_parties), union),
+    vote_no = if (has_dagegen) split_vote_parties(parts[2]) else character(0)
   )
 }
 
-#extract votes
-item_stages_votes <- item_stages_votes %>%
+#extract votes (only for parseable report types)
+items_scope <- items_scope %>%
   filter(!vote_name) %>% #remove votes with name-calls
-  mutate(votes_li = map(stage_name, \(x) fn_get_votes(x)))
+  mutate(
+    votes_li = map2(stage_name, report_type, \(vt, rt) {
+      if (rt %in% c("regular", "no_dagegen")) {
+        fn_get_votes(vt)
+      } else {
+        list(vote_yes = character(0), vote_no = character(0))
+      }
+    })
+  )
+```
 
+## Vote extraction check
 
-
-
-
-vote_extraction_check <- item_stages_votes %>%
+```{r}
+vote_extraction_check <- items_scope %>%
   filter_out(str_detect(stage_name, regex("wechselnde"))) %>%
   mutate(vote_parties = map(votes_li, \(v) c(v$vote_yes, v$vote_no))) %>%
   select(item_url, legis_period, reading, stage_name, vote_parties) %>%
@@ -314,7 +590,7 @@ vote_extraction_check <- item_stages_votes %>%
   ) %>%
   filter(!party_clean %in% valid_parties)
 
-vote_uppercase_unknown_check <- item_stages_votes %>%
+vote_uppercase_unknown_check <- items_scope %>%
   mutate(vote_tokens = map(stage_name, extract_vote_token_candidates)) %>%
   select(item_url, legis_period, reading, stage_name, vote_tokens) %>%
   unnest(vote_tokens) %>%
@@ -325,25 +601,23 @@ vote_uppercase_unknown_check <- item_stages_votes %>%
   )
 
 n_distinct(vote_extraction_check$item_url)
-n_distinct(item_stages_votes$item_url)
+n_distinct(items_scope$item_url)
 
-report_type_check <- item_stages_votes %>%
-  mutate(report_type = map_chr(votes_li, "report_type")) %>%
+report_type_check <- items_scope %>%
   count(report_type)
 
-item_stages_votes <- item_stages_votes %>%
+items_scope <- items_scope %>%
   distinct()
 
-item_stages_votes <- item_stages_votes %>%
+items_scope <- items_scope %>%
   group_by(legis_period, item_url) %>%
   mutate(obs_n = n()) %>%
   ungroup()
 
-deviant <- item_stages_votes %>%
+deviant <- items_scope %>%
   filter(obs_n != 2) #limit analysis to complete pairs
 
-item_votes_long <- item_stages_votes %>%
-  mutate(report_type = map_chr(votes_li, "report_type")) %>%
+item_votes_long <- items_scope %>%
   filter(report_type %in% c("regular", "no_dagegen")) %>%
   group_by(legis_period, item_url) %>%
   mutate(obs_n = n()) %>%
@@ -424,6 +698,3 @@ item_votes_reading_wide <- item_votes_long %>%
     flip_neg = ifelse(yes_second == 1 & no_third == 1, TRUE, FALSE)
   )
 ```
-
-
-
