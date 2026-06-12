@@ -117,17 +117,17 @@ item_details_raw <- item_urls %>%
 #| label: load-item-details-cache
 #| eval: true
 #| include: false
-# readr::write_rds(
-#   item_details_raw,
-#   here::here(
-#     "posts",
-#     "2026-06-08-ParlAT-votingPatterns-2",
-#     "_data",
-#     "item_details_raw.rds"
-#   )
-# )
+readr::write_rds(
+  item_details_raw,
+  here::here(
+    "posts",
+    "2026-06-08-ParlAT-votingPatterns-2",
+    "_data",
+    "item_details_raw.rds"
+  )
+)
 
-# plan(sequential)
+plan(sequential)
 
 item_details_raw <- readr::read_rds(here::here(
   "posts",
@@ -186,13 +186,21 @@ item_stages_votes <- item_stages |>
       .default = NULL
     )
   ) %>%
-  mutate(vote_name = map_lgl(
-    votes,
-    \(v) {
-      if (is.null(v) || !"text" %in% names(v)) return(FALSE)
-      any(str_detect(v$text, regex("namentlich", ignore_case = TRUE)), na.rm = TRUE)
-    }
-  ))
+  mutate(
+    #check whether vote call was named based; will be dropped
+    vote_name = map_lgl(
+      votes,
+      \(v) {
+        if (is.null(v) || !"text" %in% names(v)) {
+          return(FALSE)
+        }
+        any(
+          str_detect(v$text, regex("namentlich", ignore_case = TRUE)),
+          na.rm = TRUE
+        )
+      }
+    )
+  )
 
 table(item_stages_votes$vote_name, item_stages_votes$reading)
 
@@ -204,735 +212,218 @@ item_stages_votes %>%
 item_stages_votes %>%
   count(reading)
 
-x <- item_stages_votes %>%
-  filter(!vote_name) %>%
-  group_by(item_url) %>%
-  summarise(
-    n = n(),
-    readings = list(reading)
-  )
-nrow(x)
+# fn to extract votes (which party voted yes/no)
+valid_parties <- c(
+  "SPÖ", "ÖVP", "F", "FPÖ", "GRÜNE", "L", "BZÖ", "STRONACH",
+  "NEOS", "NEOS-LIF", "F-BZÖ", "JETZT", "PILZ",
+  "NEOS/NEOS-LIF", "JETZT/PILZ", "S", "V", "N", "G"
+)
 
-y <- x |>
-  filter(map_lgl(readings, \(r) is.null(r) || !"third" %in% r))
+extract_vote_tokens <- function(x) {
+  if (is.na(x) || str_trim(x) == "-") return(character(0))
 
-library(ParlAT)
-v <- get_item_details("https://www.parlament.gv.at/gegenstand/XX/I/1581", votes=T)
-
-# fn to extract votes
-
-fn_get_votes <- function(vt) {
-  vt_norm <- str_replace(vt, fixed(". Dagegen:"), ", dagegen:")
-  parts <- str_split(vt_norm, ", dagegen:", n = 2)[[1]]
-  dafuer <- parts[1] |>
-    str_remove("^Dafür: ") |>
-    str_split(", ") |>
+  x |>
+    str_split(",\\s*") |>
     unlist() |>
-    str_trim()
-  gegen <- if (length(parts) == 2) {
-    parts[2] |> str_split(", ") |> unlist() |> str_trim()
-  } else {
-    character(0)
-  }
-  list(dafuer = dafuer, gegen = gegen)
+    str_trim() |>
+    str_remove("\\)+$") |>
+    str_trim() |>
+    discard(\(p) p %in% c("", "-"))
 }
 
+extract_vote_token_candidates <- function(vt) {
+  vt_norm <- str_replace(
+    vt,
+    regex("\\.\\s*Dagegen:", ignore_case = TRUE),
+    ", dagegen:"
+  )
+  parts <- str_split(vt_norm, regex(",\\s*dagegen:", ignore_case = TRUE), n = 2)[[1]]
+  dafuer_raw <- parts[1] |>
+    str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
+  dafuer_parts <- str_split(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))[[1]]
+  raw_parts <- if (length(parts) == 2) c(dafuer_parts, parts[2]) else dafuer_parts
+
+  reduce(map(raw_parts, extract_vote_tokens), union)
+}
+
+split_vote_parties <- function(x) {
+  extract_vote_tokens(x) |>
+    keep(\(p) p %in% valid_parties)
+}
+
+fn_get_votes <- function(vt) {
+  # Classify irregular patterns first (no parseable dafür/dagegen anchor)
+  if (str_detect(vt, regex("wechselnde Mehrheiten", ignore_case = TRUE))) {
+    return(list(vote_yes = character(0), vote_no = character(0), report_type = "wechselnde"))
+  }
+  if (str_detect(vt, regex("getrennte Abstimmung", ignore_case = TRUE))) {
+    return(list(vote_yes = character(0), vote_no = character(0), report_type = "getrennte"))
+  }
+  if (str_detect(vt, regex("mehrstimmig", ignore_case = TRUE))) {
+    return(list(vote_yes = character(0), vote_no = character(0), report_type = "mehrstimmig"))
+  }
+
+  vt_norm <- str_replace(
+    vt,
+    regex("\\.\\s*Dagegen:", ignore_case = TRUE),
+    ", dagegen:"
+  )
+  parts <- str_split(vt_norm, regex(",\\s*dagegen:", ignore_case = TRUE), n = 2)[[1]]
+  dafuer_raw <- parts[1] |>
+    str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
+
+  has_dagegen <- length(parts) == 2
+  has_bzw     <- str_detect(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))
+
+  report_type <- case_when(
+    has_bzw & has_dagegen  ~ "mixed",
+    has_bzw & !has_dagegen ~ "mixed",
+    !has_dagegen            ~ "no_dagegen",
+    TRUE                    ~ "regular"
+  )
+
+  dafuer_parts <- if (has_bzw) {
+    str_split(dafuer_raw, regex("\\bbzw\\.?", ignore_case = TRUE))[[1]]
+  } else {
+    list(dafuer_raw)
+  }
+
+  list(
+    vote_yes    = reduce(map(dafuer_parts, split_vote_parties), union),
+    vote_no     = if (has_dagegen) split_vote_parties(parts[2]) else character(0),
+    report_type = report_type
+  )
+}
+
+#extract votes
 item_stages_votes <- item_stages_votes %>%
-  mutate(votes = map(stage_name, \(x) fn_get_votes(x)))
-```
+  filter(!vote_name) %>% #remove votes with name-calls
+  mutate(votes_li = map(stage_name, \(x) fn_get_votes(x)))
 
 
 
-```{r}
-#| include: false
-#| eval: false
-
-item_stages_votes %>%
-  count(phase)
-
-item_stages_votes %>%
-  count(stage_name)
 
 
-#|>
-mutate(
-  stage_description = str_extract(stage_name, "^[^\n]+"),
-  vote_text = str_extract(stage_name, "(?<=\n)Dafür:.+"),
+vote_extraction_check <- item_stages_votes %>%
+  filter_out(str_detect(stage_name, regex("wechselnde"))) %>%
+  mutate(vote_parties = map(votes_li, \(v) c(v$vote_yes, v$vote_no))) %>%
+  select(item_url, legis_period, reading, stage_name, vote_parties) %>%
+  unnest(vote_parties) %>%
+  mutate(
+    party_clean = str_trim(str_extract(vote_parties, "^[^(]+"))
+  ) %>%
+  filter(!party_clean %in% valid_parties)
 
-  reading = case_when(
-    str_detect(
-      stage_description,
-      regex("dritter? Lesung", ignore_case = TRUE)
-    ) ~ "dritte",
-    str_detect(
-      stage_description,
-      regex("zweiter? Lesung", ignore_case = TRUE)
-    ) ~ "zweite",
-    str_detect(
-      stage_description,
-      regex("erste[rn]? Lesung", ignore_case = TRUE)
-    ) ~ "erste",
-    str_detect(phase, regex("Ausschuss", ignore_case = TRUE)) ~ "Ausschuss",
-    str_detect(
-      stage_description,
-      regex("Entschlie.*?ungsantrag", ignore_case = TRUE)
-    ) ~ "Entschließungsantrag",
-    str_detect(
-      stage_description,
-      regex("Ab.*?nderungsantrag", ignore_case = TRUE)
-    ) ~ "Abänderungsantrag",
-    str_detect(
-      stage_description,
-      regex("Antrag auf besondere Kundmachung", ignore_case = TRUE)
-    ) ~ "Antrag auf bes. Kundmachung",
-    str_detect(
-      stage_description,
-      regex("Wiederholung", ignore_case = TRUE)
-    ) ~ "Wiederholung",
-    str_detect(
-      stage_description,
-      regex("Genehmigung", ignore_case = TRUE)
-    ) ~ "Genehmigung",
-    str_detect(
-      stage_description,
-      regex("Erm.*?chtigung", ignore_case = TRUE)
-    ) ~ "Ermächtigung",
-    str_detect(
-      stage_description,
-      regex("Abstimmung", ignore_case = TRUE)
-    ) ~ "Abstimmung",
-    str_detect(
-      stage_description,
-      regex("Beschluss", ignore_case = TRUE)
-    ) ~ "Beschluss",
-    str_detect(
-      stage_description,
-      regex("Antrag", ignore_case = TRUE)
-    ) ~ "Antrag",
-    TRUE ~ NA_character_
-  ),
+vote_uppercase_unknown_check <- item_stages_votes %>%
+  mutate(vote_tokens = map(stage_name, extract_vote_token_candidates)) %>%
+  select(item_url, legis_period, reading, stage_name, vote_tokens) %>%
+  unnest(vote_tokens) %>%
+  distinct() %>%
+  filter(
+    !vote_tokens %in% valid_parties,
+    str_detect(vote_tokens, regex("^[[:upper:]ÄÖÜ][[:upper:]ÄÖÜ0-9/-]*$"))
+  )
 
-```
+n_distinct(vote_extraction_check$item_url)
+n_distinct(item_stages_votes$item_url)
 
-```{r}
-#| label: cache-stages-votes
-#| include: false
-# readr::write_rds(
-#   item_stages_votes,
-#   here::here(
-#     "posts",
-#     "2026-06-08-ParlAT-votingPatterns-2",
-#     "_data",
-#     "item_stages_votes.rds"
-#   )
-# )
-item_stages_votes <- readr::read_rds(here::here(
-  "posts",
-  "2026-06-08-ParlAT-votingPatterns-2",
-  "_data",
-  "item_stages_votes.rds"
-))
-```
+report_type_check <- item_stages_votes %>%
+  mutate(report_type = map_chr(votes_li, "report_type")) %>%
+  count(report_type)
 
-# Vote flips across readings
+item_stages_votes <- item_stages_votes %>%
+  distinct()
 
-## Build flip dataset
+item_stages_votes <- item_stages_votes %>%
+  group_by(legis_period, item_url) %>%
+  mutate(obs_n = n()) %>%
+  ungroup()
 
-```{r}
-#| label: build-flips
-#| code-summary: "Identify parties that flipped position between zweite and dritte Lesung"
-# For bundled items with multiple votes per reading, keep the first only
-readings_23 <- item_stages_votes |>
-  filter(reading %in% c("zweite", "dritte")) |>
-  slice_head(n = 1, by = c(item_url, reading)) |>
-  filter(n_distinct(reading) == 2, .by = item_url)
+deviant <- item_stages_votes %>%
+  filter(obs_n != 2) #limit analysis to complete pairs
 
-# self-join to get zweite and dritte side by side per item
-zweite <- readings_23 |>
-  filter(reading == "zweite") |>
+item_votes_long <- item_stages_votes %>%
+  mutate(report_type = map_chr(votes_li, "report_type")) %>%
+  filter(report_type %in% c("regular", "no_dagegen")) %>%
+  group_by(legis_period, item_url) %>%
+  mutate(obs_n = n()) %>%
+  ungroup() %>%
+  filter(obs_n == 2) %>% # limit analysis to complete pairs
+  mutate(
+    votes_party = map(votes_li, \(v) {
+      yes_parties <- v$vote_yes
+      no_parties <- v$vote_no
+
+      tibble(
+        party = union(yes_parties, no_parties),
+        yes = as.integer(party %in% yes_parties),
+        no = as.integer(party %in% no_parties)
+      )
+    })
+  ) %>%
+  unnest(votes_party)
+
+item_votes_reading_wide <- item_votes_long %>%
+  filter(reading %in% c("second", "third")) %>%
+  mutate(
+    votes_li_raw = map_chr(votes_li, \(x) {
+      paste(capture.output(str(x)), collapse = "\n")
+    })
+  ) %>%
+  group_by(
+    item_url,
+    legis_period,
+    type_doc,
+    title,
+    item_number,
+    status_number,
+    status_description,
+    party
+  ) %>%
+  mutate(
+    stage_name = paste(unique(stage_name), collapse = "\n\n"),
+    votes_li_raw = paste(unique(votes_li_raw), collapse = "\n\n")
+  ) %>%
+  ungroup() %>%
   select(
     item_url,
     legis_period,
     type_doc,
     title,
     item_number,
-    vote_text_zweite = vote_text_list
-  )
-
-dritte <- readings_23 |>
-  filter(reading == "dritte") |>
-  select(item_url, vote_text_dritte = vote_text_list)
-
-flips <- inner_join(zweite, dritte, by = "item_url") |>
+    status_number,
+    status_description,
+    party,
+    stage_name,
+    votes_li_raw,
+    reading,
+    yes,
+    no,
+    report_type
+  ) %>%
+  pivot_wider(
+    id_cols = c(
+      item_url,
+      legis_period,
+      type_doc,
+      title,
+      item_number,
+      status_number,
+      status_description,
+      party,
+      stage_name,
+      votes_li_raw
+    ),
+    names_from = reading,
+    values_from = c(yes, no, report_type),
+    names_glue = "{.value}_{reading}",
+    values_fill = list(yes = NA, no = NA, report_type = NA_character_)
+  ) %>%
   mutate(
-    dafuer_zweite = map(vote_text_zweite, "dafuer"),
-    gegen_zweite = map(vote_text_zweite, "gegen"),
-    dafuer_dritte = map(vote_text_dritte, "dafuer"),
-    gegen_dritte = map(vote_text_dritte, "gegen"),
-
-    # gegen in zweite -> dafuer in dritte
-    flip_pos = map2(gegen_zweite, dafuer_dritte, intersect),
-    # dafuer in zweite -> gegen in dritte
-    flip_neg = map2(dafuer_zweite, gegen_dritte, intersect),
-
-    n_flip_pos = map_int(flip_pos, length),
-    n_flip_neg = map_int(flip_neg, length)
-  ) |>
-  select(-vote_text_zweite, -vote_text_dritte)
-```
-
-```{r}
-#| label: cache-flips
-#| include: false
-# readr::write_rds(
-#   flips,
-#   here::here(
-#     "posts",
-#     "2026-06-08-ParlAT-votingPatterns-2",
-#     "_data",
-#     "flips.rds"
-#   )
-# )
-flips <- readr::read_rds(here::here(
-  "posts",
-  "2026-06-08-ParlAT-votingPatterns-2",
-  "_data",
-  "flips.rds"
-))
-```
-
-## Visualise flips
-
-```{r}
-#| label: plot-vote-flips
-#| code-summary: "Tile plot: vote flips by party and legislative period"
-#| column: body-outset-right
-#| fig-width: 11
-#| fig-height: 6.5
-#| out-width: "100%"
-#| fig-align: "center"
-library(ggpattern)
-library(patchwork)
-
-gov_parties_lookup <- tribble(
-  ~legis_period , ~party ,
-  "XX"          , "SPÖ"  , "XX"     , "ÖVP"   ,
-  "XXI"         , "ÖVP"  , "XXI"    , "F"     ,
-  "XXII"        , "ÖVP"  , "XXII"   , "F"     , "XXII"   , "F-BZÖ" ,
-  "XXIII"       , "SPÖ"  , "XXIII"  , "ÖVP"   ,
-  "XXIV"        , "SPÖ"  , "XXIV"   , "ÖVP"   ,
-  "XXV"         , "SPÖ"  , "XXV"    , "ÖVP"   ,
-  "XXVI"        , "ÖVP"  , "XXVI"   , "FPÖ"   ,
-  "XXVII"       , "ÖVP"  , "XXVII"  , "GRÜNE" ,
-  "XXVIII"      , "ÖVP"  , "XXVIII" , "SPÖ"   , "XXVIII" , "NEOS"
-) |>
-  mutate(is_gov = TRUE)
-
-valid_parties <- c(
-  "SPÖ",
-  "ÖVP",
-  "F",
-  "FPÖ",
-  "GRÜNE",
-  "L",
-  "BZÖ",
-  "STRONACH",
-  "NEOS",
-  "NEOS-LIF",
-  "F-BZÖ",
-  "JETZT",
-  "PILZ",
-  "NEOS/NEOS-LIF",
-  "JETZT/PILZ"
-)
-
-normalise_party <- function(p) {
-  case_when(
-    p %in% c("NEOS-LIF", "NEOS/NEOS-LIF") ~ "NEOS",
-    p %in% c("JETZT", "PILZ", "JETZT/PILZ") ~ "JETZT/PILZ",
-    TRUE ~ p
-  )
-}
-
-# parties present in parliament per period
-parties_per_period <- item_stages_votes |>
-  filter(reading == "dritte") |>
-  mutate(all_p = map(vote_text_list, \(x) c(x$dafuer, x$gegen))) |>
-  unnest(all_p) |>
-  mutate(party_clean = str_trim(str_extract(all_p, "^[^(]+"))) |>
-  filter(party_clean %in% valid_parties) |>
-  mutate(party = normalise_party(party_clean)) |>
-  distinct(legis_period, party)
-
-# flip long tables
-pos_long <- flips |>
-  filter(n_flip_pos > 0) |>
-  unnest(flip_pos) |>
-  rename(party = flip_pos) |>
-  mutate(party = normalise_party(party)) |>
-  count(legis_period, party, name = "n") |>
-  mutate(direction = "gegen → dafür")
-
-neg_long <- flips |>
-  filter(n_flip_neg > 0) |>
-  unnest(flip_neg) |>
-  rename(party = flip_neg) |>
-  mutate(party = normalise_party(party)) |>
-  count(legis_period, party, name = "n") |>
-  mutate(direction = "dafür → gegen")
-
-all_parties <- union(
-  union(pos_long$party, neg_long$party),
-  union("ÖVP", parties_per_period$party)
-)
-
-party_order <- c(
-  bind_rows(pos_long, neg_long) |>
-    count(party, wt = n, sort = TRUE) |>
-    pull(party),
-  setdiff(
-    all_parties,
-    bind_rows(pos_long, neg_long) |> distinct(party) |> pull(party)
-  )
-)
-
-all_periods_vec <- c(
-  "XX",
-  "XXI",
-  "XXII",
-  "XXIII",
-  "XXIV",
-  "XXV",
-  "XXVI",
-  "XXVII",
-  "XXVIII"
-)
-
-make_grid <- function(long_df, dir_label) {
-  expand_grid(party = all_parties, legis_period = all_periods_vec) |>
-    left_join(
-      long_df |> select(party, legis_period, n),
-      by = c("party", "legis_period")
-    ) |>
-    replace_na(list(n = 0)) |>
-    left_join(gov_parties_lookup, by = c("party", "legis_period")) |>
-    replace_na(list(is_gov = FALSE)) |>
-    left_join(
-      parties_per_period |> mutate(present = TRUE),
-      by = c("party", "legis_period")
-    ) |>
-    replace_na(list(present = FALSE)) |>
-    mutate(
-      direction = dir_label,
-      party = factor(party, levels = rev(party_order)),
-      legis_period = factor(legis_period, levels = all_periods_vec),
-      label = if_else(n > 0, as.character(n), ""),
-      fill_val = if_else(present, as.numeric(n), NA_real_)
-    )
-}
-
-grid_all <- bind_rows(
-  make_grid(pos_long, "gegen → dafür"),
-  make_grid(neg_long, "dafür → gegen")
-) |>
-  mutate(
-    direction = factor(direction, levels = c("gegen → dafür", "dafür → gegen"))
-  )
-
-pal_pos <- "#d73027"
-pal_neg <- "#4575b4"
-n_max <- max(grid_all$n, na.rm = TRUE)
-
-flip_base_theme <- theme_minimal(base_size = 11, base_family = "Noto Sans") +
-  theme(
-    panel.grid = element_blank(),
-    axis.text = element_text(size = 9),
-    plot.title = element_text(
-      face = "bold",
-      size = 14,
-      hjust = 0,
-      margin = margin(b = 4)
-    ),
-    plot.subtitle = element_text(
-      size = 10,
-      lineheight = 1.3,
-      colour = "grey30",
-      margin = margin(b = 10)
-    ),
-    plot.caption = element_text(
-      size = 8,
-      colour = "grey45",
-      hjust = 0,
-      margin = margin(t = 10)
-    ),
-    plot.title.position = "plot",
-    plot.caption.position = "plot",
-    legend.position = "none"
-  )
-
-make_flip_panel <- function(data, dir_label, fill_high, show_y = TRUE) {
-  d <- filter(data, direction == dir_label)
-  p <- d |>
-    ggplot(aes(
-      x = legis_period,
-      y = party,
-      fill = fill_val,
-      pattern = is_gov
-    )) +
-    geom_tile_pattern(
-      colour = "white",
-      linewidth = 0.6,
-      pattern_colour = "grey50",
-      pattern_fill = "grey50",
-      pattern_density = 0.08,
-      pattern_spacing = 0.06,
-      pattern_alpha = 0.45
-    ) +
-    geom_text(
-      data = \(x) filter(x, n > 0),
-      aes(x = legis_period, y = party, label = label),
-      colour = "white",
-      size = 3.2,
-      fontface = "bold",
-      family = "Noto Sans",
-      inherit.aes = FALSE
-    ) +
-    scale_fill_gradient(
-      low = "grey93",
-      high = fill_high,
-      limits = c(0, n_max),
-      na.value = "white",
-      guide = "none"
-    ) +
-    scale_pattern_manual(
-      values = c("TRUE" = "stripe", "FALSE" = "none"),
-      guide = "none"
-    ) +
-    scale_x_discrete(position = "top") +
-    labs(x = NULL, y = NULL, title = dir_label) +
-    flip_base_theme +
-    theme(
-      plot.title = element_text(
-        face = "bold",
-        size = 11,
-        hjust = 0.5,
-        margin = margin(b = 4)
-      )
-    )
-  if (!show_y) {
-    p <- p + theme(axis.text.y = element_blank())
-  }
-  p
-}
-
-t_pos <- make_flip_panel(grid_all, "gegen → dafür", pal_pos, show_y = TRUE)
-t_neg <- make_flip_panel(grid_all, "dafür → gegen", pal_neg, show_y = FALSE)
-
-(t_pos | t_neg) +
-  plot_annotation(
-    title = "Vote flips between zweite and dritte Lesung",
-    subtitle = paste0(
-      "Number of items where a party switched position between second and third reading. ",
-      "White = not in parliament. Grey = in parliament, no flips.\n",
-      "Diagonal stripe = in government. Left: gegen→dafür. Right: dafür→gegen."
-    ),
-    caption = "Data: www.parlament.gv.at via ParlAT. Analysis: Roland Schmidt - @zoowalk.bsky.social",
-    theme = theme(
-      plot.title = element_text(
-        face = "bold",
-        size = 14,
-        hjust = 0,
-        family = "Noto Sans",
-        margin = margin(b = 4)
-      ),
-      plot.subtitle = element_text(
-        size = 10,
-        colour = "grey30",
-        lineheight = 1.3,
-        family = "Noto Sans",
-        margin = margin(b = 8)
-      ),
-      plot.caption = element_text(
-        size = 8,
-        colour = "grey45",
-        hjust = 0,
-        family = "Noto Sans",
-        margin = margin(t = 8)
-      )
-    )
+    flip_pos = ifelse(no_second == 1 & yes_third == 1, TRUE, FALSE),
+    flip_neg = ifelse(yes_second == 1 & no_third == 1, TRUE, FALSE)
   )
 ```
 
-## Amendment voting as a legislative strategy
 
-The stages data also contains votes on *Abänderungsanträge* (amendment motions). This lets us ask a more nuanced question: when a party votes for an amendment on a bill it previously opposed, does that amendment act as a "price of support" — converting a gegen vote in the zweite Lesung into a dafür vote in the dritte?
 
-Crucially, we need to condition on whether the amendment actually *passed*. If the government majority rejected an opposition amendment, staying against in the dritte is completely expected — nothing changed. The interesting cases are only those where the amendment passed.
-
-```{r}
-#| label: build-amendment-pathways
-#| code-summary: "Build amendment pathway analysis"
-normalise_party <- function(p) {
-  case_when(
-    p %in% c("NEOS-LIF", "NEOS/NEOS-LIF") ~ "NEOS",
-    p %in% c("JETZT", "PILZ", "JETZT/PILZ") ~ "JETZT/PILZ",
-    TRUE ~ p
-  )
-}
-
-gov_parties_lookup <- tribble(
-  ~legis_period , ~party ,
-  "XX"          , "SPÖ"  , "XX"     , "ÖVP"   ,
-  "XXI"         , "ÖVP"  , "XXI"    , "F"     ,
-  "XXII"        , "ÖVP"  , "XXII"   , "F"     , "XXII"   , "F-BZÖ" ,
-  "XXIII"       , "SPÖ"  , "XXIII"  , "ÖVP"   ,
-  "XXIV"        , "SPÖ"  , "XXIV"   , "ÖVP"   ,
-  "XXV"         , "SPÖ"  , "XXV"    , "ÖVP"   ,
-  "XXVI"        , "ÖVP"  , "XXVI"   , "FPÖ"   ,
-  "XXVII"       , "ÖVP"  , "XXVII"  , "GRÜNE" ,
-  "XXVIII"      , "ÖVP"  , "XXVIII" , "SPÖ"   , "XXVIII" , "NEOS"
-)
-
-gov_by_period <- gov_parties_lookup |>
-  group_by(legis_period) |>
-  summarise(gov_parties = list(party), .groups = "drop")
-
-stages_3 <- item_stages_votes |>
-  filter(reading %in% c("zweite", "Abänderungsantrag", "dritte")) |>
-  select(item_url, legis_period, reading, vote_text_list)
-
-zweite_df <- stages_3 |>
-  filter(reading == "zweite") |>
-  select(item_url, legis_period, vtl_zweite = vote_text_list)
-
-dritte_df <- stages_3 |>
-  filter(reading == "dritte") |>
-  group_by(item_url) |>
-  slice_tail(n = 1) |>
-  ungroup() |>
-  select(item_url, vtl_dritte = vote_text_list)
-
-# Determine amendment outcome: passed if government parties voted dafür
-amendment_df <- stages_3 |>
-  filter(reading == "Abänderungsantrag") |>
-  left_join(gov_by_period, by = "legis_period") |>
-  mutate(
-    dafuer_amend_raw = map(vote_text_list, \(x) {
-      map_chr(x$dafuer, normalise_party)
-    }),
-    gegen_amend_raw = map(vote_text_list, \(x) {
-      map_chr(x$gegen, normalise_party)
-    }),
-    amendment_passed = map2_lgl(gov_parties, dafuer_amend_raw, \(g, d) {
-      any(g %in% d)
-    }) &
-      !map2_lgl(gov_parties, gegen_amend_raw, \(g, a) any(g %in% a))
-  ) |>
-  group_by(item_url) |>
-  slice_tail(n = 1) |>
-  ungroup() |>
-  select(item_url, vtl_amendment = vote_text_list, amendment_passed)
-
-amendment_pathways <- zweite_df |>
-  inner_join(dritte_df, by = "item_url", relationship = "many-to-many") |>
-  inner_join(amendment_df, by = "item_url", relationship = "many-to-many") |>
-  distinct(item_url, .keep_all = TRUE) |>
-  mutate(
-    gegen_zweite = map(vtl_zweite, \(x) map_chr(x$gegen, normalise_party)),
-    dafuer_dritte = map(vtl_dritte, \(x) map_chr(x$dafuer, normalise_party)),
-    gegen_dritte = map(vtl_dritte, \(x) map_chr(x$gegen, normalise_party)),
-    dafuer_amend = map(vtl_amendment, \(x) map_chr(x$dafuer, normalise_party)),
-    gegen_amend = map(vtl_amendment, \(x) map_chr(x$gegen, normalise_party)),
-    # gegen zweite → dafür amendment → dafür dritte  ("price of support")
-    flip_via_amend = pmap(
-      list(gegen_zweite, dafuer_amend, dafuer_dritte),
-      \(gz, da, dd) intersect(intersect(gz, da), dd)
-    ),
-    # gegen zweite → gegen/absent amendment → dafür dritte  (flip without amendment)
-    flip_no_amend = pmap(
-      list(gegen_zweite, gegen_amend, dafuer_dritte),
-      \(gz, ga, dd) intersect(intersect(gz, ga), dd)
-    ),
-    # gegen zweite → dafür amendment → gegen dritte
-    amend_no_flip = pmap(
-      list(gegen_zweite, dafuer_amend, gegen_dritte),
-      \(gz, da, gd) intersect(intersect(gz, da), gd)
-    ),
-    n_flip_via_amend = map_int(flip_via_amend, length),
-    n_flip_no_amend = map_int(flip_no_amend, length),
-    n_amend_no_flip = map_int(amend_no_flip, length)
-  )
-```
-
-Among the `r nrow(amendment_pathways)` items with all three stages, `r sum(amendment_pathways$amendment_passed)` had a *passed* amendment and `r sum(!amendment_pathways$amendment_passed)` had a *failed* amendment. Conditioning on amendment outcome changes the picture entirely:
-
-```{r}
-#| label: amendment-pathway-summary
-#| code-summary: "Pathway counts by amendment outcome"
-bind_rows(
-  amendment_pathways |>
-    filter(amendment_passed) |>
-    summarise(
-      `Amendment passed` = "Yes",
-      `Price of support (gegen→amend✓→dritte dafür)` = sum(
-        n_flip_via_amend > 0
-      ),
-      `Stayed gegen despite passed amendment` = sum(n_amend_no_flip > 0),
-      `Flip without amendment` = sum(n_flip_no_amend > 0)
-    ),
-  amendment_pathways |>
-    filter(!amendment_passed) |>
-    summarise(
-      `Amendment passed` = "No",
-      `Price of support (gegen→amend✓→dritte dafür)` = sum(
-        n_flip_via_amend > 0
-      ),
-      `Stayed gegen despite passed amendment` = sum(n_amend_no_flip > 0),
-      `Flip without amendment` = sum(n_flip_no_amend > 0)
-    )
-) |>
-  knitr::kable()
-```
-
-When the amendment *failed*, opposition parties almost always stayed against in the dritte — exactly as expected. When the amendment *passed*, 10 items show a party flipping to dafür, while only 3 items show a party that supported the (successful) amendment but still voted gegen. Those 3 cases are the genuinely puzzling ones: the amendment they demanded was incorporated, yet they did not follow through with a final yes vote.
-
-```{r}
-#| label: plot-amendment-pathways
-#| code-summary: "Tile plot: amendment pathways by party and legislative period"
-#| column: body-outset-right
-#| fig-width: 11
-#| fig-height: 5
-#| out-width: "100%"
-#| fig-align: "center"
-all_periods_vec <- c(
-  "XX",
-  "XXI",
-  "XXII",
-  "XXIII",
-  "XXIV",
-  "XXV",
-  "XXVI",
-  "XXVII",
-  "XXVIII"
-)
-
-make_pathway_grid <- function(df, col, label) {
-  long <- df |>
-    filter(map_int(.data[[col]], length) > 0) |>
-    unnest(!!sym(col)) |>
-    rename(party = !!sym(col)) |>
-    count(legis_period, party, name = "n")
-
-  all_parties_p <- union(long$party, "ÖVP")
-
-  expand_grid(party = all_parties_p, legis_period = all_periods_vec) |>
-    left_join(long, by = c("party", "legis_period")) |>
-    replace_na(list(n = 0)) |>
-    mutate(
-      pathway = label,
-      party = factor(
-        party,
-        levels = rev(c(
-          long |> count(party, wt = n, sort = TRUE) |> pull(party),
-          setdiff(all_parties_p, long |> distinct(party) |> pull(party))
-        ))
-      ),
-      legis_period = factor(legis_period, levels = all_periods_vec),
-      label_txt = if_else(n > 0, as.character(n), "")
-    )
-}
-
-passed <- filter(amendment_pathways, amendment_passed)
-
-grid_price <- make_pathway_grid(
-  passed,
-  "flip_via_amend",
-  "Amendment passed → flip\n(gegen→amend dafür→dritte dafür)"
-)
-grid_strategic <- make_pathway_grid(
-  passed,
-  "amend_no_flip",
-  "Amendment passed → still gegen\n(gegen→amend dafür→dritte gegen)"
-)
-
-pal_price <- "#d73027"
-pal_strategic <- "#4575b4"
-
-n_max_p <- max(c(grid_price$n, grid_strategic$n), na.rm = TRUE)
-
-make_amend_panel <- function(data, fill_high, show_y = TRUE) {
-  p <- data |>
-    ggplot(aes(x = legis_period, y = party, fill = n)) +
-    geom_tile(colour = "white", linewidth = 0.6) +
-    geom_text(
-      data = \(x) filter(x, n > 0),
-      aes(label = label_txt),
-      colour = "white",
-      size = 3.2,
-      fontface = "bold",
-      family = "Noto Sans"
-    ) +
-    scale_fill_gradient(
-      low = "grey93",
-      high = fill_high,
-      limits = c(0, n_max_p),
-      guide = "none"
-    ) +
-    scale_x_discrete(position = "top") +
-    labs(x = NULL, y = NULL, title = unique(data$pathway)) +
-    theme_minimal(base_size = 11, base_family = "Noto Sans") +
-    theme(
-      panel.grid = element_blank(),
-      axis.text = element_text(size = 9),
-      plot.title = element_text(
-        face = "bold",
-        size = 10,
-        hjust = 0.5,
-        margin = margin(b = 4)
-      ),
-      legend.position = "none"
-    )
-  if (!show_y) {
-    p <- p + theme(axis.text.y = element_blank())
-  }
-  p
-}
-
-p_price <- make_amend_panel(grid_price, pal_price, show_y = TRUE)
-p_strategic <- make_amend_panel(grid_strategic, pal_strategic, show_y = FALSE)
-
-(p_price | p_strategic) +
-  plot_annotation(
-    title = "Among items where the amendment passed: did opposing parties follow through?",
-    subtitle = paste0(
-      "Only items where the amendment was adopted (government voted dafür). ",
-      "Left: party voted gegen (zweite), for the amendment, then dafür (dritte) — amendment as price of support.\n",
-      "Right: party voted gegen (zweite), for the amendment, yet stayed gegen (dritte) — ",
-      "amendment insufficient to secure final support."
-    ),
-    caption = "Data: www.parlament.gv.at via ParlAT. Analysis: Roland Schmidt - @zoowalk.bsky.social",
-    theme = theme(
-      plot.title = element_text(
-        face = "bold",
-        size = 13,
-        hjust = 0,
-        family = "Noto Sans",
-        margin = margin(b = 4)
-      ),
-      plot.subtitle = element_text(
-        size = 9,
-        colour = "grey30",
-        lineheight = 1.3,
-        family = "Noto Sans",
-        margin = margin(b = 8)
-      ),
-      plot.caption = element_text(
-        size = 8,
-        colour = "grey45",
-        hjust = 0,
-        family = "Noto Sans",
-        margin = margin(t = 8)
-      )
-    )
-  )
-```
