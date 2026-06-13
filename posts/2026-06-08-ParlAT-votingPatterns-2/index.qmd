@@ -141,41 +141,14 @@ The `get_items()` call returned all (!) items, but not every item type is actual
 items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
   paste0(., collapse = "|")
 
-item_type_scope_labels <- items_20_28 %>%
-  distinct(type_doc, type_doc_long) %>%
-  mutate(
-    selected_for_scope = replace_na(
-      str_detect(type_doc, regex(items_select)),
-      FALSE
-    ),
-    label = paste0(type_doc_long, " (", type_doc, ")")
-  ) %>%
-  arrange(type_doc)
-
-items_selected_label_str <- item_type_scope_labels %>%
-  filter(selected_for_scope) %>%
-  pull(label) %>%
-  paste(collapse = ", ")
-
-items_not_selected_label_str <- item_type_scope_labels %>%
-  filter(!selected_for_scope) %>%
-  pull(label) %>%
-  paste(collapse = ", ")
-
-vote_graph_caption <- paste0(
-  "Voting on the following items ('Verhandlungsgegenstände') was included: ",
-  items_selected_label_str,
-  "<br>Voting on the following items was not included: ",
-  items_not_selected_label_str,
-  "<br><br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-  data_cutoff,
-  "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes | Bluesky: @zoowalk.bsky.social"
-)
-
 items_scope <- items_20_28 %>%
   filter(str_detect(type_doc, regex(items_select)))
 
-# verify which long-form type labels the regex actually matched
+# verify which long-form type labels the regex actually matched. Note that the
+# unanchored RV/GABR patterns also match variants (RVEU, RVS, GABR13, …); these
+# pass the type filter but rarely carry a standard reading vote, so they drop out
+# downstream. The graph caption is therefore built later, from the item types that
+# actually survive into the analysis (see the votes-wide section).
 items_scope %>%
   distinct(type_doc_long, type_doc)
 ```
@@ -1012,6 +985,24 @@ items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
       no = NA_integer_
     )
   )
+
+# graph caption: list only the item types that actually survive into the analysis
+# (the type filter is broader, but several variants never carry a reading vote)
+analysed_type_labels <- items_scope_pairs_regular_wide %>%
+  distinct(type_doc) %>%
+  left_join(distinct(items_20_28, type_doc, type_doc_long), by = "type_doc") %>%
+  arrange(type_doc) %>%
+  mutate(label = paste0(type_doc_long, " (", type_doc, ")")) %>%
+  pull(label) %>%
+  paste(collapse = ", ")
+
+vote_graph_caption <- paste0(
+  "Item types included ('Verhandlungsgegenstände'): ",
+  analysed_type_labels,
+  "<br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
+  data_cutoff,
+  "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes | Bluesky: @zoowalk.bsky.social"
+)
 ```
 
 Speaking of `NA`s — before drawing any conclusions, it's worth checking how much missingness we are actually dealing with, and whether it is concentrated in particular legislative periods. The naniar package makes this a quick exercise.
@@ -1979,6 +1970,78 @@ p_where_heatmap <- where_tile_grid %>%
   )
 
 p_where_heatmap
+```
+
+## Angle 4 — Stage × period at a glance
+
+Finally, the most compact summary of all: a single tile grid with the two transitions on the x-axis and the legislative periods down the y-axis. Each tile's colour is the **relative** number of flips — the share of comparable party–item pairs that change position at that transition — with the absolute count combining both directions. It makes the headline pattern unmissable: the committee → 2nd reading column is consistently darker than the 2nd → 3rd column.
+
+```{r}
+#| label: plot-flip-stage-period
+#| code-summary: "Heatmap of relative flip rate by stage and legislative period"
+#| fig-width: 7
+#| fig-height: 7.5
+#| out-width: "70%"
+#| fig-align: "center"
+flip_stage_period <- transitions %>%
+  group_by(legis_period, transition) %>%
+  summarise(
+    eligible = n(),
+    n_flip = sum(change %in% c("no → yes", "yes → no")),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    rate = n_flip / eligible,
+    legis_period = factor(legis_period, levels = rev(all_periods_vec)),
+    # white text on dark tiles, dark text on light tiles
+    lab_colour = if_else(rate > max(rate) / 2, "white", "grey15")
+  )
+
+p_flip_stage_period <- flip_stage_period %>%
+  ggplot(aes(x = transition, y = legis_period, fill = rate)) +
+  geom_tile(colour = "white", linewidth = 0.9) +
+  geom_text(
+    aes(label = scales::percent(rate, accuracy = 0.1), colour = lab_colour),
+    family = "Noto Sans",
+    size = 3.3
+  ) +
+  scale_colour_identity() +
+  scale_fill_gradient(
+    low = "grey94",
+    high = "#3b0f70",
+    labels = scales::percent_format(accuracy = 1),
+    name = "Flip rate"
+  ) +
+  scale_x_discrete(position = "top") +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Relative number of flips by stage and legislative period",
+    subtitle = paste0(
+      "Tile colour = share of comparable party–item pairs that change position at each transition ",
+      "(both directions combined, all parties). The committee → 2nd reading step carries almost all of the movement.<br>",
+      "<span style='font-size:9pt;color:grey40;'>NR, regular votes only.</span>"
+    ),
+    caption = vote_graph_caption_short
+  ) +
+  theme_minimal(base_size = 11, base_family = "Noto Sans") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 10),
+    axis.text.x = element_text(face = "bold"),
+    legend.position = "right",
+    plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10, colour = "grey30", lineheight = 1.3, margin = ggplot2::margin(b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      size = 8, colour = "grey45", margin = ggplot2::margin(t = 10)
+    ),
+    plot.title.position = "plot",
+    plot.caption.position = "plot"
+  )
+
+p_flip_stage_period
 ```
 
 # A closer look: items decided at all three stages
