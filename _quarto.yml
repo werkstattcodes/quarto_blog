@@ -73,7 +73,7 @@ format:
     number-sections: true
     smooth-scroll: true
 
-editor: visual
+#editor: visual
 
 date-format: D MMM YYYY
 
