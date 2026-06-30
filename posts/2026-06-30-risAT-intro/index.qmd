@@ -1,0 +1,223 @@
+---
+title: "Introducing {risAT}: Searching Austrian Case Law from R"
+date: 2026-06-30
+draft: false
+date-modified: last-modified
+author: Roland Schmidt
+description: |
+  {risAT} is an R package that wraps the Austrian RIS (Rechtsinformationssystem)
+  Open Government Data API — making it straightforward to search decisions of the
+  Constitutional Court, Administrative Court, Federal Administrative Court,
+  ordinary courts, and several specialised bodies directly from R.
+
+categories:
+  - Austria
+  - legal
+  - r-bloggers
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(risAT)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+```
+
+The Austrian Legal Information System — [RIS](https://www.ris.bka.gv.at/), short for *Rechtsinformationssystem* — is one of the most comprehensive publicly available repositories of Austrian law. It covers constitutional and administrative decisions, ordinary court judgments, data protection rulings, equal treatment findings, and much more, all the way back decades. The catch, until recently, was that querying it programmatically required wrestling with a verbose REST API and wrangling the JSON responses by hand.
+
+[{risAT}](https://werkstattcodes.github.io/risAT/) is an attempt to fix that. It provides a tidyverse-friendly interface to the RIS Open Government Data REST API (v2.6), returning clean tibbles that slot directly into a standard R analysis workflow. Whether you are researching a particular legal norm, tracking how a court has handled a topic over time, or building a larger dataset of decisions for text analysis, the package removes the boilerplate and lets you focus on the data.
+
+The package is still in early development (version 0.0.0.9000), but the core search interface is in place and functional. Below I walk through the main features.
+
+You can install {risAT} from GitHub:
+
+``` r
+# install.packages("pak")
+pak::pak("werkstattcodes/risAT")
+```
+
+For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/).
+
+## What courts are covered?
+
+The RIS API organises its content by *application* — essentially one endpoint per court system or legal body. {risAT} provides a dedicated wrapper for each:
+
+| Function | Court / Body |
+|------------------------------------|------------------------------------|
+| `ris_search_vfgh()` | Constitutional Court (Verfassungsgerichtshof) |
+| `ris_search_vwgh()` | Administrative Court (Verwaltungsgerichtshof) |
+| `ris_search_justiz()` | Ordinary courts (OGH, OLG, LG, BG) |
+| `ris_search_bvwg()` | Federal Administrative Court (Bundesverwaltungsgericht) |
+| `ris_search_lvwg()` | State administrative courts (Landesverwaltungsgerichte) |
+| `ris_search_dsk()` | Data Protection Authority (Datenschutzbehörde) |
+| `ris_search_dok()` | Disciplinary body decisions |
+| `ris_search_pvak()` | Staff representation oversight |
+| `ris_search_gbk()` | Equal Treatment Commission (Gleichbehandlungskommission) |
+| `ris_search_case_law()` | Generic wrapper — any application |
+
+The court-specific functions are thin wrappers around the generic `ris_search_case_law()`. They exist for convenience and discoverability: when you know which court you want, calling `ris_search_vwgh()` is shorter and more readable than passing `application = "Vwgh"` explicitly.
+
+## Basic usage
+
+The simplest search targets a specific court and filter. Here we search VwGH decisions that cite `AsylG 2005 §8`. With `echo = T`, {risAT} prints the equivalent RIS web URL together with the number of returned rows:
+
+```{r}
+#| label: search-vwgh-asyl
+asyl <- risAT::ris_search_vwgh(norm = "'AsylG 2005 §8'", echo = T)
+
+nrow(asyl)
+glimpse(asyl)
+
+climateChange <- risAT::ris_search_vwgh(query = "Klimawandel", echo = T)
+```
+
+The return value is a tibble. Every result includes a set of standard columns — `id`, `application`, `decision_date`, `case_number`, `document_type` — as well as two list-columns: `content_urls` (links to the HTML and PDF versions of the decision) and `app_metadata` (raw API metadata including hit counts and pagination info).
+
+Court-specific columns are prefixed accordingly. VwGH results carry `vwgh_decision_type`, keeping column names unambiguous when combining results from multiple applications.
+
+## A short tour of the wrappers
+
+The dedicated wrapper functions all return the same basic tibble structure, but they expose the filters that are most useful for their respective court or body. A few examples give a sense of the range.
+
+### Constitutional Court
+
+`ris_search_vfgh()` searches decisions of the Constitutional Court. By default, it searches *Rechtssaetze* rather than full decision texts, matching the way the VfGH RIS search is commonly used:
+
+```{r}
+#| label: search-vfgh-constitutional
+vfgh_freedom <- ris_search_vfgh(
+  query = "Folter"
+)
+
+vfgh_freedom |>
+  select(decision_date, case_number, document_type, vfgh_decision_type) |>
+  slice_head(n = 5)
+```
+
+### Ordinary courts
+
+`ris_search_justiz()` covers ordinary courts, including the OGH, OLG, LG, and BG. The `court` argument is useful when you want to restrict a query to one court level:
+
+```{r}
+#| label: search-justiz-ogh
+ogh_damages <- ris_search_justiz(
+  query = "Schadenersatz",
+  court = "OGH",
+  decision_date_from = "2024-01-01"
+)
+
+ogh_damages |>
+  select(decision_date, case_number, justiz_court, justiz_legal_areas) |>
+  slice_head(n = 5)
+```
+
+### State administrative courts
+
+`ris_search_lvwg()` searches across Austria's nine state administrative courts. The `federal_state` argument narrows the search to one Bundesland:
+
+```{r}
+#| label: search-lvwg-wien
+lvwg_wien_building <- ris_search_lvwg(
+  query = "Baubewilligung",
+  federal_state = "Wien",
+  decision_date_from = "2024-01-01"
+)
+
+lvwg_wien_building |>
+  select(decision_date, lvwg_federal_state, document_type) |>
+  slice_head(n = 5)
+```
+
+### Generic searches
+
+The court-specific helpers are conveniences around `ris_search_case_law()`. The generic wrapper is helpful when you want to pass the application as data, or when you are working with an application for which you do not want to call the dedicated helper:
+
+```{r}
+#| label: search-generic-wrapper
+dsgvo_generic <- ris_search_case_law(
+  application = "data_protection_authority",
+  query = "DSGVO",
+  decision_date_from = "2024-01-01"
+)
+
+dsgvo_generic |>
+  count(application, document_type, sort = TRUE) |>
+  slice_head(n = 5)
+```
+
+## Working with results
+
+Because the output is a plain tibble, it integrates naturally with the tidyverse. A few patterns come up often.
+
+### Extracting content URLs
+
+`content_urls` is a list-column where each element is a small tibble of URL–format pairs. Unnesting it gives direct links to the HTML and PDF versions of each decision:
+
+```{r}
+#| label: unnest-content-urls
+asyl |>
+  select(id, decision_date, content_urls) |>
+  tidyr::unnest(content_urls) |>
+  slice_head(n = 5)
+```
+
+### Counting decisions over time
+
+A common first step in any corpus analysis is checking how the volume of decisions has changed across years:
+
+```{r}
+#| label: count-vwgh-asyl
+asyl_by_year <- asyl |>
+  mutate(year = year(decision_date)) |>
+  count(year) |>
+  arrange(year)
+
+asyl_by_year |>
+  ggplot(aes(x = factor(year), y = n)) +
+  geom_col(fill = "#2F6F73", width = 0.72) +
+  geom_text(
+    aes(label = n),
+    vjust = -0.35,
+    size = 3.6,
+    color = "#263238"
+  ) +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.12))
+  ) +
+  labs(
+    title = "VwGH decisions citing AsylG 2005 §8",
+    subtitle = "Number of matching RIS search results by decision year",
+    x = NULL,
+    y = "Decisions",
+    caption = "Source: RIS via risAT"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, color = "#1F2933"),
+    plot.subtitle = element_text(color = "#52616B", margin = margin(b = 10)),
+    plot.caption = element_text(color = "#52616B", hjust = 0),
+    axis.text.x = element_text(color = "#263238"),
+    axis.text.y = element_text(color = "#52616B"),
+    axis.title.y = element_text(color = "#263238", margin = margin(r = 8)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(10, 12, 10, 10)
+  )
+```
+
+## What's next
+
+The package is still experimental and there is more API surface to cover — in particular, the *Normenliste* endpoint (which gives access to statutory texts rather than case law) and additional court-specific filter parameters that the generic wrapper currently exposes but the convenience wrappers do not yet surface. If you run into issues or have requests, the [issue tracker](https://github.com/werkstattcodes/risAT/issues) is the right place.
+
+``` r
+pak::pak("werkstattcodes/risAT")
+```
