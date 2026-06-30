@@ -9,8 +9,19 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.9.37</generator>
-<lastBuildDate>Wed, 03 Jun 2026 22:00:00 GMT</lastBuildDate>
+<generator>quarto-1.7.32</generator>
+<lastBuildDate>Sun, 07 Jun 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>How do Parties vote in the Austrian National Council? Part II</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2026-06-08-ParlAT-votingPatterns-2/</link>
+  <description><![CDATA[ A follow-up that traces how parties shift their position on a bill as it moves through committee, the second reading and the third reading in the Austrian National Council — and asks where, if anywhere, those changes actually happen. ]]></description>
+  <category>Austria</category>
+  <category>parliament</category>
+  <category>ParlAT</category>
+  <guid>https://werk.statt.codes/posts/2026-06-08-ParlAT-votingPatterns-2/</guid>
+  <pubDate>Sun, 07 Jun 2026 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>How do Parties vote in the Austrian National Council?</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -21,17 +32,6 @@
   <category>ParlAT</category>
   <guid>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</guid>
   <pubDate>Wed, 03 Jun 2026 22:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>28th Austrian National Council: Prior Experiences as MPs.</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2024-10-24-mps-experience/</link>
-  <description><![CDATA[ Who speaks for how long in the National Council of Austria’s Parliament? And who respects the relevant time limits? ]]></description>
-  <category>Austria</category>
-  <category>parliament</category>
-  <category>r-bloggers</category>
-  <guid>https://werk.statt.codes/posts/2024-10-24-mps-experience/</guid>
-  <pubDate>Tue, 22 Oct 2024 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>

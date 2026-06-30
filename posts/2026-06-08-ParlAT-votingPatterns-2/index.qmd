@@ -2,9 +2,10 @@
 title: "How do Parties vote in the Austrian National Council? Part II"
 date: 2026-06-08
 date-modified: last-modified
-author: Roland Schmidt
 description: |
-  A follow-up to the voting patterns post, ...
+  A follow-up that traces how parties shift their position on a bill as it moves
+  through committee, the second reading and the third reading in the Austrian
+  National Council — and asks where, if anywhere, those changes actually happen.
 
 categories:
   - Austria
@@ -23,13 +24,21 @@ draft: false
 # Just the results, please {.unnumbered}
 
 ::: {layout-ncol="2"}
-![No-to-yes vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-no-to-yes-1.png){group="voting_patterns_2_gallery"}
+![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery"}
 
-![Yes-to-no vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-yes-to-no-1.png){group="voting_patterns_2_gallery"}
+![Flip rate by transition, direction and party role, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery"}
+
+![How positions flow from committee to the third reading](index_files/figure-html/plot-where-flips-alluvial-1.png){group="voting_patterns_2_gallery"}
+
+![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery"}
 
 ![No-to-yes vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-no-to-yes-1.png){group="voting_patterns_2_gallery"}
 
 ![Yes-to-no vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-yes-to-no-1.png){group="voting_patterns_2_gallery"}
+
+![No-to-yes vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-no-to-yes-1.png){group="voting_patterns_2_gallery"}
+
+![Yes-to-no vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-yes-to-no-1.png){group="voting_patterns_2_gallery"}
 :::
 
 # Packages
@@ -122,11 +131,6 @@ items_20_28 <- readr::read_rds(here::here(
   "_data",
   "items_20_28.rds"
 ))
-
-data_cutoff <- {
-  d <- max(items_20_28$date, na.rm = TRUE)
-  sub("^0", "", format(d, "%d %B %Y")) # strip leading zero so "07 June" becomes "7 June"
-}
 ```
 
 ## Keep items of interest
@@ -261,7 +265,7 @@ Below, I a) check for any failed calls, and b) combine the successful calls into
 
 ```{r}
 #| label: prepare-stages-data
-#| code-summary: "Unnest stages, filter vote rows, add reading and vote_text_list columns"
+#| code-summary: "Combine successful fetches and unnest stages into one row per step"
 # collect items where the API call failed; conditionMessage() extracts the error string
 failed_items <- item_details_raw |>
   keep(\(x) !is.null(x$error)) |>
@@ -329,7 +333,10 @@ aub_committee_stages <- aub_details |>
   select(aub_url = item_url, stages) |>
   filter(map_lgl(stages, \(x) !is.null(x))) |>
   unnest(stages) |>
-  filter(str_detect(stage_name, regex("Antrag auf Annahme des", ignore_case = TRUE))) |>
+  filter(str_detect(
+    stage_name,
+    regex("Antrag auf Annahme des", ignore_case = TRUE)
+  )) |>
   mutate(stage_date = lubridate::dmy(stage_date)) |>
   left_join(aub_parent, by = "aub_url") |>
   filter(!is.na(parent_url))
@@ -940,11 +947,11 @@ items_scope_pairs_regular_long <- items_scope_pairs_regular %>%
 ```
 
 
-To detect flips between the readings, we need both readings side by side. Hence, let's pivot the long data frame into a wide format where each row is one item-party combination, with separate columns for the vote in the second and the third reading (`yes_second`, `no_second`, `yes_third`, `no_third`). An `NA` in these columns means that the party has no recorded vote for that particular reading.
+To detect flips between stages, we need each stage side by side. Hence, let's pivot the long data frame into a wide format where each row is one item-party combination, with separate columns for the committee, second-reading and third-reading vote (`yes_committee`, `no_committee`, `yes_second`, `no_second`, `yes_third`, `no_third`). An `NA` in these columns means that the party has no recorded vote at that particular stage.
 
 ```{r}
 #| label: votes-wide
-#| code-summary: "Pivot to wide format with separate second/third reading columns"
+#| code-summary: "Pivot to wide format with separate committee/second/third columns"
 items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
   # drop "second & third" combined rows; keep committee + clean individual readings
   filter(reading %in% c("committee", "second", "third")) %>%
@@ -963,7 +970,7 @@ items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
     yes,
     no
   ) %>%
-  # pivot so each row is one item × party with columns yes_second, no_second, yes_third, no_third
+  # pivot so each row is one item × party with one yes_/no_ column per stage
   pivot_wider(
     id_cols = c(
       item_url,
@@ -1010,7 +1017,6 @@ Speaking of `NA`s — before drawing any conclusions, it's worth checking how mu
 ```{r}
 #| label: vis-missingness
 #| code-summary: "Visualise missing values by legislative period"
-library(naniar)
 # faceting by legis_period reveals whether missingness is period-specific or systemic
 items_scope_pairs_regular_wide %>%
   naniar::vis_miss(facet = legis_period)
@@ -1365,7 +1371,7 @@ p_flip_yes_to_no
 
 # Going one stage earlier: committee to second reading
 
-The two graphs above looked at the step from the second to the third reading. But the procedural journey of an item starts earlier — in the committee (Ausschuss), where a first formal vote on the bill is cast before it ever reaches the plenary floor. With the committee vote now part of the data, we can look at the *earlier* transition: from the committee vote to the second reading. The two graphs below mirror the ones above, only the comparison shifts one stage back. Note that committee votes with an explicit party breakdown are considerably rarer than reading votes, so these cells are sparser.
+The two graphs above looked at the step from the second to the third reading. But the procedural journey of an item starts earlier — in the committee (Ausschuss), where a first formal vote on the bill is cast before it ever reaches the plenary floor. With the committee vote now sourced from the reports, we can look at the *earlier* transition: from the committee vote to the second reading. The two graphs below mirror the ones above, only the comparison shifts one stage back.
 
 ```{r}
 #| label: plot-flip-committee-no-to-yes
@@ -1632,9 +1638,9 @@ p_flip_comm_yes_to_no
 
 # Where do position changes happen?
 
-The graphs so far each looked at a single transition. The bigger question is *where along an item's journey* a party actually changes its mind — between the committee vote and the second reading, or between the second and the third reading. This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition, then explore it with three different visual angles.
+The graphs so far each looked at a single transition. The bigger question is *where along an item's journey* a party actually changes its mind — between the committee vote and the second reading, or between the second and the third reading. This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition, then explore it from four different angles.
 
-A note on fairness: the two transitions are not observed for exactly the same set of party–item pairs (a bill needs a recorded vote at *both* of the relevant stages to contribute). To keep them directly comparable, the charts below use a **rate** — flips divided by the number of comparable (eligible) party–item pairs at that transition — rather than raw counts.
+A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
 
 ```{r}
 #| label: prep-transitions
@@ -1669,33 +1675,37 @@ stage_positions <- items_scope_pairs_regular_wide %>%
     )
   )
 
-# one row per party × item × transition, classifying the change at that step
-transitions <- stage_positions %>%
-  transmute(
-    item_url,
-    legis_period,
-    party,
-    role,
-    `Committee → 2nd reading` = case_when(
-      is.na(pos_committee) | is.na(pos_second) ~ NA_character_,
-      pos_committee == pos_second ~ "no change",
-      pos_committee == "Dagegen" & pos_second == "Dafür" ~ "no → yes",
-      pos_committee == "Dafür" & pos_second == "Dagegen" ~ "yes → no"
+# one row per party × item × transition, keeping the position held BEFORE and after.
+# from_pos lets us condition flip rates on the pairs actually at risk of flipping.
+transitions <- bind_rows(
+  stage_positions %>%
+    transmute(
+      item_url,
+      legis_period,
+      party,
+      role,
+      transition = "Committee → 2nd reading",
+      from_pos = pos_committee,
+      to_pos = pos_second
     ),
-    `2nd → 3rd reading` = case_when(
-      is.na(pos_second) | is.na(pos_third) ~ NA_character_,
-      pos_second == pos_third ~ "no change",
-      pos_second == "Dagegen" & pos_third == "Dafür" ~ "no → yes",
-      pos_second == "Dafür" & pos_third == "Dagegen" ~ "yes → no"
+  stage_positions %>%
+    transmute(
+      item_url,
+      legis_period,
+      party,
+      role,
+      transition = "2nd → 3rd reading",
+      from_pos = pos_second,
+      to_pos = pos_third
     )
-  ) %>%
-  pivot_longer(
-    c(`Committee → 2nd reading`, `2nd → 3rd reading`),
-    names_to = "transition",
-    values_to = "change"
-  ) %>%
-  filter(!is.na(change)) %>% # keep only transitions observed at both stages
+) %>%
+  filter(!is.na(from_pos), !is.na(to_pos)) %>% # observed at both stages of the step
   mutate(
+    change = case_when(
+      from_pos == to_pos ~ "no change",
+      from_pos == "Dagegen" & to_pos == "Dafür" ~ "no → yes",
+      from_pos == "Dafür" & to_pos == "Dagegen" ~ "yes → no"
+    ),
     transition = factor(
       transition,
       levels = c("Committee → 2nd reading", "2nd → 3rd reading")
@@ -1726,22 +1736,30 @@ The most direct answer. For each legislative period, the bars compare the flip *
 #| fig-height: 8
 #| out-width: "100%"
 #| fig-align: "center"
+# at-risk denominator: only pairs that COULD flip in that direction, i.e. those
+# holding the prior position (no→yes is only possible for prior "no"/Dagegen voters)
+at_risk <- transitions %>%
+  mutate(direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no")) %>%
+  count(legis_period, transition, role, direction, name = "n_at_risk")
+
 flip_dirs <- transitions %>%
   filter(change %in% c("no → yes", "yes → no")) %>%
   count(legis_period, transition, role, change, name = "n_flip") %>%
   left_join(
-    transitions %>%
-      count(legis_period, transition, role, name = "n_eligible"),
-    by = c("legis_period", "transition", "role")
+    at_risk,
+    by = c("legis_period", "transition", "role", "change" = "direction")
   ) %>%
   mutate(
-    rate = n_flip / n_eligible,
+    rate = n_flip / n_at_risk,
     legis_period = factor(legis_period, levels = all_periods_vec)
   )
 
 p_where_bars <- flip_dirs %>%
   ggplot(aes(x = legis_period, y = rate, fill = transition)) +
-  geom_col(position = position_dodge2(width = 0.9, preserve = "single"), width = 0.7) +
+  geom_col(
+    position = position_dodge2(width = 0.9, preserve = "single"),
+    width = 0.7
+  ) +
   geom_text(
     aes(label = n_flip),
     position = position_dodge2(width = 0.9, preserve = "single"),
@@ -1765,14 +1783,14 @@ p_where_bars <- flip_dirs %>%
   ) +
   labs(
     x = NULL,
-    y = "Share of comparable party–item pairs that flipped",
+    y = "Conditional flip rate (of pairs at risk)",
     title = "Where do parties change their position?",
     subtitle = paste0(
       "Flip **rate** at each transition — committee → 2nd reading (blue) vs 2nd → 3rd reading (orange) — ",
       "by direction and party role. Bar labels show the absolute number of flips. ",
       "A high committee → 2nd bar means positions settled already in committee; ",
       "a high 2nd → 3rd bar means they shifted on the floor.<br>",
-      "<span style='font-size:9pt;color:grey40;'>Rate = flips ÷ comparable party–item pairs observed at that transition (NR, regular votes only, GP XX–XXVIII).</span>"
+      "<span style='font-size:9pt;color:grey40;'>Rate is **conditional on the pairs that could flip**: no → yes ÷ pairs voting *no* at the earlier stage; yes → no ÷ pairs voting *yes*. NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
   ) +
@@ -1782,12 +1800,21 @@ p_where_bars <- flip_dirs %>%
     panel.grid.major.x = element_blank(),
     axis.text = element_text(size = 9),
     legend.position = "top",
-    plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
     plot.subtitle = ggtext::element_textbox_simple(
-      size = 10, colour = "grey30", lineheight = 1.3, margin = ggplot2::margin(b = 10)
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
     ),
     plot.caption = ggtext::element_textbox_simple(
-      size = 8, colour = "grey45", margin = ggplot2::margin(t = 10)
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
     ),
     plot.title.position = "plot",
     plot.caption.position = "plot",
@@ -1817,7 +1844,11 @@ p_where_alluvial <- ggplot(
   alluvial_data,
   aes(axis1 = pos_committee, axis2 = pos_second, axis3 = pos_third, y = n)
 ) +
-  ggalluvial::geom_alluvium(aes(fill = pos_committee), alpha = 0.7, width = 0.18) +
+  ggalluvial::geom_alluvium(
+    aes(fill = pos_committee),
+    alpha = 0.7,
+    width = 0.18
+  ) +
   ggalluvial::geom_stratum(width = 0.18, fill = "grey96", colour = "grey55") +
   geom_text(
     stat = "stratum",
@@ -1852,12 +1883,21 @@ p_where_alluvial <- ggplot(
     axis.text.y = element_text(size = 9),
     axis.text.x = element_text(size = 10, face = "bold"),
     legend.position = "top",
-    plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
     plot.subtitle = ggtext::element_textbox_simple(
-      size = 10, colour = "grey30", lineheight = 1.3, margin = ggplot2::margin(b = 10)
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
     ),
     plot.caption = ggtext::element_textbox_simple(
-      size = 8, colour = "grey45", margin = ggplot2::margin(t = 10)
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
     ),
     plot.title.position = "plot",
     plot.caption.position = "plot",
@@ -1939,7 +1979,10 @@ p_where_heatmap <- where_tile_grid %>%
     na.value = "white",
     guide = "none"
   ) +
-  scale_pattern_manual(values = c("TRUE" = "stripe", "FALSE" = "none"), guide = "none") +
+  scale_pattern_manual(
+    values = c("TRUE" = "stripe", "FALSE" = "none"),
+    guide = "none"
+  ) +
   scale_x_discrete(position = "top") +
   labs(
     x = NULL,
@@ -1957,12 +2000,21 @@ p_where_heatmap <- where_tile_grid %>%
     panel.grid = element_blank(),
     axis.text = element_text(size = 8),
     legend.position = "none",
-    plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
     plot.subtitle = ggtext::element_textbox_simple(
-      size = 10, colour = "grey30", lineheight = 1.3, margin = ggplot2::margin(b = 10)
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
     ),
     plot.caption = ggtext::element_textbox_simple(
-      size = 8, colour = "grey45", margin = ggplot2::margin(t = 10)
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
     ),
     plot.title.position = "plot",
     plot.caption.position = "plot",
@@ -1997,6 +2049,14 @@ flip_stage_period <- transitions %>%
     lab_colour = if_else(rate > max(rate) / 2, "white", "grey15")
   )
 
+gov_axis_labels <- gov_parties_lookup %>%
+  group_by(legis_period) %>%
+  summarise(
+    gov_parties = paste(party, collapse = ", "),
+    .groups = "drop"
+  ) %>%
+  tibble::deframe()
+
 p_flip_stage_period <- flip_stage_period %>%
   ggplot(aes(x = transition, y = legis_period, fill = rate)) +
   geom_tile(colour = "white", linewidth = 0.9) +
@@ -2013,6 +2073,13 @@ p_flip_stage_period <- flip_stage_period %>%
     name = "Flip rate"
   ) +
   scale_x_discrete(position = "top") +
+  scale_y_discrete(
+    breaks = levels(flip_stage_period$legis_period),
+    sec.axis = dup_axis(
+      labels = function(x) rev(unname(gov_axis_labels[x])),
+      name = NULL
+    )
+  ) +
   labs(
     x = NULL,
     y = NULL,
@@ -2029,16 +2096,28 @@ p_flip_stage_period <- flip_stage_period %>%
     panel.grid = element_blank(),
     axis.text = element_text(size = 10),
     axis.text.x = element_text(face = "bold"),
+    axis.text.y.right = element_text(size = 9, colour = "grey30"),
+    axis.title.y.right = element_blank(),
     legend.position = "right",
-    plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
     plot.subtitle = ggtext::element_textbox_simple(
-      size = 10, colour = "grey30", lineheight = 1.3, margin = ggplot2::margin(b = 10)
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
     ),
     plot.caption = ggtext::element_textbox_simple(
-      size = 8, colour = "grey45", margin = ggplot2::margin(t = 10)
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
     ),
     plot.title.position = "plot",
-    plot.caption.position = "plot"
+    plot.caption.position = "plot",
+    plot.margin = ggplot2::margin(t = 8, r = 12, b = 8, l = 8)
   )
 
 p_flip_stage_period
@@ -2055,7 +2134,11 @@ Now that committee votes come from the reports, the full committee → 2nd → 3
 three_stage_long <- items_scope_pairs_regular_long %>%
   filter(reading %in% c("committee", "second", "third")) %>%
   mutate(
-    pos = case_when(yes == 1 ~ "Dafür", no == 1 ~ "Dagegen", .default = NA_character_)
+    pos = case_when(
+      yes == 1 ~ "Dafür",
+      no == 1 ~ "Dagegen",
+      .default = NA_character_
+    )
   )
 
 # keep only items that carry a recorded vote at ALL three stages
@@ -2079,7 +2162,11 @@ three_stage_wide <- three_stage_long %>%
     change_2nd_3rd = pos_second != pos_third
   )
 
-cat("Items with a recorded vote at all three stages:", nrow(three_stage_items), "\n")
+cat(
+  "Items with a recorded vote at all three stages:",
+  nrow(three_stage_items),
+  "\n"
+)
 cat("Party–item rows in this subset:", nrow(three_stage_wide), "\n")
 # where do the changes sit?
 three_stage_wide %>%
@@ -2137,7 +2224,12 @@ pos_style <- function(value) {
 three_stage_changes_table <- reactable(
   three_stage_changes,
   columns = list(
-    legis_period = colDef(name = "GP", align = "right", minWidth = 60, filterable = TRUE),
+    legis_period = colDef(
+      name = "GP",
+      align = "right",
+      minWidth = 60,
+      filterable = TRUE
+    ),
     item_ref = colDef(
       name = "Item",
       minWidth = 110,
@@ -2158,11 +2250,19 @@ three_stage_changes_table <- reactable(
     ),
     party = colDef(name = "Party", minWidth = 80, filterable = TRUE),
     role = colDef(name = "Role", minWidth = 110, filterable = TRUE),
-    pos_committee = colDef(name = "Committee", minWidth = 95, style = pos_style),
+    pos_committee = colDef(
+      name = "Committee",
+      minWidth = 95,
+      style = pos_style
+    ),
     pos_second = colDef(name = "2nd reading", minWidth = 95, style = pos_style),
     pos_third = colDef(name = "3rd reading", minWidth = 95, style = pos_style),
     where = colDef(name = "Change at", minWidth = 150, filterable = TRUE),
-    stage_date_second = colDef(name = "2nd reading date", minWidth = 130, filterable = TRUE),
+    stage_date_second = colDef(
+      name = "2nd reading date",
+      minWidth = 130,
+      filterable = TRUE
+    ),
     item_url = colDef(show = FALSE)
   ),
   fullWidth = TRUE,
@@ -2212,138 +2312,3 @@ voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There,
 at the third. [Open on parlament.gv.at &rarr;](`r latest_c2_item$item_url`)
 :::
 
-```{r}
-knitr::knit_exit()
-```
-
-## Vote extraction check
-
-Finally, another *data sanity check*, this time on the extraction itself: did the parsing of the stage texts produce any party labels which are not in our list of valid parties? The checks below scan the extracted tokens from two angles — once after stripping parenthetical additions, and once for any all-caps token that looks party-like but is unknown. Ideally, both checks come back empty.
-
-```{r}
-#| label: vote-extraction-check
-#| code-summary: "Check for unrecognised party tokens in extracted votes"
-# find parties that passed through fn_get_votes but are not in valid_parties
-# (note: filter_out() is not a standard dplyr function — likely a bug; should be filter(!...))
-vote_extraction_check <- items_scope %>%
-  filter_out(str_detect(stage_name, regex("wechselnde"))) %>%
-  mutate(vote_parties = map(votes_li, \(v) c(v$vote_yes, v$vote_no))) %>%
-  select(item_url, legis_period, reading, stage_name, vote_parties) %>%
-  unnest(vote_parties) %>%
-  mutate(
-    party_clean = str_trim(str_extract(vote_parties, "^[^(]+")) # strip parenthetical notes
-  ) %>%
-  filter(!party_clean %in% valid_parties)
-
-# broader check: any all-caps token that looks party-like but isn't in valid_parties
-# regex matches abbreviations that may include digits or slashes (e.g. "NEOS2")
-vote_uppercase_unknown_check <- items_scope %>%
-  mutate(vote_tokens = map(votes_li, \(v) c(v$vote_yes, v$vote_no))) %>%
-  select(item_url, legis_period, reading, stage_name, vote_tokens) %>%
-  unnest(vote_tokens) %>%
-  distinct() %>%
-  filter(
-    !vote_tokens %in% valid_parties,
-    str_detect(vote_tokens, regex("^[[:upper:]ÄÖÜ][[:upper:]ÄÖÜ0-9/-]*$"))
-  )
-
-n_distinct(vote_extraction_check$item_url)
-n_distinct(items_scope$item_url)
-
-report_type_check <- items_scope %>%
-  count(report_type)
-
-items_scope <- items_scope %>%
-  distinct() # remove any exact duplicate rows before further processing
-
-items_scope <- items_scope %>%
-  group_by(legis_period, item_url) %>%
-  mutate(obs_n = n()) %>%
-  ungroup()
-
-deviant <- items_scope %>%
-  filter(obs_n != 2) # items with != 2 rows excluded from the paired analysis
-
-item_votes_long <- items_scope %>%
-  filter(report_type %in% c("regular", "no_dagegen")) %>%
-  group_by(legis_period, item_url) %>%
-  mutate(obs_n = n()) %>%
-  ungroup() %>%
-  filter(obs_n == 2) %>% # limit analysis to complete second+third reading pairs
-  mutate(
-    votes_party = map(votes_li, \(v) {
-      yes_parties <- v$vote_yes
-      no_parties <- v$vote_no
-
-      tibble(
-        party = union(yes_parties, no_parties),
-        yes = as.integer(party %in% yes_parties),
-        no = as.integer(party %in% no_parties)
-      )
-    })
-  ) %>%
-  unnest(votes_party)
-
-item_votes_reading_wide <- item_votes_long %>%
-  filter(reading %in% c("second", "third")) %>%
-  mutate(
-    # serialise the parsed vote list to a string for display in debug tables
-    votes_li_raw = map_chr(votes_li, \(x) {
-      paste(capture.output(str(x)), collapse = "\n")
-    })
-  ) %>%
-  group_by(
-    item_url,
-    legis_period,
-    type_doc,
-    title,
-    item_number,
-    status_number,
-    status_description,
-    party
-  ) %>%
-  # collapse multiple stage entries per party into a single concatenated string
-  mutate(
-    stage_name = paste(unique(stage_name), collapse = "\n\n"),
-    votes_li_raw = paste(unique(votes_li_raw), collapse = "\n\n")
-  ) %>%
-  ungroup() %>%
-  select(
-    item_url,
-    legis_period,
-    type_doc,
-    title,
-    item_number,
-    status_number,
-    status_description,
-    party,
-    stage_name,
-    votes_li_raw,
-    reading,
-    yes,
-    no,
-    report_type
-  ) %>%
-  pivot_wider(
-    id_cols = c(
-      item_url,
-      legis_period,
-      type_doc,
-      title,
-      item_number,
-      status_number,
-      status_description,
-      party,
-      stage_name,
-      votes_li_raw
-    ),
-    names_from = reading,
-    values_from = c(yes, no, report_type),
-    names_glue = "{.value}_{reading}",
-    values_fill = list(yes = NA, no = NA, report_type = NA_character_)
-  ) %>%
-  mutate(
-    flip_pos = ifelse(no_second == 1 & yes_third == 1, TRUE, FALSE), # voted against in 2nd, for in 3rd
-    flip_neg = ifelse(yes_second == 1 & no_third == 1, TRUE, FALSE) # voted for in 2nd, against in 3rd
-  )
-```
