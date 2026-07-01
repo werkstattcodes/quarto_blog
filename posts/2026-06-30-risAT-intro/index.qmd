@@ -77,7 +77,15 @@ asyl <- risAT::ris_search_vwgh(norm = "'AsylG 2005 §8'", echo = T)
 nrow(asyl)
 glimpse(asyl)
 
-climateChange <- risAT::ris_search_vwgh(query = "Klimawandel", echo = T)
+climateChange <- risAT::ris_search_vfgh(query = "Klimawandel", echo = T)
+
+vfgh_klima <- risAT::ris_search_vfgh(
+    query = "Klimawandel",
+    search_legal_principles = T,
+    search_decision_text = T,
+    echo = TRUE
+  )
+
 ```
 
 The return value is a tibble. Every result includes a set of standard columns — `id`, `application`, `decision_date`, `case_number`, `document_type` — as well as two list-columns: `content_urls` (links to the HTML and PDF versions of the decision) and `app_metadata` (raw API metadata including hit counts and pagination info).
