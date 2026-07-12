@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__chrome-devtools__list_pages"
+      "mcp__chrome-devtools__list_pages",
+      "WebSearch",
+      "Bash(\"/c/Program Files/R/R-4.5.1/bin/Rscript.exe\" \"C:/Users/Roland/AppData/Local/Temp/claude/c--Users-Roland-OneDrive-Documents-R-Projects-quarto-blog/a8df1f75-0ab2-4ecd-b265-721c317c1d8f/scratchpad/verify_echr.R\")"
     ]
   }
 }

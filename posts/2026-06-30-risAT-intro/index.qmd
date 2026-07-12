@@ -11,7 +11,7 @@ description: |
 
 categories:
   - Austria
-  - risAT
+  - {risAT}
 
 reference-location: margin
 knitr:
@@ -33,20 +33,14 @@ library(lubridate)
 library(ggplot2)
 library(ggtext)
 library(reactable)
+library(here)
 
-post_dir <- {
-  input <- knitr::current_input()
-  if (!is.null(input)) {
-    dirname(input)
-  } else if (file.exists(file.path("posts", "2026-06-30-risAT-intro", "index.qmd"))) {
-    file.path("posts", "2026-06-30-risAT-intro")
-  } else {
-    "."
-  }
+i_am("posts/2026-06-30-risAT-intro/index.qmd")
+
+data_path <- function(...) {
+  here("posts", "2026-06-30-risAT-intro", "_data", ...)
 }
-
-data_dir <- file.path(post_dir, "_data")
-data_path <- function(...) file.path(data_dir, ...)
+data_dir <- data_path()
 ```
 
 ```{r}
@@ -145,7 +139,7 @@ svg_noto <- function(filename, width, height, ...) {
 
 # Store the common source and credit text appended to figure captions.
 ris_graph_caption_end <- paste0(
-  "<br><br>Data: Austrian Legal Information System (RIS) via risAT package",
+  "<br><br>Data: Austrian Legal Information System (RIS) via {risAT} package",
   "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes | Bluesky: @zoowalk.bsky.social"
 )
 
@@ -342,11 +336,11 @@ bind_ris_results <- function(results, names_to = NULL) {
 }
 ```
 
-# Context
+# Context & Purpose
 
 The Austrian Legal Information System, [RIS](https://www.ris.bka.gv.at/), short for *Rechtsinformationssystem*, is the central public repository of Austrian law and jurisprudence. Broadly speaking, it provides access to Austria's current and historical legal norms, including federal and state law, as well as to the jurisprudence of the country's most important courts and judicial institutions. The latter covers the case law of the Constitutional Court (*Verfassungsgerichtshof*, VfGH), the Administrative Court (*Verwaltungsgerichtshof*, VwGH), the Federal Administrative Court (*Bundesverwaltungsgericht*, BVwG), and decisions by institutions such as the Equal Treatment Commission, the Data Protection Authority, and the Federal Disciplinary Board.
 
-This wealth of information makes RIS an indispensable source for anyone working on issues related to the Austrian legal system. While accessing the data is straightforward via the official website, accessing RIS data in bulk and analyzing it beyond individual cases has mostly required tinkering with the service's API and wrangling the returned JSON results. The R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to quantitative analysis. For example, risAT can serve as a starting point for text mining and text analysis when collecting the required corpus, or it can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. The package wraps the RIS Open Government Data REST API and returns tidy tibbles with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. In this context, risAT may be of interest to researchers, students, and journalists who work in R and are interested in the Austrian legal framework.
+This wealth of information makes RIS an indispensable source for anyone working on issues related to the Austrian legal system. While accessing the data is straightforward via the official website, accessing RIS data in bulk and analyzing it beyond individual cases has mostly required tinkering with the service's API and wrangling the returned JSON results. The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy tibbles with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to researchers, students, and journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come handy.
 
 Please note that the package is still under development (`0.0.1`) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.
 
@@ -354,12 +348,14 @@ You can install {risAT} from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pak("werkstattcodes/risAT")
+pak::pak("werkstattcodes/{risAT}")
 ```
 
-For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/) and the [GitHub repository](https://github.com/werkstattcodes/risAT/). If you want to receive updates on releases, I would recommend to subscribe to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.
+For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/) and the [GitHub repository](https://github.com/werkstattcodes/risAT/). If you want to receive updates on releases, I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.
 
-# What courts and bodies are covered?
+And you if you use the package in a publication, please cite it as follows:
+
+# Scope
 
 The RIS API organises case law by *application*. In practice, that means one application for each court system or specialised decision-making body. {risAT} provides convenience wrappers for the main courts, plus a generic search function:
 
@@ -378,15 +374,22 @@ The RIS API organises case law by *application*. In practice, that means one app
 
 The court-specific functions are thin wrappers around `ris_search_case_law()`.
 
-Every result includes standard columns such as `id`, `application`, `decision_date`, `case_number`, and `document_type`. It also includes list-columns such as `content_urls`, which stores links to the RIS HTML and PDF records. With `echo = TRUE`, {risAT} prints the equivalent RIS web search URL and the number of returned rows. This is useful because it lets you move between the reproducible R workflow and the browser interface that many legal researchers already know.
+Every result includes standard columns such as `id`, `application`, `decision_date`, `case_number`, and `document_type`. It also includes list-columns such as `content_urls`, which stores links to the RIS HTML and PDF records. 
+
+With `echo = TRUE`, {risAT} prints the equivalent RIS web search URL and the number of returned rows. This is useful because it lets you move between the reproducible R workflow and the browser interface that many legal researchers already know.
+
+![](_img/chunkWithEcho.png){fig-align="left"}
+
+
+
 
 # Examples
 
-The examples below are deliberately compact. They are meant to show the kinds of questions one can start asking once RIS case law is available as data. They are not full analyses, and the query choices are intentionally transparent so that they can be adjusted for more careful research designs. In terms of substantive focus, I chose examples which are closer to my own professional and academic background.
+The examples below are meant to show the kinds of questions one can start asking once RIS case law is available as data. They are not full analyses, and the query choices are intentionally transparent so that they can be adjusted for more careful research designs. 
 
 ## VfGH - European Convention on Human Rights
 
-To start with, let's use risAT to query the data on the decisions of the Austrian Constitutional Court, the Verfassungsgerichtshof. Considering the special status of the European Convention for Human Rights (ECHR; it is directly applicable in Austria), I was wondering how frequently the VfGH refers to norms of the ECHR in its decisions. To answer this, the code below
+To start with, let's use {risAT} to query the data on the decisions of the Austrian Constitutional Court, the Verfassungsgerichtshof (VfGH). Considering the special status of the European Convention for Human Rights (ECHR; it is directly applicable in Austria), I was wondering how frequently the VfGH refers to norms of the ECHR in its decisions. To answer this, the code below
 
 1.  retrieves the meta data on all decisions of the VfGH from the beginning of 2000 to the end of 2025, and
 2.  checks whether the ECHR is referenced among the norms invoked in each of the decisions. The `norms` column, returned by the API, stipulates the norms in question.
@@ -397,7 +400,19 @@ To start with, let's use risAT to query the data on the decisions of the Austria
 vfgh_2000_2025 <- readr::read_rds(data_path("vfgh", "vfgh_2000_2025.rds"))
 ```
 
-Here is the relevant function call via risAT's `ris_search_vfgh()`:
+```{r}
+vfgh_2000_2025 %>%
+  count(document_type)
+
+library(janitor)
+janitor::get_dupes(vfgh_2000_2025, id)
+janitor::get_dupes(vfgh_2000_2025, case_number)
+
+```
+
+Here is the relevant function call via {risAT}'s `ris_search_vfgh()`[^1]:
+
+[^1]: This call is rather comprehensive and can be quite time consuming. To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them. Also a note on the netiquette: The RIS API is a public service, and it is important to avoid overloading it with too many requests in a short time. Please be considerate and avoid sending too many requests in quick succession.
 
 ```{r}
 #| code-summary: "Get all decisions by the Constitutional Court (VfGH)"
@@ -411,16 +426,16 @@ vfgh_2000_2025 <- ris_search_vfgh(
 ) 
 ```
 
-Note that this call is rather comprehensive and can be quite time consuming (think hours). To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them.
-
-In total we get data on `r nrow(vfgh_2000_2025)` decisions. Below, the returned columns.
+In total we get data on `r nrow(vfgh_2000_2025)` decisions. Below is a glimpse of the data structure, which shows the main columns and their types. The `norms` column is a list-column, which means that each row can contain multiple norms.
 
 ```{r}
 #| code-summary: "Describe result"
 glimpse(vfgh_2000_2025)
 ```
 
-In the next step, let's check which of the decisions obtained above make reference to the ECHR. The `norms` column is a list-column, so we need to unlist it first and then check for the presence of the string "EMRK" (the German abbreviation for the ECHR).
+In the next step, let's check which of the decisions obtained above make reference to the ECHR and calculate the annual totals of decisions with and without such a reference. The code below extracts the year from the `decision_date` column, checks for ECHR references in the `norms` column, and calculates annual totals and shares.
+
+To avoid duplicates, we only look at the decisions of type "text", and not "Rechtssatz" (which is summary of the legal essence of a decision).
 
 ```{r}
 #| label: vfgh-data-year
@@ -428,16 +443,25 @@ In the next step, let's check which of the decisions obtained above make referen
 #| code-summary: "Identify VfGH decisions with ECHR norm reference"
 
 class(vfgh_2000_2025$norms)
+table(vfgh_2000_2025$document_type)
+
+#keep only decisions of type "Text"
+vfgh_2000_2025_echr <- vfgh_2000_2025 %>%
+  filter(document_type=="Text") 
+
+nrow(vfgh_2000_2025_echr)  
+
 
 #extract year; check for ECHR reference in norms
-vfgh_2000_2025 <- vfgh_2000_2025 %>%
+#add dummy TRUE if norms (list) contains at least one reference to the EMRK
+vfgh_2000_2025_echr <- vfgh_2000_2025_echr %>%
   mutate(year=year(decision_date)) %>%
   mutate(
     norm_echr = map_lgl(norms, \(x) any(str_detect(as.character(unlist(x)), fixed("EMRK")), na.rm = TRUE))
   )
 
 #calculate annual totals (and labels for later plotting)
-vfgh_year <- vfgh_2000_2025 %>%
+vfgh_year <- vfgh_2000_2025_echr %>%
   count(year, norm_echr) %>%
   mutate(
     norm_reference = factor(
@@ -454,7 +478,7 @@ vfgh_year <- vfgh_2000_2025 %>%
   ungroup()
 ```
 
-Now let's visualise the results.
+Now let's visualize the results.
 
 ```{r}
 #| label: vfgh-plot-year
@@ -494,7 +518,8 @@ ggplot(aes(x = year, y = n, fill=norm_reference)) +
     family = gg_plot_family,
     na.rm = TRUE
   ) +
-  scale_x_continuous(breaks = seq(2000, 2025, 5)) +
+  scale_x_continuous(breaks = seq(2000, 2025, 5),
+  expand=expansion(mult=c(0,0))) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
   scale_fill_manual(
     values = c("General decisions" = "#1F3A5F", "Norm references ECHR" = "#D4A017"),
@@ -508,16 +533,195 @@ ggplot(aes(x = year, y = n, fill=norm_reference)) +
     y = "Number of decisions",
     caption = ris_graph_caption("VfGH decisions from 2000 to 2025 by decision year, highlighting decisions with a norm reference to the European Convention on Human Rights.")
   ) +
-  ris_plot_theme()
+  ris_plot_theme() +
+  theme(
+    legend.location = "plot",
+    legend.justification.top = "left",
+    legend.margin = ggplot2::margin(0, 0, 0, 0)
+  )
 ```
 
-As you can see -- ignoring the plotting code -- only a few lines of code yield some interesting insights into the decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Both the number and the share of decisions referencing the ECHR have increased over time, with a notable surge in recent years.
+As you can see -- ignoring the plotting code -- only a few lines of code yield a clear picture on the presence of the EMRK in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Both the number and the share of decisions referencing the ECHR have increased over time, with a notable surge in recent years.
+
+We can further refine the analysis by looking at the actual paragraphs of the ECHR which are referenced in the decisions. The code below extracts the article and paragraph numbers from the `norms` column, counts the occurrences of each combination, and displays the results.
+
+
+```{r}
+
+vfgh_2000_2025_echr <- vfgh_2000_2025_echr %>%
+  filter(norm_echr==TRUE) %>% #keep only decisions with at least one norm reference to the ECHR
+  mutate(norms=map(norms, normalise_norm_values)) %>% #standardize the norms column (elements of differnt class)
+  unnest_longer(norms) #unnest
+
+class(vfgh_2000_2025_echr$norms)
+
+echr_decisions_total <- n_distinct(vfgh_2000_2025_echr$id)
+
+echr_norm_names <- tibble::tribble(
+  ~ZP_type, ~art, ~norm_short,
+  NA_character_, "1", "Respect for human rights",
+  NA_character_, "2", "Right to life",
+  NA_character_, "3", "Prohibition of torture",
+  NA_character_, "4", "Slavery and forced labour",
+  NA_character_, "5", "Liberty and security",
+  NA_character_, "6", "Fair trial",
+  NA_character_, "7", "No punishment without law",
+  NA_character_, "8", "Private and family life",
+  NA_character_, "9", "Thought, conscience and religion",
+  NA_character_, "10", "Expression",
+  NA_character_, "11", "Assembly and association",
+  NA_character_, "12", "Marriage",
+  NA_character_, "13", "Effective remedy",
+  NA_character_, "14", "Discrimination",
+  NA_character_, "15", "Emergency derogation",
+  NA_character_, "16", "Political activity of aliens",
+  NA_character_, "17", "Abuse of rights",
+  NA_character_, "18", "Use of restrictions",
+  "1. ZP", "1", "Property",
+  "1. ZP", "2", "Education",
+  "1. ZP", "3", "Free elections",
+  "4. ZP", "1", "No imprisonment for debt",
+  "4. ZP", "2", "Freedom of movement",
+  "4. ZP", "3", "No expulsion of nationals",
+  "4. ZP", "4", "Collective expulsion",
+  "6. ZP", "1", "Abolition of death penalty",
+  "7. ZP", "1", "Expulsion safeguards",
+  "7. ZP", "2", "Criminal appeal",
+  "7. ZP", "3", "Wrongful conviction",
+  "7. ZP", "4", "Double jeopardy",
+  "7. ZP", "5", "Spousal equality",
+  "12. ZP", "1", "General discrimination",
+  "13. ZP", "1", "Death penalty abolition"
+)
+
+norm_count <- vfgh_2000_2025_echr %>%
+  filter(str_detect(norms, regex("EMRK"))) %>% #keep only EMRK norms
+  mutate(
+    ZP=str_detect(norms, regex("ZP")), #identify references to an additional protocol of th ECHR
+    ZP_type=str_extract(norms, regex("\\d\\.?\\s+ZP"))
+  ) %>%
+  mutate(
+    norm_split=str_split(norms, regex(",s*")) #split norm if it contains multiple artiles
+  ) %>%
+  unnest_longer(norm_split) %>% 
+  mutate(art=str_extract(norm_split, regex("(?<=Art)\\d+")))  %>% #extract article
+  mutate(abs=str_extract(norm_split, regex("(?<=Abs)\\d+")))   %>% #extract paragraph
+  distinct(id, ZP_type, art, abs) %>%
+  count(ZP_type, art, abs, sort=T) %>%
+  mutate(label=str_squish(str_c(
+    coalesce(str_c(ZP_type, ", "), ""),
+    coalesce(str_c("Art. ", art), ""),
+    coalesce(str_c(", Abs. ", abs), "")
+  ))) %>%
+  left_join(echr_norm_names, by = join_by(ZP_type, art)) %>%
+  mutate(norm_short = coalesce(norm_short, "ECHR norm"))
+  
+
+```
+
+
+```{r}
+#| label: vfgh-echr-top-norms
+#| column: body-outset-right
+#| fig-width: 11
+#| fig-height: 8.5
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svg_noto
+#| fig-ext: svg
+#| code-summary: "Plot the most frequent ECHR norm references"
+#| code-fold: true
+
+
+norm_count_top <- norm_count %>%
+  mutate(label = forcats::fct_lump_n(label, n = 10, w = n, other_level = "all other ECHR norms referenced.")) %>%
+  summarise(
+    n = sum(n),
+    norm_short = if_else(
+      n_distinct(norm_short) == 1,
+      first(norm_short),
+      "Other ECHR norms"
+    ),
+    .by = label
+  ) %>%
+  mutate(
+    rel = n / echr_decisions_total,
+    bar_label = sprintf("%s (%.1f%%)", n, rel * 100),
+    label = forcats::fct_reorder(label, n),
+    label = forcats::fct_relevel(label, "all other ECHR norms referenced.", after = 0)
+  )
+
+left_axis_labels <- norm_count_top %>%
+  mutate(
+    label_md = str_c(
+      # escape leading "1." etc. so gridtext doesn't parse it as an ordered list
+      str_replace_all(str_wrap(as.character(label), 15), "\n", "<br>") |>
+        str_replace("^(\\d+)\\.", "\\1\\\\."),
+      if_else(
+        label == "all other ECHR norms referenced.",
+        "", # short name would be redundant here
+        str_c(
+          "<br><span style='font-size:8pt;color:#52616B'>(",
+          str_replace_all(str_wrap(norm_short, 22), "\n", "<br>"),
+          ")</span>"
+        )
+      )
+    )
+  ) %>%
+  { setNames(.$label_md, as.character(.$label)) }
+
+vfgh_decisions_total <- sum(vfgh_year$n)
+echr_share <- echr_decisions_total / vfgh_decisions_total
+
+norm_count_top %>%
+  ggplot(aes(x = n, y = label)) +
+  geom_col(fill = "#1F3A5F", width = 0.72) +
+  geom_text(
+    aes(label = bar_label),
+    hjust = -0.15,
+    color = "#263238",
+    size = gg_annot_size,
+    family = gg_plot_family
+  ) +
+  scale_x_continuous(expand=expansion(mult=c(0,0.18)))+
+  scale_y_discrete(labels = \(x) left_axis_labels[x]) +
+  coord_cartesian(clip = "off") +
+  labs(
+    title = "Which norms of the European Convention on Human Rights does the Austrian Constitutional Court reference most often?",
+    subtitle = str_glue(
+      "Between 2000 and 2025, the Austrian Constitutional Court (VfGH) issued ",
+      "{scales::comma(vfgh_decisions_total)} decisions. ",
+      "{scales::comma(echr_decisions_total)} of them ({scales::percent(echr_share, accuracy = 0.1)}) ",
+      "contain a norm reference to the ECHR. The chart shows the most frequently referenced ",
+      "Convention norms; percentages give the share of ECHR-referencing decisions citing each norm. "
+    ),
+    x = "Number of decisions",
+    y = NULL,
+    caption = ris_graph_caption("Most frequently referenced ECHR norms in Austrian Constitutional Court decisions from 2000 to 2025. Numbers include also references to ECHR Additional Protocols. Short names of the referenced Convention rights are shown in parentheses below each norm.")
+  ) +
+  ris_plot_theme() +
+  theme(
+    # must target the leaf element: with ggplot2 4.0 complete themes,
+    # axis.text.y gets overridden by the theme's plain axis.text.y.left
+    axis.text.y.left = ggtext::element_markdown(
+      size = gg_axis_size,
+      family = gg_plot_family,
+      color = "#263238",
+      lineheight = 1.3,
+      hjust = 1, # place the label box against the axis
+      halign = 1 # right-align lines inside the box
+    ),
+    panel.grid.major.x = element_line(color = "#D8DEE4", linewidth = 0.35),
+    panel.grid.major.y = element_blank()
+  )
+```
+
 
 ## VwGH - Subsidiary Protection
 
 Let's move on to the next court -- the Verwaltungsgerichtshof (VwGH), Austria's highest court on administrative matters.
 
-An item which has been high on the political and wider public agenda is the question of asylum and migration. As the highest court for administrative matters, the VwGH is the final instance for decisions on asylum and migration. Here, I want to demonstrate how to use the `risAT` package to query jurisprudence for a specific legal norm. The `norm` parameter in the function allows the user to search for decisions which cite a specific legal norm. In this example, I will search for decisions which cite `AsylG 2005 §8`, the provision on subsidiary protection.
+An item which has been high on the political and wider public agenda is the question of asylum and migration. As the highest court for administrative matters, the VwGH is the final instance for decisions on asylum and migration. Here, I want to demonstrate how to use the `{risAT}` package to query jurisprudence for a specific legal norm. The `norm` parameter in the function allows the user to search for decisions which cite a specific legal norm. In this example, I will search for decisions which cite `AsylG 2005 §8`, the provision on subsidiary protection.
 
 ```{r}
 #| label: data-asyl-year
@@ -583,14 +787,14 @@ asyl_by_year |>
 
 ### Query parameter to investigate countries
 
-The graph above shows all decisions pertaining to the norm `AsylG 2005 §8`. We can also combine the search for a specific `norm` with a free text search `query`, which allows to further narrow down the results. In the example below, I add the search term `Afghan* OR Syrien* OR Irak*` to capture decisions which relate to Afghanistan, Syria, or Iraq.
+The graph above shows all decisions pertaining to the norm `AsylG 2005 §8`. We can also combine the search for a specific `norm` with a free text search `query`, which allows to further narrow down the results. In the example below, I add the search term `Afghan* OR Syri* OR Irak*` to capture decisions which relate to Afghanistan, Syria, or Iraq.
 
 ```{r}
 #| label: data-asyl-year-syria
 #| code-summary: "Query subsidiary protection decisions related to Afghanistan, Syria, or Iraq"
 asyl_subsidiary_afghan_syria <- ris_search_vwgh(
   norm = "'AsylG 2005 §8'",
-  query="Afghan* OR Syrien* OR Irak*",
+  query="Afghan* OR Syri* OR Irak*",
   decision_date_from = "2000-01-01",
   decision_date_to = "2025-12-31",
   search_decision_text = T,
