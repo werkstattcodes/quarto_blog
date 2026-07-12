@@ -148,93 +148,6 @@ ris_graph_caption <- function(text) {
   paste0(text, ris_graph_caption_end)
 }
 
-# Format RIS result tibbles consistently, including readable list-column cells.
-style_ris_table <- function(data) {
-  column_defs <- list(
-    decision_date = colDef(name = "Date", minWidth = 95),
-    case_number = colDef(name = "Case number", minWidth = 130),
-    application = colDef(name = "RIS application", minWidth = 110),
-    document_type = colDef(name = "Document type", minWidth = 120),
-    query_topic = colDef(name = "Topic", minWidth = 130),
-    norms = colDef(
-      name = "Norms",
-      cell = function(value) {
-        paste(normalise_norm_values(value), collapse = "; ")
-      }
-    ),
-    url = colDef(
-      name = "RIS link",
-      html = TRUE,
-      cell = function(value) {
-        if (is.na(value) || !nzchar(value)) {
-          return("")
-        }
-        sprintf("<a href='%s' target='_blank'>open</a>", value)
-      }
-    )
-  )
-  column_defs <- column_defs[names(column_defs) %in% names(data)]
-
-  reactable(
-    data,
-    searchable = TRUE,
-    filterable = TRUE,
-    defaultPageSize = 8,
-    highlight = TRUE,
-    bordered = TRUE,
-    striped = TRUE,
-    compact = TRUE,
-    columns = column_defs
-  )
-}
-
-# Pick one usable content URL per result, preferring the requested format.
-first_content_url <- function(data, format = "Html") {
-  if (!"content_urls" %in% names(data)) {
-    data$content_urls <- vector("list", nrow(data))
-  }
-
-  data |>
-    mutate(
-      url = map_chr(content_urls, \(x) {
-        if (is.null(x) || length(x) == 0) {
-          return(NA_character_)
-        }
-
-        urls <- as.character(x)
-        urls <- urls[!is.na(urls)]
-
-        if (length(urls) == 0) {
-          return(NA_character_)
-        }
-
-        preferred <- urls[str_detect(str_to_lower(urls), str_to_lower(format))]
-        if (length(preferred) > 0) {
-          return(preferred[[1]])
-        }
-
-        urls[[1]]
-      })
-    )
-}
-
-# Build a compact table of recent decisions with direct RIS links.
-prepare_ris_link_table <- function(data, n = 12) {
-  data <- first_content_url(data)
-
-  display_cols <- c("decision_date", "case_number", "document_type", "url")
-  missing_cols <- setdiff(display_cols, names(data))
-
-  for (col in missing_cols) {
-    data[[col]] <- rep(NA_character_, nrow(data))
-  }
-
-  data |>
-    select(all_of(display_cols)) |>
-    arrange(desc(decision_date)) |>
-    slice_head(n = n)
-}
-
 # Expand all available content URLs into one row per linked format.
 prepare_content_urls_table <- function(data, n = 12) {
   if (!"content_urls" %in% names(data)) {
@@ -252,30 +165,19 @@ prepare_content_urls_table <- function(data, n = 12) {
     }
   }
 
-  data |>
-    select(all_of(display_cols)) |>
-    unnest_longer(content_urls, values_to = "url", keep_empty = TRUE) |>
+  data %>%
+    select(all_of(display_cols)) %>%
+    unnest_longer(content_urls, values_to = "url", keep_empty = TRUE) %>%
     mutate(
       format = case_when(
         str_detect(str_to_lower(url), "pdf") ~ "PDF",
         str_detect(str_to_lower(url), "html") ~ "HTML",
         TRUE ~ "RIS"
       )
-    ) |>
-    select(decision_date, case_number, format, url) |>
-    arrange(desc(decision_date)) |>
+    ) %>%
+    select(decision_date, case_number, format, url) %>%
+    arrange(desc(decision_date)) %>%
     slice_head(n = n)
-}
-
-# Collapse scalar list-columns into displayable strings for combined results.
-collapse_scalar_list_col <- function(x) {
-  map_chr(x, \(value) {
-    if (is.null(value) || length(value) == 0 || all(is.na(value))) {
-      return(NA_character_)
-    }
-
-    paste(unique(as.character(value)), collapse = "; ")
-  })
 }
 
 # Normalize one norms value from either legacy comma-separated text or a list entry.
@@ -290,57 +192,20 @@ normalise_norm_values <- function(x) {
     values <- str_split(values, ",\\s*")[[1]]
   }
 
-  values |>
-    str_squish() |>
+  values %>%
+    str_squish() %>%
     discard(\(value) is.na(value) || value == "")
 }
 
-# Normalize the full norms column while keeping it as a list-column.
-normalise_norms_column <- function(x) {
-  map(x, normalise_norm_values)
-}
-
-# Test whether any normalized norm value matches a case-insensitive pattern.
-has_matching_norm <- function(x, pattern) {
-  any(str_detect(normalise_norm_values(x), regex(pattern, ignore_case = TRUE)), na.rm = TRUE)
-}
-
-# Collapse scalar list-columns while preserving true list-columns used downstream.
-normalise_ris_result_types <- function(data) {
-  scalar_list_cols <- names(data)[map_lgl(data, is.list)]
-  scalar_list_cols <- setdiff(scalar_list_cols, c("content_urls", "app_metadata", "norms"))
-
-  if (length(scalar_list_cols) == 0) {
-    return(data)
-  }
-
-  data |>
-    mutate(across(all_of(scalar_list_cols), collapse_scalar_list_col))
-}
-
-# Combine named RIS result sets into one tibble, optionally recording the source name.
-bind_ris_results <- function(results, names_to = NULL) {
-  imap(
-    results,
-    \(data, name) {
-      data <- normalise_ris_result_types(data)
-
-      if (!is.null(names_to)) {
-        data[[names_to]] <- name
-      }
-
-      data
-    }
-  ) |>
-    list_rbind()
-}
 ```
 
 # Context & Purpose
 
 The Austrian Legal Information System, [RIS](https://www.ris.bka.gv.at/), short for *Rechtsinformationssystem*, is the central public repository of Austrian law and jurisprudence. Broadly speaking, it provides access to Austria's current and historical legal norms, including federal and state law, as well as to the jurisprudence of the country's most important courts and judicial institutions. The latter covers the case law of the Constitutional Court (*Verfassungsgerichtshof*, VfGH), the Administrative Court (*Verwaltungsgerichtshof*, VwGH), the Federal Administrative Court (*Bundesverwaltungsgericht*, BVwG), and decisions by institutions such as the Equal Treatment Commission, the Data Protection Authority, and the Federal Disciplinary Board.
 
-This wealth of information makes RIS an indispensable source for anyone working on issues related to the Austrian legal system. While accessing the data is straightforward via the official website, accessing RIS data in bulk and analyzing it beyond individual cases has mostly required tinkering with the service's API and wrangling the returned JSON results. The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy tibbles with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to researchers, students, and journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come handy.
+This wealth of information makes RIS an indispensable source for anyone working on issues related to the Austrian legal system. While accessing the data is straightforward via the official website, accessing RIS data in bulk and analyzing it beyond individual cases has mostly required tinkering with the service's API and wrangling the returned JSON results.
+
+The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy tibbles with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to researchers, students, and journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come in handy.
 
 Please note that the package is still under development (`0.0.1`) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.
 
@@ -348,12 +213,18 @@ You can install {risAT} from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pak("werkstattcodes/{risAT}")
+pak::pak("werkstattcodes/risAT")
 ```
 
 For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/) and the [GitHub repository](https://github.com/werkstattcodes/risAT/). If you want to receive updates on releases, I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.
 
-And you if you use the package in a publication, please cite it as follows:
+If you use the package in a publication, please cite it as follows:
+
+```{r}
+#| label: cite-risat
+#| code-fold: false
+citation("risAT")
+```
 
 # Scope
 
@@ -372,13 +243,13 @@ The RIS API organises case law by *application*. In practice, that means one app
 | `ris_search_gbk()` | Equal Treatment Commission (*Gleichbehandlungskommission*) |
 | `ris_search_case_law()` | Generic wrapper for any supported case-law application |
 
-The court-specific functions are thin wrappers around `ris_search_case_law()`.
+The court-specific functions are thin wrappers around `ris_search_case_law()`. Beyond case law, `ris_search_federal()` provides access to the federal-law (*Bundesrecht*) application.
 
 Every result includes standard columns such as `id`, `application`, `decision_date`, `case_number`, and `document_type`. It also includes list-columns such as `content_urls`, which stores links to the RIS HTML and PDF records. 
 
 With `echo = TRUE`, {risAT} prints the equivalent RIS web search URL and the number of returned rows. This is useful because it lets you move between the reproducible R workflow and the browser interface that many legal researchers already know.
 
-![](_img/chunkWithEcho.png){fig-align="left"}
+![Console output of a {risAT} search call with echo = TRUE, showing the equivalent RIS web search URL and the number of returned rows.](_img/chunkWithEcho.png){fig-align="left"}
 
 
 
@@ -389,32 +260,24 @@ The examples below are meant to show the kinds of questions one can start asking
 
 ## VfGH - European Convention on Human Rights
 
-To start with, let's use {risAT} to query the data on the decisions of the Austrian Constitutional Court, the Verfassungsgerichtshof (VfGH). Considering the special status of the European Convention for Human Rights (ECHR; it is directly applicable in Austria), I was wondering how frequently the VfGH refers to norms of the ECHR in its decisions. To answer this, the code below
+To start with, let's use {risAT} to query the data on the decisions of the Austrian Constitutional Court, the Verfassungsgerichtshof (VfGH). Considering the special status of the European Convention on Human Rights (ECHR; it is directly applicable in Austria), I was wondering how frequently the VfGH refers to norms of the ECHR in its decisions. To answer this, the code below
 
-1.  retrieves the meta data on all decisions of the VfGH from the beginning of 2000 to the end of 2025, and
+1.  retrieves the metadata on all decisions of the VfGH from the beginning of 2000 to the end of 2025, and
 2.  checks whether the ECHR is referenced among the norms invoked in each of the decisions. The `norms` column, returned by the API, stipulates the norms in question.
 
 ```{r}
+#| label: read-vfgh-data
 #| include: false
 
 vfgh_2000_2025 <- readr::read_rds(data_path("vfgh", "vfgh_2000_2025.rds"))
 ```
 
-```{r}
-vfgh_2000_2025 %>%
-  count(document_type)
-
-library(janitor)
-janitor::get_dupes(vfgh_2000_2025, id)
-janitor::get_dupes(vfgh_2000_2025, case_number)
-
-```
-
 Here is the relevant function call via {risAT}'s `ris_search_vfgh()`[^1]:
 
-[^1]: This call is rather comprehensive and can be quite time consuming. To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them. Also a note on the netiquette: The RIS API is a public service, and it is important to avoid overloading it with too many requests in a short time. Please be considerate and avoid sending too many requests in quick succession.
+[^1]: This call is rather comprehensive and can be quite time consuming. To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them. Also a note on netiquette: the RIS API is a public service; please be considerate and avoid sending too many requests in quick succession.
 
 ```{r}
+#| label: fetch-vfgh-all
 #| code-summary: "Get all decisions by the Constitutional Court (VfGH)"
 #| eval: false
 vfgh_2000_2025 <- ris_search_vfgh(
@@ -429,6 +292,7 @@ vfgh_2000_2025 <- ris_search_vfgh(
 In total we get data on `r nrow(vfgh_2000_2025)` decisions. Below is a glimpse of the data structure, which shows the main columns and their types. The `norms` column is a list-column, which means that each row can contain multiple norms.
 
 ```{r}
+#| label: glimpse-vfgh
 #| code-summary: "Describe result"
 glimpse(vfgh_2000_2025)
 ```
@@ -490,7 +354,8 @@ Now let's visualize the results.
 #| dev: svg_noto
 #| fig-ext: svg
 #| cache: true
-#| code-summary: "Identify VfGH decisions with ECHR norm reference"
+#| fig-alt: "Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights."
+#| code-summary: "Plot annual VfGH decisions and their ECHR references"
 #| code-fold: true
 
 vfgh_year_totals <- vfgh_year %>%
@@ -547,6 +412,7 @@ We can further refine the analysis by looking at the actual paragraphs of the EC
 
 
 ```{r}
+#| label: prep-echr-norms
 
 vfgh_2000_2025_echr <- vfgh_2000_2025_echr %>%
   filter(norm_echr==TRUE) %>% #keep only decisions with at least one norm reference to the ECHR
@@ -598,10 +464,10 @@ norm_count <- vfgh_2000_2025_echr %>%
   filter(str_detect(norms, regex("EMRK"))) %>% #keep only EMRK norms
   mutate(
     ZP=str_detect(norms, regex("ZP")), #identify references to an additional protocol of th ECHR
-    ZP_type=str_extract(norms, regex("\\d\\.?\\s+ZP"))
+    ZP_type=str_extract(norms, regex("\\d+\\.?\\s+ZP"))
   ) %>%
   mutate(
-    norm_split=str_split(norms, regex(",s*")) #split norm if it contains multiple artiles
+    norm_split=str_split(norms, regex(",\\s*")) #split norm if it contains multiple articles
   ) %>%
   unnest_longer(norm_split) %>% 
   mutate(art=str_extract(norm_split, regex("(?<=Art)\\d+")))  %>% #extract article
@@ -629,6 +495,7 @@ norm_count <- vfgh_2000_2025_echr %>%
 #| fig-align: "center"
 #| dev: svg_noto
 #| fig-ext: svg
+#| fig-alt: "Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses."
 #| code-summary: "Plot the most frequent ECHR norm references"
 #| code-fold: true
 
@@ -655,7 +522,7 @@ left_axis_labels <- norm_count_top %>%
   mutate(
     label_md = str_c(
       # escape leading "1." etc. so gridtext doesn't parse it as an ordered list
-      str_replace_all(str_wrap(as.character(label), 15), "\n", "<br>") |>
+      str_replace_all(str_wrap(as.character(label), 15), "\n", "<br>") %>%
         str_replace("^(\\d+)\\.", "\\1\\\\."),
       if_else(
         label == "all other ECHR norms referenced.",
@@ -725,15 +592,14 @@ An item which has been high on the political and wider public agenda is the ques
 
 ```{r}
 #| label: data-asyl-year
-#| code-summary: "Get VwGH data on subsidiary protection "
-#| fig-cap: "VwGH search results citing AsylG 2005 §8 by decision year."
+#| code-summary: "Get VwGH data on subsidiary protection"
 #| cache: true
 
 asyl_subsidiary_all <- ris_search_vwgh(
   norm = "'AsylG 2005 §8'",
   decision_date_from = "2000-01-01",
   decision_date_to = "2025-12-31",
-  search_legal_principles = F,
+  search_legal_principles = FALSE,
   echo = TRUE
 )
 
@@ -742,7 +608,7 @@ nrow(janitor::get_dupes(asyl_subsidiary_all, id))
 glimpse(asyl_subsidiary_all)
 ```
 
-The resulting graph shows the annual number of decisions by the VwGH which cite `AsylG 2005 §8` (subsidiary protection). The number of decisions citing this norm has been increasing over time, with a notable surge in the early 2020s.
+The resulting graph shows the annual number of decisions by the VwGH which cite `AsylG 2005 §8` (subsidiary protection). The number of decisions citing this norm has been increasing over time, with a notable surge in the early 2020s -- several years after the large refugee arrivals of 2015/16, reflecting how long it takes cases to reach the court of last instance.
 
 ```{r}
 #| label: fig-asyl-year
@@ -756,18 +622,18 @@ The resulting graph shows the annual number of decisions by the VwGH which cite 
 #| fig-align: "center"
 #| dev: svg_noto
 #| fig-ext: svg
-asyl_by_year <- asyl_subsidiary_all |>
-  mutate(year = year(decision_date)) |>
+asyl_by_year <- asyl_subsidiary_all %>%
+  mutate(year = year(decision_date)) %>%
   distinct(year, id) %>%
-  count(year, name = "decisions") |>
-  complete(year = 2000:2025, fill = list(decisions = 0L)) |>
+  count(year, name = "decisions") %>%
+  complete(year = 2000:2025, fill = list(decisions = 0L)) %>%
   arrange(year)
 
-asyl_by_year |>
+asyl_by_year %>%
   ggplot(aes(x = year, y = decisions)) +
   geom_col(fill = "#2F6F73", width = 0.72) +
   geom_text(
-    data = asyl_by_year |> filter(decisions > 0),
+    data = asyl_by_year %>% filter(decisions > 0),
     aes(label = decisions),
     vjust = -0.35,
     size = gg_annot_size,
@@ -777,7 +643,7 @@ asyl_by_year |>
   scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
   labs(
     title = "Number of decisions by the Austrian Administrative Court (VwGH) referring to 'AsylG 2005 §8' (subsidiary protection)",
-    subtitle = "Decisions from 2000 to 2025; Graph reveals a surge of decisions in the wake of the Syrian refugee 'crisis'.",
+    subtitle = "Decisions from 2000 to 2025. The surge in the early 2020s follows the large refugee arrivals of 2015/16 with the delay typical for a court of last instance.",
     x = NULL,
     y = "Number of decisions",
     caption = ris_graph_caption("VwGH decisions from 2000 to 2025 citing AsylG 2005 section 8 by decision year.")
@@ -797,39 +663,39 @@ asyl_subsidiary_afghan_syria <- ris_search_vwgh(
   query="Afghan* OR Syri* OR Irak*",
   decision_date_from = "2000-01-01",
   decision_date_to = "2025-12-31",
-  search_decision_text = T,
-  search_legal_principles = F,
+  search_decision_text = TRUE,
+  search_legal_principles = FALSE,
   echo = TRUE
 )
 
 afghan_syria_ids <- as.character(asyl_subsidiary_afghan_syria$id)
 
-asyl_subsidiary_all <- asyl_subsidiary_all |>
+asyl_subsidiary_all <- asyl_subsidiary_all %>%
   mutate(
     year = year(decision_date),
     afghan_syria = as.character(id) %in% afghan_syria_ids
   ) 
   
-asyl_by_year <- asyl_subsidiary_all |>
-  distinct(year, id, afghan_syria) |>
-  count(year, afghan_syria, name = "decisions") |>
+asyl_by_year <- asyl_subsidiary_all %>%
+  distinct(year, id, afghan_syria) %>%
+  count(year, afghan_syria, name = "decisions") %>%
   complete(
     year = 2000:2025,
     afghan_syria = c(FALSE, TRUE),
     fill = list(decisions = 0L)
-  ) |>
+  ) %>%
   arrange(year, afghan_syria)
 
-asyl_by_year_labels <- asyl_by_year |>
-  group_by(year) |>
+asyl_by_year_labels <- asyl_by_year %>%
+  group_by(year) %>%
   summarise(
     total = sum(decisions),
     afghan_syria_decisions = sum(decisions[afghan_syria]),
     .groups = "drop"
   )
 
-asyl_by_year_segment_labels <- asyl_by_year |>
-  group_by(year) |>
+asyl_by_year_segment_labels <- asyl_by_year %>%
+  group_by(year) %>%
   mutate(
     total = sum(decisions),
     afghan_syria_pct = if_else(total > 0, decisions / total, NA_real_),
@@ -838,7 +704,7 @@ asyl_by_year_segment_labels <- asyl_by_year |>
       scales::percent(afghan_syria_pct, accuracy = 1),
       NA_character_
     )
-  ) |>
+  ) %>%
   ungroup()
 ```
 
@@ -854,11 +720,11 @@ asyl_by_year_segment_labels <- asyl_by_year |>
 #| fig-align: "center"
 #| dev: svg_noto
 #| fig-ext: svg
-asyl_by_year |>
+asyl_by_year %>%
   ggplot(aes(x = year, y = decisions, fill=afghan_syria)) +
   geom_col(width = 0.72, key_glyph = draw_key_point) +
   geom_text(
-    data = asyl_by_year_labels |> filter(total > 0),
+    data = asyl_by_year_labels %>% filter(total > 0),
     aes(x = year, y = total, label = total),
     inherit.aes = FALSE,
     vjust = -0.35,
@@ -963,7 +829,7 @@ How many of these decisions arise in an asylum context? Analogous to the ECHR ex
 #| label: tbl-klimawandel-asyl
 #| code-summary: "Tabulate BVwG 'Klimawandel' decisions by asylum-norm reference"
 #| tbl-cap: "BVwG decisions mentioning 'Klimawandel' by year and asylum-norm reference."
-climateChange_bvwg <- climateChange_bvwg |>
+climateChange_bvwg <- climateChange_bvwg %>%
   mutate(year=year(decision_date)) %>%
   mutate(
     norm_asyl = map_lgl(norms, \(x) any(str_detect(as.character(unlist(x)), regex("Asyl", ignore_case=TRUE)), na.rm = TRUE))
@@ -1051,7 +917,7 @@ tblclimateChange_bvwg %>%
 
 ```
 
-## Equality and discrimination
+## GBK - Discrimination Grounds
 
 The Equal Treatment Commission decisions are another useful example because the wrapper exposes domain-specific filters. Instead of only searching text, we can directly filter by discrimination ground. The chart below shows the annual absolute frequency of different discrimination grounds across all years currently available through the RIS GBK endpoint.
 
@@ -1076,8 +942,8 @@ gbk_topics <- tibble(
 )
 
 
-li_gbk_all <- gbk_topics$discrimination_ground |>
-  set_names() |>
+li_gbk_all <- gbk_topics$discrimination_ground %>%
+  set_names() %>%
   map(\(ground) {
     ris_search_gbk(discrimination_ground = ground, echo = TRUE)
   }) 
@@ -1174,14 +1040,29 @@ One practical detail is worth highlighting. {risAT} does not only return the fie
 #| label: tbl-content-urls
 #| code-summary: "Unnest RIS content URLs"
 #| tbl-cap: "Example of unnested RIS content URLs."
-asyl_subsidiary_all |>
-  prepare_content_urls_table(n = 12) |>
+asyl_subsidiary_all %>%
+  prepare_content_urls_table(n = 12) %>%
   reactable(
     searchable = TRUE,
     defaultPageSize = 6,
     bordered = TRUE,
     striped = TRUE,
-    compact = TRUE
+    compact = TRUE,
+    columns = list(
+      decision_date = colDef(name = "Date", minWidth = 95),
+      case_number = colDef(name = "Case number", minWidth = 130),
+      format = colDef(name = "Format", minWidth = 80),
+      url = colDef(
+        name = "RIS link",
+        html = TRUE,
+        cell = \(value) {
+          if (is.na(value) || !nzchar(value)) {
+            return("")
+          }
+          sprintf("<a href='%s' target='_blank'>open</a>", value)
+        }
+      )
+    )
   )
 ```
 
@@ -1191,731 +1072,3 @@ This is helpful for reproducibility. The same pipeline that gets you to a plot c
 
 At the moment, {risAT} focuses on the RIS case-law and federal-law endpoints. That already covers a lot: constitutional review, administrative-law disputes, data protection, equality decisions, ordinary court case law, and more. Future work will likely involve broadening API coverage and refining some of the court-specific parameter mappings.
 
-For now, the package is best understood as a pragmatic bridge between RIS and the R workflow: search in a way that remains close to the official system, return data in a shape that is pleasant to work with, and keep links back to the source documents. If you run into bugs or have suggestions, the [issue tracker](https://github.com/werkstattcodes/risAT/issues) is the best place to leave them.
-
-```{r}
-knitr::knit_exit()
-```
-
-## Prevalence of norms and keywords
-
-```{r}
-d <- readRDS(data_path("vfgh", "vfgh_2000_2025.rds")) %>%
-  mutate(norms = normalise_norms_column(norms)) %>%
-  mutate(asylum = map_lgl(norms, has_matching_norm, pattern = "asyl"))
-
-norms_year <- d %>%
-  select(decision_date, norms) %>%
-  mutate(year=year(decision_date)) %>%
-  unnest_longer(norms) %>%
-  group_by(year, norms) %>%
-  summarise(decisions=n(), .groups="keep") %>%
-  arrange(desc(decisions)) 
-
-keywords_year <- d %>%
-  select(decision_date, keywords) %>%
-  mutate(year=year(decision_date)) %>%
-  mutate(keywords=str_split(keywords, ", ")) %>%
-  unnest_longer(keywords) %>%
-  filter(!is.na(keywords), keywords != "") %>%
-  group_by(year, keywords) %>%
-  summarise(decisions=n(), .groups="keep")
-
-keywords_top3 <- keywords_year %>%
-  group_by(year) %>%
-  slice_max(decisions, n = 3, with_ties = FALSE) %>%
-  ungroup() %>%
-  select(year, keywords) %>%
-  mutate(top_keyword = TRUE)
-
-keywords_year_plot <- keywords_year %>%
-  left_join(keywords_top3, by = c("year", "keywords")) %>%
-  mutate(keyword_group = if_else(coalesce(top_keyword, FALSE), keywords, "Other")) %>%
-  group_by(year, keyword_group) %>%
-  summarise(decisions = sum(decisions), .groups = "drop")
-
-keyword_levels <- keywords_year_plot %>%
-  filter(keyword_group != "Other") %>%
-  distinct(keyword_group) %>%
-  arrange(keyword_group) %>%
-  pull(keyword_group)
-
-keyword_palette <- c(
-  setNames(grDevices::hcl.colors(length(keyword_levels), "Dark 3"), keyword_levels),
-  Other = "#B8C4C2"
-)
-
-keywords_year_plot %>%
-  ggplot(aes(
-    x = factor(year),
-    y = decisions,
-    fill = keyword_group
-  )) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  scale_fill_manual(values = keyword_palette) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
-  labs(
-    title = "Top VfGH keywords by decision year",
-    subtitle = "Each column shows the total number of decisions. The three most frequent keywords per year are shown separately; all remaining keywords are grouped as Other.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = "Keyword",
-    caption = ris_graph_caption("VfGH search results from 2000 to 2025 by keyword and decision year.")
-  ) +
-  ris_plot_theme() +
-  theme(
-    legend.position = "top",
-    legend.key.height = grid::unit(0.35, "lines")
-  ) +
-  guides(fill = guide_legend(ncol = 3, override.aes = list(shape = 21, size = 5, colour = "white")))
-```
-
-```{r}
-#| label: fetch-helpers
-#| include: false
-dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
-
-years <- 2000:2025
-year_bounds <- tibble(
-  year = years,
-  date_from = str_c(year, "-01-01"),
-  date_to = str_c(year, "-12-31")
-)
-
-fetch_year_by_year <- function(search_fn, prefix, year_bounds, data_dir) {
-  pwalk(year_bounds, \(year, date_from, date_to) {
-    out_file <- file.path(data_dir, str_c(prefix, "_", year, ".rds"))
-    if (file.exists(out_file)) {
-      return(invisible(NULL))
-    }
-
-    result <- tryCatch(
-      search_fn(
-        decision_date_from = date_from,
-        decision_date_to = date_to,
-        search_decision_text = TRUE,
-        search_legal_principles = TRUE,
-        echo = TRUE
-      ),
-      error = function(e) {
-        warning("Skipping ", prefix, " ", year, ": ", conditionMessage(e), call. = FALSE)
-        NULL
-      }
-    )
-
-    if (!is.null(result)) {
-      saveRDS(result, out_file)
-    }
-  })
-}
-
-combine_year_files <- function(prefix, year_bounds, data_dir) {
-  years <- year_bounds$year
-
-  files <- tibble(
-    file = list.files(data_dir, str_c("^", prefix, "_[0-9]{4}\\.rds$"), full.names = TRUE)
-  ) %>%
-    mutate(
-      file_name = basename(file),
-      file_year = as.integer(str_match(file_name, str_c("^", prefix, "_([0-9]{4})\\.rds$"))[, 2])
-    ) %>%
-    arrange(file_year)
-
-  by_year <- files %>%
-    mutate(data = map(file, readRDS))
-
-  combined <- by_year %>%
-    transmute(
-      file_name,
-      file_year,
-      data = map2(data, file_year, \(x, year) mutate(x, source_year = year))
-    ) %>%
-    pull(data) %>%
-    list_rbind()
-
-  file_checks <- by_year %>%
-    transmute(
-      file_name,
-      file_year,
-      rows = map_int(data, nrow),
-      columns = map_int(data, ncol),
-      min_decision_date = as.Date(map_chr(data, \(x) as.character(min(x$decision_date, na.rm = TRUE)))),
-      max_decision_date = as.Date(map_chr(data, \(x) as.character(max(x$decision_date, na.rm = TRUE)))),
-      date_year_mismatches = map2_int(
-        data,
-        file_year,
-        \(x, year) sum(!is.na(x$decision_date) & lubridate::year(x$decision_date) != year)
-      )
-    )
-
-  missingness <- combined %>%
-    summarise(across(
-      everything(),
-      \(x) {
-        if (is.list(x)) {
-          sum(map_lgl(x, \(value) is.null(value) || length(value) == 0 || all(is.na(value))))
-        } else {
-          sum(is.na(x))
-        }
-      }
-    )) %>%
-    pivot_longer(everything(), names_to = "column", values_to = "missing_rows") %>%
-    mutate(
-      total_rows = nrow(combined),
-      missing_share = missing_rows / total_rows
-    ) %>%
-    arrange(desc(missing_rows), column)
-
-  list(
-    data = combined,
-    completeness_checks = list(
-      expected_years = years,
-      available_years = files$file_year,
-      missing_years = setdiff(years, files$file_year),
-      file_checks = file_checks,
-      duplicate_ids = combined %>%
-        count(id, name = "rows") %>%
-        filter(!is.na(id), rows > 1) %>%
-        arrange(desc(rows), id),
-      missingness = missingness
-    )
-  )
-}
-```
-
-```{r}
-vwgh_data_dir <- file.path(data_dir, "vwgh")
-```
-
-```{r}
-knitr::knit_exit()
-```
-
-```{r}
-knitr::knit_exit()
-```
-
-# END
-
-## Climate change
-
-Climate litigation is still a comparatively small field in Austria, but searching case law for climate-related language is a useful entry point into rights-based environmental claims, public-law litigation, and administrative disputes.
-
-The following query searches the Constitutional Court for `Klimawandel`. Again, because this is a potentially broad `query` search, I use explicit date bounds and restrict the live example to Rechtssaetze.
-
-```{r}
-#| label: fetch-klimawandel
-#| code-summary: "Search VfGH decisions for Klimawandel"
-#| cache: true
-climateChange_vfgh <- ris_search_vfgh(
-  query = "Klimawandel",
-  decision_date_from = "2000-01-01",
-  decision_date_to = "2025-12-31",
-  search_decision_text = TRUE,
-  search_legal_principles = TRUE,
-  echo = TRUE
-) %>%
-  mutate(year=year(decision_date))
-
-climateChange_vwgh <- ris_search_vwgh(
-  query = "Klimawandel",
-  decision_date_from = "2000-01-01",
-  decision_date_to = "2025-12-31",
-  search_decision_text = TRUE,
-  search_legal_principles = TRUE,
-  echo = TRUE
-)%>%
-  mutate(year=year(decision_date))
-
-climateChange_bvwg <- ris_search_bvwg(
-  query = "Klimawandel",
-  decision_date_from = "2000-01-01",
-  decision_date_to = "2025-12-31",
-  search_decision_text = TRUE,
-  search_legal_principles = TRUE,
-  echo = TRUE
-)%>%
-  mutate(year=year(decision_date))
-
-dplyr::bind_rows(
-climateChange_vwgh %>% select(year, authority),
-climateChange_vfgh %>% select(year, authority),
-climateChange_bvwg %>% select(year, authority)
-) %>%
-  group_by(year, authority) %>%
-  summarise(decisions=n(), .groups="keep") %>%
-  ggplot(aes(x=year, y=decisions, fill=authority)) +
-  geom_col(position="stack") +
-  scale_x_continuous(breaks=seq(2000,2025,5)) +
-  labs(
-    title = "Climate change in Austrian case law",
-    subtitle = "Search: query = 'Klimawandel', decisions from 2000 to 2025",
-    x = "Decision year",
-    y = "RIS search results",
-    fill = "Court / body",
-    caption = ris_graph_caption("VfGH and VwGH search results for 'Klimawandel' by decision year.")
-  ) +
-  ris_plot_theme()+
-  facet_wrap(~authority, scales="free_y") +
-  theme(legend.position="none")
-```
-
-```{r}
-climateChange_bvwg <- climateChange_bvwg %>%
-  mutate(asylum = map_lgl(norms, has_matching_norm, pattern = "asyl|fremden"))
-
-climateChange_bvwg %>%
-  ggplot()+
-  geom_bar(
-    aes(x=year, y=..count.., fill=asylum),
-    position="stack"
-  )
-
-```
-
-```{r}
-#| label: tbl-klimawandel
-#| code-summary: "Show selected climate-related VfGH results"
-#| tbl-cap: "Selected VfGH search results for 'Klimawandel'."
-climateChange_vfgh |>
-  select(id, case_number, norms, decision_date, keywords, vfgh_headnote) |>
-  # prepare_ris_link_table(n = 12) |>
-  style_ris_table()
-```
-
-## VwGH
-
-### Download and combine
-
-```{r}
-#| label: fetch-vwgh
-#| code-summary: "Fetch VwGH decisions year by year, 2000-2025"
-#| eval: false
-
-vwgh_data_dir <- file.path(data_dir, "vwgh")
-vwgh_data_dir
-dir.create(vwgh_data_dir, showWarnings = FALSE, recursive = TRUE)
-
-fetch_year_by_year(ris_search_vwgh, "vwgh", year_bounds, vwgh_data_dir)
-
-vwgh_combined <- combine_year_files("vwgh", year_bounds, vwgh_data_dir)
-vwgh_2000_2025 <- vwgh_combined$data
-vwgh_completeness_checks <- vwgh_combined$completeness_checks
-
-saveRDS(vwgh_2000_2025, file.path(vwgh_data_dir, "vwgh_2000_2025.rds"))
-
-vwgh_completeness_checks
-```
-
-### Asylum-related norms
-
-```{r}
-vwgh_2000_2025 <- readRDS(data_path("vwgh", "vwgh_2000_2025.rds")) %>%
-  mutate(norms = normalise_norms_column(norms))
-
-vwgh_norms_long <- vwgh_2000_2025 %>%
-  select(id, decision_date, source_year, norms) %>%
-  unnest_longer(norms, keep_empty = TRUE)
-
-vwgh_decision_asylum <- vwgh_norms_long %>%
-  mutate(has_asylum_norm = str_detect(norms, regex("asyl", ignore_case = TRUE))) %>%
-  group_by(id, decision_date, source_year) %>%
-  summarise(
-    has_asylum_norm = any(has_asylum_norm, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    year = year(decision_date),
-    asylum_norm = if_else(has_asylum_norm, "Contains Asyl norm", "Other decisions")
-  ) %>%
-  distinct(id, .keep_all = TRUE)
-
-vwgh_asylum_by_year <- vwgh_decision_asylum %>%
-  count(year, asylum_norm, name = "decisions")
-
-vwgh_asylum_by_year %>%
-  ggplot(aes(
-    x = year,
-    y = decisions,
-    fill = asylum_norm
-  )) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  scale_x_continuous(breaks = seq(2000, 2025, 5)) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
-  scale_fill_manual(
-    values = c(
-      "Contains Asyl norm" = "#C94C4C",
-      "Other decisions" = "#B8C4C2"
-    )
-  ) +
-  labs(
-    title = "VwGH decisions with asylum-related norms",
-    subtitle = "Each decision is counted once per year. Highlighted decisions contain 'asyl' in at least one norm.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = NULL,
-    caption = ris_graph_caption("VwGH decisions from 2000 to 2025 by decision year and asylum-related norm reference.")
-  ) +
-  ris_plot_theme() +
-  guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white")))
-
-```
-
-## VfGH
-
-### Download and combine
-
-```{r}
-#| label: fetch-vfgh
-#| code-summary: "Fetch VfGH decisions year by year, 2000-2025"
-#| eval: false
-vfgh_data_dir <- file.path(data_dir, "vfgh")
-dir.create(vfgh_data_dir, showWarnings = FALSE, recursive = TRUE)
-
-fetch_year_by_year(ris_search_vfgh, "vfgh", year_bounds, vfgh_data_dir)
-
-vfgh_combined <- combine_year_files("vfgh", year_bounds, vfgh_data_dir)
-vfgh_2000_2025 <- vfgh_combined$data
-vfgh_completeness_checks <- vfgh_combined$completeness_checks
-
-saveRDS(vfgh_2000_2025, file.path(vfgh_data_dir, "vfgh_2000_2025.rds"))
-
-vfgh_completeness_checks
-```
-
-### Asylum-related norms
-
-```{r}
-library(tictoc)
-tic()
-vfgh_2000_2025 <- readRDS(data_path("vfgh", "vfgh_2000_2025.rds")) %>%
-  mutate(norms = normalise_norms_column(norms))
-toc()
-
-vfgh_norms_long <- vfgh_2000_2025 %>%
-  select(id, decision_date, source_year, norms) %>%
-  unnest_longer(norms, keep_empty = TRUE)
-
-vfgh_decision_asylum <- vfgh_norms_long %>%
-  mutate(has_asylum_norm = str_detect(norms, regex("asyl", ignore_case = TRUE))) %>%
-  group_by(id, decision_date, source_year) %>%
-  summarise(
-    has_asylum_norm = any(has_asylum_norm, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    year = year(decision_date),
-    asylum_norm = if_else(has_asylum_norm, "Contains Asyl norm", "Other decisions")
-  ) %>%
-  distinct(id, .keep_all = TRUE)
-
-vfgh_asylum_by_year <- vfgh_decision_asylum %>%
-  count(year, asylum_norm, name = "decisions")
-
-vfgh_asylum_by_year %>%
-  ggplot(aes(
-    x = year,
-    y = decisions,
-    fill = asylum_norm
-  )) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  scale_x_continuous(breaks = seq(2000, 2025, 5)) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
-  scale_fill_manual(
-    values = c(
-      "Contains Asyl norm" = "#C94C4C",
-      "Other decisions" = "#B8C4C2"
-    )
-  ) +
-  labs(
-    title = "VfGH decisions with asylum-related norms",
-    subtitle = "Each decision is counted once per year. Highlighted decisions contain 'asyl' in at least one norm.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = NULL,
-    caption = ris_graph_caption("VfGH decisions from 2000 to 2025 by decision year and asylum-related norm reference.")
-  ) +
-  ris_plot_theme() +
-  guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white")))
-
-```
-
-## BVwG
-
-### Download and combine
-
-```{r}
-#| label: fetch-bvwg
-#| code-summary: "Fetch BVwG decisions year by year, 2000-2025"
-#| eval: false
-bvwg_data_dir <- file.path(data_dir, "bvwg")
-dir.create(bvwg_data_dir, showWarnings = FALSE, recursive = TRUE)
-
-fetch_year_by_year(ris_search_bvwg, "bvwg", year_bounds, bvwg_data_dir)
-
-bvwg_combined <- combine_year_files("bvwg", year_bounds, bvwg_data_dir)
-bvwg_2000_2025 <- bvwg_combined$data
-bvwg_completeness_checks <- bvwg_combined$completeness_checks
-
-saveRDS(bvwg_2000_2025, file.path(bvwg_data_dir, "bvwg_2000_2025.rds"))
-
-bvwg_completeness_checks
-```
-
-### Asylum-related norms
-
-```{r}
-bvwg_2000_2025 <- readRDS(data_path("bvwg", "bvwg_2000_2025.rds")) %>%
-  mutate(norms = normalise_norms_column(norms))
-
-bvwg_norms_long <- bvwg_2000_2025 %>%
-  select(id, decision_date, source_year, norms) %>%
-  unnest_longer(norms, keep_empty = TRUE)
-
-bvwg_decision_asylum <- bvwg_norms_long %>%
-  mutate(has_asylum_norm = str_detect(norms, regex("asyl", ignore_case = TRUE))) %>%
-  group_by(id, decision_date, source_year) %>%
-  summarise(
-    has_asylum_norm = any(has_asylum_norm, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    year = year(decision_date),
-    asylum_norm = if_else(has_asylum_norm, "Contains Asyl norm", "Other decisions")
-  ) %>%
-  distinct(id, .keep_all = TRUE)
-
-bvwg_asylum_by_year <- bvwg_decision_asylum %>%
-  count(year, asylum_norm, name = "decisions")
-
-bvwg_asylum_by_year %>%
-  ggplot(aes(
-    x = year,
-    y = decisions,
-    fill = asylum_norm
-  )) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  scale_x_continuous(breaks = seq(2000, 2025, 5)) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
-  scale_fill_manual(
-    values = c(
-      "Contains Asyl norm" = "#C94C4C",
-      "Other decisions" = "#B8C4C2"
-    )
-  ) +
-  labs(
-    title = "BVwG decisions with asylum-related norms",
-    subtitle = "Each decision is counted once per year. Highlighted decisions contain 'asyl' in at least one norm.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = NULL,
-    caption = ris_graph_caption("BVwG decisions from 2000 to 2025 by decision year and asylum-related norm reference.")
-  ) +
-  ris_plot_theme() +
-  guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white")))
-
-```
-
-## Comparing courts
-
-The three charts above use the same construction, so it is useful to put them side by side on a shared decision-year axis. BVwG only started operating in 2014, so its panel shows empty columns for 2000-2013 rather than starting later than the other two courts. Each bar is annotated with the total number of decisions for that year, and the asylum-related segment is labelled with its share of that year's total.
-
-```{r}
-#| label: fig-courts-comparison
-#| code-summary: "Compare asylum-related norms across VwGH, VfGH and BVwG"
-#| fig-cap: "Asylum-related norms by court, decision year, and share of yearly decisions."
-#| fig-alt: "Three stacked column charts comparing VwGH, VfGH and BVwG decisions by year, split into decisions with and without an asylum-related norm, annotated with yearly totals and the asylum share of each year."
-#| column: body-outset-right
-#| fig-width: 11
-#| fig-height: 7
-#| out-width: "100%"
-#| fig-align: "center"
-#| dev: svg_noto
-#| fig-ext: svg
-count_asylum_by_year <- function(data, min_year = NULL) {
-  data <- data %>%
-    mutate(norms = normalise_norms_column(norms))
-
-  norms_long <- data %>%
-    select(id, decision_date, norms) %>%
-    unnest_longer(norms, keep_empty = TRUE)
-
-  decision_asylum <- norms_long %>%
-    mutate(has_asylum_norm = str_detect(norms, regex("asyl", ignore_case = TRUE))) %>%
-    group_by(id, decision_date) %>%
-    summarise(has_asylum_norm = any(has_asylum_norm, na.rm = TRUE), .groups = "drop") %>%
-    mutate(
-      year = year(decision_date),
-      asylum_norm = if_else(has_asylum_norm, "Contains Asyl norm", "Other decisions")
-    ) %>%
-    distinct(id, .keep_all = TRUE)
-
-  if (!is.null(min_year)) {
-    decision_asylum <- decision_asylum %>% filter(year >= min_year)
-  }
-
-  decision_asylum %>%
-    count(year, asylum_norm, name = "decisions")
-}
-
-courts_by_year_raw <- bind_rows(
-  count_asylum_by_year(vwgh_2000_2025) %>% mutate(court = "VwGH"),
-  count_asylum_by_year(vfgh_2000_2025) %>% mutate(court = "VfGH"),
-  count_asylum_by_year(bvwg_2000_2025) %>% mutate(court = "BVwG")
-)
-
-courts_by_year <- expand_grid(
-  court = c("VwGH", "VfGH", "BVwG"),
-  year = 2000:2025,
-  asylum_norm = c("Contains Asyl norm", "Other decisions")
-) %>%
-  left_join(courts_by_year_raw, by = c("court", "year", "asylum_norm")) %>%
-  mutate(
-    decisions = coalesce(decisions, 0L),
-    court = factor(court, levels = c("VwGH", "VfGH", "BVwG")),
-    asylum_norm = factor(asylum_norm, levels = c("Contains Asyl norm", "Other decisions"))
-  ) %>%
-  arrange(court, year, desc(asylum_norm)) %>%
-  group_by(court, year) %>%
-  mutate(
-    ymax = cumsum(decisions),
-    ymin = ymax - decisions,
-    ymid = (ymin + ymax) / 2,
-    total = sum(decisions),
-    pct = if_else(total > 0, decisions / total, NA_real_)
-  ) %>%
-  ungroup()
-
-courts_by_year %>%
-  ggplot(aes(x = year, y = decisions, fill = asylum_norm)) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  geom_text(
-    data = courts_by_year %>% distinct(court, year, total) %>% filter(total > 0),
-    aes(x = year, y = total, label = scales::comma(total)),
-    inherit.aes = FALSE,
-    vjust = -0.4,
-    size = 2.9,
-    family = gg_plot_family
-  ) +
-  geom_text(
-    data = courts_by_year %>% filter(asylum_norm == "Contains Asyl norm", decisions > 0),
-    aes(x = year, y = ymid, label = scales::percent(pct, accuracy = 1)),
-    inherit.aes = FALSE,
-    color = "white",
-    size = 2.6,
-    family = gg_plot_family
-  ) +
-  facet_wrap(~court, scales = "free_y", ncol = 1) +
-  scale_fill_manual(
-    values = c(
-      "Contains Asyl norm" = "#C94C4C",
-      "Other decisions" = "#B8C4C2"
-    )
-  ) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
-  labs(
-    title = "Asylum-related norms across courts",
-    subtitle = "Bars are labelled with the total decisions per year; the asylum-related segment shows its share of that year's total.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = NULL,
-    caption = ris_graph_caption("VwGH, VfGH and BVwG decisions by decision year and asylum-related norm reference. BVwG was only created in 2014, hence the empty columns before that year.")
-  ) +
-  ris_plot_theme() +
-  guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white")))
-```
-
-```{r}
-knitr::knit_exit()
-```
-
-## BVwG: Asylum decisions and climate change
-
-A norm search only tells you what a decision cites, not what it discusses. To see whether climate change comes up inside asylum-related BVwG decisions, the approach is: first take all BVwG decisions with an asylum-related norm (a local filter on data already downloaded), then run a live full-text query against RIS for "Klimawandel" (covering both decision text and legal principles), and left-join the asylum-norm decisions against that query's decision IDs. The result is a boolean flag on the asylum-norm subset, not a new fetch of decisions themselves.
-
-```{r}
-#| label: fetch-bvwg-asyl-climate
-#| code-summary: "Cross-reference BVwG asylum-norm decisions with a Klimawandel full-text query"
-#| eval: false
-bvwg_asyl <- bvwg_2000_2025 %>%
-  filter(map_lgl(norms, has_matching_norm, pattern = "asyl"))
-
-climate_bvwg <- ris_search_bvwg(
-  query = "Klimawandel",
-  decision_date_from = "2000-01-01",
-  decision_date_to = "2025-12-31",
-  search_decision_text = TRUE,
-  search_legal_principles = TRUE,
-  echo = TRUE
-)
-
-bvwg_asyl_climate <- bvwg_asyl %>%
-  left_join(
-    climate_bvwg %>% select(id) %>% mutate(mentions_klimawandel = TRUE),
-    by = "id"
-  ) %>%
-  mutate(mentions_klimawandel = coalesce(mentions_klimawandel, FALSE))
-
-saveRDS(bvwg_asyl_climate, file.path(data_dir, "bvwg_asyl_climate.rds"))
-```
-
-```{r}
-#| label: fig-bvwg-asyl-climate
-#| code-summary: "Plot BVwG asylum-norm decisions mentioning Klimawandel by year"
-#| fig-cap: "BVwG asylum-related decisions by year, highlighting those mentioning 'Klimawandel'."
-#| fig-alt: "Stacked column chart of BVwG decisions with an asylum-related norm by decision year, with a highlighted segment for decisions whose text or legal principles mention Klimawandel."
-#| column: body-outset-right
-#| fig-width: 11
-#| fig-height: 7
-#| out-width: "100%"
-#| fig-align: "center"
-#| dev: svg_noto
-#| fig-ext: svg
-bvwg_asyl_climate <- readRDS(data_path("bvwg_asyl_climate.rds")) %>%
-  mutate(
-    year = year(decision_date),
-    mention_group = if_else(mentions_klimawandel, "Mentions Klimawandel", "Other asylum-related decisions")
-  )
-
-bvwg_asyl_climate_by_year <- bvwg_asyl_climate %>%
-  count(year, mention_group, name = "decisions") %>%
-  mutate(mention_group = factor(mention_group, levels = c("Mentions Klimawandel", "Other asylum-related decisions")))
-
-year_totals <- bvwg_asyl_climate_by_year %>%
-  group_by(year) %>%
-  summarise(total = sum(decisions), .groups = "drop")
-
-climate_counts <- bvwg_asyl_climate_by_year %>%
-  filter(mention_group == "Mentions Klimawandel", decisions > 0) %>%
-  left_join(year_totals, by = "year")
-
-bvwg_asyl_climate_by_year %>%
-  ggplot(aes(x = year, y = decisions, fill = mention_group)) +
-  geom_col(width = 0.72, colour = "white", linewidth = 0.2, key_glyph = draw_key_point) +
-  geom_text(
-    data = climate_counts,
-    aes(x = year, y = total, label = scales::comma(decisions)),
-    inherit.aes = FALSE,
-    vjust = -0.4,
-    size = 2.9,
-    family = gg_plot_family
-  ) +
-  scale_x_continuous(breaks = seq(2014, 2025, 1)) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1)), labels = scales::comma) +
-  scale_fill_manual(
-    values = c(
-      "Mentions Klimawandel" = "#2F6F73",
-      "Other asylum-related decisions" = "#B8C4C2"
-    )
-  ) +
-  labs(
-    title = "Climate change mentions in BVwG asylum decisions",
-    subtitle = "All BVwG decisions citing an asylum-related norm, split by whether the decision text or legal principles mention 'Klimawandel'. Labels show the count of decisions mentioning Klimawandel.",
-    x = "Decision year",
-    y = "Decisions",
-    fill = NULL,
-    caption = ris_graph_caption("BVwG decisions with an asylum-related norm, 2014 to 2025, split by full-text mentions of 'Klimawandel'.")
-  ) +
-  ris_plot_theme() +
-  guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white")))
-```
