@@ -33,88 +33,88 @@
 <polyline points='390.31,508.56 390.31,109.70 ' style='stroke-width: 0.75; stroke: #D8DEE4; stroke-linecap: butt;' />
 <polyline points='530.80,508.56 530.80,109.70 ' style='stroke-width: 0.75; stroke: #D8DEE4; stroke-linecap: butt;' />
 <polyline points='671.28,508.56 671.28,109.70 ' style='stroke-width: 0.75; stroke: #D8DEE4; stroke-linecap: butt;' />
-<rect x='109.35' y='118.25' width='571.76' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='153.86' width='432.69' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='189.48' width='172.79' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='225.09' width='169.98' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='260.70' width='151.72' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='296.31' width='112.39' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='331.93' width='109.58' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='367.54' width='77.27' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='403.15' width='75.86' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='438.76' width='66.03' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<rect x='109.35' y='474.37' width='540.86' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1F3A5F;' />
-<text x='689.70' y='134.84' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>407 (30.9%)</text>
-<text x='550.62' y='170.45' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>308 (23.4%)</text>
-<text x='289.85' y='206.06' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>123 (9.3%)</text>
-<text x='287.04' y='241.67' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>121 (9.2%)</text>
-<text x='268.78' y='277.29' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>108 (8.2%)</text>
-<text x='228.57' y='312.90' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>80 (6.1%)</text>
-<text x='225.76' y='348.51' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>78 (5.9%)</text>
-<text x='193.45' y='384.12' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>55 (4.2%)</text>
-<text x='192.04' y='419.74' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>54 (4.1%)</text>
-<text x='182.21' y='455.35' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>47 (3.6%)</text>
-<text x='658.79' y='490.96' style='font-size: 10.53px;fill: #263238; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>385 (29.2%)</text>
-<text x='58.97' y='478.64' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='10.00px' lengthAdjust='spacingAndGlyphs'>all</text>
-<text x='78.97' y='478.64' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='22.80px' lengthAdjust='spacingAndGlyphs'>other</text>
-<text x='53.97' y='491.59' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='28.33px' lengthAdjust='spacingAndGlyphs'>ECHR</text>
-<text x='78.97' y='491.59' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='27.78px' lengthAdjust='spacingAndGlyphs'>norms</text>
-<text x='48.97' y='504.55' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='50.59px' lengthAdjust='spacingAndGlyphs'>referenced.</text>
-<text x='73.97' y='449.51' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='449.51' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>5</text>
-<text x='15.97' y='462.46' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='26.70px' lengthAdjust='spacingAndGlyphs'>(Liberty</text>
-<text x='51.97' y='462.46' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='13.36px' lengthAdjust='spacingAndGlyphs'>and</text>
-<text x='67.97' y='462.46' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='30.25px' lengthAdjust='spacingAndGlyphs'>security)</text>
-<text x='68.97' y='413.89' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='93.97' y='413.89' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>13</text>
-<text x='31.97' y='426.85' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='33.22px' lengthAdjust='spacingAndGlyphs'>(Effective</text>
-<text x='75.97' y='426.85' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='29.38px' lengthAdjust='spacingAndGlyphs'>remedy)</text>
-<text x='73.97' y='378.28' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='378.28' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>6</text>
-<text x='55.97' y='391.23' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='16.47px' lengthAdjust='spacingAndGlyphs'>(Fair</text>
-<text x='79.97' y='391.23' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='15.58px' lengthAdjust='spacingAndGlyphs'>trial)</text>
-<text x='73.97' y='336.19' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='336.19' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>7</text>
+<rect x='109.35' y='118.25' width='571.76' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='153.86' width='432.69' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='189.48' width='172.79' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='225.09' width='169.98' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='260.70' width='151.72' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='296.31' width='112.39' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='331.93' width='109.58' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='367.54' width='77.27' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='403.15' width='75.86' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='438.76' width='66.03' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<rect x='109.35' y='474.37' width='540.86' height='25.64' style='stroke-width: 1.16; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1185FE;' />
+<text x='689.70' y='134.84' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>407 (30.9%)</text>
+<text x='550.62' y='170.45' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>308 (23.4%)</text>
+<text x='289.85' y='206.06' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>123 (9.3%)</text>
+<text x='287.04' y='241.67' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>121 (9.2%)</text>
+<text x='268.78' y='277.29' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='51.41px' lengthAdjust='spacingAndGlyphs'>108 (8.2%)</text>
+<text x='228.57' y='312.90' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>80 (6.1%)</text>
+<text x='225.76' y='348.51' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>78 (5.9%)</text>
+<text x='193.45' y='384.12' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>55 (4.2%)</text>
+<text x='192.04' y='419.74' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>54 (4.1%)</text>
+<text x='182.21' y='455.35' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='45.56px' lengthAdjust='spacingAndGlyphs'>47 (3.6%)</text>
+<text x='658.79' y='490.96' style='font-size: 10.53px;fill: #4D4D4D; font-family: "Arial";' textLength='57.25px' lengthAdjust='spacingAndGlyphs'>385 (29.2%)</text>
+<text x='58.97' y='482.13' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='10.00px' lengthAdjust='spacingAndGlyphs'>all</text>
+<text x='78.97' y='482.13' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='22.80px' lengthAdjust='spacingAndGlyphs'>other</text>
+<text x='53.97' y='491.59' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='28.33px' lengthAdjust='spacingAndGlyphs'>ECHR</text>
+<text x='78.97' y='491.59' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='27.78px' lengthAdjust='spacingAndGlyphs'>norms</text>
+<text x='48.97' y='501.06' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='50.59px' lengthAdjust='spacingAndGlyphs'>referenced.</text>
+<text x='73.97' y='451.25' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='451.25' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>5</text>
+<text x='15.97' y='460.71' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='26.70px' lengthAdjust='spacingAndGlyphs'>(Liberty</text>
+<text x='51.97' y='460.71' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='13.36px' lengthAdjust='spacingAndGlyphs'>and</text>
+<text x='67.97' y='460.71' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='30.25px' lengthAdjust='spacingAndGlyphs'>security)</text>
+<text x='68.97' y='415.64' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='93.97' y='415.64' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>13</text>
+<text x='31.97' y='425.10' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='33.22px' lengthAdjust='spacingAndGlyphs'>(Effective</text>
+<text x='75.97' y='425.10' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='29.38px' lengthAdjust='spacingAndGlyphs'>remedy)</text>
+<text x='73.97' y='380.03' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='380.03' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>6</text>
+<text x='55.97' y='389.49' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='16.47px' lengthAdjust='spacingAndGlyphs'>(Fair</text>
+<text x='79.97' y='389.49' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='15.58px' lengthAdjust='spacingAndGlyphs'>trial)</text>
+<text x='73.97' y='339.68' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='339.68' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>7</text>
 <text x='15.97' y='349.15' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='12.91px' lengthAdjust='spacingAndGlyphs'>(No</text>
 <text x='31.97' y='349.15' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='41.39px' lengthAdjust='spacingAndGlyphs'>punishment</text>
 <text x='75.97' y='349.15' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='25.36px' lengthAdjust='spacingAndGlyphs'>without</text>
-<text x='87.97' y='362.10' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>law)</text>
-<text x='73.97' y='307.06' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='307.06' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>2</text>
-<text x='43.97' y='320.01' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='21.36px' lengthAdjust='spacingAndGlyphs'>(Right</text>
-<text x='71.97' y='320.01' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='6.67px' lengthAdjust='spacingAndGlyphs'>to</text>
-<text x='83.97' y='320.01' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='12.91px' lengthAdjust='spacingAndGlyphs'>life)</text>
-<text x='38.97' y='271.45' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='8.34px' lengthAdjust='spacingAndGlyphs'>1.</text>
-<text x='53.97' y='271.45' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='14.28px' lengthAdjust='spacingAndGlyphs'>ZP,</text>
-<text x='73.97' y='271.45' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='271.45' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>1</text>
-<text x='63.97' y='284.40' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='35.61px' lengthAdjust='spacingAndGlyphs'>(Property)</text>
-<text x='73.97' y='235.83' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='235.83' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>3</text>
-<text x='7.97' y='248.78' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='40.52px' lengthAdjust='spacingAndGlyphs'>(Prohibition</text>
-<text x='59.97' y='248.78' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='6.67px' lengthAdjust='spacingAndGlyphs'>of</text>
-<text x='71.97' y='248.78' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='25.81px' lengthAdjust='spacingAndGlyphs'>torture)</text>
-<text x='68.97' y='200.22' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='93.97' y='200.22' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>10</text>
-<text x='55.97' y='213.17' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='44.95px' lengthAdjust='spacingAndGlyphs'>(Expression)</text>
-<text x='73.97' y='158.13' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='98.97' y='158.13' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>8</text>
+<text x='87.97' y='358.61' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='14.69px' lengthAdjust='spacingAndGlyphs'>law)</text>
+<text x='73.97' y='308.80' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='308.80' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>2</text>
+<text x='43.97' y='318.27' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='21.36px' lengthAdjust='spacingAndGlyphs'>(Right</text>
+<text x='71.97' y='318.27' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='6.67px' lengthAdjust='spacingAndGlyphs'>to</text>
+<text x='83.97' y='318.27' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='12.91px' lengthAdjust='spacingAndGlyphs'>life)</text>
+<text x='38.97' y='273.19' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='8.34px' lengthAdjust='spacingAndGlyphs'>1.</text>
+<text x='53.97' y='273.19' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='14.28px' lengthAdjust='spacingAndGlyphs'>ZP,</text>
+<text x='73.97' y='273.19' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='273.19' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>1</text>
+<text x='63.97' y='282.65' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='35.61px' lengthAdjust='spacingAndGlyphs'>(Property)</text>
+<text x='73.97' y='237.58' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='237.58' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>3</text>
+<text x='7.97' y='247.04' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='40.52px' lengthAdjust='spacingAndGlyphs'>(Prohibition</text>
+<text x='59.97' y='247.04' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='6.67px' lengthAdjust='spacingAndGlyphs'>of</text>
+<text x='71.97' y='247.04' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='25.81px' lengthAdjust='spacingAndGlyphs'>torture)</text>
+<text x='68.97' y='201.96' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='93.97' y='201.96' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>10</text>
+<text x='55.97' y='211.43' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='44.95px' lengthAdjust='spacingAndGlyphs'>(Expression)</text>
+<text x='73.97' y='161.62' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='98.97' y='161.62' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>8</text>
 <text x='27.97' y='171.08' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='27.59px' lengthAdjust='spacingAndGlyphs'>(Private</text>
 <text x='63.97' y='171.08' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='13.36px' lengthAdjust='spacingAndGlyphs'>and</text>
 <text x='79.97' y='171.08' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='20.91px' lengthAdjust='spacingAndGlyphs'>family</text>
-<text x='83.97' y='184.04' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='12.91px' lengthAdjust='spacingAndGlyphs'>life)</text>
-<text x='33.97' y='129.00' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
-<text x='58.97' y='129.00' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='8.34px' lengthAdjust='spacingAndGlyphs'>6,</text>
-<text x='73.97' y='129.00' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='20.02px' lengthAdjust='spacingAndGlyphs'>Abs.</text>
-<text x='98.97' y='129.00' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>1</text>
-<text x='55.97' y='141.95' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='16.47px' lengthAdjust='spacingAndGlyphs'>(Fair</text>
-<text x='79.97' y='141.95' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='15.58px' lengthAdjust='spacingAndGlyphs'>trial)</text>
-<text x='109.35' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>0</text>
-<text x='249.83' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>100</text>
-<text x='390.31' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>200</text>
-<text x='530.80' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>300</text>
-<text x='671.28' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #263238; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>400</text>
-<text x='446.69' y='534.33' text-anchor='middle' style='font-size: 12.00px;fill: #263238; font-family: "Arial";' textLength='109.38px' lengthAdjust='spacingAndGlyphs'>Number of decisions</text>
+<text x='83.97' y='180.55' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='12.91px' lengthAdjust='spacingAndGlyphs'>life)</text>
+<text x='33.97' y='130.74' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='15.56px' lengthAdjust='spacingAndGlyphs'>Art.</text>
+<text x='58.97' y='130.74' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='8.34px' lengthAdjust='spacingAndGlyphs'>6,</text>
+<text x='73.97' y='130.74' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='20.02px' lengthAdjust='spacingAndGlyphs'>Abs.</text>
+<text x='98.97' y='130.74' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>1</text>
+<text x='55.97' y='140.20' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='16.47px' lengthAdjust='spacingAndGlyphs'>(Fair</text>
+<text x='79.97' y='140.20' style='font-size: 8.00px;fill: #52616B; font-family: "Arial";' textLength='15.58px' lengthAdjust='spacingAndGlyphs'>trial)</text>
+<text x='109.35' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='5.56px' lengthAdjust='spacingAndGlyphs'>0</text>
+<text x='249.83' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>100</text>
+<text x='390.31' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>200</text>
+<text x='530.80' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>300</text>
+<text x='671.28' y='521.11' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='16.69px' lengthAdjust='spacingAndGlyphs'>400</text>
+<text x='446.69' y='534.33' text-anchor='middle' style='font-size: 12.00px;fill: #4D4D4D; font-family: "Arial";' textLength='109.38px' lengthAdjust='spacingAndGlyphs'>Number of decisions</text>
 <text x='7.97' y='63.97' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='52.56px' lengthAdjust='spacingAndGlyphs'>Between</text>
 <text x='64.28' y='63.97' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='30.06px' lengthAdjust='spacingAndGlyphs'>2000</text>
 <text x='98.10' y='63.97' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='22.55px' lengthAdjust='spacingAndGlyphs'>and</text>
@@ -217,8 +217,8 @@
 <text x='161.56' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='35.02px' lengthAdjust='spacingAndGlyphs'>System</text>
 <text x='199.50' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='24.50px' lengthAdjust='spacingAndGlyphs'>(RIS)</text>
 <text x='226.92' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='13.42px' lengthAdjust='spacingAndGlyphs'>via</text>
-<text x='243.27' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='30.70px' lengthAdjust='spacingAndGlyphs'>{risAT}</text>
-<text x='276.89' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='39.72px' lengthAdjust='spacingAndGlyphs'>package</text>
+<text x='243.27' y='590.31' style='font-size: 10.50px; font-weight: bold;fill: #52616B; font-family: "Arial";' textLength='34.25px' lengthAdjust='spacingAndGlyphs'>{risAT}</text>
+<text x='280.44' y='590.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='39.72px' lengthAdjust='spacingAndGlyphs'>package</text>
 <text x='7.97' y='601.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='39.70px' lengthAdjust='spacingAndGlyphs'>Graphic:</text>
 <text x='50.60' y='601.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='33.28px' lengthAdjust='spacingAndGlyphs'>Roland</text>
 <text x='86.80' y='601.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='40.86px' lengthAdjust='spacingAndGlyphs'>Schmidt,</text>

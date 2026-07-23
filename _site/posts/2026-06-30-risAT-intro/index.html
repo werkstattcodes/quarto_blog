@@ -455,7 +455,7 @@ cookieconsent.run({
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">12 Jul 2026</p>
+      <p class="date-modified">23 Jul 2026</p>
     </div>
   </div>
     
@@ -466,33 +466,33 @@ cookieconsent.run({
 </header>
 
 
-<section id="context-purpose" class="level1" data-number="1">
+<section id="context-purpose" class="level1 page-columns page-full" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Context &amp; Purpose</h1>
 <p>The Austrian Legal Information System, <a href="https://www.ris.bka.gv.at/">RIS</a>, short for <em>Rechtsinformationssystem</em>, is the central public repository of Austrian law and jurisprudence. Broadly speaking, it provides access to Austria’s current and historical legal norms, including federal and state law, as well as to the jurisprudence of the country’s most important courts and judicial institutions. The latter covers the case law of the Constitutional Court (<em>Verfassungsgerichtshof</em>, VfGH), the Administrative Court (<em>Verwaltungsgerichtshof</em>, VwGH), the Federal Administrative Court (<em>Bundesverwaltungsgericht</em>, BVwG), and decisions by institutions such as the Equal Treatment Commission, the Data Protection Authority, and the Federal Disciplinary Board.</p>
 <p>This wealth of information makes RIS an indispensable source for anyone working on issues related to the Austrian legal system. While accessing the data is straightforward via the official website, accessing RIS data in bulk and analyzing it beyond individual cases has mostly required tinkering with the service’s API and wrangling the returned JSON results.</p>
-<p>The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy tibbles with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to researchers, students, and journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come in handy.</p>
-<p>Please note that the package is still under development (<code>0.0.1</code>) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.</p>
+<p>The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> data frames with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to e.g.&nbsp;legal scholars and professionals or journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come in handy.</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;“Tidy” data follows a simple convention – each variable is a column, each observation is a row, and each value is a cell – which makes it easy to work with in R. See Hadley Wickham’s <a href="https://vita.had.co.nz/papers/tidy-data.html">Tidy Data</a> paper for the original formulation.</p></div></div><p>Please note that the package is still under development (<code>0.0.1</code>) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.</p>
 <p>You can install {risAT} from GitHub:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("pak")</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"werkstattcodes/risAT"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For the full function reference, see the <a href="https://werkstattcodes.github.io/risAT/">documentation site</a> and the <a href="https://github.com/werkstattcodes/risAT/">GitHub repository</a>. If you want to receive updates on releases, I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.</p>
+<p>For the full function reference, see the <a href="https://werkstattcodes.github.io/risAT/">documentation site</a> and the <a href="https://github.com/werkstattcodes/risAT/">GitHub repository</a>. If you want to receive updates on releases - what is likely to be particularly relevant in this early phase- , I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.</p>
 <p>If you use the package in a publication, please cite it as follows:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">"risAT"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="do">## To cite package 'risAT' in publications use:</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   Schmidt R (2026). _risAT: Interface to the Austrian RIS OGD REST</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">##   API_. R package version 0.0.0.9000,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   Schmidt R (2026). _risAT: An R package wrapping the API of the</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">##   Austrian Legal Information System (RIS)_. R package version 0.1.0,</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;https://github.com/werkstattcodes/risAT&gt;.</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">##     title = {risAT: Interface to the Austrian RIS OGD REST API},</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">##     title = {risAT: An R package wrapping the API of the Austrian Legal Information System (RIS)},</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="do">##     author = {Roland Schmidt},</span></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="do">##     year = {2026},</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="do">##     url = {https://github.com/werkstattcodes/risAT},</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="do">##     note = {R package version 0.0.0.9000},</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="do">##     note = {R package version 0.1.0},</span></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
@@ -577,8 +577,8 @@ cookieconsent.run({
 <li>retrieves the metadata on all decisions of the VfGH from the beginning of 2000 to the end of 2025, and</li>
 <li>checks whether the ECHR is referenced among the norms invoked in each of the decisions. The <code>norms</code> column, returned by the API, stipulates the norms in question.</li>
 </ol>
-<p>Here is the relevant function call via {risAT}’s <code>ris_search_vfgh()</code><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>:</p>
-<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;This call is rather comprehensive and can be quite time consuming. To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them. Also a note on netiquette: the RIS API is a public service; please be considerate and avoid sending too many requests in quick succession.</p></div></div><div class="cell">
+<p>Here is the relevant function call via {risAT}’s <code>ris_search_vfgh()</code><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>:</p>
+<div class="no-row-height column-margin column-container"><div id="fn2"><p><sup>2</sup>&nbsp;This call is rather comprehensive and can be quite time consuming. To add a layer of robustness, you may want to split it into separate calls for each year, store the interim results, and then combine them. Also a note on netiquette: the RIS API is a public service; please be considerate and avoid sending too many requests in quick succession.</p></div></div><div class="cell">
 <details open="" class="code-fold">
 <summary>Get all decisions by the Constitutional Court (VfGH)</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>vfgh_2000_2025 <span class="ot">&lt;-</span> <span class="fu">ris_search_vfgh</span>(</span>
@@ -701,7 +701,7 @@ cookieconsent.run({
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> echr_label),</span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_stack</span>(<span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span>,</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size,</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size <span class="sc">*</span> <span class="fl">0.8</span>,</span>
 <span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family,</span>
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">na.rm =</span> <span class="cn">TRUE</span></span>
 <span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
@@ -709,28 +709,36 @@ cookieconsent.run({
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">expand=</span><span class="fu">expansion</span>(<span class="at">mult=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>))) <span class="sc">+</span></span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.12</span>))) <span class="sc">+</span></span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"General decisions"</span> <span class="ot">=</span> <span class="st">"#1F3A5F"</span>, <span class="st">"Norm references ECHR"</span> <span class="ot">=</span> <span class="st">"#D4A017"</span>),</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"General decisions"</span> <span class="ot">=</span> <span class="st">"#BFBFBF"</span>, <span class="st">"Norm references ECHR"</span> <span class="ot">=</span> <span class="st">"#e69f00"</span>),</span>
 <span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Norm reference"</span></span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">shape =</span> <span class="dv">21</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">colour =</span> <span class="st">"white"</span>))) <span class="sc">+</span></span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
 <span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Annual Constitutional Court decisions referencing the ECHR"</span>,</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Decisions by year, with decisions containing a norm reference to the European Convention on Human Rights highlighted."</span>,</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"VfGH decisions from 2000 to 2025 by decision year, highlighting decisions with a norm reference to the European Convention on Human Rights."</span>)</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>() <span class="sc">+</span></span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.location =</span> <span class="st">"plot"</span>,</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification.top =</span> <span class="st">"left"</span>,</span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.margin =</span> ggplot2<span class="sc">::</span><span class="fu">margin</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Decisions by year, with decisions containing a norm reference to the European Convention on Human Rights highlighted. "</span>,</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      <span class="st">"The number on top of each bar is the total number of decisions that year; the label inside the highlighted segment shows only its relative share."</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"VfGH decisions from 2000 to 2025 by decision year, highlighting decisions with a norm reference to the European Convention on Human Rights."</span>)</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>() <span class="sc">+</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major.y =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div class="quarto-figure quarto-figure-center page-columns page-full">
-<figure class="figure page-columns page-full">
-<p class="page-columns page-full"><a href="index_files/figure-html/vfgh-plot-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/vfgh-plot-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights."></a></p>
+<div id="fig-vfgh-plot-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights.">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-vfgh-plot-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025.
+</figcaption>
+<div aria-describedby="fig-vfgh-plot-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<a href="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025."><img src="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights."></a>
+</div>
 </figure>
 </div>
 </div>
@@ -857,11 +865,11 @@ cookieconsent.run({
 <span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>norm_count_top <span class="sc">%&gt;%</span></span>
 <span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> n, <span class="at">y =</span> label)) <span class="sc">+</span></span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#1F3A5F"</span>, <span class="at">width =</span> <span class="fl">0.72</span>) <span class="sc">+</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#1185FE"</span>, <span class="at">width =</span> <span class="fl">0.72</span>) <span class="sc">+</span></span>
 <span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
 <span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> bar_label),</span>
 <span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.15</span>,</span>
-<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"#263238"</span>,</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"#4D4D4D"</span>,</span>
 <span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size,</span>
 <span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family</span>
 <span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
@@ -888,8 +896,8 @@ cookieconsent.run({
 <span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y.left =</span> ggtext<span class="sc">::</span><span class="fu">element_markdown</span>(</span>
 <span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> gg_axis_size,</span>
 <span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>      <span class="at">family =</span> gg_plot_family,</span>
-<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">"#263238"</span>,</span>
-<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>      <span class="at">lineheight =</span> <span class="fl">1.3</span>,</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">"#4D4D4D"</span>,</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>      <span class="at">lineheight =</span> <span class="fl">0.95</span>,</span>
 <span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">1</span>, <span class="co"># place the label box against the axis</span></span>
 <span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>      <span class="at">halign =</span> <span class="dv">1</span> <span class="co"># right-align lines inside the box</span></span>
 <span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>    ),</span>
@@ -898,9 +906,14 @@ cookieconsent.run({
 <span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div class="quarto-figure quarto-figure-center page-columns page-full">
-<figure class="figure page-columns page-full">
-<p class="page-columns page-full"><a href="index_files/figure-html/vfgh-echr-top-norms-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/vfgh-echr-top-norms-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses."></a></p>
+<div id="fig-vfgh-echr-top-norms" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses.">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-vfgh-echr-top-norms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Most frequently referenced ECHR norms in VfGH decisions, 2000 to 2025.
+</figcaption>
+<div aria-describedby="fig-vfgh-echr-top-norms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<a href="index_files/figure-html/fig-vfgh-echr-top-norms-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;2: Most frequently referenced ECHR norms in VfGH decisions, 2000 to 2025."><img src="index_files/figure-html/fig-vfgh-echr-top-norms-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses."></a>
+</div>
 </figure>
 </div>
 </div>
@@ -965,7 +978,7 @@ cookieconsent.run({
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>asyl_by_year <span class="sc">%&gt;%</span></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> decisions)) <span class="sc">+</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#2F6F73"</span>, <span class="at">width =</span> <span class="fl">0.72</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#1185FE"</span>, <span class="at">width =</span> <span class="fl">0.72</span>) <span class="sc">+</span></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> asyl_by_year <span class="sc">%&gt;%</span> <span class="fu">filter</span>(decisions <span class="sc">&gt;</span> <span class="dv">0</span>),</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> decisions),</span>
@@ -977,21 +990,24 @@ cookieconsent.run({
 <span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.12</span>))) <span class="sc">+</span></span>
 <span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Number of decisions by the Austrian Administrative Court (VwGH) referring to 'AsylG 2005 §8' (subsidiary protection)"</span>,</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Decisions from 2000 to 2025. The surge in the early 2020s follows the large refugee arrivals of 2015/16 with the delay typical for a court of last instance."</span>,</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"VwGH decisions from 2000 to 2025 citing AsylG 2005 section 8 by decision year."</span>)</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Decisions from 2000 to 2025. The surge in the early 2020s follows the large refugee arrivals of 2015/16 with the delay typical for a court of last instance. "</span>,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>      <span class="st">"The number on top of each bar is the total number of decisions that year."</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"VwGH decisions from 2000 to 2025 citing AsylG 2005 section 8 by decision year."</span>)</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-asyl-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025." data-fig-align="center">
+<div id="fig-asyl-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025.">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-asyl-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: VwGH search results citing AsylG 2005 §8 by decision year.
+Figure&nbsp;3: VwGH search results citing AsylG 2005 §8 by decision year.
 </figcaption>
 <div aria-describedby="fig-asyl-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-asyl-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;1: VwGH search results citing AsylG 2005 §8 by decision year."><img src="index_files/figure-html/fig-asyl-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025."></a>
+<a href="index_files/figure-html/fig-asyl-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;3: VwGH search results citing AsylG 2005 §8 by decision year."><img src="index_files/figure-html/fig-asyl-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025."></a>
 </div>
 </figure>
 </div>
@@ -1079,7 +1095,7 @@ Figure&nbsp;1: VwGH search results citing AsylG 2005 §8 by decision year.
 <span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">2000</span>, <span class="dv">2025</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
 <span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.12</span>))) <span class="sc">+</span></span>
 <span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"#2F6F73"</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"#A6544F"</span>),</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"#7f7f7f"</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"#e69f00"</span>),</span>
 <span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"Other"</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"Afghanistan, Syria, Iraq"</span>),</span>
 <span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="cn">NULL</span></span>
 <span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
@@ -1094,13 +1110,13 @@ Figure&nbsp;1: VwGH search results citing AsylG 2005 §8 by decision year.
 <span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-asyl-year-syria" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels." data-fig-align="center">
+<div id="fig-asyl-year-syria" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels.">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-asyl-year-syria-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: VwGH search results citing AsylG 2005 §8 by decision year, highlighting decisions mentioning Afghanistan, Syria, or Iraq.
+Figure&nbsp;4: VwGH search results citing AsylG 2005 §8 by decision year, highlighting decisions mentioning Afghanistan, Syria, or Iraq.
 </figcaption>
 <div aria-describedby="fig-asyl-year-syria-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-asyl-year-syria-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;2: VwGH search results citing AsylG 2005 §8 by decision year, highlighting decisions mentioning Afghanistan, Syria, or Iraq."><img src="index_files/figure-html/fig-asyl-year-syria-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels."></a>
+<a href="index_files/figure-html/fig-asyl-year-syria-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;4: VwGH search results citing AsylG 2005 §8 by decision year, highlighting decisions mentioning Afghanistan, Syria, or Iraq."><img src="index_files/figure-html/fig-asyl-year-syria-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels."></a>
 </div>
 </figure>
 </div>
@@ -1135,8 +1151,8 @@ Figure&nbsp;2: VwGH search results citing AsylG 2005 §8 by decision year, highl
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="cn">NULL</span>,</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption=</span><span class="fu">ris_graph_caption</span>(<span class="st">"Annual number of BVwG decisions mentioning 'Klimawandel'."</span>))<span class="sc">+</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#7F1D1D"</span>)<span class="sc">+</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#7F1D1D"</span>)<span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#1185FE"</span>)<span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#1185FE"</span>)<span class="sc">+</span></span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> \(data) <span class="fu">filter</span>(data, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2019</span>, <span class="dv">2023</span>, <span class="dv">2024</span>, <span class="dv">2025</span>)),</span>
 <span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> n, <span class="at">label =</span> n),</span>
@@ -1154,13 +1170,13 @@ Figure&nbsp;2: VwGH search results citing AsylG 2005 §8 by decision year, highl
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-klimawandel-line" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024." data-fig-align="center">
+<div id="fig-klimawandel-line" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024.">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-klimawandel-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Annual number of BVwG decisions mentioning ‘Klimawandel’.
+Figure&nbsp;5: Annual number of BVwG decisions mentioning ‘Klimawandel’.
 </figcaption>
 <div aria-describedby="fig-klimawandel-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-klimawandel-line-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;3: Annual number of BVwG decisions mentioning ‘Klimawandel’."><img src="index_files/figure-html/fig-klimawandel-line-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024."></a>
+<a href="index_files/figure-html/fig-klimawandel-line-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;5: Annual number of BVwG decisions mentioning ‘Klimawandel’."><img src="index_files/figure-html/fig-klimawandel-line-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024."></a>
 </div>
 </figure>
 </div>
@@ -1245,8 +1261,8 @@ Table&nbsp;1: BVwG decisions mentioning ‘Klimawandel’ by year and asylum-nor
 <span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>))) <span class="sc">+</span></span>
 <span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
 <span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel, no asylum norm"</span> <span class="ot">=</span> <span class="st">"#1F3A5F"</span>,</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel with asylum norm"</span> <span class="ot">=</span> <span class="st">"#D4A017"</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel, no asylum norm"</span> <span class="ot">=</span> <span class="st">"#7f7f7f"</span>,</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel with asylum norm"</span> <span class="ot">=</span> <span class="st">"#e69f00"</span></span>
 <span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
 <span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="cn">NULL</span></span>
 <span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
@@ -1260,13 +1276,13 @@ Table&nbsp;1: BVwG decisions mentioning ‘Klimawandel’ by year and asylum-nor
 <span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-klimawandel-asyl" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm." data-fig-align="center">
+<div id="fig-klimawandel-asyl" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm.">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference.
+Figure&nbsp;6: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference.
 </figcaption>
 <div aria-describedby="fig-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;4: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference."><img src="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm."></a>
+<a href="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;6: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference."><img src="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm."></a>
 </div>
 </figure>
 </div>
@@ -1339,50 +1355,39 @@ Figure&nbsp;4: Annual BVwG decisions mentioning ‘Klimawandel’, split by asyl
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">facet_label =</span> forcats<span class="sc">::</span><span class="fu">fct_reorder</span>(facet_label, <span class="fu">as.integer</span>(discrimination_grounds_en))</span>
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>gbk_fill_palette <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Gender"</span> <span class="ot">=</span> <span class="st">"#2F6F73"</span>,</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Ethnicity"</span> <span class="ot">=</span> <span class="st">"#8A5A44"</span>,</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Religion"</span> <span class="ot">=</span> <span class="st">"#6C757D"</span>,</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Worldview"</span> <span class="ot">=</span> <span class="st">"#4F5D75"</span>,</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Age"</span> <span class="ot">=</span> <span class="st">"#9A6B2F"</span>,</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sexual orientation"</span> <span class="ot">=</span> <span class="st">"#7B6D8D"</span>,</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Multiple discrimination"</span> <span class="ot">=</span> <span class="st">"#A6544F"</span></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>gbk_plot_data <span class="sc">%&gt;%</span></span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> decisions, <span class="at">fill =</span> discrimination_grounds_en)) <span class="sc">+</span></span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.72</span>, <span class="at">key_glyph =</span> draw_key_point) <span class="sc">+</span></span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(facet_label)) <span class="sc">+</span></span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="dv">2</span>)) <span class="sc">+</span></span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.08</span>)), <span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> gbk_fill_palette) <span class="sc">+</span></span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Discrimination grounds in Equal Treatment Commission decisions"</span>,</span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Annual RIS search results by discrimination ground, "</span>,</span>
-<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">min</span>(gbk_plot_data<span class="sc">$</span>year),</span>
-<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>      <span class="st">" to "</span>,</span>
-<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">max</span>(gbk_plot_data<span class="sc">$</span>year)</span>
-<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Decision year"</span>,</span>
-<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"RIS search results"</span>,</span>
-<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NULL</span>,</span>
-<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"Equal Treatment Commission search results by discrimination ground and decision year."</span>)</span>
-<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>() <span class="sc">+</span></span>
-<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
-<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_textbox</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
-<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>gbk_plot_data <span class="sc">%&gt;%</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> decisions)) <span class="sc">+</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#1185FE"</span>, <span class="at">width =</span> <span class="fl">0.72</span>) <span class="sc">+</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(facet_label)) <span class="sc">+</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_width</span>(<span class="dv">2</span>)) <span class="sc">+</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.08</span>)), <span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Discrimination grounds in Equal Treatment Commission decisions"</span>,</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Annual RIS search results by discrimination ground, "</span>,</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">min</span>(gbk_plot_data<span class="sc">$</span>year),</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>      <span class="st">" to "</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">max</span>(gbk_plot_data<span class="sc">$</span>year)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"RIS search results"</span>,</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NULL</span>,</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"Equal Treatment Commission search results by discrimination ground and decision year."</span>)</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>() <span class="sc">+</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_textbox</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-gbk-discrimination" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results." data-fig-align="center">
+<div id="fig-gbk-discrimination" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results.">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-gbk-discrimination-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Annual Equal Treatment Commission search results by discrimination ground.
+Figure&nbsp;7: Annual Equal Treatment Commission search results by discrimination ground.
 </figcaption>
 <div aria-describedby="fig-gbk-discrimination-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-gbk-discrimination-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;5: Annual Equal Treatment Commission search results by discrimination ground."><img src="index_files/figure-html/fig-gbk-discrimination-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results."></a>
+<a href="index_files/figure-html/fig-gbk-discrimination-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;7: Annual Equal Treatment Commission search results by discrimination ground."><img src="index_files/figure-html/fig-gbk-discrimination-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results."></a>
 </div>
 </figure>
 </div>
