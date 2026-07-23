@@ -10,16 +10,16 @@
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
 <generator>quarto-1.8.25</generator>
-<lastBuildDate>Mon, 29 Jun 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 22 Jul 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Introducing {risAT}: Working with the Austrian Legal Information System RIS</title>
+  <title>Introducing {risAT}: Working with Austria’s Legal Information System (RIS)</title>
   <dc:creator>Roland Schmidt</dc:creator>
   <link>https://werk.statt.codes/posts/2026-06-30-risAT-intro/</link>
   <description><![CDATA[ {risAT} is an R package that wraps the Austrian RIS (Rechtsinformationssystem) Open Government Data API, making it easier to work with Austrian jurisprudence in R. ]]></description>
   <category>Austria</category>
   <category>[object Object]</category>
   <guid>https://werk.statt.codes/posts/2026-06-30-risAT-intro/</guid>
-  <pubDate>Mon, 29 Jun 2026 22:00:00 GMT</pubDate>
+  <pubDate>Wed, 22 Jul 2026 22:00:00 GMT</pubDate>
 </item>
 <item>
   <title>How do Parties vote in the Austrian National Council?</title>
