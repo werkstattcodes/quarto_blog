@@ -475,7 +475,7 @@ cookieconsent.run({
 <p>You can install {risAT} from GitHub:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("pak")</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"werkstattcodes/risAT"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For the full function reference, see the <a href="https://werkstattcodes.github.io/risAT/">documentation site</a> and the <a href="https://github.com/werkstattcodes/risAT/">GitHub repository</a>. If you want to receive updates on releases - what is likely to be particularly relevant in this early phase- , I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.</p>
+<p>For the full function reference, see the <a href="https://werkstattcodes.github.io/risAT/">documentation site</a> and the <a href="https://github.com/werkstattcodes/risAT/">GitHub repository</a>. If you want to receive updates on releases – likely to be particularly relevant in this early phase – I would recommend subscribing to the repo on GitHub. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.</p>
 <p>If you use the package in a publication, please cite it as follows:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">"risAT"</span>)</span>
@@ -735,26 +735,26 @@ cookieconsent.run({
 <span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-vfgh-plot-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights.">
+<div id="fig-vfgh-plot-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the number and share of decisions with a norm reference to the European Convention on Human Rights, which fluctuates between about 8 and 17 percent without a clear long-term trend." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-vfgh-plot-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025.
 </figcaption>
 <div aria-describedby="fig-vfgh-plot-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025."><img src="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights."></a>
+<a href="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025."><img src="index_files/figure-html/fig-vfgh-plot-year-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the number and share of decisions with a norm reference to the European Convention on Human Rights, which fluctuates between about 8 and 17 percent without a clear long-term trend."></a>
 </div>
 </figure>
 </div>
 </div>
 </div>
-<p>As you can see – ignoring the plotting code – only a few lines of code yield a clear picture on the presence of the ECHR in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Across the years, the share is relative stable.</p>
+<p>As you can see – ignoring the plotting code – only a few lines of code yield a clear picture on the presence of the ECHR in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Across the years, the share is relatively stable, fluctuating between about 8 and 17 percent without a clear long-term trend.</p>
 <p>We can further refine the analysis by looking at the actual paragraphs of the ECHR which are referenced in the decisions. The code below extracts the article and paragraph numbers from the <code>norms</code> column, counts the occurrences of each combination, and displays the results. As a purely informative addition, I add a short label for each article.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>vfgh_2000_2025_echr <span class="ot">&lt;-</span> vfgh_2000_2025_echr <span class="sc">%&gt;%</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(norm_echr<span class="sc">==</span><span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="co">#keep only decisions with at least one norm reference to the ECHR</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">norms=</span><span class="fu">map</span>(norms, normalise_norm_values)) <span class="sc">%&gt;%</span> <span class="co">#standardize the norms column (elements of differnt class)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">norms=</span><span class="fu">map</span>(norms, normalise_norm_values)) <span class="sc">%&gt;%</span> <span class="co">#standardize the norms column (elements of different class)</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_longer</span>(norms) <span class="co">#unnest</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(vfgh_2000_2025_echr<span class="sc">$</span>norms)</span>
@@ -808,7 +808,7 @@ Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025.
 <span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>norm_count <span class="ot">&lt;-</span> vfgh_2000_2025_echr <span class="sc">%&gt;%</span></span>
 <span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(norms, <span class="fu">regex</span>(<span class="st">"EMRK"</span>))) <span class="sc">%&gt;%</span> <span class="co">#keep only EMRK norms</span></span>
 <span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">ZP=</span><span class="fu">str_detect</span>(norms, <span class="fu">regex</span>(<span class="st">"ZP"</span>)), <span class="co">#identify references to an additional protocol of th ECHR</span></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">ZP=</span><span class="fu">str_detect</span>(norms, <span class="fu">regex</span>(<span class="st">"ZP"</span>)), <span class="co">#identify references to an additional protocol of the ECHR</span></span>
 <span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">ZP_type=</span><span class="fu">str_extract</span>(norms, <span class="fu">regex</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">.?</span><span class="sc">\\</span><span class="st">s+ZP"</span>))</span>
 <span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -916,7 +916,7 @@ Figure&nbsp;1: Annual VfGH decisions referencing the ECHR, 2000 to 2025.
 <span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-vfgh-echr-top-norms" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses.">
+<div id="fig-vfgh-echr-top-norms" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Horizontal bar chart of the ECHR norms most frequently referenced by the Austrian Constitutional Court between 2000 and 2025, led by Article 6 paragraph 1 (fair trial) and Article 8 (private and family life). Each axis label shows the short name of the Convention right in parentheses." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-vfgh-echr-top-norms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: Most frequently referenced ECHR norms in VfGH decisions, 2000 to 2025.
@@ -1011,7 +1011,7 @@ Figure&nbsp;2: Most frequently referenced ECHR norms in VfGH decisions, 2000 to 
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-asyl-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025.">
+<div id="fig-asyl-year" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-asyl-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: VwGH search results citing AsylG 2005 §8 by decision year.
@@ -1120,7 +1120,7 @@ Figure&nbsp;3: VwGH search results citing AsylG 2005 §8 by decision year.
 <span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-asyl-year-syria" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels.">
+<div id="fig-asyl-year-syria" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart showing the yearly number of VwGH search results citing AsylG 2005 section 8 between 2000 and 2025, split into decisions mentioning Afghanistan, Syria, or Iraq and other decisions, with yearly totals and percentage labels." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-asyl-year-syria-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4: VwGH search results citing AsylG 2005 §8 by decision year, highlighting decisions mentioning Afghanistan, Syria, or Iraq.
@@ -1136,7 +1136,9 @@ Figure&nbsp;4: VwGH search results citing AsylG 2005 §8 by decision year, highl
 </section>
 <section id="bvwg---asylum-climate-change" class="level2 page-columns page-full" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="bvwg---asylum-climate-change"><span class="header-section-number">3.3</span> BVwG - Asylum &amp; Climate Change</h2>
-<p>Now let’s use the query function for a different court, the Bundesverwaltungsgericht (BVwG), the federal administrative court of first instance. Let’s again query for the presence of a search term, here ‘Klimawandel’ (climate change), in the decision text or legal principles. The query covers all years between 2014, the court’s first year in operation, up until the end of 2025.</p>
+<p>Now let’s use the query function for a different court, the Bundesverwaltungsgericht (BVwG), the federal administrative court of first instance. We search for the presence of ‘Klimawandel’ (climate change) in the decision text or legal principles, covering all years since 2014, the court’s first year in operation.</p>
+<p>Simply counting how often ‘Klimawandel’ turns up doesn’t tell us much on its own. What we actually want to know is how common climate change is <em>within</em> asylum decisions specifically – and that needs a different denominator than the search results themselves: all BVwG asylum decisions, not just the ones the Klimawandel search happens to return.</p>
+<p>We do not need a second full-text search for this. A full metadata census of all BVwG decisions is available locally (fetched by decision-date range only, independent of any search term); filtering it by an asylum-related norm gives the denominator. The Klimawandel search below already asked RIS’s own full-text index which decisions mention the term – its <code>id</code> column is the authoritative match set. Joining the two by <code>id</code> gives the true annual share, without reading any decision text ourselves.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get all decisions by the BVwG which contain ‘Klimawandel’</summary>
@@ -1150,149 +1152,134 @@ Figure&nbsp;4: VwGH search results citing AsylG 2005 §8 by decision year, highl
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div class="cell page-columns page-full" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>Plot annual BVwG decisions mentioning ‘Klimawandel’</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>climateChange_bvwg <span class="sc">%&gt;%</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year=</span>lubridate<span class="sc">::</span><span class="fu">year</span>(decision_date)) <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Annual number of decisions by the BVwG which contain 'Klimawandel'"</span>,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption=</span><span class="fu">ris_graph_caption</span>(<span class="st">"Annual number of BVwG decisions mentioning 'Klimawandel'."</span>))<span class="sc">+</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#1185FE"</span>)<span class="sc">+</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>year, <span class="at">y=</span>n), <span class="at">color=</span><span class="st">"#1185FE"</span>)<span class="sc">+</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> \(data) <span class="fu">filter</span>(data, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2019</span>, <span class="dv">2023</span>, <span class="dv">2024</span>, <span class="dv">2025</span>)),</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> n, <span class="at">label =</span> n),</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">nudge_x =</span> <span class="fl">0.15</span>,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">hjust =</span> <span class="dv">0</span>,</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span>,</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">+</span></span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="dv">2015</span>, <span class="dv">2020</span>, <span class="dv">2025</span>),</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="cn">NA</span>),</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">add =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">+</span></span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>() <span class="sc">+</span></span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output-display page-columns page-full">
-<div id="fig-klimawandel-line" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024.">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-klimawandel-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Annual number of BVwG decisions mentioning ‘Klimawandel’.
-</figcaption>
-<div aria-describedby="fig-klimawandel-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-klimawandel-line-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;5: Annual number of BVwG decisions mentioning ‘Klimawandel’."><img src="index_files/figure-html/fig-klimawandel-line-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024."></a>
-</div>
-</figure>
-</div>
-</div>
-</div>
-<p>How many of these decisions arise in an asylum context? Analogous to the ECHR example above, we can check the <code>norms</code> column for asylum-related norms. The table below shows, per year, the share of ‘Klimawandel’ decisions which reference such a norm.</p>
 <div class="cell">
 <details open="" class="code-fold">
-<summary>Tabulate BVwG ‘Klimawandel’ decisions by asylum-norm reference</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>climateChange_bvwg <span class="ot">&lt;-</span> climateChange_bvwg <span class="sc">%&gt;%</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year=</span><span class="fu">year</span>(decision_date)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">norm_asyl =</span> <span class="fu">map_lgl</span>(norms, \(x) <span class="fu">any</span>(<span class="fu">str_detect</span>(<span class="fu">as.character</span>(<span class="fu">unlist</span>(x)), <span class="fu">regex</span>(<span class="st">"Asyl"</span>, <span class="at">ignore_case=</span><span class="cn">TRUE</span>)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>tblclimateChange_bvwg <span class="ot">&lt;-</span> climateChange_bvwg <span class="sc">%&gt;%</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(year, norm_asyl) <span class="sc">%&gt;%</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">norm_asyl =</span> <span class="fu">if_else</span>(norm_asyl, <span class="st">"asylum_norm"</span>, <span class="st">"other"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> norm_asyl, <span class="at">values_from =</span> n, <span class="at">values_fill =</span> <span class="dv">0</span>)  <span class="sc">%&gt;%</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">complete</span>(<span class="at">year =</span> <span class="dv">2014</span><span class="sc">:</span><span class="dv">2025</span>, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">asylum_norm =</span> <span class="dv">0</span>, <span class="at">other =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">total =</span> asylum_norm <span class="sc">+</span> other,</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">asylum_norm_rel =</span> <span class="fu">if_else</span>(total <span class="sc">&gt;</span> <span class="dv">0</span>, asylum_norm <span class="sc">/</span> total, <span class="cn">NA_real_</span>)</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>tblclimateChange_bvwg <span class="sc">%&gt;%</span></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, total, asylum_norm_rel) <span class="sc">%&gt;%</span></span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">reactable</span>(</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">list</span>(</span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">year =</span> <span class="fu">colDef</span>(<span class="at">name =</span> <span class="st">"Year"</span>),</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">total =</span> <span class="fu">colDef</span>(<span class="at">name =</span> <span class="st">"Total decisions"</span>),</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">asylum_norm_rel =</span> <span class="fu">colDef</span>(</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">"Share with asylum norm"</span>,</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">format =</span> <span class="fu">colFormat</span>(<span class="at">percent =</span> <span class="cn">TRUE</span>, <span class="at">digits =</span> <span class="dv">1</span>)</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">compact =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">bordered =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">striped =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">pagination =</span> <span class="cn">FALSE</span></span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<summary>Join the full BVwG census with the Klimawandel search results</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_full <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_rds</span>(<span class="fu">data_path</span>(<span class="st">"bvwg"</span>, <span class="st">"bvwg_2000_2025.rds"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">year =</span> <span class="fu">year</span>(decision_date),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">has_asyl_norm =</span> <span class="fu">map_lgl</span>(norms, has_matching_norm, <span class="at">pattern =</span> <span class="st">"asyl"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(has_asyl_norm) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mentions_klimawandel =</span> <span class="fu">as.character</span>(id) <span class="sc">%in%</span> <span class="fu">as.character</span>(climateChange_bvwg<span class="sc">$</span>id))</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_climate_year <span class="ot">&lt;-</span> bvwg_asyl_full <span class="sc">%&gt;%</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(year, mentions_klimawandel, <span class="at">name =</span> <span class="st">"decisions"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">complete</span>(<span class="at">year =</span> <span class="dv">2014</span><span class="sc">:</span><span class="dv">2025</span>, <span class="at">mentions_klimawandel =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>), <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">decisions =</span> <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">climate_group =</span> <span class="fu">factor</span>(</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">if_else</span>(mentions_klimawandel, <span class="st">"Mentions Klimawandel"</span>, <span class="st">"No mention of Klimawandel"</span>),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"No mention of Klimawandel"</span>, <span class="st">"Mentions Klimawandel"</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(decisions), <span class="at">share =</span> <span class="fu">if_else</span>(total <span class="sc">&gt;</span> <span class="dv">0</span>, decisions <span class="sc">/</span> total, <span class="dv">0</span>), <span class="at">.by =</span> year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div id="tbl-klimawandel-asyl" class="cell quarto-float quarto-figure quarto-figure-left anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: BVwG decisions mentioning ‘Klimawandel’ by year and asylum-norm reference.
-</figcaption>
-<div aria-describedby="tbl-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<div class="reactable html-widget html-fill-item" id="htmlwidget-78134cd64526a8ffda15" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-78134cd64526a8ffda15">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"year":[2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"total":[0,1,2,37,26,442,332,138,408,502,367,986],"asylum_norm_rel":["NA",0,0,0,0.269230769230769,0.961538461538462,0.882530120481928,0.884057971014493,0.928921568627451,0.956175298804781,0.920980926430518,0.972616632860041]},"columns":[{"id":"year","name":"Year","type":"numeric"},{"id":"total","name":"Total decisions","type":"numeric"},{"id":"asylum_norm_rel","name":"Share with asylum norm","type":"numeric","format":{"cell":{"digits":1,"percent":true},"aggregated":{"digits":1,"percent":true}}}],"pagination":false,"bordered":true,"striped":true,"compact":true,"dataKey":"07863119f04a90116d23be20c3e93e9e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
+<p>The first chart shows the absolute numbers: the total number of asylum decisions per year, with the (usually very thin) segment mentioning Klimawandel highlighted.</p>
+<div class="cell page-columns page-full" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Plot annual asylum decisions by Klimawandel mention (absolute)</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_totals <span class="ot">&lt;-</span> bvwg_asyl_climate_year <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(year, total)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_climate_counts <span class="ot">&lt;-</span> bvwg_asyl_climate_year <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mentions_klimawandel) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, decisions, total)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_climate_year <span class="sc">%&gt;%</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> decisions, <span class="at">fill =</span> climate_group)) <span class="sc">+</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.72</span>, <span class="at">key_glyph =</span> draw_key_point) <span class="sc">+</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> bvwg_asyl_totals,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> total, <span class="at">label =</span> scales<span class="sc">::</span><span class="fu">comma</span>(total)),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">1.5</span>,</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span>,</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size,</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> bvwg_asyl_climate_counts,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> total, <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"("</span>, decisions, <span class="st">")"</span>)),</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.3</span>,</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"#4D4D4D"</span>,</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size <span class="sc">*</span> <span class="fl">0.85</span>,</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="dv">2015</span>, <span class="dv">2020</span>, <span class="dv">2025</span>)) <span class="sc">+</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma, <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.2</span>))) <span class="sc">+</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>      <span class="st">"No mention of Klimawandel"</span> <span class="ot">=</span> <span class="st">"#7f7f7f"</span>,</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Mentions Klimawandel"</span> <span class="ot">=</span> <span class="st">"#e69f00"</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="cn">NULL</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"How common is climate change within BVwG asylum decisions?"</span>,</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="fu">paste0</span>(</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Annual number of BVwG asylum decisions, 2014 to 2025. The bold number above each bar is the total; "</span>,</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>      <span class="st">"the number in parentheses is how many of those decisions mention Klimawandel."</span></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of asylum decisions"</span>,</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"BVwG asylum decisions (identified via an asylum-related norm reference) by decision year, highlighting those that also match a full-text search for 'Klimawandel'."</span>)</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div id="fig-bvwg-asyl-climate-absolute" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart of annual BVwG asylum decisions from 2014 to 2025, with a thin highlighted segment showing the small number that mention Klimawandel." data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bvwg-asyl-climate-absolute-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: BVwG asylum decisions by year, absolute numbers, highlighting those mentioning Klimawandel.
+</figcaption>
+<div aria-describedby="fig-bvwg-asyl-climate-absolute-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<a href="index_files/figure-html/fig-bvwg-asyl-climate-absolute-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;5: BVwG asylum decisions by year, absolute numbers, highlighting those mentioning Klimawandel."><img src="index_files/figure-html/fig-bvwg-asyl-climate-absolute-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual BVwG asylum decisions from 2014 to 2025, with a thin highlighted segment showing the small number that mention Klimawandel."></a>
 </div>
 </figure>
 </div>
 </div>
-<p>The same split as a chart:</p>
+</div>
+<p>The same data as a line chart makes the trend easier to read: climate change goes from essentially absent before 2018 to a small but clearly growing share of asylum decisions.</p>
 <div class="cell page-columns page-full" data-layout-align="center">
 <details open="" class="code-fold">
-<summary>Plot BVwG ‘Klimawandel’ decisions by asylum-norm reference</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tblclimateChange_bvwg <span class="sc">%&gt;%</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, asylum_norm, other) <span class="sc">%&gt;%</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(asylum_norm, other),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"decision_group"</span>,</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"decisions"</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">decision_group =</span> <span class="fu">factor</span>(</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>      decision_group,</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"asylum_norm"</span>),</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Klimawandel, no asylum norm"</span>, <span class="st">"Klimawandel with asylum norm"</span>)</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> decisions, <span class="at">fill =</span> decision_group)) <span class="sc">+</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.72</span>, <span class="at">key_glyph =</span> draw_key_point) <span class="sc">+</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="dv">2015</span>, <span class="dv">2020</span>, <span class="dv">2025</span>),</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="cn">NA</span>),</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.02</span>))</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>))) <span class="sc">+</span></span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel, no asylum norm"</span> <span class="ot">=</span> <span class="st">"#7f7f7f"</span>,</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Klimawandel with asylum norm"</span> <span class="ot">=</span> <span class="st">"#e69f00"</span></span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="cn">NULL</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"BVwG Klimawandel decisions by asylum-norm reference"</span>,</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Annual decisions mentioning Klimawandel, split by whether an asylum-related norm is referenced."</span>,</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Number of decisions"</span>,</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"BVwG decisions mentioning 'Klimawandel' by decision year and asylum-related norm reference."</span>)</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<summary>Plot annual share of asylum decisions mentioning Klimawandel</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>bvwg_asyl_climate_year <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mentions_klimawandel) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> share)) <span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"#1185FE"</span>) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"#1185FE"</span>) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> scales<span class="sc">::</span><span class="fu">percent</span>(share, <span class="at">accuracy =</span> <span class="fl">0.1</span>)),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">nudge_y =</span> <span class="fl">0.006</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"black"</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> gg_annot_size,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> gg_plot_family</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2014</span>, <span class="dv">2015</span>, <span class="dv">2020</span>, <span class="dv">2025</span>)) <span class="sc">+</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>),</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.12</span>))</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Share of BVwG asylum decisions mentioning climate change"</span>,</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Same decisions as above; share of asylum decisions per year that mention Klimawandel."</span>,</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="fu">ris_graph_caption</span>(<span class="st">"Relative share of BVwG asylum decisions mentioning 'Klimawandel', by decision year."</span>)</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-klimawandel-asyl" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm.">
+<div id="fig-bvwg-asyl-climate-relative" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Line chart of the annual share of BVwG asylum decisions mentioning Klimawandel from 2014 to 2025, rising from near zero to roughly 4 to 8 percent in the most recent years." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bvwg-asyl-climate-relative-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: BVwG asylum decisions by year, relative share mentioning Klimawandel.
 </figcaption>
-<div aria-describedby="fig-klimawandel-asyl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;6: Annual BVwG decisions mentioning ‘Klimawandel’, split by asylum-norm reference."><img src="index_files/figure-html/fig-klimawandel-asyl-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm."></a>
+<div aria-describedby="fig-bvwg-asyl-climate-relative-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<a href="index_files/figure-html/fig-bvwg-asyl-climate-relative-1.svg" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;6: BVwG asylum decisions by year, relative share mentioning Klimawandel."><img src="index_files/figure-html/fig-bvwg-asyl-climate-relative-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" alt="Line chart of the annual share of BVwG asylum decisions mentioning Klimawandel from 2014 to 2025, rising from near zero to roughly 4 to 8 percent in the most recent years."></a>
 </div>
 </figure>
 </div>
@@ -1391,7 +1378,7 @@ Figure&nbsp;6: Annual BVwG decisions mentioning ‘Klimawandel’, split by asyl
 <span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-gbk-discrimination" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results.">
+<div id="fig-gbk-discrimination" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Faceted bar chart showing annual RIS search result counts for Equal Treatment Commission discrimination grounds: gender, ethnicity, religion, worldview, age, sexual orientation, and multiple discrimination. Each facet heading shows the ground's total count and its share of all results." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-gbk-discrimination-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;7: Annual Equal Treatment Commission search results by discrimination ground.
@@ -1439,12 +1426,12 @@ Figure&nbsp;7: Annual Equal Treatment Commission search results by discriminatio
 <div id="tbl-content-urls" class="cell quarto-float quarto-figure quarto-figure-left anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-content-urls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Example of unnested RIS content URLs.
+Table&nbsp;1: Example of unnested RIS content URLs.
 </figcaption>
 <div aria-describedby="tbl-content-urls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div class="reactable html-widget html-fill-item" id="htmlwidget-5d959d350b2165c85778" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-5d959d350b2165c85778">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"decision_date":["2025-12-22","2025-12-22","2025-12-22","2025-12-22","2025-12-15","2025-12-15","2025-12-15","2025-12-15","2025-12-10","2025-12-10","2025-12-10","2025-12-10"],"case_number":["Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/14/0167","Ra 2025/14/0167","Ra 2025/14/0167","Ra 2025/14/0167"],"format":["RIS","HTML","RIS","PDF","RIS","HTML","RIS","PDF","RIS","HTML","RIS","PDF"],"url":["https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.pdf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.pdf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.pdf"]},"columns":[{"id":"decision_date","name":"Date","type":"Date","minWidth":95},{"id":"case_number","name":"Case number","type":"character","minWidth":130},{"id":"format","name":"Format","type":"character","minWidth":80},{"id":"url","name":"RIS link","type":"character","cell":["<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.pdf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.pdf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.pdf' target='_blank'>open<\/a>"],"html":true}],"searchable":true,"defaultPageSize":6,"bordered":true,"striped":true,"compact":true,"dataKey":"223548da49135bc03edec927a9c76ce3"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item" id="htmlwidget-5f274166cad429a2c9b0" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5f274166cad429a2c9b0">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"decision_date":["2025-12-22","2025-12-22","2025-12-22","2025-12-22","2025-12-15","2025-12-15","2025-12-15","2025-12-15","2025-12-10","2025-12-10","2025-12-10","2025-12-10"],"case_number":["Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0287","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/19/0163","Ra 2025/14/0167","Ra 2025/14/0167","Ra 2025/14/0167","Ra 2025/14/0167"],"format":["RIS","HTML","RIS","PDF","RIS","HTML","RIS","PDF","RIS","HTML","RIS","PDF"],"url":["https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.pdf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.pdf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.xml","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.html","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.rtf","https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.pdf"]},"columns":[{"id":"decision_date","name":"Date","type":"Date","minWidth":95},{"id":"case_number","name":"Case number","type":"character","minWidth":130},{"id":"format","name":"Format","type":"character","minWidth":80},{"id":"url","name":"RIS link","type":"character","cell":["<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190287_20251222L00/JWT_2025190287_20251222L00.pdf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025190163_20251215L00/JWT_2025190163_20251215L00.pdf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.xml' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.html' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.rtf' target='_blank'>open<\/a>","<a href='https://www.ris.bka.gv.at/Dokumente/Vwgh/JWT_2025140167_20251210L00/JWT_2025140167_20251210L00.pdf' target='_blank'>open<\/a>"],"html":true}],"searchable":true,"defaultPageSize":6,"bordered":true,"striped":true,"compact":true,"dataKey":"223548da49135bc03edec927a9c76ce3"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </figure>

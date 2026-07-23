@@ -201,6 +201,11 @@ normalise_norm_values <- function(x) {
     discard(\(value) is.na(value) || value == "")
 }
 
+# Test whether any normalized norm value matches a case-insensitive pattern.
+has_matching_norm <- function(x, pattern) {
+  any(str_detect(as.character(unlist(x, use.names = FALSE)), regex(pattern, ignore_case = TRUE)), na.rm = TRUE)
+}
+
 ```
 
 # Context & Purpose
@@ -220,7 +225,7 @@ You can install {risAT} from GitHub:
 pak::pak("werkstattcodes/risAT")
 ```
 
-For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/) and the [GitHub repository](https://github.com/werkstattcodes/risAT/). If you want to receive updates on releases - what is likely to be particularly relevant in this early phase- , I would recommend subscribing to the repo on Github. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.
+For the full function reference, see the [documentation site](https://werkstattcodes.github.io/risAT/) and the [GitHub repository](https://github.com/werkstattcodes/risAT/). If you want to receive updates on releases -- likely to be particularly relevant in this early phase -- I would recommend subscribing to the repo on GitHub. For any questions or suggestions, please use the discussion board or file an issue on the GitHub page.
 
 If you use the package in a publication, please cite it as follows:
 
@@ -361,7 +366,7 @@ Now let's visualize the results.
 #| fig-ext: svg
 #| cache: true
 #| fig-cap: "Annual VfGH decisions referencing the ECHR, 2000 to 2025."
-#| fig-alt: "Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the growing number and share of decisions with a norm reference to the European Convention on Human Rights."
+#| fig-alt: "Stacked column chart of annual Austrian Constitutional Court decisions from 2000 to 2025, highlighting the number and share of decisions with a norm reference to the European Convention on Human Rights, which fluctuates between about 8 and 17 percent without a clear long-term trend."
 #| code-summary: "Plot annual VfGH decisions and their ECHR references"
 #| code-fold: true
 
@@ -420,7 +425,7 @@ ggplot(aes(x = year, y = n, fill=norm_reference)) +
   )
 ```
 
-As you can see -- ignoring the plotting code -- only a few lines of code yield a clear picture on the presence of the ECHR in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Across the years, the share is relative stable.
+As you can see -- ignoring the plotting code -- only a few lines of code yield a clear picture on the presence of the ECHR in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Across the years, the share is relatively stable, fluctuating between about 8 and 17 percent without a clear long-term trend.
 
 We can further refine the analysis by looking at the actual paragraphs of the ECHR which are referenced in the decisions. The code below extracts the article and paragraph numbers from the `norms` column, counts the occurrences of each combination, and displays the results. As a purely informative addition, I add a short label for each article.
 
@@ -430,7 +435,7 @@ We can further refine the analysis by looking at the actual paragraphs of the EC
 
 vfgh_2000_2025_echr <- vfgh_2000_2025_echr %>%
   filter(norm_echr==TRUE) %>% #keep only decisions with at least one norm reference to the ECHR
-  mutate(norms=map(norms, normalise_norm_values)) %>% #standardize the norms column (elements of differnt class)
+  mutate(norms=map(norms, normalise_norm_values)) %>% #standardize the norms column (elements of different class)
   unnest_longer(norms) #unnest
 
 class(vfgh_2000_2025_echr$norms)
@@ -483,7 +488,7 @@ echr_norm_names <- tibble::tribble(
 norm_count <- vfgh_2000_2025_echr %>%
   filter(str_detect(norms, regex("EMRK"))) %>% #keep only EMRK norms
   mutate(
-    ZP=str_detect(norms, regex("ZP")), #identify references to an additional protocol of th ECHR
+    ZP=str_detect(norms, regex("ZP")), #identify references to an additional protocol of the ECHR
     ZP_type=str_extract(norms, regex("\\d+\\.?\\s+ZP"))
   ) %>%
   mutate(
@@ -784,7 +789,11 @@ asyl_by_year %>%
 
 ## BVwG - Asylum & Climate Change
 
-Now let's use the query function for a different court, the Bundesverwaltungsgericht (BVwG), the federal administrative court of first instance. Let's again query for the presence of a search term, here 'Klimawandel' (climate change), in the decision text or legal principles. The query covers all years between 2014, the court's first year in operation, up until the end of 2025.
+Now let's use the query function for a different court, the Bundesverwaltungsgericht (BVwG), the federal administrative court of first instance. We search for the presence of 'Klimawandel' (climate change) in the decision text or legal principles, covering all years since 2014, the court's first year in operation.
+
+Simply counting how often 'Klimawandel' turns up doesn't tell us much on its own. What we actually want to know is how common climate change is *within* asylum decisions specifically -- and that needs a different denominator than the search results themselves: all BVwG asylum decisions, not just the ones the Klimawandel search happens to return.
+
+We do not need a second full-text search for this. A full metadata census of all BVwG decisions is available locally (fetched by decision-date range only, independent of any search term); filtering it by an asylum-related norm gives the denominator. The Klimawandel search below already asked RIS's own full-text index which decisions mention the term -- its `id` column is the authoritative match set. Joining the two by `id` gives the true annual share, without reading any decision text ourselves.
 
 ```{r}
 #| label: fetch-bvwg-klimawandel
@@ -809,10 +818,37 @@ climateChange_bvwg <- readr::read_rds(data_path("climateChange_bvwg.rds"))
 ```
 
 ```{r}
-#| label: fig-klimawandel-line
-#| code-summary: "Plot annual BVwG decisions mentioning 'Klimawandel'"
-#| fig-cap: "Annual number of BVwG decisions mentioning 'Klimawandel'."
-#| fig-alt: "Line chart showing the annual number of BVwG decisions mentioning Klimawandel from 2014 to 2025, rising from single digits to a peak in 2024."
+#| label: prep-bvwg-asyl-climate
+#| code-summary: "Join the full BVwG census with the Klimawandel search results"
+#| cache: true
+bvwg_asyl_full <- readr::read_rds(data_path("bvwg", "bvwg_2000_2025.rds")) %>%
+  mutate(
+    year = year(decision_date),
+    has_asyl_norm = map_lgl(norms, has_matching_norm, pattern = "asyl")
+  ) %>%
+  filter(has_asyl_norm) %>%
+  distinct(id, .keep_all = TRUE) %>%
+  mutate(mentions_klimawandel = as.character(id) %in% as.character(climateChange_bvwg$id))
+
+bvwg_asyl_climate_year <- bvwg_asyl_full %>%
+  count(year, mentions_klimawandel, name = "decisions") %>%
+  complete(year = 2014:2025, mentions_klimawandel = c(FALSE, TRUE), fill = list(decisions = 0L)) %>%
+  mutate(
+    climate_group = factor(
+      if_else(mentions_klimawandel, "Mentions Klimawandel", "No mention of Klimawandel"),
+      levels = c("No mention of Klimawandel", "Mentions Klimawandel")
+    )
+  ) %>%
+  mutate(total = sum(decisions), share = if_else(total > 0, decisions / total, 0), .by = year)
+```
+
+The first chart shows the absolute numbers: the total number of asylum decisions per year, with the (usually very thin) segment mentioning Klimawandel highlighted.
+
+```{r}
+#| label: fig-bvwg-asyl-climate-absolute
+#| code-summary: "Plot annual asylum decisions by Klimawandel mention (absolute)"
+#| fig-cap: "BVwG asylum decisions by year, absolute numbers, highlighting those mentioning Klimawandel."
+#| fig-alt: "Stacked column chart of annual BVwG asylum decisions from 2014 to 2025, with a thin highlighted segment showing the small number that mention Klimawandel."
 #| column: body-outset-right
 #| fig-width: 11
 #| fig-height: 7
@@ -820,125 +856,95 @@ climateChange_bvwg <- readr::read_rds(data_path("climateChange_bvwg.rds"))
 #| fig-align: "center"
 #| dev: svg_noto
 #| fig-ext: svg
-climateChange_bvwg %>%
-  mutate(year=lubridate::year(decision_date)) %>%
-  count(year) %>%
-  ggplot()+
-  labs(title="Annual number of decisions by the BVwG which contain 'Klimawandel'",
-  x = NULL,
-  y = "Number of decisions",
-  caption=ris_graph_caption("Annual number of BVwG decisions mentioning 'Klimawandel'."))+
-  geom_line(aes(x=year, y=n), color="#1185FE")+
-  geom_point(aes(x=year, y=n), color="#1185FE")+
-  geom_text(
-    data = \(data) filter(data, year %in% c(2019, 2023, 2024, 2025)),
-    aes(x = year, y = n, label = n),
-    nudge_x = 0.15,
-    hjust = 0,
-    color = "black",
-    family = gg_plot_family
-  )+
-  scale_x_continuous(
-    breaks = c(2014, 2015, 2020, 2025),
-    limits = c(2014, NA),
-    expand = expansion(mult = c(0, 0), add = c(0, 1))
-  )+
-  ris_plot_theme() +
-  theme(axis.title.x = element_text(hjust = 1))
-```
+bvwg_asyl_totals <- bvwg_asyl_climate_year %>%
+  distinct(year, total)
 
-How many of these decisions arise in an asylum context? Analogous to the ECHR example above, we can check the `norms` column for asylum-related norms. The table below shows, per year, the share of 'Klimawandel' decisions which reference such a norm.
+bvwg_asyl_climate_counts <- bvwg_asyl_climate_year %>%
+  filter(mentions_klimawandel) %>%
+  select(year, decisions, total)
 
-```{r}
-#| label: tbl-klimawandel-asyl
-#| code-summary: "Tabulate BVwG 'Klimawandel' decisions by asylum-norm reference"
-#| tbl-cap: "BVwG decisions mentioning 'Klimawandel' by year and asylum-norm reference."
-climateChange_bvwg <- climateChange_bvwg %>%
-  mutate(year=year(decision_date)) %>%
-  mutate(
-    norm_asyl = map_lgl(norms, \(x) any(str_detect(as.character(unlist(x)), regex("Asyl", ignore_case=TRUE)), na.rm = TRUE))
-    )
-
-tblclimateChange_bvwg <- climateChange_bvwg %>%
-  count(year, norm_asyl) %>%
-  mutate(norm_asyl = if_else(norm_asyl, "asylum_norm", "other")) %>%
-  pivot_wider(names_from = norm_asyl, values_from = n, values_fill = 0)  %>%
-  complete(year = 2014:2025, fill = list(asylum_norm = 0, other = 0)) %>%
-  mutate(
-    total = asylum_norm + other,
-    asylum_norm_rel = if_else(total > 0, asylum_norm / total, NA_real_)
-  )
-
-tblclimateChange_bvwg %>%
-  select(year, total, asylum_norm_rel) %>%
-  reactable(
-    columns = list(
-      year = colDef(name = "Year"),
-      total = colDef(name = "Total decisions"),
-      asylum_norm_rel = colDef(
-        name = "Share with asylum norm",
-        format = colFormat(percent = TRUE, digits = 1)
-      )
-    ),
-    compact = TRUE,
-    bordered = TRUE,
-    striped = TRUE,
-    pagination = FALSE
-  )
-```
-
-The same split as a chart:
-
-```{r}
-#| label: fig-klimawandel-asyl
-#| code-summary: "Plot BVwG 'Klimawandel' decisions by asylum-norm reference"
-#| fig-cap: "Annual BVwG decisions mentioning 'Klimawandel', split by asylum-norm reference."
-#| fig-alt: "Stacked column chart of annual BVwG decisions mentioning Klimawandel from 2014 to 2025, split into decisions with and without a reference to an asylum-related norm."
-#| column: body-outset-right
-#| fig-width: 11
-#| fig-height: 7
-#| out-width: "100%"
-#| fig-align: "center"
-#| dev: svg_noto
-#| fig-ext: svg
-tblclimateChange_bvwg %>%
-  select(year, asylum_norm, other) %>%
-  pivot_longer(
-    cols = c(asylum_norm, other),
-    names_to = "decision_group",
-    values_to = "decisions"
-  ) %>%
-  mutate(
-    decision_group = factor(
-      decision_group,
-      levels = c("other", "asylum_norm"),
-      labels = c("Klimawandel, no asylum norm", "Klimawandel with asylum norm")
-    )
-  ) %>%
-  ggplot(aes(x = year, y = decisions, fill = decision_group)) +
+bvwg_asyl_climate_year %>%
+  ggplot(aes(x = year, y = decisions, fill = climate_group)) +
   geom_col(width = 0.72, key_glyph = draw_key_point) +
-  scale_x_continuous(
-    breaks = c(2014, 2015, 2020, 2025),
-    limits = c(2014, NA),
-    expand = expansion(mult = c(0, 0.02))
+  geom_text(
+    data = bvwg_asyl_totals,
+    aes(x = year, y = total, label = scales::comma(total)),
+    inherit.aes = FALSE,
+    vjust = -1.5,
+    color = "black",
+    size = gg_annot_size,
+    family = gg_plot_family
   ) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  geom_text(
+    data = bvwg_asyl_climate_counts,
+    aes(x = year, y = total, label = paste0("(", decisions, ")")),
+    inherit.aes = FALSE,
+    vjust = -0.3,
+    color = "#4D4D4D",
+    size = gg_annot_size * 0.85,
+    family = gg_plot_family
+  ) +
+  scale_x_continuous(breaks = c(2014, 2015, 2020, 2025)) +
+  scale_y_continuous(labels = scales::comma, expand = expansion(mult = c(0, 0.2))) +
   scale_fill_manual(
     values = c(
-      "Klimawandel, no asylum norm" = "#7f7f7f",
-      "Klimawandel with asylum norm" = "#e69f00"
+      "No mention of Klimawandel" = "#7f7f7f",
+      "Mentions Klimawandel" = "#e69f00"
     ),
     name = NULL
   ) +
   labs(
-    title = "BVwG Klimawandel decisions by asylum-norm reference",
-    subtitle = "Annual decisions mentioning Klimawandel, split by whether an asylum-related norm is referenced.",
+    title = "How common is climate change within BVwG asylum decisions?",
+    subtitle = paste0(
+      "Annual number of BVwG asylum decisions, 2014 to 2025. The bold number above each bar is the total; ",
+      "the number in parentheses is how many of those decisions mention Klimawandel."
+    ),
     x = "Year",
-    y = "Number of decisions",
-    caption = ris_graph_caption("BVwG decisions mentioning 'Klimawandel' by decision year and asylum-related norm reference.")
+    y = "Number of asylum decisions",
+    caption = ris_graph_caption("BVwG asylum decisions (identified via an asylum-related norm reference) by decision year, highlighting those that also match a full-text search for 'Klimawandel'.")
   ) +
   ris_plot_theme()
+```
 
+The same data as a line chart makes the trend easier to read: climate change goes from essentially absent before 2018 to a small but clearly growing share of asylum decisions.
+
+```{r}
+#| label: fig-bvwg-asyl-climate-relative
+#| code-summary: "Plot annual share of asylum decisions mentioning Klimawandel"
+#| fig-cap: "BVwG asylum decisions by year, relative share mentioning Klimawandel."
+#| fig-alt: "Line chart of the annual share of BVwG asylum decisions mentioning Klimawandel from 2014 to 2025, rising from near zero to roughly 4 to 8 percent in the most recent years."
+#| column: body-outset-right
+#| fig-width: 11
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svg_noto
+#| fig-ext: svg
+bvwg_asyl_climate_year %>%
+  filter(mentions_klimawandel) %>%
+  ggplot(aes(x = year, y = share)) +
+  geom_line(color = "#1185FE") +
+  geom_point(color = "#1185FE") +
+  geom_text(
+    aes(label = scales::percent(share, accuracy = 0.1)),
+    nudge_y = 0.006,
+    color = "black",
+    size = gg_annot_size,
+    family = gg_plot_family
+  ) +
+  scale_x_continuous(breaks = c(2014, 2015, 2020, 2025)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    expand = expansion(mult = c(0.05, 0.12))
+  ) +
+  labs(
+    title = "Share of BVwG asylum decisions mentioning climate change",
+    subtitle = "Same decisions as above; share of asylum decisions per year that mention Klimawandel.",
+    x = "Year",
+    y = NULL,
+    caption = ris_graph_caption("Relative share of BVwG asylum decisions mentioning 'Klimawandel', by decision year.")
+  ) +
+  ris_plot_theme()
 ```
 
 ## GBK - Discrimination Grounds
