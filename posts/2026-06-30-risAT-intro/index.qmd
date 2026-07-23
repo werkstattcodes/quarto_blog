@@ -211,7 +211,7 @@ This wealth of information makes RIS an indispensable source for anyone working 
 
 The new R package {risAT} aims to lower this barrier by providing an intuitive and efficient way to work with RIS data and make it amenable to analysis beyond the single case. The package wraps the RIS Open Government Data REST API and returns tidy[^tidy] data frames with standardized English column names, while preserving the links and metadata needed to inspect the original RIS records. With this, {risAT} can be helpful to e.g. legal scholars and professionals or journalists who work in R and are interested in the Austrian legal framework. {risAT} can serve, e.g., as a starting point for text mining and text analysis when collecting the required corpus; similarly, the package can be used to produce descriptive statistics on the frequency of specific decisions by a particular court and how this frequency has developed over time. Whenever you are interested in more than one case, {risAT} can come in handy.
 
-Please note that the package is still under development (`0.0.1`) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.
+Please note that the package is still under development (`0.1.0`) and that its interface may change. Furthermore, the package is neither affiliated with nor endorsed by RIS or the Austrian Federal Chancellery.
 
 You can install {risAT} from GitHub:
 
@@ -395,6 +395,10 @@ ggplot(aes(x = year, y = n, fill=norm_reference)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
   scale_fill_manual(
     values = c("General decisions" = "#BFBFBF", "Norm references ECHR" = "#e69f00"),
+    labels = c(
+      "Norm references ECHR" = "With",
+      "General decisions" = "Without norm reference to the ECHR"
+    ),
     name = "Norm reference"
   ) +
   guides(fill = guide_legend(override.aes = list(shape = 21, size = 5, colour = "white"))) +
@@ -416,9 +420,9 @@ ggplot(aes(x = year, y = n, fill=norm_reference)) +
   )
 ```
 
-As you can see -- ignoring the plotting code -- only a few lines of code yield a clear picture on the presence of the EMRK in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Both the number and the share of decisions referencing the ECHR have increased over time, with a notable surge in recent years.
+As you can see -- ignoring the plotting code -- only a few lines of code yield a clear picture on the presence of the ECHR in decisions of the Austrian Constitutional Court. The graph above shows the annual number of decisions by the VfGH, highlighting those which contain a norm reference to the European Convention on Human Rights (ECHR). Across the years, the share is relative stable.
 
-We can further refine the analysis by looking at the actual paragraphs of the ECHR which are referenced in the decisions. The code below extracts the article and paragraph numbers from the `norms` column, counts the occurrences of each combination, and displays the results.
+We can further refine the analysis by looking at the actual paragraphs of the ECHR which are referenced in the decisions. The code below extracts the article and paragraph numbers from the `norms` column, counts the occurrences of each combination, and displays the results. As a purely informative addition, I add a short label for each article.
 
 
 ```{r}
@@ -434,40 +438,46 @@ class(vfgh_2000_2025_echr$norms)
 echr_decisions_total <- n_distinct(vfgh_2000_2025_echr$id)
 
 echr_norm_names <- tibble::tribble(
-  ~ZP_type, ~art, ~norm_short,
-  NA_character_, "1", "Respect for human rights",
-  NA_character_, "2", "Right to life",
-  NA_character_, "3", "Prohibition of torture",
-  NA_character_, "4", "Slavery and forced labour",
-  NA_character_, "5", "Liberty and security",
-  NA_character_, "6", "Fair trial",
-  NA_character_, "7", "No punishment without law",
-  NA_character_, "8", "Private and family life",
-  NA_character_, "9", "Thought, conscience and religion",
-  NA_character_, "10", "Expression",
-  NA_character_, "11", "Assembly and association",
-  NA_character_, "12", "Marriage",
-  NA_character_, "13", "Effective remedy",
-  NA_character_, "14", "Discrimination",
-  NA_character_, "15", "Emergency derogation",
-  NA_character_, "16", "Political activity of aliens",
-  NA_character_, "17", "Abuse of rights",
-  NA_character_, "18", "Use of restrictions",
-  "1. ZP", "1", "Property",
-  "1. ZP", "2", "Education",
-  "1. ZP", "3", "Free elections",
-  "4. ZP", "1", "No imprisonment for debt",
-  "4. ZP", "2", "Freedom of movement",
-  "4. ZP", "3", "No expulsion of nationals",
-  "4. ZP", "4", "Collective expulsion",
-  "6. ZP", "1", "Abolition of death penalty",
-  "7. ZP", "1", "Expulsion safeguards",
-  "7. ZP", "2", "Criminal appeal",
-  "7. ZP", "3", "Wrongful conviction",
-  "7. ZP", "4", "Double jeopardy",
-  "7. ZP", "5", "Spousal equality",
-  "12. ZP", "1", "General discrimination",
-  "13. ZP", "1", "Death penalty abolition"
+  ~ZP_type,      ~art, ~norm_short,
+  NA_character_, "1",  "Obligation to respect human rights",
+  NA_character_, "2",  "Right to life",
+  NA_character_, "3",  "Prohibition of torture",
+  NA_character_, "4",  "Prohibition of slavery and forced labour",
+  NA_character_, "5",  "Right to liberty and security",
+  NA_character_, "6",  "Right to a fair trial",
+  NA_character_, "7",  "No punishment without law",
+  NA_character_, "8",  "Right to respect for private and family life",
+  NA_character_, "9",  "Freedom of thought, conscience and religion",
+  NA_character_, "10", "Freedom of expression",
+  NA_character_, "11", "Freedom of assembly and association",
+  NA_character_, "12", "Right to marry",
+  NA_character_, "13", "Right to an effective remedy",
+  NA_character_, "14", "Prohibition of discrimination",
+  NA_character_, "15", "Derogation in time of emergency",
+  NA_character_, "16", "Restrictions on political activity of aliens",
+  NA_character_, "17", "Prohibition of abuse of rights",
+  NA_character_, "18", "Limitation on use of restrictions on rights",
+
+  "1. ZP",        "1", "Protection of property",
+  "1. ZP",        "2", "Right to education",
+  "1. ZP",        "3", "Right to free elections",
+
+  "4. ZP",        "1", "Prohibition of imprisonment for debt",
+  "4. ZP",        "2", "Freedom of movement",
+  "4. ZP",        "3", "Prohibition of expulsion of nationals",
+  "4. ZP",        "4", "Prohibition of collective expulsion of aliens",
+
+  "6. ZP",        "1", "Abolition of the death penalty",
+
+  "7. ZP",        "1", "Procedural safeguards relating to expulsion of aliens",
+  "7. ZP",        "2", "Right of appeal in criminal matters",
+  "7. ZP",        "3", "Compensation for wrongful conviction",
+  "7. ZP",        "4", "Right not to be tried or punished twice",
+  "7. ZP",        "5", "Equality between spouses",
+
+  "12. ZP",       "1", "General prohibition of discrimination",
+
+  "13. ZP",       "1", "Abolition of the death penalty in all circumstances"
 )
 
 norm_count <- vfgh_2000_2025_echr %>%

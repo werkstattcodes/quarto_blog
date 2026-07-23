@@ -149,9 +149,9 @@
 <text x='773.17' y='436.20' text-anchor='middle' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='22.25px' lengthAdjust='spacingAndGlyphs'>2025</text>
 <text x='7.97' y='104.01' style='font-size: 12.00px; font-family: "Arial";' textLength='83.36px' lengthAdjust='spacingAndGlyphs'>Norm reference</text>
 <circle cx='106.59' cy='99.71' r='5.69' style='stroke-width: 0.71; stroke: #FFFFFF; fill: #E69F00;' />
-<circle cx='235.82' cy='99.71' r='5.69' style='stroke-width: 0.71; stroke: #FFFFFF; fill: #BFBFBF;' />
-<text x='121.21' y='103.15' style='font-size: 9.60px; font-family: "Arial";' textLength='101.22px' lengthAdjust='spacingAndGlyphs'>Norm references ECHR</text>
-<text x='250.44' y='103.15' style='font-size: 9.60px; font-family: "Arial";' textLength='76.72px' lengthAdjust='spacingAndGlyphs'>General decisions</text>
+<circle cx='155.82' cy='99.71' r='5.69' style='stroke-width: 0.71; stroke: #FFFFFF; fill: #BFBFBF;' />
+<text x='121.21' y='103.15' style='font-size: 9.60px; font-family: "Arial";' textLength='19.19px' lengthAdjust='spacingAndGlyphs'>With</text>
+<text x='170.44' y='103.15' style='font-size: 9.60px; font-family: "Arial";' textLength='156.69px' lengthAdjust='spacingAndGlyphs'>Without norm reference to the ECHR</text>
 <text x='7.97' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='58.55px' lengthAdjust='spacingAndGlyphs'>Decisions</text>
 <text x='70.27' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='14.27px' lengthAdjust='spacingAndGlyphs'>by</text>
 <text x='88.28' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='29.28px' lengthAdjust='spacingAndGlyphs'>year,</text>
