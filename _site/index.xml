@@ -12,7 +12,7 @@
 <generator>quarto-1.8.25</generator>
 <lastBuildDate>Wed, 22 Jul 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Introducing {risAT}: Working with Austria’s Legal Information System (RIS)</title>
+  <title>Introducing {risAT}: An R package to access with Austria’s Legal Information System (RIS)</title>
   <dc:creator>Roland Schmidt</dc:creator>
   <link>https://werk.statt.codes/posts/2026-06-30-risAT-intro/</link>
   <description><![CDATA[ {risAT} is an R package that wraps the Austrian RIS (Rechtsinformationssystem) Open Government Data API, making it easier to work with Austrian jurisprudence in R. ]]></description>

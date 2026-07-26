@@ -328,7 +328,7 @@
 <text x='29.56' y='391.40' text-anchor='end' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>30</text>
 <text x='29.56' y='371.78' text-anchor='end' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>40</text>
 <text x='29.56' y='352.16' text-anchor='end' style='font-size: 10.00px;fill: #4D4D4D; font-family: "Arial";' textLength='11.12px' lengthAdjust='spacingAndGlyphs'>50</text>
-<text transform='translate(16.57,271.20) rotate(-90)' text-anchor='middle' style='font-size: 12.00px;fill: #4D4D4D; font-family: "Arial";' textLength='98.02px' lengthAdjust='spacingAndGlyphs'>RIS search results</text>
+<text transform='translate(16.57,271.20) rotate(-90)' text-anchor='middle' style='font-size: 12.00px;fill: #4D4D4D; font-family: "Arial";' textLength='109.38px' lengthAdjust='spacingAndGlyphs'>Number of decisions</text>
 <text x='7.97' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='42.06px' lengthAdjust='spacingAndGlyphs'>Annual</text>
 <text x='53.78' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='22.50px' lengthAdjust='spacingAndGlyphs'>RIS</text>
 <text x='80.03' y='45.34' style='font-size: 13.50px;fill: #52616B; font-family: "Arial";' textLength='33.80px' lengthAdjust='spacingAndGlyphs'>query</text>
@@ -388,9 +388,9 @@
 <text x='311.02' y='482.31' style='font-size: 10.50px; font-weight: bold;fill: #52616B; font-family: "Arial";' textLength='34.25px' lengthAdjust='spacingAndGlyphs'>{risAT}</text>
 <text x='348.19' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='42.64px' lengthAdjust='spacingAndGlyphs'>package;</text>
 <text x='393.75' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='40.88px' lengthAdjust='spacingAndGlyphs'>retrieved</text>
-<text x='437.55' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='23.38px' lengthAdjust='spacingAndGlyphs'>5–23</text>
-<text x='463.85' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='18.67px' lengthAdjust='spacingAndGlyphs'>July</text>
-<text x='485.44' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='26.30px' lengthAdjust='spacingAndGlyphs'>2026.</text>
+<text x='437.55' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='11.69px' lengthAdjust='spacingAndGlyphs'>24</text>
+<text x='452.16' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='18.67px' lengthAdjust='spacingAndGlyphs'>July</text>
+<text x='473.75' y='482.31' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='26.30px' lengthAdjust='spacingAndGlyphs'>2026.</text>
 <text x='7.97' y='493.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='39.70px' lengthAdjust='spacingAndGlyphs'>Graphic:</text>
 <text x='50.60' y='493.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='33.28px' lengthAdjust='spacingAndGlyphs'>Roland</text>
 <text x='86.80' y='493.82' style='font-size: 10.50px;fill: #52616B; font-family: "Arial";' textLength='40.86px' lengthAdjust='spacingAndGlyphs'>Schmidt,</text>
