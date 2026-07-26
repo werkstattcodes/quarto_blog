@@ -126,5 +126,17 @@
   },
   "posts/2026-05-21-ParlAT-votingPatterns/index.qmd": {
     "index.html": "e8c9fae2"
+  },
+  "posts/2026-06-30-risAT-intro/index.qmd": {
+    "index.html": "5b45e4fd"
+  },
+  "plans/risAT-intro-blog-post.md": {
+    "risAT-intro-blog-post.html": "eafd6b6f"
+  },
+  "posts/2026-02-11-ParlAT-release/index.rmarkdown": {
+    "index.html": "d6756f6a"
+  },
+  "posts/2026-07-26-bvwg-asylum-climate/index.qmd": {
+    "index.html": "e7188107"
   }
 }
