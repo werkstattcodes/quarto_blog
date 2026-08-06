@@ -9,8 +9,20 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.8.25</generator>
-<lastBuildDate>Wed, 22 Jul 2026 22:00:00 GMT</lastBuildDate>
+<generator>quarto-1.9.38</generator>
+<lastBuildDate>Sat, 25 Jul 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>{risAT}: Climate change in asylum-related decisions of the Austrian Federal Administrative Court (BVwG)</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2026-07-26-bvwg-asylum-climate/</link>
+  <description><![CDATA[ Using {risAT} to search Austrian Federal Administrative Court (BVwG) asylum decisions for references to climate change (Klimawandel). ]]></description>
+  <category>Austria</category>
+  <category>risAT</category>
+  <category>asylum</category>
+  <category>climate</category>
+  <guid>https://werk.statt.codes/posts/2026-07-26-bvwg-asylum-climate/</guid>
+  <pubDate>Sat, 25 Jul 2026 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Introducing {risAT}: An R package to access with Austria’s Legal Information System (RIS)</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -20,17 +32,6 @@
   <category>[object Object]</category>
   <guid>https://werk.statt.codes/posts/2026-06-30-risAT-intro/</guid>
   <pubDate>Wed, 22 Jul 2026 22:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>How do Parties vote in the Austrian National Council?</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</link>
-  <description><![CDATA[ The latest release of the {ParlAT} package introduces the ability to extract parties’ votes on items discussed in the third reading of the Austrian National Council. This post introduces the new feature by presenting some exemplary queries on the voting from the 20th to the current 28th legislative period. ]]></description>
-  <category>Austria</category>
-  <category>parliament</category>
-  <category>ParlAT</category>
-  <guid>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</guid>
-  <pubDate>Wed, 03 Jun 2026 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
