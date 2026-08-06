@@ -1,6 +1,6 @@
 ---
 title: "{risAT}: Climate change in asylum-related decisions of the Austrian Federal Administrative Court (BVwG)"
-date: 2026-07-26
+date: 2026-08-06
 date-modified: last-modified
 draft: false
 description: |
