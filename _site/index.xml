@@ -9,8 +9,8 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.9.38</generator>
-<lastBuildDate>Sat, 25 Jul 2026 22:00:00 GMT</lastBuildDate>
+<generator>quarto-1.8.25</generator>
+<lastBuildDate>Wed, 05 Aug 2026 22:00:00 GMT</lastBuildDate>
 <item>
   <title>{risAT}: Climate change in asylum-related decisions of the Austrian Federal Administrative Court (BVwG)</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -21,7 +21,7 @@
   <category>asylum</category>
   <category>climate</category>
   <guid>https://werk.statt.codes/posts/2026-07-26-bvwg-asylum-climate/</guid>
-  <pubDate>Sat, 25 Jul 2026 22:00:00 GMT</pubDate>
+  <pubDate>Wed, 05 Aug 2026 22:00:00 GMT</pubDate>
 </item>
 <item>
   <title>Introducing {risAT}: An R package to access with Austria’s Legal Information System (RIS)</title>
