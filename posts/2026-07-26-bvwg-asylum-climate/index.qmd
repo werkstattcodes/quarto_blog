@@ -1,15 +1,15 @@
 ---
-title: "Does climate change appear in Austria's asylum decisions? Searching BVwG rulings with {risAT}"
+title: "{risAT}: Climate change in asylum-related decisions of the Austrian Federal Administrative Court (BVwG)"
 date: 2026-07-26
 date-modified: last-modified
-draft: true
+draft: false
 description: |
   Using {risAT} to search Austrian Federal Administrative Court (BVwG) asylum
   decisions for references to climate change (Klimawandel).
 
 categories:
   - Austria
-  - {risAT}
+  - risAT
   - asylum
   - climate
 
@@ -142,15 +142,31 @@ ris_graph_caption <- paste0(
 )
 ```
 
-# Background
+# Context
 
-Climate change is increasingly invoked in debates about migration and asylum. Whether it actually surfaces in the reasoning of asylum decisions is an empirical question—and one the Austrian Legal Information System (RIS) lets us probe directly. This post uses the [{risAT}](https://werkstattcodes.github.io/risAT/){target="_blank"} package to search decisions of the Bundesverwaltungsgericht (BVwG), Austria's federal administrative court, for references to `Klimawandel` (climate change). It expands on one example from the broader [{risAT} introduction](../2026-06-30-risAT-intro/index.qmd).
+A few years ago, I had the privilege of contributing to a paper on the relevance of climate-change-related consequences—such as floods, droughts, and famines—to the Austrian Federal Administrative Court’s case law on subsidiary protection and asylum. The study was part of a research project on climate-change-related migration and whether, or to what extent, a legal concept of the “climate refugee” is emerging. My task was modest: to retrieve the full body of relevant case law, scan it for certain key terms, extract the relevant sections, and do some number crunching. The resulting dataset then served as the basis for case studies conducted by legal scholars.
 
-The BVwG began its work on 1 January 2014; see the [BVwG history](https://www.bvwg.gv.at/Bundesverwaltungsgericht/-ber-uns/entstehung.html). We restrict attention to its asylum-related decisions and ask how often their texts also mention climate change.
+I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the {risAT} package, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.
 
-# Building the denominator: asylum decisions
+Given the current heatwave in Austria and across Europe, I thought this might be a good opportunity to revisit the topic and demonstrate some of {risAT}’s features—albeit without the same level of detail or legal expertise, given time constraints and other priorities.
 
-To establish the denominator, we query BVwG decision texts whose `Norm` field matches `AsylG`, retrieving the results separately for each year from 2014 to 2025. Fetching year by year keeps each request small; running the years in parallel with {furrr} keeps the whole loop quick.
+The questions I came up with are:
+
+1. How often does the term `Klimawandel` appear in the BVwG’s asylum-related decisions?
+2. How does the frequency of these references change over time?
+
+Although this approach is admittedly crude and the results come with several caveats, as I explain later, it provides a useful demonstration of {risAT}. The analysis involves four steps:
+
+1. Query all BVwG decisions with a reference to `AsylG` in their `Norm` field.
+2. Query all BVwG decisions that mention `Klimawandel` in their text.
+3. Identify which decisions returned by the second query also appear in the first.
+4. Calculate the share of matching decisions for each year.
+
+
+# Get asylum decisions
+
+To start with, I need all BVwG decisions which refer to the Austrian Asylum Act (`AsylG`) in their `Norm` field. These decisions form the denominator for the subsequent analysis. I retrieve them separately for each year from 2014 to 2025. This keeps the individual requests reasonably small, while {furrr} allows me to run several of them in parallel. Note that this can take quite a while.
+Note also that I set `search_decision_text = TRUE` and `search_legal_principles = FALSE` when specifying the query. I am interested only in the decision texts themselves, not the legal principles, which generally summarize the legal gist of a decision. Including both would produce duplicate records.
 
 ```{r}
 #| label: fetch-bvwg-asyl
@@ -210,9 +226,9 @@ stopifnot(
 )
 ```
 
-# Matching climate-change references
+# Search for climate change
 
-We then ask how many of these decision texts also match `Klimawandel` (climate change). The `Klimawandel` search covers BVwG decision texts over the same period. Joining the two result sets by their distinct RIS record IDs identifies the subset that satisfies both conditions.
+In the next step, I search all BVwG decision texts from the same period for the term `Klimawandel`. {risAT} makes this straightforward: I simply supply the search term through the `query` argument. I also restrict the search to the same date range as above. The result is a list of all BVwG decisions which contain the term `Klimawandel` in their text.
 
 ```{r}
 #| label: fetch-bvwg-klimawandel
@@ -227,6 +243,8 @@ bvwg_klimawandel_results <- ris_search_bvwg(
   echo = TRUE
 )
 ```
+
+In the next chunk, I match both sets of data.
 
 ```{r}
 #| label: read-bvwg-klimawandel
@@ -250,6 +268,7 @@ bvwg_asyl_norm_records <- bvwg_asyl_records %>%
       as.character(bvwg_klimawandel_results$id)
   )
 
+# The Klimawandel query covers all BVwG decisions; 3,003 also match AsylG.
 stopifnot(sum(bvwg_asyl_norm_records$mentions_klimawandel) == 3003L)
 
 bvwg_asyl_norm_climate_year <- bvwg_asyl_norm_records %>%
@@ -278,7 +297,7 @@ bvwg_asyl_norm_climate_year <- bvwg_asyl_norm_records %>%
 
 # Results
 
-@fig-bvwg-asyl-climate-absolute shows the annual number of distinct BVwG decision texts returned for `norm = "AsylG"`. The highlighted segment contains the decision texts that also match the `Klimawandel` search.
+Let's first look at the absolute numbers. @fig-bvwg-asyl-climate-absolute shows the annual number of distinct BVwG decision texts returned for `norm = "AsylG"`. The highlighted part of each bar indicates how many of these decisions also contain the term `Klimawandel`.
 
 ```{r}
 #| label: fig-bvwg-asyl-climate-absolute
@@ -332,9 +351,9 @@ bvwg_asyl_norm_climate_year %>%
   labs(
     title = "How often does ‘Klimawandel’ appear in BVwG decisions referencing AsylG?",
     subtitle = paste0(
-      "Annual Austrian Federal Administrative Court (BVwG) decision texts returned by RIS for ",
-      "norm = “AsylG”, 2014–2025. Highlighted texts also match “Klimawandel”. Labels show the annual ",
-      "total and matching subset; each distinct RIS decision-text ID is counted once."
+      "Annual distinct BVwG decision texts returned by RIS for norm = “AsylG”, 2014–2025; ",
+      "highlighted texts also match the text search “Klimawandel”. A match indicates term occurrence ",
+      "only—not legal relevance or use in the court’s reasoning. Labels show the annual total and matching subset."
     ),
     x = "Year",
     y = "RIS records",
@@ -343,7 +362,9 @@ bvwg_asyl_norm_climate_year %>%
   ris_plot_theme()
 ```
 
-@fig-bvwg-asyl-climate-relative presents the same results as annual shares. No decision texts match before 2018. The share is generally higher in recent years but varies considerably: it is 4.1 per cent in 2023, falls to 2.6 per cent in 2024, and reaches 8.3 per cent in 2025.
+What stands out to me is that there is not a single match before 2018. The term first appears in 2018 and is present in every year thereafter, although the numbers fluctuate quite substantially.
+
+To make the comparison between years a bit easier, @fig-bvwg-asyl-climate-relative shows the same result as a share of all decisions returned for the `AsylG` filter. The share reaches 4.1 per cent in 2023, falls to 2.6 per cent in 2024, and then increases to 8.3 per cent in 2025. This is by far the highest value in the period covered here.
 
 ```{r}
 #| label: fig-bvwg-asyl-climate-relative
@@ -377,8 +398,9 @@ bvwg_asyl_norm_climate_year %>%
   labs(
     title = "What share of BVwG decisions referencing AsylG mention ‘Klimawandel’?",
     subtitle = paste0(
-      "Annual shares for 2014–2025. The denominator is distinct BVwG decision texts returned by RIS for ",
-      "norm = “AsylG”; the numerator is the subset also matching “Klimawandel”."
+      "Annual share of distinct BVwG decision texts returned by RIS for norm = “AsylG” ",
+      "that also match the text search “Klimawandel”, 2014–2025. A match indicates term occurrence ",
+      "only—not legal relevance or use in the court’s reasoning."
     ),
     x = "Year",
     y = NULL,
@@ -387,8 +409,10 @@ bvwg_asyl_norm_climate_year %>%
   ris_plot_theme()
 ```
 
-A note of caution on interpretation: a textual match for `Klimawandel` only tells us the word appears in a decision returned for the `AsylG` norm filter—not that climate change was the decisive issue, nor that the decision turned on it. The counts describe how often the term surfaces, which is a different question from how often climate change is legally material.
+There is, however, an important caveat. A match only tells us that the word `Klimawandel` appears somewhere in a decision returned for the `AsylG` filter. It does not tell us whether climate change was central to the case, whether it played a role in the court's reasoning, or whether the decision ultimately turned on it. The graphs therefore show how often the term appears, not how often climate change was legally relevant.
 
-# What's next
+Most of these matches are likely located in the country-of-origin information (COI) section, which forms part of the decision text and summarizes general conditions in an applicant’s country of origin. However, these results do not tell us whether a match also featured in the court’s reasoning. In other words, the growing number of climate-change mentions in asylum decisions does not, by itself, mean that climate change played an increasingly important role in decisions on asylum applications. Establishing that would require a robust method for identifying the section in which each match occurs and determining whether it forms part of the court’s reasoning.
 
-This analysis is a small slice of what {risAT} makes possible with RIS case-law data. If you have questions or suggestions, feel free to reach out via [direct message on Bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [{risAT} GitHub discussion board](https://github.com/werkstattcodes/risAT/discussions){target="_blank"}.
+# Wrap-up
+
+For now, I hope the example also demonstrates how {risAT} can be used to move from a legal norm to a searchable collection of decisions. As always, if you spot an error, have a question, or want to suggest a follow-up, feel free to contact me via [direct message on Bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [{risAT} GitHub discussion board](https://github.com/werkstattcodes/risAT/discussions){target="_blank"}.
