@@ -1,0 +1,665 @@
+---
+title: "{risAT}: How long does it take until a BVwG decision shows up in RIS?"
+date: 2026-08-06
+date-modified: last-modified
+draft: false
+description: |
+  Using {risAT} to measure the gap between the decision date of Austrian Federal
+  Administrative Court (BVwG) rulings and the date they become available in RIS—
+  and why the recent years look faster than they are.
+
+categories:
+  - Austria
+  - risAT
+  - legal
+  - courts
+
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+---
+
+# Just the results, please {.unnumbered}
+
+::: {layout-ncol="2"}
+![Distribution of the gap between decision date and RIS publication date](index_files/figure-html/fig-lag-distribution-1.svg){group="bvwg_lag_gallery"}
+
+![Median publication lag by decision year and decision type](index_files/figure-html/fig-lag-by-year-1.svg){group="bvwg_lag_gallery"}
+:::
+
+![Share of decisions published in RIS within 30, 90 and 365 days](index_files/figure-html/fig-lag-thresholds-1.svg){group="bvwg_lag_gallery"}
+
+```{r}
+#| label: setup
+#| include: false
+library(risAT)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+library(ggtext)
+library(reactable)
+library(htmltools)
+library(here)
+
+i_am("posts/2026-08-06-bvwg-publication-lag/index.qmd")
+
+data_path <- function(...) {
+  here("posts", "2026-08-06-bvwg-publication-lag", "_data", ...)
+}
+
+# Decision years covered by the analysis. The BVwG started work on 1 Jan 2014.
+# Defined before the data check below so the fetch chunk can be run
+# interactively on a still-empty _data directory.
+lag_years <- 2014:2025
+
+# Render dates without a leading zero, matching the style used elsewhere.
+format_ris_date <- function(d) {
+  paste(as.integer(format(d, "%d")), format(d, "%B %Y"))
+}
+
+# The retrieval date is written by the fetch chunk rather than hard-coded, so
+# the captions and the censoring calculations below always describe the data
+# actually on disk.
+retrieval_date_file <- data_path("retrieval_date.txt")
+
+if (!file.exists(retrieval_date_file)) {
+  stop(
+    "Missing ", retrieval_date_file, ". Run the 'fetch-bvwg-records' chunk ",
+    "once with eval: true to download the data before rendering.",
+    call. = FALSE
+  )
+}
+
+retrieval_date <- as.Date(str_squish(readLines(retrieval_date_file, n = 1)))
+```
+
+```{r}
+#| label: helper-functions
+#| include: false
+# Set shared typography so figures stay visually consistent.
+gg_base_size <- 12
+gg_title_size <- 17
+gg_subtitle_size <- 13.5
+gg_caption_size <- 10.5
+gg_strip_size <- 12
+gg_axis_size <- 10
+gg_annot_size <- 3.7
+gg_plot_family <- "Arial"
+
+# Define a reusable ggplot theme for all RIS figures in the post.
+ris_plot_theme <- function() {
+  theme_minimal(base_size = gg_base_size, base_family = gg_plot_family) +
+    theme(
+      panel.grid.minor = element_blank(),
+      plot.title.position = "plot",
+      plot.caption.position = "plot",
+      plot.title = ggtext::element_textbox_simple(
+        hjust = 0,
+        halign = 0,
+        size = gg_title_size,
+        family = gg_plot_family,
+        face = "bold",
+        color = "#1F2933",
+        lineheight = 1.1,
+        width = grid::unit(1, "npc"),
+        margin = ggplot2::margin(b = 8)
+      ),
+      plot.subtitle = ggtext::element_textbox_simple(
+        color = "#52616B",
+        size = gg_subtitle_size,
+        family = gg_plot_family,
+        lineheight = 1.15,
+        width = grid::unit(1, "npc"),
+        margin = ggplot2::margin(t = 4, b = 12)
+      ),
+      plot.caption = ggtext::element_textbox_simple(
+        color = "#52616B",
+        hjust = 0,
+        halign = 0,
+        size = gg_caption_size,
+        family = gg_plot_family,
+        lineheight = 1.1,
+        width = grid::unit(1, "npc"),
+        margin = ggplot2::margin(t = 14)
+      ),
+      strip.text = ggtext::element_markdown(
+        size = gg_strip_size,
+        family = gg_plot_family,
+        lineheight = 1.2,
+        hjust = 0
+      ),
+      axis.text = element_text(
+        size = gg_axis_size,
+        family = gg_plot_family,
+        color = "#4D4D4D"
+      ),
+      axis.title = element_text(
+        family = gg_plot_family,
+        color = "#4D4D4D"
+      ),
+      legend.position = "top",
+      # anchor the legend to the whole plot (title/subtitle width), not just the
+      # panel—otherwise it appears shifted right, past the y-axis label margin
+      legend.location = "plot",
+      legend.justification.top = "left",
+      legend.margin = ggplot2::margin(0, 0, 0, 0),
+      panel.grid.major.x = element_blank(),
+      plot.margin = ggplot2::margin(t = 8, r = 8, b = 8, l = 8)
+    )
+}
+
+# Open a standard SVG device using the figure theme's locally available font.
+svg_plot <- function(filename, width, height, ...) {
+  svglite::svglite(
+    filename = filename,
+    width = width,
+    height = height,
+    ...
+  )
+}
+
+# Store the shared provenance-only caption used by all figures.
+ris_graph_caption <- paste0(
+  "Data: Austrian Legal Information System (RIS), accessed via the **{risAT}** package; ",
+  "retrieved ", format_ris_date(retrieval_date), ".",
+  "<br>Graphic: Roland Schmidt, werk.statt.codes | Bluesky: @zoowalk.bsky.social"
+)
+
+# Colours for the two BVwG decision types used across all figures.
+decision_type_colors <- c(
+  "Erkenntnis" = "#e69f00",
+  "Beschluss" = "#1185FE"
+)
+
+# {risAT} coerces `decision_date` to Date, but leaves `published` and `modified`
+# as returned by the API. RIS serialises these either as a plain "YYYY-MM-DD"
+# string or as a full ISO timestamp, so take the leading date component of both.
+# The column arrives as a list-column whenever the API collapses single-item
+# arrays inconsistently across pages, hence the branch.
+parse_ris_date <- function(x) {
+  if (is.list(x)) {
+    x <- map_chr(x, \(value) {
+      value <- as.character(unlist(value, use.names = FALSE))
+      if (!length(value)) NA_character_ else value[[1]]
+    })
+  } else {
+    x <- as.character(x)
+  }
+
+  as.Date(str_sub(x, 1, 10), format = "%Y-%m-%d")
+}
+
+# Pick the HTML record link out of the `content_urls` list-column, falling back
+# to whatever URL is available for the record.
+first_html_url <- function(urls, fallback = NA_character_) {
+  fallback <- as.character(fallback)[1]
+  urls <- as.character(unlist(urls, use.names = FALSE))
+  urls <- urls[!is.na(urls)]
+
+  if (!length(urls)) {
+    return(fallback)
+  }
+
+  html <- urls[str_detect(str_to_lower(urls), "\\.html?(?:$|[?#])")]
+
+  if (length(html)) html[[1]] else urls[[1]]
+}
+```
+
+# Context
+
+In my [previous post](../2026-07-26-bvwg-asylum-climate/index.qmd) I used {risAT} to search the case law of the Federal Administrative Court (*Bundesverwaltungsgericht*, BVwG) for references to climate change. While putting that together, something else caught my eye. Every record RIS returns carries not only the date on which the court decided the case, but also the date on which the document was published in the database. Two dates, one obvious question: how much time passes between them?
+
+That gap matters more than it might sound. Case law is only usable—by lawyers, journalists, researchers, or the applicants themselves—once it is actually accessible. A decision that sits unpublished for a year is, for practical purposes, invisible during that year. So the publication lag is a small but concrete indicator of how quickly a court's output becomes part of the public record.
+
+The questions for this post are:
+
+1. How long does it typically take until a BVwG decision appears in RIS?
+2. Does that lag differ between the court's two decision types, *Erkenntnis* and *Beschluss*?
+3. Has it changed over time?
+
+There is a methodological trap built into question 3, and it is the most interesting part of the exercise. I will get to it after the results.
+
+# Getting the data
+
+I retrieve all BVwG decision texts from 2014—the year the court started its work—through 2025, one year at a time. As in the previous post, I set `search_decision_text = TRUE` and `search_legal_principles = FALSE`: I want the decision documents themselves, not the *Rechtssätze*, which would otherwise show up as additional records for the same case.
+
+I deliberately do *not* filter by `decision_type` in the query. The returned data already contains a `bvwg_decision_type` column, so filtering server-side would only risk dropping records whose type RIS reports as undefined. Better to take everything and split afterwards.
+
+This is a fair amount of data, so {furrr} runs several year requests in parallel. It still takes a while.
+
+```{r}
+#| label: fetch-bvwg-records
+#| eval: false
+#| code-summary: "Fetch BVwG decision texts year by year (parallel)"
+library(future)
+library(furrr)
+library(tictoc)
+
+dir.create(data_path("bvwg_records"), recursive = TRUE, showWarnings = FALSE)
+
+plan(multisession, workers = 4)
+
+tic()
+future_walk(lag_years, \(yr) {
+  bvwg_year <- risAT::ris_search_bvwg(
+    decision_date_from = paste0(yr, "-01-01"),
+    decision_date_to = paste0(yr, "-12-31"),
+    search_decision_text = TRUE,
+    search_legal_principles = FALSE,
+    echo = TRUE
+  )
+
+  readr::write_rds(
+    bvwg_year,
+    data_path("bvwg_records", paste0("bvwg_", yr, ".rds")),
+    compress = "gz"
+  )
+}, .progress = TRUE)
+toc()
+
+plan(sequential)
+
+# Record when the data was pulled. Everything downstream—captions as well as
+# the censoring window—derives from this date, so it must not be guessed.
+writeLines(format(Sys.Date()), data_path("retrieval_date.txt"))
+```
+
+```{r}
+#| label: read-bvwg-records
+#| include: false
+bvwg_files <- list.files(
+  data_path("bvwg_records"),
+  pattern = "^bvwg_[0-9]{4}\\.rds$",
+  full.names = TRUE
+)
+
+stopifnot(length(bvwg_files) == length(lag_years))
+
+bvwg_records <- bvwg_files %>%
+  map(readr::read_rds) %>%
+  list_rbind()
+
+# Guard the two columns the whole post depends on. `published` is documented as
+# a common column across RIS applications, but a schema change would otherwise
+# surface as silently missing data rather than an error.
+stopifnot(
+  all(c("published", "decision_date", "bvwg_decision_type") %in%
+    names(bvwg_records)),
+  all(bvwg_records$document_type == "Text"),
+  n_distinct(bvwg_records$id) == nrow(bvwg_records)
+)
+```
+
+# Computing the lag
+
+The calculation itself is a subtraction. What needs care is everything around it: parsing the publication date, and deciding which records can legitimately enter the analysis.
+
+```{r}
+#| label: prep-bvwg-lag
+#| code-summary: "Derive the publication lag and separate out unusable records"
+#| cache: true
+bvwg_lag_all <- bvwg_records %>%
+  mutate(
+    published_date = parse_ris_date(published),
+    decision_year = year(decision_date),
+    lag_days = as.integer(published_date - decision_date),
+    decision_type_raw = as.character(bvwg_decision_type),
+    decision_type = if_else(
+      decision_type_raw %in% names(decision_type_colors),
+      decision_type_raw,
+      "Not specified",
+      missing = "Not specified"
+    )
+  )
+
+# Records without a usable publication date, and records that RIS reports as
+# published *before* they were decided. Both are excluded, but counted, so the
+# exclusions stay visible rather than disappearing into a filter().
+lag_unusable <- bvwg_lag_all %>%
+  filter(is.na(lag_days) | lag_days < 0)
+
+bvwg_lag <- bvwg_lag_all %>%
+  filter(!is.na(lag_days), lag_days >= 0)
+
+# The two named decision types carry the comparison in the figures below.
+bvwg_lag_typed <- bvwg_lag %>%
+  filter(decision_type %in% names(decision_type_colors)) %>%
+  mutate(
+    decision_type = factor(decision_type, levels = names(decision_type_colors))
+  )
+```
+
+Before looking at any distribution, the exclusions. Of the `r scales::comma(nrow(bvwg_lag_all))` BVwG decision texts retrieved, `r scales::comma(nrow(lag_unusable))` (`r scales::percent(nrow(lag_unusable) / nrow(bvwg_lag_all), accuracy = 0.01)`) had either no parseable publication date or a publication date earlier than the decision date, and are dropped. A further `r scales::comma(sum(bvwg_lag$decision_type == "Not specified"))` records carry no *Erkenntnis*/*Beschluss* classification; they are kept in the overall distribution but left out of the by-type comparison.
+
+# How long is the wait?
+
+@fig-lag-distribution shows the distribution of the lag in days. The x-axis is cut off at one year, because a small share of decisions takes considerably longer and would otherwise flatten everything else into invisibility; the annotation gives the size of that tail.
+
+```{r}
+#| label: fig-lag-distribution
+#| code-summary: "Plot the distribution of the publication lag"
+#| fig-cap: "Distribution of the gap between BVwG decision date and RIS publication date."
+#| fig-alt: "Histogram of the number of days between the decision date of Austrian Federal Administrative Court decisions and their publication date in RIS, in weekly bins from zero to 365 days, split into two panels for Erkenntnis and Beschluss. Vertical lines mark the median of each decision type. An annotation reports the share of decisions with a lag longer than one year, which is excluded from the plotted range."
+#| column: body-outset-right
+#| fig-width: 11
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svg_plot
+#| fig-ext: svg
+lag_plot_limit <- 365
+
+lag_medians <- bvwg_lag_typed %>%
+  summarise(
+    median_lag = median(lag_days),
+    beyond_limit = mean(lag_days > lag_plot_limit),
+    .by = decision_type
+  )
+
+lag_panel_labels <- lag_medians %>%
+  mutate(
+    panel_label = paste0(
+      "<b>", decision_type, "</b> — median ", median_lag, " days, ",
+      scales::percent(beyond_limit, accuracy = 0.1), " beyond one year"
+    )
+  ) %>%
+  select(decision_type, panel_label)
+
+# The median lines are faceted too, so they need the panel variable—otherwise
+# every median is drawn in every panel.
+lag_median_lines <- lag_medians %>%
+  left_join(lag_panel_labels, by = "decision_type")
+
+bvwg_lag_typed %>%
+  left_join(lag_panel_labels, by = "decision_type") %>%
+  filter(lag_days <= lag_plot_limit) %>%
+  ggplot(aes(x = lag_days, fill = decision_type)) +
+  geom_histogram(binwidth = 7, boundary = 0, color = NA) +
+  geom_vline(
+    data = lag_median_lines,
+    aes(xintercept = median_lag),
+    inherit.aes = FALSE,
+    linetype = "dashed",
+    color = "#1F2933",
+    linewidth = 0.4
+  ) +
+  facet_wrap(~panel_label, ncol = 1, scales = "free_y") +
+  scale_x_continuous(
+    breaks = c(0, 30, 90, 180, 270, 365),
+    expand = expansion(mult = c(0.01, 0.02))
+  ) +
+  scale_y_continuous(labels = scales::comma, expand = expansion(mult = c(0, 0.1))) +
+  scale_fill_manual(values = decision_type_colors, guide = "none") +
+  labs(
+    title = "Most BVwG decisions reach RIS within weeks—but not all of them",
+    subtitle = paste0(
+      "Days between decision date and RIS publication date, BVwG decision texts ",
+      "decided ", min(lag_years), "–", max(lag_years), ", in weekly bins. ",
+      "Dashed lines mark the median of each decision type. Lags beyond one year ",
+      "are outside the plotted range; the panel headings give their share."
+    ),
+    x = "Days between decision and publication in RIS",
+    y = "Decision texts",
+    caption = ris_graph_caption
+  ) +
+  ris_plot_theme()
+```
+
+Across the whole period, the median lag is `r median(bvwg_lag$lag_days)` days, with a quarter of decisions published within `r unname(quantile(bvwg_lag$lag_days, 0.25))` days and a quarter taking longer than `r unname(quantile(bvwg_lag$lag_days, 0.75))` days. The two decision types are not identical: the median for an *Erkenntnis* is `r lag_medians$median_lag[lag_medians$decision_type == "Erkenntnis"]` days, against `r lag_medians$median_lag[lag_medians$decision_type == "Beschluss"]` days for a *Beschluss*.
+
+The shape of the distribution is at least as informative as its centre. A long right tail means the median describes the typical case but says nothing about the cases that wait longest—and those are not obviously the least interesting ones.
+
+# Change over time
+
+@fig-lag-by-year breaks the same measure down by the year in which the decision was taken, showing the median and the interquartile range for each decision type.
+
+The dashed grey line is the important addition. It marks, for each decision year, the shortest observation window available in the data: the number of days between 31 December of that year and the retrieval date. No decision from that year can display a lag longer than this line, simply because a longer one would not yet have been published when I pulled the data.
+
+```{r}
+#| label: fig-lag-by-year
+#| code-summary: "Plot the median and interquartile publication lag by decision year"
+#| fig-cap: "Median publication lag by decision year and decision type, with the observable window."
+#| fig-alt: "Line chart of the median number of days between decision and RIS publication for Austrian Federal Administrative Court decisions by decision year, with shaded interquartile ranges, drawn separately for Erkenntnis and Beschluss. A dashed grey line shows the shortest observation window for each decision year, which falls steeply for recent years and constrains how long a lag can possibly be observed there."
+#| column: body-outset-right
+#| fig-width: 11
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svg_plot
+#| fig-ext: svg
+lag_by_year <- bvwg_lag_typed %>%
+  summarise(
+    decisions = n(),
+    median_lag = median(lag_days),
+    q25 = quantile(lag_days, 0.25),
+    q75 = quantile(lag_days, 0.75),
+    .by = c(decision_year, decision_type)
+  )
+
+# Shortest observation window per decision year: a decision taken on the last
+# day of the year has had this many days to appear in RIS.
+observation_window <- tibble(decision_year = lag_years) %>%
+  mutate(
+    window_days = as.integer(
+      retrieval_date - as.Date(paste0(decision_year, "-12-31"))
+    )
+  )
+
+lag_by_year %>%
+  ggplot(aes(x = decision_year, y = median_lag)) +
+  geom_ribbon(
+    aes(ymin = q25, ymax = q75, fill = decision_type),
+    alpha = 0.18
+  ) +
+  geom_line(aes(color = decision_type), linewidth = 0.7) +
+  geom_point(aes(color = decision_type), size = 1.8) +
+  geom_line(
+    data = observation_window,
+    aes(x = decision_year, y = window_days),
+    inherit.aes = FALSE,
+    linetype = "dashed",
+    color = "#7f7f7f",
+    linewidth = 0.5
+  ) +
+  scale_x_continuous(breaks = lag_years) +
+  scale_y_continuous(labels = scales::comma) +
+  # The observation window runs to several thousand days for the early years and
+  # would flatten the lag series entirely. Clipping the axis to the lag data lets
+  # the window line enter the plot only where it actually starts to bind.
+  coord_cartesian(ylim = c(0, max(lag_by_year$q75) * 1.35)) +
+  scale_color_manual(values = decision_type_colors, name = NULL) +
+  scale_fill_manual(values = decision_type_colors, guide = "none") +
+  labs(
+    title = "The recent decline is partly an artefact of when the data was pulled",
+    subtitle = paste0(
+      "Median days between decision and RIS publication by decision year, ",
+      "shaded band = interquartile range. The dashed grey line gives the shortest ",
+      "observation window per year: a decision taken on 31 December of that year ",
+      "had this many days to appear in RIS before the data was retrieved. Lags ",
+      "above that line cannot be observed. For the earlier years the window runs ",
+      "far above the plotted range and does not constrain the estimates."
+    ),
+    x = "Year of decision",
+    y = "Days until publication in RIS",
+    caption = ris_graph_caption
+  ) +
+  ris_plot_theme()
+```
+
+# The censoring problem
+
+This is the trap I mentioned at the start, and it is worth spelling out because it applies to any analysis of this kind.
+
+The dataset contains only decisions that had already been published when I queried RIS. A decision taken in late 2025 that takes two years to be published is not in the data at all—not as a slow case, but as no case. It is missing entirely. The consequence is that recent decision years are systematically stripped of their slowest cases, which drags their apparent lag downwards. In survival-analysis terms, the observations are right-censored, and the censoring gets more severe the closer we get to the retrieval date.
+
+So a downward-sloping line at the right-hand edge of @fig-lag-by-year is *not* evidence that the court and the database got faster. It is at least partly evidence that I looked too early. The dashed window line makes the constraint explicit: where a year's interquartile band starts crowding that line, the summary statistics for that year should not be read as final.
+
+@fig-lag-thresholds takes this seriously by only plotting what can actually be observed. For each decision year, it shows the share of decisions published within 30, 90 and 365 days—but a point is drawn only if the observation window for that year is long enough to determine the answer. The 365-day series therefore stops well before the 30-day one.
+
+```{r}
+#| label: fig-lag-thresholds
+#| code-summary: "Plot the share published within fixed thresholds, dropping unobservable years"
+#| fig-cap: "Share of BVwG decisions published in RIS within 30, 90 and 365 days, by decision year."
+#| fig-alt: "Line chart showing, for each decision year, the share of Austrian Federal Administrative Court decisions published in RIS within 30, 90 and 365 days. Each series stops at the most recent decision year for which the full threshold has elapsed before the data retrieval date, so the 365-day series ends earlier than the 30-day series."
+#| column: body-outset-right
+#| fig-width: 11
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-align: "center"
+#| dev: svg_plot
+#| fig-ext: svg
+lag_thresholds <- c(30, 90, 365)
+
+lag_threshold_shares <- bvwg_lag %>%
+  reframe(
+    threshold = lag_thresholds,
+    share = map_dbl(lag_thresholds, \(limit) mean(lag_days <= limit)),
+    .by = decision_year
+  ) %>%
+  left_join(observation_window, by = "decision_year") %>%
+  # Keep a year only where the whole threshold has elapsed for every decision
+  # in it—otherwise the share is mechanically understated.
+  filter(window_days >= threshold) %>%
+  mutate(
+    threshold_label = factor(
+      paste0("Within ", threshold, " days"),
+      levels = paste0("Within ", lag_thresholds, " days")
+    )
+  )
+
+threshold_colors <- c(
+  "Within 30 days" = "#e69f00",
+  "Within 90 days" = "#1185FE",
+  "Within 365 days" = "#2E7D32"
+)
+
+lag_threshold_endpoints <- lag_threshold_shares %>%
+  slice_max(decision_year, n = 1, by = threshold_label)
+
+lag_threshold_shares %>%
+  ggplot(aes(x = decision_year, y = share, color = threshold_label)) +
+  geom_line(linewidth = 0.7) +
+  geom_point(size = 1.8) +
+  geom_text(
+    data = lag_threshold_endpoints,
+    aes(label = scales::percent(share, accuracy = 1)),
+    nudge_y = 0.035,
+    hjust = 1,
+    size = gg_annot_size,
+    family = gg_plot_family,
+    show.legend = FALSE
+  ) +
+  scale_x_continuous(breaks = lag_years) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    expand = expansion(mult = c(0.06, 0.12))
+  ) +
+  scale_color_manual(values = threshold_colors, name = NULL) +
+  labs(
+    title = "Only years with a long enough observation window are shown",
+    subtitle = paste0(
+      "Share of BVwG decision texts published in RIS within 30, 90 and 365 days ",
+      "of the decision date, by year of decision. A year enters a series only if ",
+      "the full threshold had elapsed for every decision in it by ",
+      format_ris_date(retrieval_date), "—which is why the series end at ",
+      "different points."
+    ),
+    x = "Year of decision",
+    y = NULL,
+    caption = ris_graph_caption
+  ) +
+  ris_plot_theme()
+```
+
+# The long tail
+
+Finally, the slow cases. The table below lists the twenty decisions with the longest gap between decision and publication, with a link to the record in RIS so the individual cases can be inspected.
+
+```{r}
+#| label: tbl-lag-longest
+#| code-summary: "Build a table of the longest publication lags"
+lag_longest_raw <- bvwg_lag %>%
+  slice_max(lag_days, n = 20, with_ties = FALSE)
+
+# `document_url` only serves as a fallback link, so tolerate its absence rather
+# than letting a schema difference break the table.
+if (!"document_url" %in% names(lag_longest_raw)) {
+  lag_longest_raw$document_url <- NA_character_
+}
+
+lag_longest <- lag_longest_raw %>%
+  mutate(
+    case_number = map_chr(
+      case_number,
+      \(x) paste(as.character(unlist(x, use.names = FALSE)), collapse = ", ")
+    ),
+    record_url = map2_chr(
+      content_urls,
+      as.character(document_url),
+      first_html_url
+    ),
+    lag_years_rounded = round(lag_days / 365.25, 1)
+  ) %>%
+  select(
+    case_number,
+    decision_type,
+    decision_date,
+    published_date,
+    lag_days,
+    lag_years_rounded,
+    record_url
+  )
+
+reactable(
+  lag_longest,
+  columns = list(
+    case_number = colDef(name = "Case number", minWidth = 150, align = "left"),
+    decision_type = colDef(name = "Type", minWidth = 90, align = "left"),
+    decision_date = colDef(name = "Decided", minWidth = 100, align = "left"),
+    published_date = colDef(name = "Published in RIS", minWidth = 120, align = "left"),
+    lag_days = colDef(name = "Lag (days)", minWidth = 90, align = "right"),
+    lag_years_rounded = colDef(name = "Lag (years)", minWidth = 90, align = "right"),
+    record_url = colDef(
+      name = "RIS",
+      minWidth = 70,
+      align = "left",
+      cell = function(value) {
+        if (is.na(value)) {
+          return("—")
+        }
+        tags$a(href = value, target = "_blank", rel = "noopener", "open")
+      },
+      html = TRUE
+    )
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  outlined = TRUE,
+  defaultPageSize = 10
+)
+```
+
+A caveat on reading this table: a long lag here means a long gap between the two dates RIS reports, and nothing more. It does not establish why the gap occurred. Retrospective additions to the database, corrections to an existing record, or documents that were digitised later would all produce the same pattern as a genuinely delayed publication, and the API gives me no way to tell them apart.
+
+# Caveats
+
+Beyond the censoring discussed above, three limitations are worth stating plainly.
+
+First, `published` is the publication date as reported by RIS, which need not be the moment a document first became visible. If a record is re-issued or amended, I cannot see the original date behind the reported one.
+
+Second, this covers decision texts only. The *Rechtssätze* were deliberately excluded to avoid double-counting, but they are published on their own schedule, and a full picture of when a court's reasoning becomes citable would need to include them.
+
+Third, and most importantly: not every BVwG decision is published in RIS. This analysis can only describe the timing of decisions that made it into the database. It says nothing about the ones that never appear, and the share of decisions actually published is a separate question—arguably a more consequential one than how fast the published subset arrives.
+
+# Wrap-up
+
+The publication lag is a modest measurement, and the point of the exercise was as much methodological as substantive: two date columns that RIS hands over for free are enough to ask a real question, and also enough to get the answer wrong if the observation window is ignored.
+
+As always, if you spot an error, have a question, or want to suggest a follow-up, feel free to contact me via [direct message on Bluesky](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"} or the [{risAT} GitHub discussion board](https://github.com/werkstattcodes/risAT/discussions){target="_blank"}.
