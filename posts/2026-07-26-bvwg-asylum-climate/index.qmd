@@ -144,7 +144,9 @@ ris_graph_caption <- paste0(
 
 # Context
 
-A few years ago, I had the privilege of contributing to a paper on the relevance of climate-change-related consequences—such as floods, droughts, and famines—to the Austrian Federal Administrative Court’s case law on subsidiary protection and asylum. The study was part of a research project on climate-change-related migration and whether, or to what extent, a legal concept of the “climate refugee” is emerging. My task was modest: to retrieve the full body of relevant case law, scan it for certain key terms, extract the relevant sections, and do some number crunching. The resulting dataset then served as the basis for case studies conducted by legal scholars.
+A few years ago, I had the privilege of contributing to a paper on the relevance of climate-change-related consequences—such as floods, droughts, and famines—to the Austrian Federal Administrative Court’s case law on subsidiary protection and asylum.[^study] The study was part of a research project on climate-change-related migration and whether, or to what extent, a legal concept of the “climate refugee” is emerging. My task was modest: to retrieve the full body of relevant case law, scan it for certain key terms, extract the relevant sections, and do some number crunching. The resulting dataset then served as the basis for case studies conducted by legal scholars.
+
+[^study]: Monika Mayrhofer and Margit Ammer, ["Climate mobility to Europe: The case of disaster displacement in Austrian asylum procedures"](https://doi.org/10.3389/fclim.2022.990558), *Frontiers in Climate* 4 (2022): 990558.
 
 I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the {risAT} package, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.
 

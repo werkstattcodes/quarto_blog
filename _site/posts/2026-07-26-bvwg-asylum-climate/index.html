@@ -160,7 +160,7 @@ cookieconsent.run({
 
 </head>
 
-<body class="floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="floating nav-fixed slimcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -466,10 +466,10 @@ cookieconsent.run({
 </div>
 </div>
 </section>
-<section id="context" class="level1" data-number="1">
+<section id="context" class="level1 page-columns page-full" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Context</h1>
-<p>A few years ago, I had the privilege of contributing to a paper on the relevance of climate-change-related consequences—such as floods, droughts, and famines—to the Austrian Federal Administrative Court’s case law on subsidiary protection and asylum. The study was part of a research project on climate-change-related migration and whether, or to what extent, a legal concept of the “climate refugee” is emerging. My task was modest: to retrieve the full body of relevant case law, scan it for certain key terms, extract the relevant sections, and do some number crunching. The resulting dataset then served as the basis for case studies conducted by legal scholars.</p>
-<p>I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the {risAT} package, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.</p>
+<p>A few years ago, I had the privilege of contributing to a paper on the relevance of climate-change-related consequences—such as floods, droughts, and famines—to the Austrian Federal Administrative Court’s case law on subsidiary protection and asylum.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The study was part of a research project on climate-change-related migration and whether, or to what extent, a legal concept of the “climate refugee” is emerging. My task was modest: to retrieve the full body of relevant case law, scan it for certain key terms, extract the relevant sections, and do some number crunching. The resulting dataset then served as the basis for case studies conducted by legal scholars.</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;Monika Mayrhofer and Margit Ammer, <a href="https://doi.org/10.3389/fclim.2022.990558">“Climate mobility to Europe: The case of disaster displacement in Austrian asylum procedures”</a>, <em>Frontiers in Climate</em> 4 (2022): 990558.</p></div></div><p>I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the {risAT} package, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.</p>
 <p>Given the current heatwave in Austria and across Europe, I thought this might be a good opportunity to revisit the topic and demonstrate some of {risAT}’s features—albeit without the same level of detail or legal expertise, given time constraints and other priorities.</p>
 <p>The questions I came up with are:</p>
 <ol type="1">
@@ -632,7 +632,7 @@ cookieconsent.run({
 <span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-bvwg-asyl-climate-absolute" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Stacked column chart of annual Austrian Federal Administrative Court decision texts returned by RIS with AsylG in the norm filter from 2014 to 2025. Highlighted segments also match Klimawandel in the decision text; labels give the annual AsylG total and matching subset. No decision texts match through 2017, and matches remain a minority thereafter.">
+<div id="fig-bvwg-asyl-climate-absolute" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Stacked column chart of annual Austrian Federal Administrative Court decision texts returned by RIS with AsylG in the norm filter from 2014 to 2025. Highlighted segments also match Klimawandel in the decision text; labels give the annual AsylG total and matching subset. No decision texts match through 2017, and matches remain a minority thereafter." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bvwg-asyl-climate-absolute-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Annual BVwG decision texts returned for the AsylG norm filter, split by Klimawandel matches.
@@ -680,7 +680,7 @@ Figure&nbsp;1: Annual BVwG decision texts returned for the AsylG norm filter, sp
 <span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ris_plot_theme</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
-<div id="fig-bvwg-asyl-climate-relative" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center" alt="Line chart of the annual share of Austrian Federal Administrative Court decision texts returned by RIS for the AsylG norm filter that also match Klimawandel from 2014 to 2025. The share is zero through 2017, fluctuates thereafter, reaches 4.1 per cent in 2023, falls to 2.6 per cent in 2024, and rises to 8.3 per cent in 2025.">
+<div id="fig-bvwg-asyl-climate-relative" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" alt="Line chart of the annual share of Austrian Federal Administrative Court decision texts returned by RIS for the AsylG norm filter that also match Klimawandel from 2014 to 2025. The share is zero through 2017, fluctuates thereafter, reaches 4.1 per cent in 2023, falls to 2.6 per cent in 2024, and rises to 8.3 per cent in 2025." data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bvwg-asyl-climate-relative-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: Annual share of Klimawandel matches among BVwG decision texts returned for the AsylG norm filter.
@@ -701,6 +701,7 @@ Figure&nbsp;2: Annual share of Klimawandel matches among BVwG decision texts ret
 
 
 </section>
+
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2026,
   author = {Schmidt, Roland},
