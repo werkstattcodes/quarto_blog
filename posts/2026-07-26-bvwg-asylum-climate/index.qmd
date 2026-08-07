@@ -148,7 +148,7 @@ A few years ago, I had the privilege of contributing to a paper on the relevance
 
 [^study]: Monika Mayrhofer and Margit Ammer, ["Climate mobility to Europe: The case of disaster displacement in Austrian asylum procedures"](https://doi.org/10.3389/fclim.2022.990558), *Frontiers in Climate* 4 (2022): 990558.
 
-I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the {risAT} package, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.
+I really enjoyed working on this project. In retrospect, however, my approach was somewhat clumsy, particularly given the tools available to us today, such as {httr2}. I suspect that this occasionally protracted process was one of my motivations for writing the [{risAT} package](https://werkstattcodes.github.io/risAT/){target="_blank"}, which I introduced in my previous blog post. After all, the beauty of an R package is that it allows you to encapsulate a complex workflow in an easy-to-use function and have it at your fingertips. Some progress, you might say.
 
 Given the current heatwave in Austria and across Europe, I thought this might be a good opportunity to revisit the topic and demonstrate some of {risAT}’s features—albeit without the same level of detail or legal expertise, given time constraints and other priorities.
 
