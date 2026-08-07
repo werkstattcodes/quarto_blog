@@ -125,7 +125,7 @@ Obtaining electoral data is not a big thing, as it should be. Getting them in a 
 
 With the earlier elections in Lower Austria, the results came [inter alia](https://www.noe.gv.at/wahlen/L20231/Download.html){target="_blank"} as a standard xlsx file, however, with these column headers:
 
-![](img\noe_results.PNG)
+![](img/noe_results.PNG)
 
 Below the necessary steps to eventually obtain a tidy dataframe. The [\`janitor\` package](https://cran.r-project.org/web/packages/janitor/vignettes/janitor.html%7Btarget=%22_blank%22%7D) once again turns out to be a very helpful tool.
 
