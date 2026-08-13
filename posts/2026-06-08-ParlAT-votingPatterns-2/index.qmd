@@ -32,6 +32,8 @@ draft: false
 
 ![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery"}
 
+![Share of comparable bills with a party vote flip, by period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery"}
+
 ![No-to-yes vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-no-to-yes-1.png){group="voting_patterns_2_gallery"}
 
 ![Yes-to-no vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-yes-to-no-1.png){group="voting_patterns_2_gallery"}
@@ -41,7 +43,21 @@ draft: false
 ![Yes-to-no vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-yes-to-no-1.png){group="voting_patterns_2_gallery"}
 :::
 
-# Packages
+# Context
+
+In one of my last posts, I showcased how the {ParlAT} package offers some simple, yet powerful means to analyze voting behavior of parties in the Austrian National Council. The analysis detailed how parties voted (for or against) and on the frequency of party-combinations, i.e. how often e.g. party A voted with party B. All of the presented analysis dealt with the votes in the third reading, that's at the last stage of the legislative procedure in the National Council.
+
+In this post I want to expand the analysis beyond the third reading and include also votes across all stages of the legislative process in the National Council, what includes the first, second as well as the third reading. While doing this my interest is not so much how party voted at a specific stage, but more on whether and *how often party positions on a legislative item actually changed over the course of the different stages within the national Council*. With this general interest a number of other questions lend themselves for answering:
+
+- how do parties differ when it comes to their frequency on changing their voting position over the course of different stages?
+- between which stages (committee - first/second reading, first/second - third reading) do the most changes happen?
+- during which government we can observe most vote changes?
+
+On a conceptual level, I believe, that answering these questions can contribute to a better understanding of how government parties are responsive to the opposition demands. Strictly speaking, a change of voting, could also simply mean that an opposition party changed its mind after further consideration. While this is possibile, but unlikely, in most cases a change of an opposition party's vote means that the party go something in response. Whether this was indeed a change in the content of the bill at stake, or on another, unrelated issue, can't be answered without looking into the details of the specific item. But retrieving these number is a first step.
+
+A few conceptual notes of caution: - Simply looking at the absolute number of flips can be misleading. For a flip from no to yes materialize we need to have a 'no' in the first place. If there never was a 'no', i.e. if a bill was from the start enjoying unanimous support, there also cannot be any flip. But in this case, the absence of a flip is obviously not indicative for a lack of government responsiveness. - Comparison between legislative periods: Different legislative periods have different legislative items at play, and these may vary in their level of contestation, i.e. how difficult it is for government and opposition parties to find common ground. Not every legislative period brings up items of similar levels of contestation.
+
+# Set-up
 
 Get the necessary packages. In addition, I define here a small helper function which gives all reactable tables in this post a consistent look (title, optional subtitle, and a source note at the bottom), so I don't have to repeat the same styling code over and over again.
 
@@ -54,7 +70,6 @@ library(furrr)
 library(reactable)
 library(reactablefmtr)
 library(naniar)
-library(ggpattern)
 library(ggtext)
 library(patchwork)
 library(ggalluvial)
@@ -99,7 +114,7 @@ style_reactable_table <- function(table, title, subtitle = NULL) {
 
 ## Query data
 
-As in the previous post, let's start by getting all items ('Verhandlungsgegenstände') of the National Council for the legislative periods 20 to 28. No big deal.
+As in the previous post, let's start by getting all items ('Verhandlungsgegenstände') of the National Council for the legislative periods 20 to 28. With {ParlAT}.
 
 ```{r}
 #| label: fetch-items
@@ -135,7 +150,7 @@ items_20_28 <- readr::read_rds(here::here(
 
 ## Keep items of interest
 
-The `get_items()` call returned all (!) items, but not every item type is actually subject to a vote in a reading. Below I filter for those types which are: motions (Anträge), government bills (Regierungsvorlagen), budget-related items, and a few others. In case I missed any relevant category here, please let me know.
+The `get_items()` call returned all (!) items, but not every item type is actually subject to a vote in a reading. Below I filter for those types which are: motions ('Anträge'), government bills ('Regierungsvorlagen'), budget-related items, and a few others. In case I missed any relevant category here, please let me know.
 
 ```{r}
 #| label: define-item-scope
@@ -154,8 +169,11 @@ items_scope <- items_20_28 %>%
 # downstream. The graph caption is therefore built later, from the item types that
 # actually survive into the analysis (see the votes-wide section).
 items_scope %>%
-  distinct(type_doc_long, type_doc)
+  count(type_doc_long, type_doc, sort=T) %>%
+  mutate(rel=n/sum(n))
 ```
+
+
 
 # Get item details
 
@@ -216,7 +234,7 @@ item_details_raw <- readr::read_rds(here::here(
 
 ## Also fetch the committee reports
 
-There is a catch that only becomes visible once you look closely at the source: for most bills, the committee's vote is **not** recorded on the bill's own page at all. It lives on a separate object — the committee report (`Ausschussbericht`, type `AUB`) — which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` division with each party's position, plus a reference back to the parent bill. So to capture committee votes properly, I fetch every committee report for periods 20–28 as well, again with `stages = TRUE`.
+There is a catch that only becomes visible once you look closely at the source: for most bills, the committee's vote is *not* recorded on the bill's own page at all. It's stored in a separate object — the committee report (`Ausschussbericht`, type `AUB`) — which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill') which includes also each party's vote, plus a reference back to the parent bill. So to capture committee votes properly, I fetch every committee report for periods 20–28 as well, again with `stages = TRUE`.
 
 ```{r}
 #| label: fetch-aub-details
@@ -230,6 +248,7 @@ aub_urls <- items_20_28 %>%
 
 plan(multisession, workers = 4)
 safe_get_item_details <- safely(get_item_details)
+
 aub_details_raw <- aub_urls %>%
   future_map(
     \(x) {
@@ -240,23 +259,45 @@ aub_details_raw <- aub_urls %>%
     .progress = TRUE,
     .options = furrr_options(packages = c("ParlAT", "purrr", "tibble"))
   )
+
+plan(sequential)
+
+aub_success_n <- sum(map_lgl(aub_details_raw, \(x) is.null(x$error)))
+if (aub_success_n == 0) {
+  stop(paste0(
+    "All ", length(aub_details_raw),
+    " committee-report requests failed; the existing AUB cache was not overwritten. ",
+    "First error: ", conditionMessage(aub_details_raw[[1]]$error)
+  ))
+}
+
+readr::write_rds(
+  aub_details_raw,
+  here::here("posts", "2026-06-08-ParlAT-votingPatterns-2", "_data", "aub_details_raw.rds")
+)
 ```
 
 ```{r}
 #| label: load-aub-cache
 #| eval: true
 #| include: false
-# readr::write_rds(
-#   aub_details_raw,
-#   here::here("posts", "2026-06-08-ParlAT-votingPatterns-2", "_data", "aub_details_raw.rds")
-# )
-plan(sequential)
+
 aub_details_raw <- readr::read_rds(here::here(
   "posts",
   "2026-06-08-ParlAT-votingPatterns-2",
   "_data",
   "aub_details_raw.rds"
 ))
+
+aub_success_n <- sum(map_lgl(aub_details_raw, \(x) is.null(x$error)))
+if (aub_success_n == 0) {
+  stop(paste0(
+    "The AUB cache contains ", length(aub_details_raw),
+    " failed requests and no usable committee-report data. ",
+    "Re-run the 'fetch-aub-details' cell to rebuild it before rendering. ",
+    "First cached error: ", conditionMessage(aub_details_raw[[1]]$error)
+  ))
+}
 ```
 
 ## Prepare stages data
@@ -271,6 +312,7 @@ failed_items <- item_details_raw |>
   keep(\(x) !is.null(x$error)) |>
   map(\(x) tibble(item_url = x$item_url, error = conditionMessage(x$error))) |>
   list_rbind()
+failed_items
 
 # keep only successful results and extract the nested $result element
 item_details <- item_details_raw |>
@@ -299,6 +341,91 @@ item_stages <- item_details |>
 data_cutoff <- max(item_stages$stage_date)
 ```
 
+The image below is from the website of the Parliament and shows the details on the different stages of the one specific bill. it is this information which have retrieved with the code chunk above. 
+Two things need to be highlighted. 
+1) At this point, we have 
+data on **all** stages, not only on voting results. Hence, rows in which we are not interested need to be dropped.
+2) Note that the stage data does not contain any info on the voting results inside the committee. This voting data is stored in a different entry, i.e. the entry pertaining to the report of the committee. 
+
+
+Stages:
+https://www.parlament.gv.at/gegenstand/XXVIII/I/449?selectedStage=105
+
+Report:
+https://www.parlament.gv.at/gegenstand/XXVIII/I/450?selectedStage=105
+
+How to match them.
+
+To get a better idea of what the code does, let's demonstrate what we did my a concrete example: the latest amendment to the 'Erneuerbaren-Ausbau-Beschleunigungsgesetz und Erneuerbaren-Ausbau-Gesetz'. Querying the item with `get_item_details(stages=TRUE)` retunred the who 
+
+::: {.column-margin}
+![Click to view stages as displayed on the website of the Parliament](_img/NRStagesErneuerbar.png)
+:::
+
+::: {.column-margin}
+![Click to view stages as displayed on the website of the Parliament](_img/AusschussErneuerbar.png)
+:::
+
+```{r}
+#| label: example-item-stages-table
+#| code-summary: "Show every recorded stage for the example item as a reactable table"
+# list columns (speeches, votes) are all NA for this item at the stage level;
+# collapse them to character so reactable can render every column
+item_stages_example_votes <-get_item_details(item_url = "https://www.parlament.gv.at/gegenstand/XXVII/I/2608", votes=T, stages=T)
+
+details_stages_unnest <- item_stages_example_votes %>%
+  unnest(stages)
+
+
+item_stages_example <-get_item_details(item_url = "https://www.parlament.gv.at/gegenstand/XXVIII/I/449", stages=T) %>%
+  select(
+    item_url,
+    legis_period,
+    type_doc,
+    title,
+    item_number,
+    status_number,
+    status_description,
+    stages,
+    votes
+  ) |>
+  filter(map_lgl(stages, \(x) !is.null(x))) |> # drop items with no stage data at all
+  unnest(stages) %>%
+  mutate(stage_date = lubridate::dmy(stage_date)) %>%
+  mutate(across(where(is.list), \(x) map_chr(x, toString)))
+
+item_stages_example_table <- reactable(
+  item_stages_example,
+  columns = list(
+    title = colDef(minWidth = 200, style = list(whiteSpace = "normal", lineHeight = "1.35")),
+    stage_name = colDef(minWidth = 320, style = list(whiteSpace = "normal", lineHeight = "1.35"))
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = TRUE,
+  outlined = TRUE,
+  wrap = FALSE,
+  pagination = FALSE,
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "ALL RECORDED STAGES FOR THE EXAMPLE ITEM",
+    paste0(
+      "Every stage row and column for XXVIII/I/449 (Erneuerbaren-Ausbau-Beschleunigungsgesetz), no filtering. Data as of ",
+      data_cutoff,
+      "."
+    )
+  )
+
+item_stages_example_table
+```
+
+```{r}
+item_stages %>%
+  filter(str_detect(title, regex("Erneuerbar"))) %>%
+  distinct(item_url, title)
+```
+
 ## Build committee votes from the reports
 
 Now I turn the committee reports into usable committee votes. For each report I a) read its stages and keep the `Antrag auf Annahme des Gesetzesvorschlags` line (which holds the `Dafür/Dagegen` party split), and b) follow its `references` entry flagged `HG` ("Hauptgegenstand") back to the parent bill. The result is one committee-vote row per bill, carrying the parent bill's identifiers so it slots in alongside the second- and third-reading rows further down.
@@ -306,10 +433,17 @@ Now I turn the committee reports into usable committee votes. For each report I 
 ```{r}
 #| label: prepare-committee-votes
 #| code-summary: "Extract committee votes from reports and link them to the parent bill"
-# successful report fetches
+# successful report fetches; retain the requested URL if an older cached result
+# does not yet include the normalised item_url column
 aub_details <- aub_details_raw |>
   keep(\(x) is.null(x$error)) |>
-  map("result") |>
+  map(\(x) {
+    result <- x$result
+    if (!"item_url" %in% names(result)) {
+      result$item_url <- x$item_url
+    }
+    result
+  }) |>
   list_rbind()
 
 # link each report to its parent bill via the reference flagged "HG" (Hauptgegenstand)
@@ -790,7 +924,6 @@ nrow(items_scope_pairs_regular)
 nrow(items_scope_pairs_regular) / nrow(items_scope) # share of all vote stages covered
 ```
 
-
 # Extract votes
 
 Now to the heart of the matter: getting each party's position out of the stage description. The text follows (mostly) the pattern 'Dafür: party A, party B, dagegen: party C', so the function below splits the string at the 'dagegen' boundary and cleans up both sides. Two details are worth mentioning: first, I keep only tokens which appear in a predefined list of valid party labels — this guards against vote counts, footnotes and other non-party fragments sneaking into the results. Second, since party labels changed over the legislative periods (e.g. the FPÖ appearing as 'F' in earlier periods), a small helper maps the historical variants onto one canonical name per party.
@@ -826,8 +959,13 @@ valid_parties <- c(
 normalise_party <- function(party) {
   case_when(
     party %in% c("NEOS-LIF", "NEOS/NEOS-LIF") ~ "NEOS",
+    party %in% c("JETZT", "PILZ", "JETZT/PILZ") ~ "JETZT/PILZ",
     party == "F" ~ "FPÖ",
     party == "F-BZÖ" ~ "BZÖ",
+    party == "S" ~ "SPÖ",
+    party == "V" ~ "ÖVP",
+    party == "N" ~ "NEOS",
+    party == "G" ~ "GRÜNE",
     TRUE ~ party
   )
 }
@@ -946,7 +1084,6 @@ items_scope_pairs_regular_long <- items_scope_pairs_regular %>%
   )
 ```
 
-
 To detect flips between stages, we need each stage side by side. Hence, let's pivot the long data frame into a wide format where each row is one item-party combination, with separate columns for the committee, second-reading and third-reading vote (`yes_committee`, `no_committee`, `yes_second`, `no_second`, `yes_third`, `no_third`). An `NA` in these columns means that the party has no recorded vote at that particular stage.
 
 ```{r}
@@ -1022,8 +1159,7 @@ items_scope_pairs_regular_wide %>%
   naniar::vis_miss(facet = legis_period)
 ```
 
-
-Now for the first actual result: how often did a party reject an item in the second reading, only to support it in the third? Such no-to-yes flips are rare by design — the third reading usually follows immediately after the second — but where they occur, they may hint at successful last-minute amendments or changed political circumstances. The graph below shows the number of such flips per party and legislative period. Since a flip carries a different weight depending on whether a party sits in government or in opposition, governing parties are marked with a diagonal stripe pattern (this is where the ggpattern package comes in). Don't get distracted by the length of the code chunk; most of it is needed to make sure that empty cells are displayed correctly (a party not represented in parliament is something different than a party without flips).
+Now for the first actual result: how often did a party reject an item in the second reading, only to support it in the third? Such no-to-yes flips are rare by design — the third reading usually follows immediately after the second — but where they occur, they may hint at successful last-minute amendments or changed political circumstances. The graph below shows the number of such flips per party and legislative period. Since a flip carries a different weight depending on whether a party sits in government or in opposition, governing parties are marked with a thick black frame. Don't get distracted by the length of the code chunk; most of it is needed to make sure that empty cells are displayed correctly (a party not represented in parliament is something different than a party without flips).
 
 ```{r}
 #| label: plot-flip-no-to-yes
@@ -1132,22 +1268,23 @@ flip_no_to_yes_labels <- flip_no_to_yes_grid %>%
 
 # clamp lower bound to 1 so a single-flip period still gets a visible colour gradient
 n_max <- max(1, max(flip_no_to_yes_grid$flip_n, na.rm = TRUE))
-library(ggpattern)
 p_flip_no_to_yes <- flip_no_to_yes_grid %>%
   ggplot(aes(
     x = legis_period,
     y = party,
-    fill = fill_val,
-    pattern = is_gov # diagonal stripe overlay for government parties
+    fill = fill_val
   )) +
-  ggpattern::geom_tile_pattern(
+  geom_tile(
     colour = "white",
-    linewidth = 0.6,
-    pattern_colour = "grey50",
-    pattern_fill = "grey50",
-    pattern_density = 0.08,
-    pattern_spacing = 0.06,
-    pattern_alpha = 0.45
+    linewidth = 0.6
+  ) +
+  geom_tile(
+    data = flip_no_to_yes_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
   ) +
   geom_text(
     data = flip_no_to_yes_labels,
@@ -1156,17 +1293,13 @@ p_flip_no_to_yes <- flip_no_to_yes_grid %>%
     size = 3.2,
     fontface = "bold",
     family = "Noto Sans",
-    inherit.aes = FALSE # avoid inheriting `pattern` aesthetic which causes ggpattern warnings
+    inherit.aes = FALSE
   ) +
   scale_fill_gradient(
     low = "grey93",
     high = "#1a9641",
     limits = c(0, n_max),
     na.value = "white", # white = party not present in that period
-    guide = "none"
-  ) +
-  scale_pattern_manual(
-    values = c("TRUE" = "stripe", "FALSE" = "none"),
     guide = "none"
   ) +
   scale_x_discrete(position = "top") +
@@ -1178,7 +1311,7 @@ p_flip_no_to_yes <- flip_no_to_yes_grid %>%
       "Each cell shows how many items a party voted *against* in the second reading (zweite Lesung) ",
       "but *for* in the third reading (dritte Lesung) — a shift from opposition to support. ",
       "Colour intensity reflects count; white = party not represented in that period; ",
-      "grey = no flips recorded; diagonal stripe = governing party.<br>",
+      "grey = no flips recorded; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>",
       "**Scope & limits:** Legislative periods XX–XXVIII (NR). ",
       "Only items with a standard Dafür/Dagegen vote report are included; ",
@@ -1283,17 +1416,19 @@ p_flip_yes_to_no <- flip_yes_to_no_grid %>%
   ggplot(aes(
     x = legis_period,
     y = party,
-    fill = fill_val,
-    pattern = is_gov # diagonal stripe overlay for government parties
+    fill = fill_val
   )) +
-  ggpattern::geom_tile_pattern(
+  geom_tile(
     colour = "white",
-    linewidth = 0.6,
-    pattern_colour = "grey50",
-    pattern_fill = "grey50",
-    pattern_density = 0.08,
-    pattern_spacing = 0.06,
-    pattern_alpha = 0.45
+    linewidth = 0.6
+  ) +
+  geom_tile(
+    data = flip_yes_to_no_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
   ) +
   geom_text(
     data = flip_yes_to_no_labels,
@@ -1302,7 +1437,7 @@ p_flip_yes_to_no <- flip_yes_to_no_grid %>%
     size = 3.2,
     fontface = "bold",
     family = "Noto Sans",
-    inherit.aes = FALSE # avoid inheriting `pattern` aesthetic which causes ggpattern warnings
+    inherit.aes = FALSE
   ) +
   # red gradient signals withdrawal of support (yes → no)
   scale_fill_gradient(
@@ -1310,10 +1445,6 @@ p_flip_yes_to_no <- flip_yes_to_no_grid %>%
     high = "#d73027",
     limits = c(0, n_max_ytn),
     na.value = "white", # white = party not present in that period
-    guide = "none"
-  ) +
-  scale_pattern_manual(
-    values = c("TRUE" = "stripe", "FALSE" = "none"),
     guide = "none"
   ) +
   scale_x_discrete(position = "top") +
@@ -1325,7 +1456,7 @@ p_flip_yes_to_no <- flip_yes_to_no_grid %>%
       "Each cell shows how many items a party voted *for* in the second reading (zweite Lesung) ",
       "but *against* in the third reading (dritte Lesung) — a withdrawal of previously expressed support. ",
       "Colour intensity reflects count; white = party not represented in that period; ",
-      "grey = no flips recorded; diagonal stripe = governing party.<br>",
+      "grey = no flips recorded; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>",
       "**Scope & limits:** Legislative periods XX–XXVIII (NR). ",
       "Only items with a standard Dafür/Dagegen vote report are included; ",
@@ -1419,17 +1550,19 @@ p_flip_comm_no_to_yes <- flip_comm_no_to_yes_grid %>%
   ggplot(aes(
     x = legis_period,
     y = party,
-    fill = fill_val,
-    pattern = is_gov
+    fill = fill_val
   )) +
-  ggpattern::geom_tile_pattern(
+  geom_tile(
     colour = "white",
-    linewidth = 0.6,
-    pattern_colour = "grey50",
-    pattern_fill = "grey50",
-    pattern_density = 0.08,
-    pattern_spacing = 0.06,
-    pattern_alpha = 0.45
+    linewidth = 0.6
+  ) +
+  geom_tile(
+    data = flip_comm_no_to_yes_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
   ) +
   geom_text(
     data = flip_comm_no_to_yes_labels,
@@ -1447,10 +1580,6 @@ p_flip_comm_no_to_yes <- flip_comm_no_to_yes_grid %>%
     na.value = "white",
     guide = "none"
   ) +
-  scale_pattern_manual(
-    values = c("TRUE" = "stripe", "FALSE" = "none"),
-    guide = "none"
-  ) +
   scale_x_discrete(position = "top") +
   labs(
     x = NULL,
@@ -1460,7 +1589,7 @@ p_flip_comm_no_to_yes <- flip_comm_no_to_yes_grid %>%
       "Each cell shows how many items a party voted *against* in the committee (Ausschuss) ",
       "but *for* in the second reading (zweite Lesung) — a shift from opposition to support. ",
       "Colour intensity reflects count; white = party not represented in that period; ",
-      "grey = no flips recorded; diagonal stripe = governing party.<br>",
+      "grey = no flips recorded; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>",
       "**Scope & limits:** Legislative periods XX–XXVIII (NR). ",
       "Only items with a standard Dafür/Dagegen vote report are included; ",
@@ -1551,17 +1680,19 @@ p_flip_comm_yes_to_no <- flip_comm_yes_to_no_grid %>%
   ggplot(aes(
     x = legis_period,
     y = party,
-    fill = fill_val,
-    pattern = is_gov
+    fill = fill_val
   )) +
-  ggpattern::geom_tile_pattern(
+  geom_tile(
     colour = "white",
-    linewidth = 0.6,
-    pattern_colour = "grey50",
-    pattern_fill = "grey50",
-    pattern_density = 0.08,
-    pattern_spacing = 0.06,
-    pattern_alpha = 0.45
+    linewidth = 0.6
+  ) +
+  geom_tile(
+    data = flip_comm_yes_to_no_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
   ) +
   geom_text(
     data = flip_comm_yes_to_no_labels,
@@ -1579,10 +1710,6 @@ p_flip_comm_yes_to_no <- flip_comm_yes_to_no_grid %>%
     na.value = "white",
     guide = "none"
   ) +
-  scale_pattern_manual(
-    values = c("TRUE" = "stripe", "FALSE" = "none"),
-    guide = "none"
-  ) +
   scale_x_discrete(position = "top") +
   labs(
     x = NULL,
@@ -1592,7 +1719,7 @@ p_flip_comm_yes_to_no <- flip_comm_yes_to_no_grid %>%
       "Each cell shows how many items a party voted *for* in the committee (Ausschuss) ",
       "but *against* in the second reading (zweite Lesung) — a withdrawal of previously expressed support. ",
       "Colour intensity reflects count; white = party not represented in that period; ",
-      "grey = no flips recorded; diagonal stripe = governing party.<br>",
+      "grey = no flips recorded; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>",
       "**Scope & limits:** Legislative periods XX–XXVIII (NR). ",
       "Only items with a standard Dafür/Dagegen vote report are included; ",
@@ -1909,7 +2036,7 @@ p_where_alluvial
 
 ## Angle 3 — Split-tile heatmap (party × period × transition)
 
-The same party × period tile idiom as the earlier flip graphs, but now faceted by transition (columns) and direction (rows), so each party–period cell appears twice — once for the committee → 2nd step and once for 2nd → 3rd. Counts, not rates, so it reads as "how many flips, and at which step". Government parties carry the diagonal stripe.
+The same party × period tile idiom as the earlier flip graphs, but now faceted by transition (columns) and direction (rows), so each party–period cell appears twice — once for the committee → 2nd step and once for 2nd → 3rd. Counts, not rates, so it reads as "how many flips, and at which step". Government parties carry a thick black frame.
 
 ```{r}
 #| label: plot-where-flips-heatmap
@@ -1946,21 +2073,27 @@ where_tile_grid <- expand_grid(
       levels = c("Committee → 2nd reading", "2nd → 3rd reading")
     ),
     label = if_else(n_flip > 0, as.character(n_flip), ""),
-    fill_val = if_else(present, as.numeric(n_flip), NA_real_)
+    fill_val = if_else(present, as.numeric(n_flip), NA_real_),
+    # negate yes-to-no counts so a single diverging scale can colour the two
+    # direction facets differently (red = yes -> no, green = no -> yes)
+    fill_val_signed = if_else(change == "yes → no", -fill_val, fill_val)
   )
 
 n_max_where <- max(1, max(where_tile_grid$n_flip, na.rm = TRUE))
 
 p_where_heatmap <- where_tile_grid %>%
-  ggplot(aes(x = legis_period, y = party, fill = fill_val, pattern = is_gov)) +
-  ggpattern::geom_tile_pattern(
+  ggplot(aes(x = legis_period, y = party, fill = fill_val_signed)) +
+  geom_tile(
     colour = "white",
-    linewidth = 0.5,
-    pattern_colour = "grey50",
-    pattern_fill = "grey50",
-    pattern_density = 0.08,
-    pattern_spacing = 0.06,
-    pattern_alpha = 0.45
+    linewidth = 0.5
+  ) +
+  geom_tile(
+    data = where_tile_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
   ) +
   geom_text(
     data = where_tile_grid %>% filter(n_flip > 0),
@@ -1972,15 +2105,13 @@ p_where_heatmap <- where_tile_grid %>%
     inherit.aes = FALSE
   ) +
   facet_grid(change ~ transition) +
-  scale_fill_gradient(
-    low = "grey92",
-    high = "#542788",
-    limits = c(0, n_max_where),
+  scale_fill_gradient2(
+    low = "#b2182b",
+    mid = "grey92",
+    high = "#1a9850",
+    midpoint = 0,
+    limits = c(-n_max_where, n_max_where),
     na.value = "white",
-    guide = "none"
-  ) +
-  scale_pattern_manual(
-    values = c("TRUE" = "stripe", "FALSE" = "none"),
     guide = "none"
   ) +
   scale_x_discrete(position = "top") +
@@ -1989,8 +2120,8 @@ p_where_heatmap <- where_tile_grid %>%
     y = NULL,
     title = "Flip counts by party, period, transition and direction",
     subtitle = paste0(
-      "Columns: where the flip occurs (committee → 2nd vs 2nd → 3rd). Rows: direction. ",
-      "Colour intensity = number of flips; white = party not represented; diagonal stripe = governing party.<br>",
+      "Columns: where the flip occurs (committee → 2nd vs 2nd → 3rd). Rows: direction (red = yes → no, green = no → yes). ",
+      "Colour intensity = number of flips; white = party not represented; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
@@ -2022,6 +2153,168 @@ p_where_heatmap <- where_tile_grid %>%
   )
 
 p_where_heatmap
+```
+
+### Percentage of comparable bills
+
+The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the total number of unique bills with usable votes at both stages of that transition in the same legislative period. The denominator is shared across parties and directions within each transition-period, so these percentages describe party-specific shares of bills and do not sum to 100%.
+
+```{r}
+#| label: plot-where-flips-heatmap-percent
+#| code-summary: "Tile heatmap of bill-level flip percentages faceted by transition and direction"
+#| fig-width: 12
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-align: "center"
+# count each comparable bill once per legislative period and transition
+transition_bill_totals <- transitions %>%
+  distinct(item_url, legis_period, transition) %>%
+  count(legis_period, transition, name = "n_bills")
+
+# every displayed transition-period must have a positive bill denominator
+stopifnot(
+  nrow(transition_bill_totals) == length(all_periods_vec) * 2L,
+  all(transition_bill_totals$n_bills > 0)
+)
+
+# count unique bills on which each party flips in each direction
+flip_bill_counts <- transitions %>%
+  filter(change %in% c("no → yes", "yes → no")) %>%
+  group_by(legis_period, party, transition, change) %>%
+  summarise(n_flip_bills = n_distinct(item_url), .groups = "drop")
+
+# reuse the absolute heatmap's complete grid, party order, presence and government flags
+where_tile_rate_grid <- where_tile_grid %>%
+  select(-n_flip, -label, -fill_val) %>%
+  left_join(
+    flip_bill_counts,
+    by = c("legis_period", "party", "transition", "change")
+  ) %>%
+  replace_na(list(n_flip_bills = 0L)) %>%
+  left_join(
+    transition_bill_totals,
+    by = c("legis_period", "transition")
+  ) %>%
+  mutate(
+    party = factor(party, levels = levels(where_tile_grid$party)),
+    legis_period = factor(legis_period, levels = all_periods_vec),
+    transition = factor(
+      transition,
+      levels = c("Committee → 2nd reading", "2nd → 3rd reading")
+    ),
+    rate = n_flip_bills / n_bills,
+    label = if_else(
+      present & n_flip_bills > 0,
+      scales::percent(rate, accuracy = 0.1),
+      ""
+    ),
+    fill_rate = if_else(present, rate, NA_real_),
+    # negate yes-to-no rates so a single diverging scale can colour the two
+    # direction facets differently (red = yes -> no, green = no -> yes)
+    fill_rate_signed = if_else(change == "yes → no", -fill_rate, fill_rate)
+  )
+
+# denominators must be shared across parties/directions and bound every numerator
+denominator_check <- where_tile_rate_grid %>%
+  group_by(legis_period, transition) %>%
+  summarise(n_denominators = n_distinct(n_bills), .groups = "drop")
+
+stopifnot(
+  all(denominator_check$n_denominators == 1L),
+  all(
+    where_tile_rate_grid$n_flip_bills <= where_tile_rate_grid$n_bills,
+    na.rm = TRUE
+  )
+)
+
+rate_max_where <- max(where_tile_rate_grid$rate, na.rm = TRUE)
+
+where_tile_rate_grid <- where_tile_rate_grid %>%
+  mutate(
+    label_colour = if_else(rate > rate_max_where / 2, "white", "grey15")
+  )
+
+p_where_heatmap_percent <- where_tile_rate_grid %>%
+  ggplot(aes(x = legis_period, y = party, fill = fill_rate_signed)) +
+  geom_tile(
+    colour = "white",
+    linewidth = 0.5
+  ) +
+  geom_tile(
+    data = where_tile_rate_grid %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
+  ) +
+  geom_text(
+    data = where_tile_rate_grid %>% filter(n_flip_bills > 0, present),
+    mapping = aes(
+      x = legis_period,
+      y = party,
+      label = label,
+      colour = label_colour
+    ),
+    size = 2.8,
+    fontface = "bold",
+    family = "Noto Sans",
+    inherit.aes = FALSE
+  ) +
+  facet_grid(change ~ transition) +
+  scale_colour_identity() +
+  scale_fill_gradient2(
+    low = "#b2182b",
+    mid = "grey92",
+    high = "#1a9850",
+    midpoint = 0,
+    limits = c(-rate_max_where, rate_max_where),
+    labels = scales::percent_format(accuracy = 0.1),
+    na.value = "white",
+    guide = "none"
+  ) +
+  scale_x_discrete(position = "top") +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Share of bills with a party vote flip",
+    subtitle = paste0(
+      "Each tile shows the share of comparable bills on which a party changes position ",
+      "(red = yes → no, green = no → yes). ",
+      "The denominator is all unique bills with usable votes at both stages of that transition and period, ",
+      "shared across parties and directions; percentages do not sum to 100%. ",
+      "White = party not represented; grey = no flips; thick black frame = governing party.<br>",
+      "<span style='font-size:9pt;color:grey40;'>NR, regular votes only, GP XX–XXVIII.</span>"
+    ),
+    caption = vote_graph_caption_short
+  ) +
+  theme_minimal(base_size = 11, base_family = "Noto Sans") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 8),
+    legend.position = "none",
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
+    ),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    strip.text = element_text(face = "bold", size = 10)
+  )
+
+p_where_heatmap_percent
 ```
 
 ## Angle 4 — Stage × period at a glance
@@ -2302,13 +2595,8 @@ latest_c2_parties <- three_stage_wide %>%
   paste(collapse = ", ")
 ```
 
-::: {.callout-note}
+::: callout-note
 ## Most recent example
-The most recent item in this subset with a committee → second-reading change is
-**`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**,
-voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There,
-**`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but
-*`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`*
-at the third. [Open on parlament.gv.at &rarr;](`r latest_c2_item$item_url`)
-:::
 
+The most recent item in this subset with a committee → second-reading change is **`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**, voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There, **`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but *`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`* at the third. [Open on parlament.gv.at →](%60r%20latest_c2_item$item_url%60)
+:::

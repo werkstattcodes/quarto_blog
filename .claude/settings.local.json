@@ -8,7 +8,12 @@
       "mcp__chrome-devtools__evaluate_script",
       "mcp__chrome-devtools__new_page",
       "mcp__chrome-devtools__select_page",
-      "WebFetch(domain:werk.statt.codes)"
+      "WebFetch(domain:werk.statt.codes)",
+      "Bash(grep -oE 'Across all [0-9,]+ committee stages[^<]{0,160}' \"_site/posts/2026-06-08-ParlAT-votingPatterns-2/index.html\")",
+      "Bash('C:/Program Files/R/R-4.5.1/bin/Rscript.exe' -e 'suppressMessages\\(library\\(targets\\)\\); cs <- tar_read\\(committee_stages\\); cat\\(scales::comma\\(nrow\\(cs\\)\\), scales::percent\\(mean\\(cs$is_vote\\), accuracy=0.1\\), scales::percent\\(mean\\(cs$in_scope\\), accuracy=0.1\\), \"\\\\n\"\\)')",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__resize_page",
+      "Bash(quarto render *)"
     ]
   }
 }

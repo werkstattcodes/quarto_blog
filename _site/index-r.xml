@@ -9,7 +9,7 @@
 <link>https://werk.statt.codes/#category=r</link>
 <atom:link href="https://werk.statt.codes/index-r.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.7.32</generator>
-<lastBuildDate>Wed, 17 Jun 2026 21:20:54 GMT</lastBuildDate>
+<generator>quarto-1.10.18</generator>
+<lastBuildDate>Wed, 12 Aug 2026 15:38:27 GMT</lastBuildDate>
 </channel>
 </rss>
