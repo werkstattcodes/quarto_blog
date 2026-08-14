@@ -102,9 +102,11 @@ style_reactable_table <- function(table, title, subtitle = NULL) {
 
 # Get Data
 
-## Get items
+## Data on the readings
 
-### Query data
+This section assembles the first half of the dataset: the bills themselves and the stage data recorded on their own pages, which is where the second- and third-reading votes live. The other half — the committee vote, which as we'll see is *not* recorded there — follows in the next section, and the two are brought together after that.
+
+### Query the items
 
 As in the previous post, let's start by getting all items ('Verhandlungsgegenstände') of the National Council for the legislative periods 20 to 28. With {ParlAT}.
 
@@ -165,11 +167,7 @@ items_scope %>%
   mutate(rel=n/sum(n))
 ```
 
-
-
-## Get item details
-
-### Query data
+### Query the stages
 
 Now let's feed the URLs of the obtained items to `get_item_details()`, this time with the `stages` parameter set to `TRUE`. The stages data contains one row per procedural step of an item, and — crucially for this post — the description of each voting step. As in the previous post, I wrap the function call in purrr's `safely()` to collect any potential errors without breaking the loop, and use `future_map()` to query the API with multiple workers simultaneously, i.e. to speed up the process.
 
@@ -267,7 +265,7 @@ data_cutoff <- max(item_stages$stage_date)
 
 The image below is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on **all** stages, not only voting results; rows we're not interested in still need to be dropped. Second, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
 
-To make this concrete, the worked example below follows one specific bill end to end, through every transformation step in this post: an earlier amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act), decided in 2024. It's a good running example precisely because it isn't a straightforward case — the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below — but, as just noted, nothing about the committee's vote. That vote lives on the separate committee-report page shown in the second screenshot; we fetch and inspect it right after the table.
+To make this concrete, the worked example below follows one specific bill end to end, through every transformation step in this post: an earlier amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act), decided in 2024. It's a good running example precisely because it isn't a straightforward case — the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below — but, as just noted, nothing about the committee's vote. That vote lives on the separate committee-report page shown in the second screenshot, which the next section turns to.
 
 ::: {.column-margin}
 ![Click to view stages as displayed on the website of the Parliament](_img/NRStagesErneuerbar.png)
@@ -334,7 +332,193 @@ item_stages %>%
   distinct(item_url, title)
 ```
 
-Now let's fetch that companion report page the same way, with `get_item_details()`, and look at what it carries. Besides `stages`, every item — bill or report alike — also carries a `references` column: a list of typed cross-references to other legislative objects. That column is the entire mechanism this post relies on to link a committee vote back to its bill.
+## Committee reports
+
+### How much committee activity is actually a vote?
+
+It is worth pausing on what the **bill's own page** records about its committee phase — because, as it turns out, surprisingly little of it is the actual vote. A committee does far more than decide on a bill: it requests written opinions (Stellungnahmen), sets deadlines (Fristsetzungen), refers items back, and so on. The table below breaks all of a bill's National Council committee stages down by type. The punchline: the formal **adoption vote** — the committee's decision on the bill, the part we actually want — appears on the bill's own page only rarely. That is exactly why the rest of this section goes after the committee reports and takes the committee vote from *there* instead.
+
+```{r}
+#| label: committee-context-summary
+#| code-summary: "Categorise National Council committee stages and show the vote share"
+# same vote-keyword set the scope filter below relies on
+committee_vote_keywords <- "dafür|wechselnde Mehrheit|getrennte Abstimmung|namentliche Abstimmung|abgelehnt|mehrstimmig"
+
+# classify every National Council committee stage by what it records
+committee_stages <- item_stages %>%
+  filter(phase == "Ausschussberatungen NR") %>%
+  mutate(
+    is_vote = str_detect(
+      stage_name,
+      regex(committee_vote_keywords, ignore_case = TRUE)
+    ),
+    category = case_when(
+      str_detect(
+        stage_name,
+        regex("Antrag auf Annahme des", ignore_case = TRUE)
+      ) ~ "Adoption vote on the bill",
+      str_detect(
+        stage_name,
+        regex("Einholung einer Stellungnahme", ignore_case = TRUE)
+      ) ~ "Opinion request (Stellungnahme)",
+      str_detect(stage_name, regex("Fristsetzung", ignore_case = TRUE)) ~
+        "Deadline motion (Fristsetzung)",
+      is_vote ~ "Other vote",
+      .default = "Non-vote / procedural"
+    ),
+    # only the adoption vote is carried into the analysis by the scope filter
+    in_scope = category == "Adoption vote on the bill"
+  )
+
+# aggregate to one row per category with its share of all committee stages
+committee_category_summary <- committee_stages %>%
+  summarise(rows = n(), .by = c(category, in_scope)) %>%
+  mutate(
+    share = rows / sum(rows),
+    in_analysis_scope = if_else(in_scope, "Yes", "No")
+  ) %>%
+  arrange(desc(rows)) %>%
+  select(category, rows, share, in_analysis_scope)
+
+committee_category_table <- reactable(
+  committee_category_summary,
+  columns = list(
+    category = colDef(name = "Committee stage type", minWidth = 230),
+    rows = colDef(
+      name = "Stages",
+      align = "right",
+      minWidth = 90,
+      format = colFormat(separators = TRUE)
+    ),
+    share = colDef(
+      name = "Share of committee stages",
+      minWidth = 230,
+      align = "left",
+      # data bars make the tiny vote share read at a glance against the procedural bulk
+      cell = reactablefmtr::data_bars(
+        committee_category_summary,
+        max_value = 1,
+        number_fmt = scales::label_percent(accuracy = 0.1),
+        fill_color = "#1a9641",
+        background = "#f0f0f0",
+        text_position = "outside-end"
+      )
+    ),
+    in_analysis_scope = colDef(
+      name = "Adoption vote?",
+      align = "center",
+      minWidth = 130
+    )
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = TRUE,
+  outlined = TRUE,
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "WHAT THE BILL'S OWN PAGE RECORDS ABOUT ITS COMMITTEE PHASE",
+    paste0(
+      "All committee stages recorded on the bills' own pages, by type — the adoption vote is the rarest of them. Data as of ",
+      data_cutoff,
+      "."
+    )
+  )
+
+committee_category_table
+```
+
+Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position has to come from the report instead. For reference, the table below lists the vote-bearing committee stages that *do* appear on the bills' own pages, each linked to its source.
+
+```{r}
+#| label: committee-vote-rows-table
+#| code-summary: "List committee stages that record a vote, with links to the source"
+committee_vote_rows <- committee_stages %>%
+  filter(is_vote) %>%
+  mutate(
+    # strip the base URL and query string to a compact "XXVIII/I/403" style reference
+    item_ref = item_url %>%
+      str_remove("^https://www\\.parlament\\.gv\\.at/gegenstand/") %>%
+      str_remove("\\?.*$"),
+    in_analysis_scope = if_else(in_scope, "Yes", "No")
+  ) %>%
+  select(
+    legis_period,
+    item_ref,
+    stage_date,
+    stage_name,
+    category,
+    in_analysis_scope,
+    item_url
+  ) %>%
+  arrange(desc(stage_date))
+
+committee_vote_rows_table <- reactable(
+  committee_vote_rows,
+  columns = list(
+    legis_period = colDef(
+      name = "Legis. period",
+      align = "right",
+      minWidth = 90,
+      filterable = TRUE
+    ),
+    item_ref = colDef(
+      name = "Item",
+      minWidth = 120,
+      filterable = TRUE,
+      # custom cell renderer turns the short reference into a clickable link
+      cell = function(value, index) {
+        htmltools::tags$a(
+          href = committee_vote_rows$item_url[index],
+          target = "_blank",
+          value
+        )
+      }
+    ),
+    stage_date = colDef(
+      name = "Stage date",
+      align = "left",
+      minWidth = 110,
+      filterable = TRUE
+    ),
+    stage_name = colDef(
+      name = "Stage",
+      minWidth = 460,
+      filterable = TRUE,
+      style = list(whiteSpace = "normal", lineHeight = "1.35")
+    ),
+    category = colDef(name = "Type", minWidth = 180, filterable = TRUE),
+    in_analysis_scope = colDef(
+      name = "Adoption vote?",
+      align = "center",
+      minWidth = 100,
+      filterable = TRUE
+    ),
+    item_url = colDef(show = FALSE) # kept for the cell renderer, hidden from display
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = FALSE,
+  outlined = TRUE,
+  searchable = TRUE,
+  defaultPageSize = 10,
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "COMMITTEE STAGES THAT RECORD A VOTE",
+    paste0(
+      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'In scope?' marks the bill-adoption votes used in the analysis. Data as of ",
+      data_cutoff,
+      "."
+    )
+  )
+
+committee_vote_rows_table
+```
+
+### Linking a report to its bill
+
+Now let's fetch the example bill's companion report page the same way, with `get_item_details()`, and look at what it carries. Besides `stages`, every item — bill or report alike — also carries a `references` column: a list of typed cross-references to other legislative objects. That column is the entire mechanism this post relies on to link a committee vote back to its bill.
 
 ```{r}
 #| label: example-item-references-table
@@ -393,9 +577,9 @@ hg_parent_url
 
 The report carries a single reference row here, typed `HG`. Its `url` resolves to `r hg_parent_url` — exactly the `item_url` of the bill's own stages table shown further above. That one row is the entire link between the two datasets: a committee report holds no bill-specific vote information anywhere else, and a bill's own page holds no back-reference to its report at all. `art` is how the Parliament's data model types these cross-references; besides `HG`, a report can also carry `MG` ('Mitgegenstand', a co-subject bundled into the same report) and, more rarely, `HGS`, `ZU` or `B` for other bundling or referral cases — but only `HG` is used as the match key below.
 
-### Also fetch the committee reports
+### Fetch the committee reports
 
-There is a catch that only becomes visible once you look closely at the source: for most bills, the committee's vote is *not* recorded on the bill's own page at all. It's stored in a separate object — the committee report (`Ausschussbericht`, type `AUB`) — which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill') which includes also each party's vote, plus a reference back to the parent bill. So to capture committee votes properly, I fetch every committee report for periods 20–28 as well, again with `stages = TRUE`.
+The object holding that vote is the committee report (`Ausschussbericht`, type `AUB`), which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill') — this includes each party's vote — plus the reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28 as well, again with `stages = TRUE`.
 
 ```{r}
 #| label: fetch-aub-details
@@ -649,193 +833,13 @@ match_funnel_table <- reactable(
 match_funnel_table
 ```
 
-## Get items in scope
+## Combine committee votes with the readings
 
-### How much committee activity is actually a vote?
+One side of the dataset is now ready: the committee votes, extracted from the reports. This section prepares the other side — the bills' own second- and third-reading votes — and then **binds the two together** into the finalized dataset the rest of this post analyzes.
 
-It is worth pausing on what the **bill's own page** records about its committee phase — because, as it turns out, surprisingly little of it is the actual vote. A committee does far more than decide on a bill: it requests written opinions (Stellungnahmen), sets deadlines (Fristsetzungen), refers items back, and so on. The table below breaks all of a bill's National Council committee stages down by type. The punchline: the formal **adoption vote** — the committee's decision on the bill, the part we actually want — appears on the bill's own page only rarely. That is exactly why we fetched the committee reports above and took the committee vote from *there* instead.
+### Scope the ordinary readings
 
-```{r}
-#| label: committee-context-summary
-#| code-summary: "Categorise National Council committee stages and show the vote share"
-# same vote-keyword set the scope filter below relies on
-committee_vote_keywords <- "dafür|wechselnde Mehrheit|getrennte Abstimmung|namentliche Abstimmung|abgelehnt|mehrstimmig"
-
-# classify every National Council committee stage by what it records
-committee_stages <- item_stages %>%
-  filter(phase == "Ausschussberatungen NR") %>%
-  mutate(
-    is_vote = str_detect(
-      stage_name,
-      regex(committee_vote_keywords, ignore_case = TRUE)
-    ),
-    category = case_when(
-      str_detect(
-        stage_name,
-        regex("Antrag auf Annahme des", ignore_case = TRUE)
-      ) ~ "Adoption vote on the bill",
-      str_detect(
-        stage_name,
-        regex("Einholung einer Stellungnahme", ignore_case = TRUE)
-      ) ~ "Opinion request (Stellungnahme)",
-      str_detect(stage_name, regex("Fristsetzung", ignore_case = TRUE)) ~
-        "Deadline motion (Fristsetzung)",
-      is_vote ~ "Other vote",
-      .default = "Non-vote / procedural"
-    ),
-    # only the adoption vote is carried into the analysis by the scope filter
-    in_scope = category == "Adoption vote on the bill"
-  )
-
-# aggregate to one row per category with its share of all committee stages
-committee_category_summary <- committee_stages %>%
-  summarise(rows = n(), .by = c(category, in_scope)) %>%
-  mutate(
-    share = rows / sum(rows),
-    in_analysis_scope = if_else(in_scope, "Yes", "No")
-  ) %>%
-  arrange(desc(rows)) %>%
-  select(category, rows, share, in_analysis_scope)
-
-committee_category_table <- reactable(
-  committee_category_summary,
-  columns = list(
-    category = colDef(name = "Committee stage type", minWidth = 230),
-    rows = colDef(
-      name = "Stages",
-      align = "right",
-      minWidth = 90,
-      format = colFormat(separators = TRUE)
-    ),
-    share = colDef(
-      name = "Share of committee stages",
-      minWidth = 230,
-      align = "left",
-      # data bars make the tiny vote share read at a glance against the procedural bulk
-      cell = reactablefmtr::data_bars(
-        committee_category_summary,
-        max_value = 1,
-        number_fmt = scales::label_percent(accuracy = 0.1),
-        fill_color = "#1a9641",
-        background = "#f0f0f0",
-        text_position = "outside-end"
-      )
-    ),
-    in_analysis_scope = colDef(
-      name = "Adoption vote?",
-      align = "center",
-      minWidth = 130
-    )
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "WHAT THE BILL'S OWN PAGE RECORDS ABOUT ITS COMMITTEE PHASE",
-    paste0(
-      "All committee stages recorded on the bills' own pages, by type — the adoption vote is the rarest of them. Data as of ",
-      data_cutoff,
-      "."
-    )
-  )
-
-committee_category_table
-```
-
-Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position has to come from the report instead. For reference, the table below lists the vote-bearing committee stages that *do* appear on the bills' own pages, each linked to its source.
-
-```{r}
-#| label: committee-vote-rows-table
-#| code-summary: "List committee stages that record a vote, with links to the source"
-committee_vote_rows <- committee_stages %>%
-  filter(is_vote) %>%
-  mutate(
-    # strip the base URL and query string to a compact "XXVIII/I/403" style reference
-    item_ref = item_url %>%
-      str_remove("^https://www\\.parlament\\.gv\\.at/gegenstand/") %>%
-      str_remove("\\?.*$"),
-    in_analysis_scope = if_else(in_scope, "Yes", "No")
-  ) %>%
-  select(
-    legis_period,
-    item_ref,
-    stage_date,
-    stage_name,
-    category,
-    in_analysis_scope,
-    item_url
-  ) %>%
-  arrange(desc(stage_date))
-
-committee_vote_rows_table <- reactable(
-  committee_vote_rows,
-  columns = list(
-    legis_period = colDef(
-      name = "Legis. period",
-      align = "right",
-      minWidth = 90,
-      filterable = TRUE
-    ),
-    item_ref = colDef(
-      name = "Item",
-      minWidth = 120,
-      filterable = TRUE,
-      # custom cell renderer turns the short reference into a clickable link
-      cell = function(value, index) {
-        htmltools::tags$a(
-          href = committee_vote_rows$item_url[index],
-          target = "_blank",
-          value
-        )
-      }
-    ),
-    stage_date = colDef(
-      name = "Stage date",
-      align = "left",
-      minWidth = 110,
-      filterable = TRUE
-    ),
-    stage_name = colDef(
-      name = "Stage",
-      minWidth = 460,
-      filterable = TRUE,
-      style = list(whiteSpace = "normal", lineHeight = "1.35")
-    ),
-    category = colDef(name = "Type", minWidth = 180, filterable = TRUE),
-    in_analysis_scope = colDef(
-      name = "Adoption vote?",
-      align = "center",
-      minWidth = 100,
-      filterable = TRUE
-    ),
-    item_url = colDef(show = FALSE) # kept for the cell renderer, hidden from display
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = FALSE,
-  outlined = TRUE,
-  searchable = TRUE,
-  defaultPageSize = 10,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "COMMITTEE STAGES THAT RECORD A VOTE",
-    paste0(
-      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'In scope?' marks the bill-adoption votes used in the analysis. Data as of ",
-      data_cutoff,
-      "."
-    )
-  )
-
-committee_vote_rows_table
-```
-
-### Applying the scope filter
-
-Now to the actual filtering. I first reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. The committee votes built from the reports above are already vote rows only, by construction (`aub_committee_stages` upstream kept only the adoption-vote stage) — so once both sides are independently down to actual votes, I can simply **bind them together**, and the combined table is the finalized dataset the rest of this post analyzes; no further filtering is needed after the merge. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. Along the way, two new columns are added: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (which I label 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
+Now to the actual filtering. I reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. Along the way, two new columns are added: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (which I label 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
 
 ```{r}
 #| label: scope-items-ordinary
@@ -904,7 +908,9 @@ example_vote_rows_ordinary_table <- reactable(
 example_vote_rows_ordinary_table
 ```
 
-Now the merge: `committee_rows` is already vote-rows-only by construction (see `prepare-committee-votes` above — `aub_committee_stages` keeps only the adoption-vote stage), so binding it onto `items_scope_ordinary` needs no further filtering afterward. `vote_report_type` is classified on the combined table, and the result is the finalized dataset the rest of this post analyzes.
+### Bind on the committee votes
+
+Now the merge. `committee_rows` is already vote-rows-only by construction (see `prepare-committee-votes` above — `aub_committee_stages` keeps only the adoption-vote stage), and `items_scope_ordinary` has just been reduced to vote rows too. Since both sides are independently down to actual votes, binding them together needs no further filtering afterward. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. `vote_report_type` is classified on the combined table, and the result is the finalized dataset the rest of this post analyzes.
 
 ```{r}
 #| label: scope-items
@@ -1388,9 +1394,7 @@ items_scope_pairs_regular_wide %>%
 
 # Results
 
-## Where do position changes happen?
-
-Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and explore it from three angles: the flip **rate** by legislative period, direction and party role; where flips concentrate by party, in both absolute counts and as a share of comparable bills; and, as a closing summary, which stage carries most of the movement.
+Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and explore it from three angles: the flip **rate** by legislative period, direction and party role; where flips concentrate by party — first as absolute counts, then as a share of comparable bills; and, as a closing summary, which stage carries most of the movement.
 
 A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
 
@@ -1530,7 +1534,7 @@ vote_graph_caption_short <- paste0(
 )
 ```
 
-### Flip rates by period, direction and role
+## Flip rates by period, direction and role
 
 The most direct answer. For each legislative period, the bars compare the flip **rate** at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal) and by party role. If accommodation happens in committee, the left-hand (committee → 2nd) bars dominate; if it happens on the floor, the right-hand bars do.
 
@@ -1629,7 +1633,7 @@ p_where_bars <- flip_dirs %>%
 p_where_bars
 ```
 
-### Flip counts and shares by party
+## Flip counts and shares by party
 
 A party × period tile grid, faceted by transition (columns) and direction (rows), so each party–period cell appears twice — once for the committee → 2nd step and once for 2nd → 3rd. Counts, not rates, so it reads as "how many flips, and at which step". Government parties carry a thick black frame.
 
@@ -1751,7 +1755,7 @@ p_where_heatmap <- where_tile_grid %>%
 p_where_heatmap
 ```
 
-#### Share of comparable bills
+## Share of comparable bills
 
 The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the total number of unique bills with usable votes at both stages of that transition in the same legislative period. The denominator is shared across parties and directions within each transition-period, so these percentages describe party-specific shares of bills and do not sum to 100%.
 
@@ -1914,7 +1918,7 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
 p_where_heatmap_percent
 ```
 
-### The headline pattern: stage × period
+## The headline pattern: stage × period
 
 Finally, the most compact summary of all: a single tile grid with the two transitions on the x-axis and the legislative periods down the y-axis. Each tile's colour is the **relative** number of flips — the share of comparable party–item pairs that change position at that transition — with the absolute count combining both directions. It makes the headline pattern unmissable: the committee → 2nd reading column is consistently darker than the 2nd → 3rd column.
 
