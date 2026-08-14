@@ -37,15 +37,18 @@ draft: false
 
 In one of my last posts, I showcased how the {ParlAT} package offers some simple, yet powerful means to analyze voting behavior of parties in the Austrian National Council. The analysis detailed how parties voted (for or against) and on the frequency of party-combinations, i.e. how often e.g. party A voted with party B. All of the presented analysis dealt with the votes in the third reading, that's at the last stage of the legislative procedure in the National Council.
 
-In this post I want to expand the analysis beyond the third reading and include also votes across all stages of the legislative process in the National Council, what includes the first, second as well as the third reading. While doing this my interest is not so much how party voted at a specific stage, but more on whether and *how often party positions on a legislative item actually changed over the course of the different stages within the national Council*. With this general interest a number of other questions lend themselves for answering:
+In this post I want to expand the analysis beyond the third reading and include the earlier stages of the legislative process in the National Council as well: the committee (Ausschuss), the second reading and the third reading. While doing this my interest is not so much how a party voted at a specific stage, but more on whether and *how often party positions on a legislative item actually changed over the course of the different stages within the National Council*. With this general interest a number of other questions lend themselves for answering:
 
 - how do parties differ when it comes to their frequency on changing their voting position over the course of different stages?
-- between which stages (committee - first/second reading, first/second - third reading) do the most changes happen?
-- during which government we can observe most vote changes?
+- between which stages (committee → second reading, second → third reading) do the most changes happen?
+- during which government can we observe most vote changes?
 
-On a conceptual level, I believe, that answering these questions can contribute to a better understanding of how government parties are responsive to the opposition demands. Strictly speaking, a change of voting, could also simply mean that an opposition party changed its mind after further consideration. While this is possibile, but unlikely, in most cases a change of an opposition party's vote means that the party go something in response. Whether this was indeed a change in the content of the bill at stake, or on another, unrelated issue, can't be answered without looking into the details of the specific item. But retrieving these number is a first step.
+On a conceptual level, I believe that answering these questions can contribute to a better understanding of how government parties respond to opposition demands. Strictly speaking, a change of vote could also simply mean that an opposition party changed its mind after further consideration. While that is possible, it is unlikely; in most cases a change of an opposition party's vote means that the party got something in return. Whether this was indeed a change in the content of the bill at stake, or on another, unrelated issue, can't be answered without looking into the details of the specific item. But retrieving these numbers is a first step.
 
-A few conceptual notes of caution: - Simply looking at the absolute number of flips can be misleading. For a flip from no to yes materialize we need to have a 'no' in the first place. If there never was a 'no', i.e. if a bill was from the start enjoying unanimous support, there also cannot be any flip. But in this case, the absence of a flip is obviously not indicative for a lack of government responsiveness. - Comparison between legislative periods: Different legislative periods have different legislative items at play, and these may vary in their level of contestation, i.e. how difficult it is for government and opposition parties to find common ground. Not every legislative period brings up items of similar levels of contestation.
+Two conceptual notes of caution:
+
+- **Absolute numbers can mislead.** For a flip from no to yes to materialize we need to have a 'no' in the first place. If there never was a 'no', i.e. if a bill enjoyed unanimous support from the start, there cannot be any flip either. But in that case, the absence of a flip obviously does not indicate a lack of government responsiveness.
+- **Legislative periods aren't directly comparable.** Different legislative periods have different legislative items at play, and these may vary in their level of contestation, i.e. how difficult it is for government and opposition parties to find common ground. Not every legislative period brings up items of similar levels of contestation.
 
 # Set-up
 
@@ -579,7 +582,7 @@ The report carries a single reference row here, typed `HG`. Its `url` resolves t
 
 ### Fetch the committee reports
 
-The object holding that vote is the committee report (`Ausschussbericht`, type `AUB`), which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill') — this includes each party's vote — plus the reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28 as well, again with `stages = TRUE`.
+With the link understood, we can go and get the reports themselves. The object holding the committee's adoption vote is the committee report (`Ausschussbericht`, type `AUB`): it carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill'), which includes each party's vote, plus the `HG` reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28, again with `stages = TRUE`.
 
 ```{r}
 #| label: fetch-aub-details
@@ -835,11 +838,11 @@ match_funnel_table
 
 ## Combine committee votes with the readings
 
-One side of the dataset is now ready: the committee votes, extracted from the reports. This section prepares the other side — the bills' own second- and third-reading votes — and then **binds the two together** into the finalized dataset the rest of this post analyzes.
+The committee votes are ready, one clean row per bill. The reading votes are not: the stage data fetched back in *Data on the readings* still holds **every** procedural step, votes and non-votes alike. So this section does two things — narrow that stage data down to the actual reading votes, and then **bind the two sides together** into the finalized dataset the rest of this post analyzes.
 
 ### Scope the ordinary readings
 
-Now to the actual filtering. I reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. Along the way, two new columns are added: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (which I label 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
+First the narrowing. I reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. Along the way, two new columns are added: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (which I label 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
 
 ```{r}
 #| label: scope-items-ordinary
@@ -910,7 +913,7 @@ example_vote_rows_ordinary_table
 
 ### Bind on the committee votes
 
-Now the merge. `committee_rows` is already vote-rows-only by construction (see `prepare-committee-votes` above — `aub_committee_stages` keeps only the adoption-vote stage), and `items_scope_ordinary` has just been reduced to vote rows too. Since both sides are independently down to actual votes, binding them together needs no further filtering afterward. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. `vote_report_type` is classified on the combined table, and the result is the finalized dataset the rest of this post analyzes.
+Now the merge. `committee_rows` is already vote-rows-only by construction (see *Build committee votes from the reports* above — only the adoption-vote stage was ever kept), and `items_scope_ordinary` has just been reduced to vote rows too. Since both sides are independently down to actual votes, binding them together needs no further filtering afterward. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. `vote_report_type` is classified on the combined table, and the result is the finalized dataset the rest of this post analyzes.
 
 ```{r}
 #| label: scope-items
@@ -1120,7 +1123,7 @@ non_pairs_details_table <- reactable(
 non_pairs_details_table
 ```
 
-As it turns out, some are duplicates in the data source, e.g. here: https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105. The votes in the second and third reading are reported twice. Others are reported mulitple times because an item was within one single reading party approved/not approved and hence got two rows in the data source, i.e. https://www.parlament.gv.at/gegenstand/XXVIII/I/403
+As it turns out, some are duplicates in the data source — see for instance [XX/I/1530](https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105), where the votes in the second and third reading are simply reported twice. Others appear multiple times because an item was partly approved and partly rejected within one single reading, and hence got two rows in the data source, as in [XXVIII/I/403](https://www.parlament.gv.at/gegenstand/XXVIII/I/403).
 
 Rather than trying to repair these inconsistencies one by one, I simply remove the affected items from the analysis. Subsequently, I narrow the data down to items with a 'regular' vote report — and since this filter can itself re-introduce a duplicate-free-but-now-inconsistent state, I check for and remove duplicate stage rows once more. The last line below shows which share of the original vote stages survives all these filters.
 
@@ -1394,7 +1397,7 @@ items_scope_pairs_regular_wide %>%
 
 # Results
 
-Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and explore it from three angles: the flip **rate** by legislative period, direction and party role; where flips concentrate by party — first as absolute counts, then as a share of comparable bills; and, as a closing summary, which stage carries most of the movement.
+Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the flip **rate** by legislative period, direction and party role; where flips concentrate by party, first as absolute counts and then as a share of comparable bills; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
 
 A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
 
@@ -1920,7 +1923,7 @@ p_where_heatmap_percent
 
 ## The headline pattern: stage × period
 
-Finally, the most compact summary of all: a single tile grid with the two transitions on the x-axis and the legislative periods down the y-axis. Each tile's colour is the **relative** number of flips — the share of comparable party–item pairs that change position at that transition — with the absolute count combining both directions. It makes the headline pattern unmissable: the committee → 2nd reading column is consistently darker than the 2nd → 3rd column.
+The most compact summary of all: a single tile grid with the two transitions on the x-axis and the legislative periods down the y-axis. Each tile's colour is the **relative** number of flips — the share of comparable party–item pairs that change position at that transition — with the absolute count combining both directions. It makes the headline pattern unmissable: the committee → 2nd reading column is consistently darker than the 2nd → 3rd column.
 
 ```{r}
 #| label: plot-flip-stage-period
