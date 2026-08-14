@@ -9,7 +9,6 @@ description: |
 
 categories:
   - Austria
-  - parliament
   - ParlAT
 
 reference-location: margin
@@ -20,6 +19,28 @@ knitr:
       dev: "ragg_png"
 draft: false
 ---
+
+```{=html}
+<style>
+/* Opt-in horizontal scrolling for printed output in this post only. */
+pre.scroll-x {
+  overflow-x: auto;
+  background-color: rgba(233, 236, 239, 0.65);
+  border: 1px solid rgba(233, 236, 239, 0.65);
+  border-radius: 0.25rem;
+  padding: 0.4em;
+}
+
+pre.scroll-x > code {
+  white-space: pre;
+}
+
+.quarto-dark pre.scroll-x {
+  background-color: rgba(233, 236, 239, 0.1);
+  border-color: rgba(233, 236, 239, 0.1);
+}
+</style>
+```
 
 # Just the results, please {.unnumbered}
 
@@ -35,19 +56,19 @@ draft: false
 
 # Context
 
-In one of my last posts, I showcased how the {ParlAT} package offers some simple, yet powerful means to analyze voting behavior of parties in the Austrian National Council. The analysis detailed how parties voted (for or against) and on the frequency of party-combinations, i.e. how often e.g. party A voted with party B. All of the presented analysis dealt with the votes in the third reading, that's at the last stage of the legislative procedure in the National Council.
+In [Part I of this post](https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/), I showcased how the {ParlAT} package offers some simple, yet powerful means to analyze voting behavior of parties in the Austrian National Council. The analysis detailed how parties voted (for or against) and on the frequency of party-combinations, i.e. how often e.g. party A voted with party B. All of the presented analysis dealt with the votes in the third reading, that is, at the last stage of the legislative procedure in the National Council.
 
-In this post I want to expand the analysis beyond the third reading and include the earlier stages of the legislative process in the National Council as well: the committee (Ausschuss), the second reading and the third reading. While doing this my interest is not so much how a party voted at a specific stage, but more on whether and *how often party positions on a legislative item actually changed over the course of the different stages within the National Council*. With this general interest a number of other questions lend themselves for answering:
+In this post I want to expand the analysis beyond the third reading and include the earlier stages of the legislative process in the National Council as well: the committee (Ausschuss), the second reading and the third reading. While doing this my interest is not so much how a party voted at a specific stage, but more on whether and *how often party positions on a legislative item actually changed over the course of the different stages within the National Council*. With this general interest a number of other questions lend themselves to being answered:
 
-- how do parties differ when it comes to their frequency on changing their voting position over the course of different stages?
 - between which stages (committee → second reading, second → third reading) do the most changes happen?
+- how do parties differ when it comes to the frequency of changing their voting position over the course of different stages?
 - during which government can we observe most vote changes?
 
 On a conceptual level, I believe that answering these questions can contribute to a better understanding of how government parties respond to opposition demands. Strictly speaking, a change of vote could also simply mean that an opposition party changed its mind after further consideration. While that is possible, it is unlikely; in most cases a change of an opposition party's vote means that the party got something in return. Whether this was indeed a change in the content of the bill at stake, or on another, unrelated issue, can't be answered without looking into the details of the specific item. But retrieving these numbers is a first step.
 
 Two conceptual notes of caution:
 
-- **Absolute numbers can mislead.** For a flip from no to yes to materialize we need to have a 'no' in the first place. If there never was a 'no', i.e. if a bill enjoyed unanimous support from the start, there cannot be any flip either. But in that case, the absence of a flip obviously does not indicate a lack of government responsiveness.
+- *Absolute numbers can mislead.* For a flip from no to yes to materialize we need to have a 'no' in the first place. If there never was a 'no', i.e. if a bill enjoyed unanimous support from the start, there cannot be any flip either. But in that case, the absence of a flip obviously does not indicate a lack of government responsiveness.
 - **Legislative periods aren't directly comparable.** Different legislative periods have different legislative items at play, and these may vary in their level of contestation, i.e. how difficult it is for government and opposition parties to find common ground. Not every legislative period brings up items of similar levels of contestation.
 
 # Set-up
@@ -64,8 +85,6 @@ library(reactable)
 library(reactablefmtr)
 library(naniar)
 library(ggtext)
-library(patchwork)
-library(ggalluvial)
 
 # shared table theme and attribution footer for all reactable tables
 compact_table_theme <- reactablefmtr::fivethirtyeight(font_size = 12)
@@ -122,8 +141,9 @@ As in the previous post, let's start by getting all items ('Verhandlungsgegenst�
 items_20_28 <- seq(20, 28) %>%
   map(., \(x) get_items(legis_period = x, institution = "NR")) %>%
   list_rbind() # stack per-period tibbles into one dataframe
-nrow(items_20_28)
 ```
+
+
 
 ```{r}
 #| label: load-items-cache
@@ -145,6 +165,10 @@ items_20_28 <- readr::read_rds(here::here(
 ))
 ```
 
+```{r}
+nrow(items_20_28)
+```
+
 ### Keep items of interest
 
 The `get_items()` call returned all (!) items, but not every item type is actually subject to a vote in a reading. Below I filter for those types which are: motions ('Anträge'), government bills ('Regierungsvorlagen'), budget-related items, and a few others. In case I missed any relevant category here, please let me know.
@@ -157,18 +181,32 @@ The `get_items()` call returned all (!) items, but not every item type is actual
 items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
   paste0(., collapse = "|")
 
-items_scope <- items_20_28 %>%
+ items_in_scope <- items_20_28 %>%
   filter(str_detect(type_doc, regex(items_select)))
 
 # verify which long-form type labels the regex actually matched. Note that the
 # unanchored RV/GABR patterns also match variants (RVEU, RVS, GABR13, …); these
 # pass the type filter but rarely carry a standard reading vote, so they drop out
 # downstream. The graph caption is therefore built later, from the item types that
-# actually survive into the analysis (see the votes-wide section).
-items_scope %>%
-  count(type_doc_long, type_doc, sort=T) %>%
+# actually survive into the analysis (see "Extract votes" further below).
+items_in_scope_rel <- items_in_scope %>%
+  count(type_doc_long, type_doc, sort = TRUE) %>%
   mutate(rel=n/sum(n))
 ```
+
+```{r}
+#| label: item-type-shares
+#| code-fold: false
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+as_tibble(items_in_scope_rel)
+```
+
+
 
 ### Query the stages
 
@@ -178,10 +216,11 @@ Now let's feed the URLs of the obtained items to `get_item_details()`, this time
 #| label: fetch-item-details
 #| code-summary: "Fetch item details with stages and cache them"
 #| cache: true
+#| code-fold: show
 #| eval: false
 plan(multisession, workers = 4) # parallelise across 4 cores to speed up API fetching
 
-item_urls <- items_scope %>%
+item_urls <- items_in_scope %>%
   pull(item_url)
 
 # wrap in safely() so a single failed request returns an error slot instead of halting the loop
@@ -266,43 +305,70 @@ item_stages <- item_details |>
 data_cutoff <- max(item_stages$stage_date)
 ```
 
-The image below is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on **all** stages, not only voting results; rows we're not interested in still need to be dropped. Second, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
+The image on the left is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on **all** stages, not only voting results; rows we're not interested in still need to be dropped. Second, and this is something what we have to take care off further below, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
 
-To make this concrete, the worked example below follows one specific bill end to end, through every transformation step in this post: an earlier amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act), decided in 2024. It's a good running example precisely because it isn't a straightforward case — the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below — but, as just noted, nothing about the committee's vote. That vote lives on the separate committee-report page shown in the second screenshot, which the next section turns to.
+To make this concrete, the *example* below follows one specific bill end to end, through every transformation step in this post: a 2024 amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act). It's a good running example precisely because it isn't a straightforward case: the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below.
 
 ::: {.column-margin}
-![Click to view stages as displayed on the website of the Parliament](_img/NRStagesErneuerbar.png)
+![The bill's own page on the Parliament's website, listing its stages. Click to enlarge.](_img/NRStagesErneuerbar.png)
 :::
 
 ::: {.column-margin}
-![Click to view stages as displayed on the website of the Parliament](_img/AusschussErneuerbar.png)
+![The committee report's own page, where the adoption vote is recorded. Click to enlarge.](_img/AusschussErneuerbar.png)
 :::
 
 ```{r}
 #| label: example-item-stages-table
+#| code-fold: false
 #| code-summary: "Show every recorded stage for the example item as a reactable table"
+#| cache: true
 # the one bill this post follows end to end through every transformation step below
 example_item_url <- "https://www.parlament.gv.at/gegenstand/XXVII/I/2608"
 
+
 # list columns (speeches, votes) are all NA for this item at the stage level;
 # collapse them to character so reactable can render every column
-item_stages_example <- get_item_details(item_url = example_item_url, stages = T) %>%
+item_stages_example <- get_item_details(item_url = example_item_url, stages = TRUE) %>%
   select(
     item_url,
     legis_period,
     type_doc,
+    stages,
     title,
     item_number,
     status_number,
     status_description,
-    stages,
     votes
   ) |>
   filter(map_lgl(stages, \(x) !is.null(x))) |> # drop items with no stage data at all
   unnest(stages) %>%
   mutate(stage_date = lubridate::dmy(stage_date)) %>%
-  mutate(across(where(is.list), \(x) map_chr(x, toString)))
+  mutate(across(where(is.list), \(x) map_chr(x, toString))) %>%
+  select(phase, stage_name, stage_date, item_url)
+```
 
+```{r}
+#| code-fold: false
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+item_stages_example
+
+```
+
+As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the (first,) second and reading; and subsequently extract from these rows the voting decisions for each individual party. 
+Contrasting the obtained results between the different readings allows to identify whether a party changed its position over the course of the legislative proceedings in the National Council.
+
+```{r}
+knitr::knit_exit()
+```
+
+```{r}
+#| include: false
+#| eval: false
 item_stages_example_table <- reactable(
   item_stages_example,
   columns = list(
@@ -329,11 +395,6 @@ item_stages_example_table <- reactable(
 item_stages_example_table
 ```
 
-```{r}
-item_stages %>%
-  filter(str_detect(title, regex("Erneuerbar"))) %>%
-  distinct(item_url, title)
-```
 
 ## Committee reports
 
@@ -510,7 +571,7 @@ committee_vote_rows_table <- reactable(
   style_reactable_table(
     "COMMITTEE STAGES THAT RECORD A VOTE",
     paste0(
-      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'In scope?' marks the bill-adoption votes used in the analysis. Data as of ",
+      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'Adoption vote?' marks the bill-adoption votes used in the analysis. Data as of ",
       data_cutoff,
       "."
     )
@@ -526,6 +587,7 @@ Now let's fetch the example bill's companion report page the same way, with `get
 ```{r}
 #| label: example-item-references-table
 #| code-summary: "Fetch the committee report's own page and show its references, incl. the Hauptgegenstand (HG) link back to the bill"
+#| cache: true
 example_report_url <- "https://www.parlament.gv.at/gegenstand/XXVII/I/2666"
 
 item_report_example <- get_item_details(
@@ -582,7 +644,7 @@ The report carries a single reference row here, typed `HG`. Its `url` resolves t
 
 ### Fetch the committee reports
 
-With the link understood, we can go and get the reports themselves. The object holding the committee's adoption vote is the committee report (`Ausschussbericht`, type `AUB`): it carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (roughly 'Application for the acceptance of a bill'), which includes each party's vote, plus the `HG` reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28, again with `stages = TRUE`.
+With the link understood, we can go and get the reports themselves. The object holding the committee's adoption vote is the committee report (`Ausschussbericht`, type `AUB`): it carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (the motion to adopt the bill), which includes each party's vote, plus the `HG` reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28, again with `stages = TRUE`.
 
 ```{r}
 #| label: fetch-aub-details
@@ -868,7 +930,7 @@ items_scope_ordinary <- item_stages |>
     stage_name,
     regex(
       "dafür|wechselnde Mehrheit|getrennte Abstimmung|namentliche Abstimmung|abgelehnt|mehrstimmig",
-      ignore_case = T
+      ignore_case = TRUE
     )
   ))
 
@@ -926,28 +988,28 @@ items_scope <- items_scope_ordinary %>%
     vote_report_type = case_when(
       # "regular" requires the explicit Dafür:/Dagegen: party-list separator the parser
       # keys on; parenthetical forms like "mehrstimmig (dafür S,V dagegen F)" fall through
-      str_detect(stage_name, regex("dafür", ignore_case = T)) &
-        str_detect(stage_name, regex("dagegen", ignore_case = T)) &
+      str_detect(stage_name, regex("dafür", ignore_case = TRUE)) &
+        str_detect(stage_name, regex("dagegen", ignore_case = TRUE)) &
         str_detect(
           stage_name,
-          regex(",\\s*dagegen:|\\.\\s*Dagegen:", ignore_case = T)
+          regex(",\\s*dagegen:|\\.\\s*Dagegen:", ignore_case = TRUE)
         ) ~ "regular",
       str_detect(
         stage_name,
-        regex("wechselnde Mehrheit", ignore_case = T)
+        regex("wechselnde Mehrheit", ignore_case = TRUE)
       ) ~ "wechselnde Mehrheit",
       str_detect(
         stage_name,
-        regex("namentliche Abstimmung", ignore_case = T)
+        regex("namentliche Abstimmung", ignore_case = TRUE)
       ) ~ "namentliche Abstimmung",
       str_detect(
         stage_name,
-        regex("getrennte Abstimmung", ignore_case = T)
+        regex("getrennte Abstimmung", ignore_case = TRUE)
       ) ~ "getrennte Abstimmung",
-      str_detect(stage_name, regex("abgelehnt", ignore_case = T)) ~ "abgelehnt",
+      str_detect(stage_name, regex("abgelehnt", ignore_case = TRUE)) ~ "abgelehnt",
       str_detect(
         stage_name,
-        regex("mehrstimmig", ignore_case = T)
+        regex("mehrstimmig", ignore_case = TRUE)
       ) ~ "mehrstimmig",
       .default = NA
     )
@@ -998,7 +1060,7 @@ example_vote_rows_combined_table
 #| label: vote-report-type-distribution
 #| code-summary: "Inspect the distribution of vote reporting types"
 items_scope %>%
-  count(vote_report_type, sort = T) %>%
+  count(vote_report_type, sort = TRUE) %>%
   mutate(rel = n / sum(n) * 100)
 ```
 
@@ -1018,7 +1080,7 @@ n_distinct(dup_rows$item_url)
 
 There are `r n_distinct(dup_rows$item_url)` items out of `r n_distinct(items_scope$item_url)` which feature more than one row for the same stage.
 
-To facilitate a closer look at these cases, the table below lists the deviating items with their individual vote-stage rows. Each item is linked to its page on the parliament's website, so you can check the underlying records yourself.
+To facilitate a closer look at these cases, the table below lists the affected items with their individual vote-stage rows. Each item is linked to its page on the parliament's website, so you can check the underlying records yourself.
 
 ```{r}
 #| label: non-pairs-table
@@ -1327,8 +1389,8 @@ To detect flips between stages, we need each stage side by side. Hence, let's pi
 #| code-summary: "Pivot to wide format with separate committee/second/third columns"
 items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
   # drop "second & third" combined rows; keep committee + clean individual readings
+  # (vote_report_type is already restricted to "regular" upstream)
   filter(reading %in% c("committee", "second", "third")) %>%
-  filter(vote_report_type == "regular") %>%
   select(
     item_url,
     legis_period,
@@ -1401,6 +1463,8 @@ Where along an item's journey does a party actually change its mind — between 
 
 A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
 
+And a note on who counts as government: coalition membership is coded once per legislative period, which is an approximation. It is a poor one for GP XXVI in particular — that period covers the ÖVP-FPÖ coalition, its collapse after the Ibiza affair in May 2019, the subsequent ÖVP-only cabinet and the Bierlein caretaker government. Votes from the second half of GP XXVI are therefore labelled against a coalition that no longer existed, so the government/opposition split shown for that period should be read with care.
+
 ```{r}
 #| label: prep-transitions
 #| code-summary: "Build shared party/period/government lookups, then encode positions per stage and classify each transition's change"
@@ -1452,8 +1516,7 @@ party_order <- c(
     mutate(periods_present = replace_na(periods_present, 0L)) %>%
     filter(!party %in% party_order_priority) %>%
     arrange(desc(periods_present), party) %>%
-    pull(party),
-  setdiff(party_order_priority, all_parties)
+    pull(party)
 ) %>%
   unique()
 
@@ -1494,6 +1557,7 @@ transitions <- bind_rows(
     transmute(
       item_url,
       legis_period,
+      type_doc,
       party,
       role,
       transition = "Committee → 2nd reading",
@@ -1504,6 +1568,7 @@ transitions <- bind_rows(
     transmute(
       item_url,
       legis_period,
+      type_doc,
       party,
       role,
       transition = "2nd → 3rd reading",
@@ -1521,7 +1586,16 @@ transitions <- bind_rows(
     transition = factor(
       transition,
       levels = c("Committee → 2nd reading", "2nd → 3rd reading")
-    )
+    ),
+    # who put the item on the table: RV/RVS come from the government, A/BUA
+    # originate inside the National Council, the rest from the Bundesrat or
+    # are the federal accounts
+    origin = case_when(
+      type_doc %in% c("RV", "RVS") ~ "Government bill",
+      type_doc %in% c("A", "BUA") ~ "National Council",
+      .default = "Other"
+    ) %>%
+      factor(levels = c("Government bill", "National Council", "Other"))
   )
 
 # how many comparable pairs and how many flips at each transition?
@@ -1706,7 +1780,8 @@ p_where_heatmap <- where_tile_grid %>%
     family = "Noto Sans",
     inherit.aes = FALSE
   ) +
-  facet_grid(transition ~ change) +
+  # switch = "y" moves the transition strip from the right edge to the left
+  facet_grid(transition ~ change, switch = "y") +
   scale_fill_gradient2(
     low = "#b2182b",
     mid = "grey92",
@@ -1752,7 +1827,10 @@ p_where_heatmap <- where_tile_grid %>%
     plot.title.position = "plot",
     plot.caption.position = "plot",
     strip.text.x = element_text(face = "bold", size = 10, hjust = 0),
-    strip.text.y = element_text(face = "bold", size = 10)
+    # place the switched y strip outside the party labels rather than between
+    # them and the panel
+    strip.placement = "outside",
+    strip.text.y.left = element_text(face = "bold", size = 10, angle = 90)
   )
 
 p_where_heatmap
@@ -1864,7 +1942,8 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
     family = "Noto Sans",
     inherit.aes = FALSE
   ) +
-  facet_grid(transition ~ change) +
+  # switch = "y" moves the transition strip from the right edge to the left
+  facet_grid(transition ~ change, switch = "y") +
   scale_colour_identity() +
   scale_fill_gradient2(
     low = "#b2182b",
@@ -1915,7 +1994,10 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
     plot.title.position = "plot",
     plot.caption.position = "plot",
     strip.text.x = element_text(face = "bold", size = 10, hjust = 0),
-    strip.text.y = element_text(face = "bold", size = 10)
+    # place the switched y strip outside the party labels rather than between
+    # them and the panel
+    strip.placement = "outside",
+    strip.text.y.left = element_text(face = "bold", size = 10, angle = 90)
   )
 
 p_where_heatmap_percent
@@ -2018,6 +2100,127 @@ p_flip_stage_period <- flip_stage_period %>%
   )
 
 p_flip_stage_period
+```
+
+## Who initiated the bill?
+
+The pattern above lumps every item together, but not every item arrives in parliament the same way. A **Regierungsvorlage** is the government's own proposal; a **Selbständiger Antrag** is initiated inside the National Council, usually by MPs of one or more parties. That distinction matters for the question this post started with. If an opposition party votes against a government bill in committee and for it at the second reading, the natural reading is that the government moved to win that support. The same flip on a parliamentary motion can mean something quite different — the motion's own sponsors negotiating among themselves, for instance.
+
+So the table below splits the transitions by who initiated the item, keeping every item type in scope: government bills (`RV`, `RVS`), items initiated in the National Council (`A`, `BUA`), and everything else (`GABR`, `EBR`, `BRA` — Bundesrat initiatives and the federal accounts).
+
+Two things to keep in mind when reading it. First, the rates are **conditional on the pairs at risk**, the same rule as the flip-rate chart further above: the no → yes rate divides by the pairs voting *no* at the earlier stage, the yes → no rate by those voting *yes*. They are therefore *not* comparable with the percentages in the stage × period tile immediately above, which divide by all eligible pairs. Second, `RVS` (treaties) and `BUA` ('Bericht und Antrag') contribute no committee → 2nd pairs at all: treaties are approved with a `Antrag auf Genehmigung des Abschlusses` rather than an adoption vote, and a 'Bericht und Antrag' *is* the committee's own motion, so there is no earlier committee vote to compare it against. For that transition the comparison is effectively `RV` against `A`.
+
+```{r}
+#| label: table-origin-flips
+#| code-summary: "Flip counts and at-risk rates by item origin, transition and direction"
+# at-risk denominator per origin x transition x direction, mirroring the
+# conditional rule used by the flip-rate chart above
+at_risk_origin <- transitions %>%
+  mutate(direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no")) %>%
+  count(origin, transition, direction, name = "n_at_risk")
+
+flips_origin <- transitions %>%
+  filter(change %in% c("no → yes", "yes → no")) %>%
+  count(origin, transition, change, name = "n_flip")
+
+# total comparable pairs, for context on how much each row rests on
+pairs_origin <- transitions %>%
+  count(origin, transition, name = "n_pairs")
+
+origin_flip_table_data <- at_risk_origin %>%
+  left_join(
+    flips_origin,
+    by = c("origin", "transition", "direction" = "change")
+  ) %>%
+  replace_na(list(n_flip = 0)) %>%
+  mutate(
+    rate = n_flip / n_at_risk,
+    # short, ASCII-safe suffixes so the pivoted column names stay predictable
+    dir_key = if_else(direction == "no → yes", "nty", "ytn")
+  ) %>%
+  pivot_wider(
+    id_cols = c(origin, transition),
+    names_from = dir_key,
+    values_from = c(n_at_risk, n_flip, rate),
+    names_glue = "{.value}_{dir_key}"
+  ) %>%
+  left_join(pairs_origin, by = c("origin", "transition")) %>%
+  arrange(origin, transition) %>%
+  select(
+    origin, transition, n_pairs,
+    n_at_risk_nty, n_flip_nty, rate_nty,
+    n_at_risk_ytn, n_flip_ytn, rate_ytn
+  )
+
+# a flip can never outnumber the pairs that were at risk of making it
+stopifnot(
+  all(origin_flip_table_data$n_flip_nty <= origin_flip_table_data$n_at_risk_nty, na.rm = TRUE),
+  all(origin_flip_table_data$n_flip_ytn <= origin_flip_table_data$n_at_risk_ytn, na.rm = TRUE)
+)
+
+origin_flip_table <- reactable(
+  origin_flip_table_data,
+  columns = list(
+    origin = colDef(name = "Item origin", minWidth = 150),
+    transition = colDef(name = "Transition", minWidth = 150),
+    n_pairs = colDef(
+      name = "Comparable pairs",
+      align = "right", minWidth = 120,
+      format = colFormat(separators = TRUE)
+    ),
+    n_at_risk_nty = colDef(
+      name = "At risk", align = "right", minWidth = 90,
+      format = colFormat(separators = TRUE)
+    ),
+    n_flip_nty = colDef(
+      name = "Flips", align = "right", minWidth = 80,
+      format = colFormat(separators = TRUE)
+    ),
+    rate_nty = colDef(
+      name = "Rate", align = "right", minWidth = 90,
+      format = colFormat(percent = TRUE, digits = 2)
+    ),
+    n_at_risk_ytn = colDef(
+      name = "At risk", align = "right", minWidth = 90,
+      format = colFormat(separators = TRUE)
+    ),
+    n_flip_ytn = colDef(
+      name = "Flips", align = "right", minWidth = 80,
+      format = colFormat(separators = TRUE)
+    ),
+    rate_ytn = colDef(
+      name = "Rate", align = "right", minWidth = 90,
+      format = colFormat(percent = TRUE, digits = 2)
+    )
+  ),
+  columnGroups = list(
+    colGroup(
+      name = "no → yes (move toward support)",
+      columns = c("n_at_risk_nty", "n_flip_nty", "rate_nty")
+    ),
+    colGroup(
+      name = "yes → no (withdrawal of support)",
+      columns = c("n_at_risk_ytn", "n_flip_ytn", "rate_ytn")
+    )
+  ),
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = TRUE,
+  outlined = TRUE,
+  pagination = FALSE,
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "VOTE FLIPS BY WHO INITIATED THE ITEM",
+    paste0(
+      "Rates are conditional on the pairs at risk, so they are not comparable with the stage × period percentages above. ",
+      "'At risk' counts the party–item pairs holding the prior position, i.e. the only ones that could flip in that direction. Data as of ",
+      data_cutoff,
+      "."
+    )
+  )
+
+origin_flip_table
 ```
 
 ## A closer look: items decided at all three stages
@@ -2202,7 +2405,7 @@ latest_c2_parties <- three_stage_wide %>%
 ::: callout-note
 ## Most recent example
 
-The most recent item in this subset with a committee → second-reading change is **`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**, voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There, **`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but *`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`* at the third. [Open on parlament.gv.at →](%60r%20latest_c2_item$item_url%60)
+The most recent item in this subset with a committee → second-reading change is **`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**, voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There, **`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but *`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`* at the third. [Open on parlament.gv.at →](`r latest_c2_item$item_url`)
 :::
 
 # Wrap-up
