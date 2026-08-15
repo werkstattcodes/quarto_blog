@@ -840,11 +840,12 @@ example_committee_row <- committee_rows %>%
 glimpse(example_committee_row)
 ```
 
-The counts below quantify how many reports survive each step of that `HG` link, computed live from the objects built above.
-
 ```{r}
 #| label: committee-match-funnel
 #| code-summary: "Quantify how many committee reports survive each step of the HG match"
+#| eval: false
+#| include: false
+# The counts below quantify how many reports survive each step of that HG link, computed live from the objects built above.
 funnel_reports_total <- nrow(aub_details)
 
 funnel_reports_with_adoption_stage <- aub_details |>
