@@ -462,6 +462,12 @@ border: 0px;
     color: white; */
 }
 
+/* tighten line spacing on margin figure captions (e.g. the parliament screenshots) */
+.column-margin figcaption,
+.column-margin .figure-caption {
+    line-height: 1.2;
+}
+
 /* makes sure that about text is left aligned on mobile view */
 div.quarto-about-solana .about-entity {
     display: flex !important;

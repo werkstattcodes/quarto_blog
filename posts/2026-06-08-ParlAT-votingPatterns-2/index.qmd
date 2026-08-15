@@ -305,16 +305,16 @@ item_stages <- item_details |>
 data_cutoff <- max(item_stages$stage_date)
 ```
 
-The image on the left is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on **all** stages, not only voting results; rows we're not interested in still need to be dropped. Second, and this is something what we have to take care off further below, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
+The image on the left is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on *all* stages, not only voting results; rows we're not interested in still need to be dropped. Second, and this is something what we have to take care off further below, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
 
 To make this concrete, the *example* below follows one specific bill end to end, through every transformation step in this post: a 2024 amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act). It's a good running example precisely because it isn't a straightforward case: the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below.
 
 ::: {.column-margin}
-![The bill's own page on the Parliament's website, listing its stages. Click to enlarge.](_img/NRStagesErneuerbar.png)
+![The bill's own page on the Parliament's website, listing its stages. Click to enlarge. [link](https://www.parlament.gv.at/gegenstand/XXVII/I/2608){target="_blank"}](_img/NRStagesErneuerbar.png)
 :::
 
 ::: {.column-margin}
-![The committee report's own page, where the adoption vote is recorded. Click to enlarge.](_img/AusschussErneuerbar.png)
+![The committee report's own page, where the adoption vote is recorded. Click to enlarge. [link](https://www.parlament.gv.at/gegenstand/XXVII/I/2666){target="_blank"}](_img/AusschussErneuerbar.png)
 :::
 
 ```{r}
@@ -349,6 +349,7 @@ item_stages_example <- get_item_details(item_url = example_item_url, stages = TR
 
 ```{r}
 #| code-fold: false
+#| code-summary: "Item stages"
 #| collapse: true
 #| class-output: scroll-x
 #| R.options:
@@ -359,12 +360,10 @@ item_stages_example
 
 ```
 
-As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the (first,) second and reading; and subsequently extract from these rows the voting decisions for each individual party. 
-Contrasting the obtained results between the different readings allows to identify whether a party changed its position over the course of the legislative proceedings in the National Council.
+As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the (first,) second, and third reading; and subsequently extract from these rows the voting decisions for each individual party. 
+Contrasting the obtained results between the different readings allows identifying whether a party changed its position over the course of the legislative proceedings in the National Council.
 
-```{r}
-knitr::knit_exit()
-```
+
 
 ```{r}
 #| include: false
@@ -398,9 +397,7 @@ item_stages_example_table
 
 ## Committee reports
 
-### How much committee activity is actually a vote?
-
-It is worth pausing on what the **bill's own page** records about its committee phase — because, as it turns out, surprisingly little of it is the actual vote. A committee does far more than decide on a bill: it requests written opinions (Stellungnahmen), sets deadlines (Fristsetzungen), refers items back, and so on. The table below breaks all of a bill's National Council committee stages down by type. The punchline: the formal **adoption vote** — the committee's decision on the bill, the part we actually want — appears on the bill's own page only rarely. That is exactly why the rest of this section goes after the committee reports and takes the committee vote from *there* instead.
+While we have now all available data which is included in the stage data of a legislative item, it turns out that there is a gap on the votes casted in the committees.  It is worth pausing on what the item's own page records about its committee phase, because, as it turns out, surprisingly little of it is the actual vote. A committee does far more than decide on a bill: it requests written opinions (Stellungnahmen), sets deadlines (Fristsetzungen), refers items back, and so on. The table below breaks all of a bill's National Council committee stages down by type. *The conclusion: the formal adoption vote, the committee's decision on the bill, the part we actually want, appears on the bill's own page only rarely. That is exactly why the rest of this section goes after the committee reports and takes the committee vote from there instead.*
 
 ```{r}
 #| label: committee-context-summary
@@ -492,11 +489,13 @@ committee_category_table <- reactable(
 committee_category_table
 ```
 
-Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position has to come from the report instead. For reference, the table below lists the vote-bearing committee stages that *do* appear on the bills' own pages, each linked to its source.
+Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote, which is why the committee position has to come from the report instead. 
 
 ```{r}
 #| label: committee-vote-rows-table
 #| code-summary: "List committee stages that record a vote, with links to the source"
+#| include: false
+#| eval: false
 committee_vote_rows <- committee_stages %>%
   filter(is_vote) %>%
   mutate(
@@ -582,11 +581,12 @@ committee_vote_rows_table
 
 ### Linking a report to its bill
 
-Now let's fetch the example bill's companion report page the same way, with `get_item_details()`, and look at what it carries. Besides `stages`, every item — bill or report alike — also carries a `references` column: a list of typed cross-references to other legislative objects. That column is the entire mechanism this post relies on to link a committee vote back to its bill.
+To demonstrate how to get the committee voting data, let's now fetch the example bill's companion report page the same way, with `get_item_details()`, and look at what it carries. Besides `stages`, every item, bill or report alike, also carries a `references` column: a list of typed cross-references to other legislative objects. That column is the  mechanism to link a committee vote back to its bill.
 
 ```{r}
 #| label: example-item-references-table
 #| code-summary: "Fetch the committee report's own page and show its references, incl. the Hauptgegenstand (HG) link back to the bill"
+#| code-fold: show
 #| cache: true
 example_report_url <- "https://www.parlament.gv.at/gegenstand/XXVII/I/2666"
 
@@ -599,7 +599,23 @@ item_references_example <- item_report_example %>%
   select(references) %>%
   unnest(references) %>%
   select(text, subject, zitation, url, art)
+```
 
+```{r}
+#| code-fold: false
+#| code-summary: "Report references"
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+item_references_example
+```
+
+```{r}
+#| include: false
+#| eval: false
 item_references_example_table <- reactable(
   item_references_example,
   columns = list(
@@ -630,7 +646,9 @@ item_references_example_table <- reactable(
   )
 
 item_references_example_table
+```
 
+```{r}
 # resolve the HG row's relative url into the same absolute form item_url uses elsewhere
 hg_parent_url <- item_references_example %>%
   filter(art == "HG") %>%
@@ -716,8 +734,8 @@ Now I turn the committee reports into usable committee votes. For each report I 
 
 Two places let rows silently drop out of this link — `filter()` and `inner_join()` don't warn when they discard rows, so it's worth being explicit about both:
 
-- **No resolvable `HG` reference.** A handful of reports have no references at all, or none typed `HG` — `aub_parent`'s `map_chr()` returns `NA` for these, and `aub_committee_stages` drops them via `filter(!is.na(parent_url))`.
-- **The resolved parent isn't one of our own bills.** Even once a report resolves an `HG` url, that url has to match an `item_url` already present in `parent_meta` — i.e. a bill we actually fetched and kept in scope earlier in this post. `committee_rows`'s `inner_join(parent_meta, ...)` drops any report whose parent isn't found there — for instance a bill whose item type fell outside the "Keep items of interest" filter at the very start.
+- *No resolvable `HG` reference.* A handful of reports have no references at all, or none typed `HG` — `aub_parent`'s `map_chr()` returns `NA` for these, and `aub_committee_stages` drops them via `filter(!is.na(parent_url))`.
+- *The resolved parent isn't one of our own bills.* Even once a report resolves an `HG` url, that url has to match an `item_url` already present in `parent_meta` — i.e. a bill we actually fetched and kept in scope earlier in this post. `committee_rows`'s `inner_join(parent_meta, ...)` drops any report whose parent isn't found there — for instance a bill whose item type fell outside the "Keep items of interest" filter at the very start.
 
 ```{r}
 #| label: prepare-committee-votes
@@ -799,38 +817,27 @@ nrow(committee_rows) # committee votes available to merge with the readings
 
 Here's what that produces for our running example: a single committee-vote row for XXVII/I/2608, carrying the adoption-vote text straight from its report — the `Dagegen` list on this row is exactly where the FPÖ's committee-stage opposition (before it flips at the second reading) comes from.
 
+::: {.column-margin}
+![The committee report's own page, listing its stages. Click to enlarge. [link](https://www.parlament.gv.at/gegenstand/XXVII/I/2666){target="_blank"}](_img/AusschussErneuerbarLink.png)
+:::
+
 ```{r}
 #| label: example-committee-vote
 #| code-summary: "Show the committee vote row retrieved for the example item"
 example_committee_row <- committee_rows %>%
-  filter(item_url == example_item_url) %>%
-  select(title, stage_date, stage_name, reading)
+  filter(item_url == example_item_url)
+```
 
-example_committee_row_table <- reactable(
-  example_committee_row,
-  columns = list(
-    title = colDef(name = "Title", minWidth = 200, style = list(whiteSpace = "normal", lineHeight = "1.35")),
-    stage_date = colDef(name = "Stage date", minWidth = 110),
-    stage_name = colDef(
-      name = "Stage text (raw)",
-      minWidth = 420,
-      style = list(whiteSpace = "normal", lineHeight = "1.35")
-    ),
-    reading = colDef(name = "Reading", minWidth = 100)
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  pagination = FALSE,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "COMMITTEE VOTE RETRIEVED FOR THE EXAMPLE ITEM",
-    "The single row committee_rows carries for XXVII/I/2608 — built from the report XXVII/I/2666 via the HG link shown above."
-  )
-
-example_committee_row_table
+```{r}
+#| code-fold: false
+#| code-summary: "Committee vote row"
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+glimpse(example_committee_row)
 ```
 
 The counts below quantify how many reports survive each step of that `HG` link, computed live from the objects built above.
@@ -898,6 +905,8 @@ match_funnel_table <- reactable(
 match_funnel_table
 ```
 
+
+
 ## Combine committee votes with the readings
 
 The committee votes are ready, one clean row per bill. The reading votes are not: the stage data fetched back in *Data on the readings* still holds **every** procedural step, votes and non-votes alike. So this section does two things — narrow that stage data down to the actual reading votes, and then **bind the two sides together** into the finalized dataset the rest of this post analyzes.
@@ -908,6 +917,7 @@ First the narrowing. I reduce the bills' own second- and third-reading stages do
 
 ```{r}
 #| label: scope-items-ordinary
+#| code-fold: show
 #| code-summary: "Filter to NR readings and vote-outcome text — the ordinary, committee-free dataset"
 items_scope_ordinary <- item_stages |>
   filter(str_detect(phase, regex("NR"))) %>% # keep only National Council (NR) phases
@@ -945,32 +955,18 @@ For our running example, `items_scope_ordinary` now holds exactly the second- an
 example_vote_rows_ordinary <- items_scope_ordinary %>%
   filter(item_url == example_item_url) %>%
   select(title, stage_date, reading, stage_name)
+```
 
-example_vote_rows_ordinary_table <- reactable(
-  example_vote_rows_ordinary,
-  columns = list(
-    title = colDef(name = "Title", minWidth = 180, style = list(whiteSpace = "normal", lineHeight = "1.35")),
-    stage_date = colDef(name = "Stage date", minWidth = 110),
-    reading = colDef(name = "Reading", minWidth = 90),
-    stage_name = colDef(
-      name = "Stage text (raw)",
-      minWidth = 420,
-      style = list(whiteSpace = "normal", lineHeight = "1.35")
-    )
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  pagination = FALSE,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "EXAMPLE ITEM: VOTE ROWS BEFORE COMMITTEE IS BROUGHT IN",
-    "XXVII/I/2608's rows in items_scope_ordinary \u2014 second and third reading only, committee not yet merged."
-  )
-
-example_vote_rows_ordinary_table
+```{r}
+#| code-fold: false
+#| code-summary: "Example item's vote rows before committee is brought in"
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+example_vote_rows_ordinary
 ```
 
 ### Bind on the committee votes
@@ -979,6 +975,7 @@ Now the merge. `committee_rows` is already vote-rows-only by construction (see *
 
 ```{r}
 #| label: scope-items
+#| code-fold: show
 #| code-summary: "Bind on committee votes and classify vote report type"
 items_scope <- items_scope_ordinary %>%
   bind_rows(committee_rows) %>%
@@ -1028,36 +1025,23 @@ example_vote_rows_combined <- items_scope %>%
   filter(item_url == example_item_url) %>%
   select(reading, stage_date, vote_report_type, stage_name) %>%
   arrange(factor(reading, levels = c("committee", "second", "third")))
+```
 
-example_vote_rows_combined_table <- reactable(
-  example_vote_rows_combined,
-  columns = list(
-    reading = colDef(name = "Reading", minWidth = 90),
-    stage_date = colDef(name = "Stage date", minWidth = 110),
-    vote_report_type = colDef(name = "Vote report type", minWidth = 130),
-    stage_name = colDef(
-      name = "Stage text (raw)",
-      minWidth = 420,
-      style = list(whiteSpace = "normal", lineHeight = "1.35")
-    )
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  pagination = FALSE,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "EXAMPLE ITEM: FINALIZED, MERGED VOTE DATASET",
-    "XXVII/I/2608's rows in the final items_scope \u2014 committee, second and third reading together. This is the dataset the rest of this post analyzes."
-  )
-
-example_vote_rows_combined_table
+```{r}
+#| code-fold: false
+#| code-summary: "Example item's rows, combined"
+#| collapse: true
+#| class-output: scroll-x
+#| R.options:
+#|   width: 300
+#|   tibble.width: 300
+#|   pillar.print_max: 50
+example_vote_rows_combined
 ```
 
 ```{r}
 #| label: vote-report-type-distribution
+#| code-fold: show
 #| code-summary: "Inspect the distribution of vote reporting types"
 items_scope %>%
   count(vote_report_type, sort = TRUE) %>%
@@ -1084,6 +1068,7 @@ To facilitate a closer look at these cases, the table below lists the affected i
 
 ```{r}
 #| label: non-pairs-table
+#| code-fold: true
 #| code-summary: "Build reactable table of items with duplicate vote rows in a stage"
 # limit to only the offending items so the table stays focused
 non_pairs_details <- items_scope %>%
@@ -1181,9 +1166,17 @@ non_pairs_details_table <- reactable(
       "."
     )
   )
+```
 
+<details>
+<summary>Show items with duplicate vote rows in a stage</summary>
+
+```{r}
+#| echo: false
 non_pairs_details_table
 ```
+
+</details>
 
 As it turns out, some are duplicates in the data source — see for instance [XX/I/1530](https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105), where the votes in the second and third reading are simply reported twice. Others appear multiple times because an item was partly approved and partly rejected within one single reading, and hence got two rows in the data source, as in [XXVIII/I/403](https://www.parlament.gv.at/gegenstand/XXVIII/I/403).
 
@@ -1191,6 +1184,7 @@ Rather than trying to repair these inconsistencies one by one, I simply remove t
 
 ```{r}
 #| label: filter-pairs
+#| code-fold: show
 #| code-summary: "Remove items with duplicate stage rows, keep regular vote type only"
 # drop items that had duplicate rows within a stage; only clean items remain
 items_scope_pairs <- items_scope %>%
@@ -1220,6 +1214,10 @@ items_scope_pairs_regular <- items_scope_pairs_regular %>%
 nrow(items_scope_pairs)
 nrow(items_scope_pairs_regular)
 nrow(items_scope_pairs_regular) / nrow(items_scope) # share of all vote stages covered
+```
+
+```{r}
+knitr::knit_exit()
 ```
 
 ## Extract votes
