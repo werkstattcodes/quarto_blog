@@ -48,7 +48,7 @@ pre.scroll-x > code {
 # Just the results, please {.unnumbered}
 
 ::: {layout-ncol="2"}
-![Flip rate by transition, direction and party role, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery" fig-alt="Grouped bar chart in a four-panel grid: legislative periods on the x-axis, flip rate on the y-axis, rows splitting the direction of change and columns splitting opposition from government parties. Blue committee-to-second-reading bars are consistently taller than orange second-to-third-reading bars, and the government column is nearly empty."}
+![Number of position changes by transition and direction, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery" fig-alt="Grouped bar chart in two stacked panels splitting the direction of change: legislative periods on the x-axis, number of position changes on the y-axis. Blue committee-to-second-reading bars dominate the orange second-to-third-reading bars in every period. Opposition parties only."}
 
 ![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap of flip counts with legislative periods on the x-axis and parties on the y-axis, in four panels splitting the two transitions and two directions of change. Green marks moves toward support and red withdrawals; the committee-to-second-reading row carries almost all of the shading while the second-to-third-reading row is nearly blank."}
 
@@ -275,18 +275,24 @@ item_stages <- item_details |>
     item_number,
     status_number,
     status_description,
-    stages,
-    votes
+    stages
   ) |>
   filter(map_lgl(stages, \(x) !is.null(x))) |> # drop items with no stage data at all
   unnest(stages) %>%
   mutate(stage_date = lubridate::dmy(stage_date))
 
-# used in inline text and table subtitles throughout the document
-data_cutoff <- max(item_stages$stage_date)
+# used in inline text and table subtitles throughout the document.
+# Two guards: na.rm, because a single unparseable date would otherwise render every
+# "Data as of ..." line as "NA"; and the cap at today's date, because the stages table
+# also carries *scheduled* future sittings. Taking a plain maximum would date the whole
+# post weeks ahead of the last vote actually recorded in it.
+data_cutoff <- max(
+  item_stages$stage_date[item_stages$stage_date <= Sys.Date()],
+  na.rm = TRUE
+)
 ```
 
-The image on the left is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on *all* stages, not only voting results; rows we're not interested in still need to be dropped. Second, and this is something what we have to take care off further below, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
+The screenshot in the margin is from the website of the Parliament and shows the details on the different stages of one specific bill — the same kind of information we just retrieved with the code chunk above. Two things are worth flagging up front. First, at this point we have data on *all* stages, not only voting results; rows we're not interested in still need to be dropped. Second, and this is something what we have to take care off further below, the stage data does not contain any info on the committee's own vote — that lives in a different entry, the one belonging to the committee's report on the bill.
 
 To make this concrete, the *example* below follows one specific bill end to end, through every transformation step in this post: a 2024 amendment to the Erneuerbaren-Ausbau-Gesetz (the renewable-energy-expansion act). It's a good running example precisely because it isn't a straightforward case: the FPÖ moves from opposing it in committee to supporting it by the second reading, and the SPÖ opposes it through the second reading before coming around at the third — so we'll be able to watch both kinds of position change appear in the data as the pipeline builds up. Querying the bill's own page with `get_item_details(stages = TRUE)` returns the stages shown in the screenshot and table below.
 
@@ -294,21 +300,14 @@ To make this concrete, the *example* below follows one specific bill end to end,
 ![The bill's own page on the Parliament's website, listing its stages. Click to enlarge. [link](https://www.parlament.gv.at/gegenstand/XXVII/I/2608){target="_blank"}](_img/NRStagesErneuerbar.png)
 :::
 
-::: {.column-margin}
-![The committee report's own page, where the adoption vote is recorded. Click to enlarge. [link](https://www.parlament.gv.at/gegenstand/XXVII/I/2666){target="_blank"}](_img/AusschussErneuerbar.png)
-:::
-
 ```{r}
-#| label: example-item-stages-table
+#| label: example-item-stages
 #| code-fold: false
-#| code-summary: "Show every recorded stage for the example item as a reactable table"
+#| code-summary: "Get every recorded stage for the example item"
 #| cache: true
 # the one bill this post follows end to end through every transformation step below
 example_item_url <- "https://www.parlament.gv.at/gegenstand/XXVII/I/2608"
 
-
-# list columns (speeches, votes) are all NA for this item at the stage level;
-# collapse them to character so reactable can render every column
 item_stages_example <- get_item_details(item_url = example_item_url, stages = TRUE) %>%
   select(
     item_url,
@@ -318,13 +317,11 @@ item_stages_example <- get_item_details(item_url = example_item_url, stages = TR
     title,
     item_number,
     status_number,
-    status_description,
-    votes
+    status_description
   ) |>
   filter(map_lgl(stages, \(x) !is.null(x))) |> # drop items with no stage data at all
   unnest(stages) %>%
   mutate(stage_date = lubridate::dmy(stage_date)) %>%
-  mutate(across(where(is.list), \(x) map_chr(x, toString))) %>%
   select(phase, stage_name, stage_date, item_url)
 ```
 
@@ -341,7 +338,7 @@ item_stages_example
 
 ```
 
-As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the (first,) second, and third reading; and subsequently extract from these rows the voting decisions for each individual party. 
+As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the second and third reading; and subsequently extract from these rows the voting decisions for each individual party. 
 Contrasting the obtained results between the different readings allows identifying whether a party changed its position over the course of the legislative proceedings in the National Council.
 
 
@@ -472,7 +469,7 @@ committee_category_table <- reactable(
 committee_category_table
 ```
 
-Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$is_adoption_vote), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position is taken from the committee report rather than from these rows. 
+Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote, na.rm = TRUE), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$is_adoption_vote, na.rm = TRUE), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position is taken from the committee report rather than from these rows. 
 
 ```{r}
 #| label: committee-vote-rows-table
@@ -771,8 +768,12 @@ aub_committee_stages <- aub_details |>
   left_join(aub_parent, by = "aub_url") |>
   filter(!is.na(parent_url))
 
-# parent bill's item-level fields, so committee rows line up with the reading rows
-parent_meta <- item_stages |>
+# parent bill's item-level fields, so committee rows line up with the reading rows.
+# Sourced from item_details rather than item_stages: a bill that returned no stage data
+# is absent from item_stages and would silently lose its committee vote, even though it
+# is in scope. (No bill is affected in the current data, but the join key should not
+# depend on the bill happening to have stage rows.)
+parent_meta <- item_details |>
   distinct(
     item_url,
     legis_period,
@@ -1008,8 +1009,8 @@ items_scope <- items_scope_ordinary %>%
     )
   )
 
-nrow(items_scope)
-nrow(item_stages)
+nrow(items_scope) # vote rows after binding committee votes onto the readings
+nrow(item_stages) # for comparison: all stage rows, votes and non-votes alike
 ```
 
 And here's the payoff for our running example: the finalized, merged view — committee, second and third reading side by side for the same bill.
@@ -1210,8 +1211,7 @@ dup_rows2 <- items_scope_pairs_regular %>%
 
 stopifnot(nrow(dup_rows2) == 0)
 
-nrow(items_scope_pairs)
-nrow(items_scope_pairs_regular)
+nrow(items_scope_pairs_regular) # vote rows left after keeping only "regular" reports
 nrow(items_scope_pairs_regular) / nrow(items_scope) # share of all vote stages covered
 ```
 
@@ -1453,13 +1453,15 @@ items_scope_pairs_regular_wide %>%
 
 # Results
 
-Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the flip **rate** by legislative period, direction and party role; where flips concentrate by party, first as absolute counts and then as a share of comparable bills; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
+Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the **number** of flips by legislative period and direction; where flips concentrate by party, first as absolute counts and then as a share of comparable bills; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
 
 One structural point to keep in mind throughout, because it shapes the central result before any data is involved: the second and third readings of a bill are normally taken in the **same sitting, minutes apart**, whereas the committee vote happens days or weeks earlier, in a different room, with time for negotiation in between. So the two transitions are not comparable windows of opportunity. If it turns out that almost nothing moves between the second and third reading, that is in large part *mechanical* — there is barely any interval in which a position could change — and not evidence that parliamentary debate never persuades anyone. Read the committee → second reading step as "what happened between committee and the floor", and the second → third step as "what happened during a single sitting".
 
-A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
+A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a share *is* computed, it is computed against the population that could actually produce the numerator: the share-of-bills heatmap divides each party by the bills on which **that party** had a usable vote at both stages, not by every bill in the period. The general point is worth keeping in mind either way: a party that already voted *yes* at the earlier stage cannot flip *no → yes*, so it was never at risk of doing so, and any rate that ignores this overstates how settled positions were.
 
 And a note on who counts as government: coalition membership is coded once per legislative period, which is an approximation. It is a poor one for GP XXVI in particular — that period covers the ÖVP-FPÖ coalition, its collapse after the Ibiza affair in May 2019, the subsequent ÖVP-only cabinet and the Bierlein caretaker government. Votes from the second half of GP XXVI are therefore labelled against a coalition that no longer existed, so the government/opposition split shown for that period should be read with care.
+
+GP XXII carries a milder version of the same problem: the FPÖ split in 2005 and its ministers continued in government as the BZÖ, so both are coded as governing for the whole period. That is why the coalition label on the axis of the stage × period chart further below reads 'ÖVP, FPÖ, BZÖ' for that one period — an artefact of period-level coding, not a three-party coalition.
 
 ```{r}
 #| label: prep-transitions
@@ -1598,51 +1600,51 @@ vote_graph_caption_short <- paste0(
 )
 ```
 
-## Flip rates by period, direction and role
+## Flip counts by period and direction
 
-The most direct answer. For each legislative period, the bars compare the flip **rate** at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal) and by party role.
+The most direct answer. For each legislative period, the bars compare the **number** of position changes at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal).
+
+The chart covers **opposition parties only**. Government parties are left out deliberately: across all nine periods there is exactly one government-party flip in the data, on three comparable pairs, so a rate for them is built on too little to plot and an absolute bar for them would be a single unit high. That near-total absence is itself worth stating — a party does not usually vote against the bill its own government tabled — but it is a sentence, not a panel.
 
 It's worth being precise about what a tall bar means, because the intuitive reading is the wrong way round. A flip at committee → 2nd reading means a party voted one way *in committee* and differently *on the floor* — so the position moved in the interval **between** the two, once the committee stage was already over. A deal actually struck inside the committee produces the opposite: the party votes yes there and yes again later, and contributes **no** flip at all. So tall left-hand (committee → 2nd) bars say that positions were still moving after the committee had reported; tall right-hand (2nd → 3rd) bars would say they moved during the plenary sitting itself.
 
+Because these are counts rather than rates, they are not normalised for how much each period had on the table: a period with more bills, or more contested ones, has more opportunities to flip. The normalised view comes further below, in the share-of-comparable-bills heatmap.
+
 ```{r}
 #| label: plot-where-flips-bars
-#| code-summary: "Per-period bars: flip rate by transition, direction and role"
+#| code-summary: "Per-period bars: flip counts by transition and direction, opposition parties"
 #| fig-alt: >
-#|   Grouped bar chart in a four-panel grid. Legislative periods XX to XXVIII run along
-#|   the x-axis and the flip rate, conditional on the party-bill pairs at risk of flipping,
-#|   on the y-axis. Panel rows separate the direction of change (no to yes, yes to no) and
-#|   panel columns separate opposition from government parties. Within each period, a blue
-#|   bar shows the committee-to-second-reading transition and an orange bar the
-#|   second-to-third-reading transition, with the absolute number of flips labelled above
-#|   each bar. The blue bars are consistently the taller of the two, and the government
-#|   column is close to empty throughout.
+#|   Grouped bar chart in two stacked panels, one per direction of change (no to yes on top,
+#|   yes to no below). Legislative periods XX to XXVIII run along the x-axis and the number of
+#|   position changes on the y-axis. Within each period a blue bar shows the
+#|   committee-to-second-reading transition and an orange bar the second-to-third-reading
+#|   transition, with the count printed above each bar. Blue bars dominate throughout: in every
+#|   period, far more changes occur between the committee vote and the plenary than during the
+#|   plenary sitting itself. Opposition parties only.
 #| fig-width: 11
-#| fig-height: 8
+#| fig-height: 7
 #| out-width: "100%"
 #| fig-align: "center"
-# at-risk denominator: only pairs that COULD flip in that direction, i.e. those
-# holding the prior position (no→yes is only possible for prior "no"/Dagegen voters)
-at_risk <- transitions %>%
-  mutate(direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no")) %>%
-  count(legis_period, transition, role, direction, name = "n_at_risk")
-
+# opposition only: government parties contribute a single flip across all nine periods
 flip_dirs <- transitions %>%
-  filter(change %in% c("no → yes", "yes → no")) %>%
-  count(legis_period, transition, role, change, name = "n_flip") %>%
-  left_join(
-    at_risk,
-    by = c("legis_period", "transition", "role", "change" = "direction")
+  filter(role == "Opposition", change %in% c("no → yes", "yes → no")) %>%
+  count(legis_period, transition, change, name = "n_flip") %>%
+  # complete the grid so a measured zero is visible as "0" rather than as a missing bar
+  complete(
+    legis_period = all_periods_vec,
+    transition,
+    change,
+    fill = list(n_flip = 0L)
   ) %>%
-  mutate(
-    rate = n_flip / n_at_risk,
-    legis_period = factor(legis_period, levels = all_periods_vec)
-  )
+  mutate(legis_period = factor(legis_period, levels = all_periods_vec))
 
 p_where_bars <- flip_dirs %>%
-  ggplot(aes(x = legis_period, y = rate, fill = transition)) +
+  ggplot(aes(x = legis_period, y = n_flip, fill = transition)) +
   geom_col(
+    # bar width and dodge width must agree, otherwise the count labels below are
+    # positioned on a different grid than the bars they annotate
     position = position_dodge2(width = 0.9, preserve = "single"),
-    width = 0.7
+    width = 0.9
   ) +
   geom_text(
     aes(label = n_flip),
@@ -1652,8 +1654,7 @@ p_where_bars <- flip_dirs %>%
     family = "Noto Sans",
     colour = "grey35"
   ) +
-  # drop = FALSE keeps the (near-empty) Government column visible — its emptiness is the point
-  facet_grid(change ~ role, scales = "free_y", drop = FALSE) +
+  facet_grid(change ~ ., scales = "free_y") +
   scale_fill_manual(
     values = c(
       "Committee → 2nd reading" = "#4575b4",
@@ -1662,19 +1663,19 @@ p_where_bars <- flip_dirs %>%
     name = NULL
   ) +
   scale_y_continuous(
-    labels = scales::percent_format(accuracy = 0.1),
+    breaks = scales::breaks_pretty(),
     expand = expansion(mult = c(0, 0.12))
   ) +
   labs(
     x = NULL,
-    y = "Conditional flip rate (of pairs at risk)",
+    y = "Number of position changes",
     title = "Where do parties change their position?",
     subtitle = paste0(
-      "Flip **rate** at each transition — committee → 2nd reading (blue) vs 2nd → 3rd reading (orange) — ",
-      "by direction and party role. Bar labels show the absolute number of flips. ",
+      "Number of position changes at each transition — committee → 2nd reading (blue) vs ",
+      "2nd → 3rd reading (orange) — by direction, opposition parties only. ",
       "A high committee → 2nd bar means positions were still moving between the committee ",
       "vote and the plenary; a high 2nd → 3rd bar means they moved during the sitting itself.<br>",
-      "<span style='font-size:9pt;color:grey40;'>Rate is **conditional on the pairs that could flip**: no → yes ÷ pairs voting *no* at the earlier stage; yes → no ÷ pairs voting *yes*. NR, regular votes only, GP XX–XXVIII.</span>"
+      "<span style='font-size:9pt;color:grey40;'>Counts are not normalised for how many comparable bills each period had; see the share-of-bills chart further below for that. NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
   ) +
@@ -2173,6 +2174,8 @@ p_flip_stage_period
 
 Now that committee votes come from the reports, the full committee → 2nd → 3rd path is observable for most bills, not just a contested few. This section narrows to exactly those items — the ones with a recorded **regular** vote at the committee, the second reading **and** the third reading — so we can trace each party's position across all three stages and see where, if anywhere, it changes.
 
+The condition is applied per *item*, not per party: it guarantees that all three stages carry a vote row, not that every party appears in all three of them. A party absent from both the Dafür and the Dagegen list at one stage still has no position there, which is why the change flags below propagate `NA` rather than assuming continuity.
+
 ```{r}
 #| label: three-stage-subset
 #| code-summary: "Restrict to items with a recorded vote at committee, 2nd and 3rd reading"
@@ -2322,7 +2325,7 @@ three_stage_changes_table <- reactable(
   style_reactable_table(
     "POSITION CHANGES AMONG ITEMS DECIDED AT ALL THREE STAGES",
     paste0(
-      "Every party–item whose position differs between two consecutive stages, most recent first. Data as of ",
+      "Every party–item whose position differs between two consecutive stages, sorted by second-reading date, most recent first. Data as of ",
       data_cutoff,
       "."
     )
