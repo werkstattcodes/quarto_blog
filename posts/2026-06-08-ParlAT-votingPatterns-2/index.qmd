@@ -3,12 +3,15 @@ title: "How do Parties vote in the Austrian National Council? Part II"
 date: 2026-06-08
 date-modified: last-modified
 description: |
-  A follow-up that traces how parties shift their position on a bill as it moves
-  through committee, the second reading and the third reading in the Austrian
-  National Council — and asks where, if anywhere, those changes actually happen.
+  A follow-up that traces how parties shift their position on a government bill
+  (Regierungsvorlage) as it moves through committee, the second reading and the
+  third reading in the Austrian National Council — and asks where, if anywhere,
+  those changes actually happen.
+image: index_files/figure-html/plot-flip-stage-period-1.png
 
 categories:
   - Austria
+  - parliament
   - ParlAT
 
 reference-location: margin
@@ -45,13 +48,13 @@ pre.scroll-x > code {
 # Just the results, please {.unnumbered}
 
 ::: {layout-ncol="2"}
-![Flip rate by transition, direction and party role, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery"}
+![Flip rate by transition, direction and party role, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery" fig-alt="Grouped bar chart in a four-panel grid: legislative periods on the x-axis, flip rate on the y-axis, rows splitting the direction of change and columns splitting opposition from government parties. Blue committee-to-second-reading bars are consistently taller than orange second-to-third-reading bars, and the government column is nearly empty."}
 
-![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery"}
+![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap of flip counts with legislative periods on the x-axis and parties on the y-axis, in four panels splitting the two transitions and two directions of change. Green marks moves toward support and red withdrawals; the committee-to-second-reading row carries almost all of the shading while the second-to-third-reading row is nearly blank."}
 
-![Share of comparable bills with a party vote flip, by period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery"}
+![Share of comparable bills with a party vote flip, by period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap showing, for each party and legislative period, the percentage of comparable bills on which the party changed position, in four panels splitting the two transitions and two directions. Expressed as shares, the committee-to-second-reading row remains dominant."}
 
-![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery"}
+![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery" fig-alt="Two-column tile heatmap comparing the committee-to-second-reading and second-to-third-reading transitions across legislative periods XX to XXVIII, with the governing coalition named on a secondary right-hand axis. The committee-to-second-reading column is darker in every period, indicating that position changes concentrate between the committee vote and the floor."}
 :::
 
 # Context
@@ -130,17 +133,32 @@ This section assembles the first half of the dataset: the bills themselves and t
 
 ### Query the items
 
-As in the previous post, let's start by getting all items ('Verhandlungsgegenstände') of the National Council for the legislative periods 20 to 28. With {ParlAT}.
+As in the previous post, let's start by getting the government bills ('Regierungsvorlagen') of the National Council for the legislative periods 20 to 28. With {ParlAT}.
 
 ```{r}
 #| label: fetch-items
-#| code-summary: "Fetch National Council items and cache them"
+#| code-summary: "Fetch National Council government bills and cache them"
 #| cache: true
 #| eval: false
-# fetch all NR items for legislative periods 20–28 (GP XX through XXVIII)
+# fetch RV (Regierungsvorlagen) for legislative periods 20–28 (GP XX through XXVIII)
 items_20_28 <- seq(20, 28) %>%
-  map(., \(x) get_items(legis_period = x, institution = "NR")) %>%
+  map(., \(x) get_items(item = "RV", legis_period = x, institution = "NR")) %>%
   list_rbind() # stack per-period tibbles into one dataframe
+
+# guard against overwriting a good cache with an empty/failed fetch
+if (nrow(items_20_28) == 0) {
+  stop("The RV fetch returned no rows; the existing items cache was not overwritten.")
+}
+
+readr::write_rds(
+  items_20_28,
+  here::here(
+    "posts",
+    "2026-06-08-ParlAT-votingPatterns-2",
+    "_data",
+    "items_20_28.rds"
+  )
+)
 ```
 
 
@@ -148,15 +166,6 @@ items_20_28 <- seq(20, 28) %>%
 ```{r}
 #| label: load-items-cache
 #| include: false
-# readr::write_rds(
-#   items_20_28,
-#   here::here(
-#     "posts",
-#     "2026-06-08-ParlAT-votingPatterns-2",
-#     "_data",
-#     "items_20_28.rds"
-#   )
-# )
 items_20_28 <- readr::read_rds(here::here(
   "posts",
   "2026-06-08-ParlAT-votingPatterns-2",
@@ -168,45 +177,6 @@ items_20_28 <- readr::read_rds(here::here(
 ```{r}
 nrow(items_20_28)
 ```
-
-### Keep items of interest
-
-The `get_items()` call returned all (!) items, but not every item type is actually subject to a vote in a reading. Below I filter for those types which are: motions ('Anträge'), government bills ('Regierungsvorlagen'), budget-related items, and a few others. In case I missed any relevant category here, please let me know.
-
-```{r}
-#| label: define-item-scope
-#| code-summary: "Select legislative item types"
-# A=Anträge, RV=Regierungsvorlagen, BUA/GABR/BRA=budget-related, EBR=EU items
-# anchored patterns (^A$, ^EBR$) prevent partial matches against longer codes
-items_select <- c("^A$", "RV", "BUA", "GABR", "GABR13", "BRA", "^EBR$") %>%
-  paste0(., collapse = "|")
-
- items_in_scope <- items_20_28 %>%
-  filter(str_detect(type_doc, regex(items_select)))
-
-# verify which long-form type labels the regex actually matched. Note that the
-# unanchored RV/GABR patterns also match variants (RVEU, RVS, GABR13, …); these
-# pass the type filter but rarely carry a standard reading vote, so they drop out
-# downstream. The graph caption is therefore built later, from the item types that
-# actually survive into the analysis (see "Extract votes" further below).
-items_in_scope_rel <- items_in_scope %>%
-  count(type_doc_long, type_doc, sort = TRUE) %>%
-  mutate(rel=n/sum(n))
-```
-
-```{r}
-#| label: item-type-shares
-#| code-fold: false
-#| collapse: true
-#| class-output: scroll-x
-#| R.options:
-#|   width: 300
-#|   tibble.width: 300
-#|   pillar.print_max: 50
-as_tibble(items_in_scope_rel)
-```
-
-
 
 ### Query the stages
 
@@ -220,7 +190,7 @@ Now let's feed the URLs of the obtained items to `get_item_details()`, this time
 #| eval: false
 plan(multisession, workers = 4) # parallelise across 4 cores to speed up API fetching
 
-item_urls <- items_in_scope %>%
+item_urls <- items_20_28 %>%
   pull(item_url)
 
 # wrap in safely() so a single failed request returns an error slot instead of halting the loop
@@ -236,24 +206,35 @@ item_details_raw <- item_urls %>%
     .progress = TRUE,
     .options = furrr_options(packages = c("ParlAT", "purrr", "tibble"))
   )
+
+plan(sequential) # reset to single-threaded after parallel fetch
+
+# don't overwrite a good cache if every request failed
+item_success_n <- sum(map_lgl(item_details_raw, \(x) is.null(x$error)))
+if (item_success_n == 0) {
+  stop(paste0(
+    "All ", length(item_details_raw),
+    " item-detail requests failed; the existing cache was not overwritten. ",
+    "First error: ", conditionMessage(item_details_raw[[1]]$error)
+  ))
+}
+
+# persist the raw fetch results so re-renders don't need to re-hit the API
+readr::write_rds(
+  item_details_raw,
+  here::here(
+    "posts",
+    "2026-06-08-ParlAT-votingPatterns-2",
+    "_data",
+    "item_details_raw.rds"
+  )
+)
 ```
 
 ```{r}
 #| label: load-item-details-cache
 #| eval: true
 #| include: false
-# persist the raw fetch results so re-renders don't need to re-hit the API
-# readr::write_rds(
-#   item_details_raw,
-#   here::here(
-#     "posts",
-#     "2026-06-08-ParlAT-votingPatterns-2",
-#     "_data",
-#     "item_details_raw.rds"
-#   )
-# )
-
-plan(sequential) # reset to single-threaded after parallel fetch
 
 # reload from disk so the object is available in non-eval (cached) renders
 item_details_raw <- readr::read_rds(here::here(
@@ -427,19 +408,21 @@ committee_stages <- item_stages %>%
       is_vote ~ "Other vote",
       .default = "Non-vote / procedural"
     ),
-    # only the adoption vote is carried into the analysis by the scope filter
-    in_scope = category == "Adoption vote on the bill"
+    # flags the committee's formal adoption vote. Note this is *not* the row that reaches
+    # the analysis: the committee position is taken from the committee report instead
+    # (see below), because the bill's own page records the adoption vote only rarely
+    is_adoption_vote = category == "Adoption vote on the bill"
   )
 
 # aggregate to one row per category with its share of all committee stages
 committee_category_summary <- committee_stages %>%
-  summarise(rows = n(), .by = c(category, in_scope)) %>%
+  summarise(rows = n(), .by = c(category, is_adoption_vote)) %>%
   mutate(
     share = rows / sum(rows),
-    in_analysis_scope = if_else(in_scope, "Yes", "No")
+    is_adoption_vote_label = if_else(is_adoption_vote, "Yes", "No")
   ) %>%
   arrange(desc(rows)) %>%
-  select(category, rows, share, in_analysis_scope)
+  select(category, rows, share, is_adoption_vote_label)
 
 committee_category_table <- reactable(
   committee_category_summary,
@@ -465,7 +448,7 @@ committee_category_table <- reactable(
         text_position = "outside-end"
       )
     ),
-    in_analysis_scope = colDef(
+    is_adoption_vote_label = colDef(
       name = "Adoption vote?",
       align = "center",
       minWidth = 130
@@ -489,7 +472,7 @@ committee_category_table <- reactable(
 committee_category_table
 ```
 
-Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote, which is why the committee position has to come from the report instead. 
+Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$is_adoption_vote), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position is taken from the committee report rather than from these rows. 
 
 ```{r}
 #| label: committee-vote-rows-table
@@ -503,7 +486,7 @@ committee_vote_rows <- committee_stages %>%
     item_ref = item_url %>%
       str_remove("^https://www\\.parlament\\.gv\\.at/gegenstand/") %>%
       str_remove("\\?.*$"),
-    in_analysis_scope = if_else(in_scope, "Yes", "No")
+    is_adoption_vote_label = if_else(is_adoption_vote, "Yes", "No")
   ) %>%
   select(
     legis_period,
@@ -511,7 +494,7 @@ committee_vote_rows <- committee_stages %>%
     stage_date,
     stage_name,
     category,
-    in_analysis_scope,
+    is_adoption_vote_label,
     item_url
   ) %>%
   arrange(desc(stage_date))
@@ -551,7 +534,7 @@ committee_vote_rows_table <- reactable(
       style = list(whiteSpace = "normal", lineHeight = "1.35")
     ),
     category = colDef(name = "Type", minWidth = 180, filterable = TRUE),
-    in_analysis_scope = colDef(
+    is_adoption_vote_label = colDef(
       name = "Adoption vote?",
       align = "center",
       minWidth = 100,
@@ -570,7 +553,7 @@ committee_vote_rows_table <- reactable(
   style_reactable_table(
     "COMMITTEE STAGES THAT RECORD A VOTE",
     paste0(
-      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'Adoption vote?' marks the bill-adoption votes used in the analysis. Data as of ",
+      "All 'Ausschussberatungen NR' stages containing a vote keyword. 'Adoption vote?' marks the formal bill-adoption votes — note the analysis takes the committee position from the committee report instead, not from these rows. Data as of ",
       data_cutoff,
       "."
     )
@@ -662,15 +645,16 @@ The report carries a single reference row here, typed `HG`. Its `url` resolves t
 
 ### Fetch the committee reports
 
-With the link understood, we can go and get the reports themselves. The object holding the committee's adoption vote is the committee report (`Ausschussbericht`, type `AUB`): it carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (the motion to adopt the bill), which includes each party's vote, plus the `HG` reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28, again with `stages = TRUE`.
+With the link understood, we can go and get the reports themselves. The object holding the committee's adoption vote is the committee report (`Ausschussbericht`, type `AUB`): it carries the formal `Antrag auf Annahme des Gesetzesvorschlags` section (the motion to adopt the bill), which includes each party's vote, plus the `HG` reference back to the parent bill we just followed. So to capture committee votes properly, I fetch every committee report for periods 20–28 with its own targeted `get_items()` call, again with `stages = TRUE`.
 
 ```{r}
 #| label: fetch-aub-details
 #| code-summary: "Fetch all committee reports (Ausschussbericht) with stages and cache them"
 #| cache: true
 #| eval: false
-aub_urls <- items_20_28 %>%
-  filter(type_doc == "AUB") %>% # AUB = Ausschussbericht (committee report)
+aub_urls <- seq(20, 28) %>%
+  map(., \(x) get_items(item = "AUB", legis_period = x, institution = "NR")) %>%
+  list_rbind() %>%
   pull(item_url) %>%
   unique()
 
@@ -732,10 +716,13 @@ if (aub_success_n == 0) {
 
 Now I turn the committee reports into usable committee votes. For each report I do two things: a) read its `stages` and keep the row whose `stage_name` matches `Antrag auf Annahme des Gesetzesvorschlags` (which holds the `Dafür`/`Dagegen` party split — the actual vote), and b) resolve its `references` to find the row typed `HG` and follow that row's `url` back to the parent bill, exactly as demonstrated above for XXVII/I/2666. That `HG` reference is the *only* link between a report and its bill anywhere in the data: there's no shared numeric ID between the two pages, and titles aren't guaranteed to match character-for-character either (reports sometimes shorten or reformat a bill's title), so `references$url` is the one connection actually worth trusting. The result is one committee-vote row per bill, carrying the parent bill's identifiers so it slots in alongside the second- and third-reading rows further down.
 
-Two places let rows silently drop out of this link — `filter()` and `inner_join()` don't warn when they discard rows, so it's worth being explicit about both:
+Three places let rows silently drop out of this link — `filter()` and `inner_join()` don't warn when they discard rows, so it's worth being explicit about all of them:
 
 - *No resolvable `HG` reference.* A handful of reports have no references at all, or none typed `HG` — `aub_parent`'s `map_chr()` returns `NA` for these, and `aub_committee_stages` drops them via `filter(!is.na(parent_url))`.
-- *The resolved parent isn't one of our own bills.* Even once a report resolves an `HG` url, that url has to match an `item_url` already present in `parent_meta` — i.e. a bill we actually fetched and kept in scope earlier in this post. `committee_rows`'s `inner_join(parent_meta, ...)` drops any report whose parent isn't found there — for instance a bill whose item type fell outside the "Keep items of interest" filter at the very start.
+- *The resolved parent isn't one of our own bills.* Even once a report resolves an `HG` url, that url has to match an `item_url` already present in `parent_meta` — i.e. a bill we actually fetched at the very start of this post. `committee_rows`'s `inner_join(parent_meta, ...)` drops any report whose parent isn't found there — for instance a report belonging to a non-`RV` item, which falls outside this post's scope.
+- *The bill was bundled into another bill's report as a co-subject.* A few hundred reports carry `MG` ('Mitgegenstand') references alongside their `HG`. A bill that appears only as somebody else's `MG` never resolves as an `HG` parent, so it gets no committee row at all — its committee vote was taken as part of a bundle rather than on its own. I don't try to recover these.
+
+One simplification is worth naming as well: a small number of reports (22 in the current data) carry *more than one* `HG` reference, i.e. they adopt several main subjects at once. `hg$url[1]` takes the first, so the committee vote is attributed to just one of them. Fixing this properly would mean fanning the report's vote out across every `HG` it names; given how few reports are affected I've left the simplification in place, but it is a simplification, not a non-issue.
 
 ```{r}
 #| label: prepare-committee-votes
@@ -765,6 +752,8 @@ aub_parent <- aub_details |>
       if (nrow(hg) == 0) {
         return(NA_character_)
       }
+      # [1]: a handful of reports adopt several main subjects at once and carry multiple HG
+      # rows; this attributes the vote to the first of them (see the caveat above)
       paste0("https://www.parlament.gv.at", hg$url[1])
     })
   )
@@ -914,7 +903,9 @@ The committee votes are ready, one clean row per bill. The reading votes are not
 
 ### Scope the ordinary readings
 
-First the narrowing. I reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. Along the way, two new columns are added: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (which I label 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
+First the narrowing. I reduce the bills' own second- and third-reading stages down to just the rows where a vote was actually cast — a finished, vote-rows-only dataset for the "ordinary" readings. Along the way a `reading` column is added, recording the stage: second or third reading (or, in some cases, second and third at once). A second column, `vote_report_type`, is added one step later, once the committee rows have been bound on, since it applies to both sides alike.
+
+Note that this filter keeps only stages whose description actually carries vote-outcome text. That is a substantial cut — a large majority of the discarded rows are entries like '*NN. Sitzung des Nationalrates: Zweite und dritte Lesung*' which record that the readings happened but report no outcome at all, so there is nothing to extract a party position from.
 
 ```{r}
 #| label: scope-items-ordinary
@@ -923,26 +914,28 @@ First the narrowing. I reduce the bills' own second- and third-reading stages do
 items_scope_ordinary <- item_stages |>
   filter(str_detect(phase, regex("NR"))) %>% # keep only National Council (NR) phases
   # plenary 2nd/3rd readings from the bill's own stages
-  # r? makes the pattern match both "zweite"/"zweiter" and "dritte"/"dritter"
-  filter(str_detect(stage_name, "(dritter?|zweiter?) Lesung")) %>%
+  # r? makes the pattern match both "zweite"/"zweiter" and "dritte"/"dritter".
+  # ignore_case is required: stage names capitalise the ordinal after a colon, e.g.
+  # "141. Sitzung des Nationalrates: Zweite Lesung", and those rows are real readings.
+  filter(str_detect(stage_name, regex("(dritter?|zweiter?) Lesung", ignore_case = TRUE))) %>%
   mutate(
     reading = case_when(
-      # some items combine both readings into a single stage entry
-      str_detect(stage_name, regex("zweite")) &
-        str_detect(stage_name, regex("dritte")) ~ "second & third",
-      str_detect(stage_name, regex("zweite")) ~ "second",
-      str_detect(stage_name, regex("dritte")) ~ "third",
+      # some items combine both readings into a single stage entry.
+      # these patterns must be case-insensitive for the same reason as the filter above —
+      # otherwise "Zweite und dritte Lesung" would fall through to the "dritte" branch
+      str_detect(stage_name, regex("zweite", ignore_case = TRUE)) &
+        str_detect(stage_name, regex("dritte", ignore_case = TRUE)) ~ "second & third",
+      str_detect(stage_name, regex("zweite", ignore_case = TRUE)) ~ "second",
+      str_detect(stage_name, regex("dritte", ignore_case = TRUE)) ~ "third",
       .default = NA_character_
     )
   ) %>%
   # keep only stages that contain actual vote-outcome text — this is now a finished,
-  # vote-rows-only dataset for the ordinary (non-committee) readings
+  # vote-rows-only dataset for the ordinary (non-committee) readings.
+  # same keyword set defined once further above, reused here rather than re-typed
   filter(str_detect(
     stage_name,
-    regex(
-      "dafür|wechselnde Mehrheit|getrennte Abstimmung|namentliche Abstimmung|abgelehnt|mehrstimmig",
-      ignore_case = TRUE
-    )
+    regex(committee_vote_keywords, ignore_case = TRUE)
   ))
 
 nrow(items_scope_ordinary) # finished, committee-free vote dataset
@@ -972,7 +965,7 @@ example_vote_rows_ordinary
 
 ### Bind on the committee votes
 
-Now the merge. `committee_rows` is already vote-rows-only by construction (see *Build committee votes from the reports* above — only the adoption-vote stage was ever kept), and `items_scope_ordinary` has just been reduced to vote rows too. Since both sides are independently down to actual votes, binding them together needs no further filtering afterward. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. `vote_report_type` is classified on the combined table, and the result is the finalized dataset the rest of this post analyzes.
+Now the merge. `committee_rows` is already vote-rows-only by construction (see *Build committee votes from the reports* above — only the adoption-vote stage was ever kept), and `items_scope_ordinary` has just been reduced to vote rows too. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two. `vote_report_type` is classified on the combined table, giving `items_scope` — the combined set of vote rows. Two cleaning steps still follow below: items with duplicated stage rows are dropped, and the analysis then keeps only the `regular` vote-report type (the one whose text lists parties explicitly, and so the only one a party-level position can be read from).
 
 ```{r}
 #| label: scope-items
@@ -985,8 +978,10 @@ items_scope <- items_scope_ordinary %>%
     # because some stage names contain both "dafür" and other keywords
     vote_report_type = case_when(
       # "regular" requires the explicit Dafür:/Dagegen: party-list separator the parser
-      # keys on; parenthetical forms like "mehrstimmig (dafür S,V dagegen F)" fall through
-      str_detect(stage_name, regex("dafür", ignore_case = TRUE)) &
+      # keys on; parenthetical forms like "mehrstimmig (dafür S,V dagegen F)" fall through.
+      # note "dafür:" *with* the colon: fn_get_votes() errors out on any row lacking it,
+      # so the classifier has to guarantee that precondition rather than merely happen to
+      str_detect(stage_name, regex("dafür:", ignore_case = TRUE)) &
         str_detect(stage_name, regex("dagegen", ignore_case = TRUE)) &
         str_detect(
           stage_name,
@@ -1071,10 +1066,12 @@ To facilitate a closer look at these cases, the table below lists the affected i
 #| label: non-pairs-table
 #| code-fold: true
 #| code-summary: "Build reactable table of items with duplicate vote rows in a stage"
-# limit to only the offending items so the table stays focused
+# limit to only the offending items so the table stays focused.
+# deliberately no distinct() here: where the source reports the same vote twice, those
+# identical rows *are* the finding, and collapsing them would both hide the duplicate and
+# make n_obs disagree with the n_rows count that flagged the item in the first place
 non_pairs_details <- items_scope %>%
   semi_join(dup_rows, by = c("legis_period", "item_url")) %>%
-  distinct() %>%
   select(
     legis_period,
     item_url,
@@ -1181,7 +1178,7 @@ non_pairs_details_table
 
 As it turns out, some are duplicates in the data source — see for instance [XX/I/1530](https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105), where the votes in the second and third reading are simply reported twice. Others appear multiple times because an item was partly approved and partly rejected within one single reading, and hence got two rows in the data source, as in [XXVIII/I/403](https://www.parlament.gv.at/gegenstand/XXVIII/I/403).
 
-Rather than trying to repair these inconsistencies one by one, I simply remove the affected items from the analysis. Subsequently, I narrow the data down to items with a 'regular' vote report — and since this filter can itself re-introduce a duplicate-free-but-now-inconsistent state, I check for and remove duplicate stage rows once more. The last line below shows which share of the original vote stages survives all these filters.
+Rather than trying to repair these inconsistencies one by one, I simply remove the affected items from the analysis. Subsequently, I narrow the data down to items with a 'regular' vote report. A second duplicate check follows the type filter — it is purely defensive and in practice finds nothing, since taking a subset of rows cannot create a duplicate that wasn't already there — but it makes the invariant explicit rather than assumed. The last line below shows which share of the original vote stages survives all these filters.
 
 ```{r}
 #| label: filter-pairs
@@ -1204,21 +1201,18 @@ table(items_scope_pairs$reading)
 items_scope_pairs_regular <- items_scope_pairs %>%
   filter(vote_report_type == "regular")
 
-# re-check after the regular filter: filtering by type can leave residual duplicates
+# defensive re-check after the type filter. A row subset of an already-unique table cannot
+# contain new duplicates, so this is expected to be empty — assert that rather than silently
+# anti_join()ing against nothing, which would hide it if the invariant ever did break
 dup_rows2 <- items_scope_pairs_regular %>%
   count(legis_period, item_url, reading, name = "n_rows") %>%
   filter(n_rows > 1)
 
-items_scope_pairs_regular <- items_scope_pairs_regular %>%
-  anti_join(., dup_rows2, by = c("legis_period", "item_url"))
+stopifnot(nrow(dup_rows2) == 0)
 
 nrow(items_scope_pairs)
 nrow(items_scope_pairs_regular)
 nrow(items_scope_pairs_regular) / nrow(items_scope) # share of all vote stages covered
-```
-
-```{r}
-knitr::knit_exit()
 ```
 
 ## Extract votes
@@ -1249,20 +1243,24 @@ valid_parties <- c(
   "S",
   "V",
   "N",
-  "G"
+  "G",
+  "T", # Team Stronach, single-letter form
+  "J", # JETZT, single-letter form
+  "B" # BZÖ, single-letter form
 )
 
 # maps historical/transitional party labels to a single canonical name per party
 normalise_party <- function(party) {
   case_when(
     party %in% c("NEOS-LIF", "NEOS/NEOS-LIF") ~ "NEOS",
-    party %in% c("JETZT", "PILZ", "JETZT/PILZ") ~ "JETZT/PILZ",
+    party %in% c("JETZT", "PILZ", "JETZT/PILZ", "J") ~ "JETZT/PILZ",
     party == "F" ~ "FPÖ",
-    party == "F-BZÖ" ~ "BZÖ",
+    party %in% c("F-BZÖ", "B") ~ "BZÖ",
     party == "S" ~ "SPÖ",
     party == "V" ~ "ÖVP",
     party == "N" ~ "NEOS",
     party == "G" ~ "GRÜNE",
+    party == "T" ~ "STRONACH",
     TRUE ~ party
   )
 }
@@ -1278,7 +1276,12 @@ fn_get_votes <- function(vt) {
       str_split(",\\s*") |>
       unlist() |>
       str_trim() |>
-      str_remove("\\)+$") |> # strip trailing parentheses e.g. "SPÖ (Mehrheit)" -> "SPÖ"
+      # drop any parenthetical qualifier and keep the party label in front of it, e.g.
+      # "SPÖ (Mehrheit)" -> "SPÖ", "GRÜNE (G tw." -> "GRÜNE", "BZÖ ( dafür Andere" -> "BZÖ".
+      # This must strip from the opening paren: removing only a trailing ")" would leave
+      # "SPÖ (Mehrheit", which fails the all-caps test below and silently loses the party.
+      str_remove("\\s*\\(.*$") |>
+      str_remove("\\)+$") |> # stray closing paren with no opener in this token
       str_trim() |>
       # keep only all-caps tokens (party abbreviations); drops vote counts, notes, etc.
       keep(\(p) {
@@ -1317,7 +1320,15 @@ fn_get_votes <- function(vt) {
   yes_raw <- parts[1] |>
     str_remove(regex("^.*Dafür:\\s*", dotall = TRUE, ignore_case = TRUE))
 
-  no_raw <- parts[2]
+  # parts[2] runs to the end of the string, so a *second* Dafür:/Dagegen: pair — e.g.
+  # "dagegen: F (f dafür: Dr. Ofner)" — would otherwise leak that vote's parties into the
+  # no-list once the parenthetical strip above keeps the leading token. Cut at that boundary.
+  no_raw <- parts[2] |>
+    str_remove(regex(
+      "\\s*[.;]?\\s*(dafür|dagegen)\\s*:.*$",
+      dotall = TRUE,
+      ignore_case = TRUE
+    ))
 
   list(
     vote_yes = clean_parties(yes_raw),
@@ -1381,7 +1392,9 @@ items_scope_pairs_regular_long <- items_scope_pairs_regular %>%
   )
 ```
 
-To detect flips between stages, we need each stage side by side. Hence, let's pivot the long data frame into a wide format where each row is one item-party combination, with separate columns for the committee, second-reading and third-reading vote (`yes_committee`, `no_committee`, `yes_second`, `no_second`, `yes_third`, `no_third`). An `NA` in these columns means that the party has no recorded vote at that particular stage.
+To detect flips between stages, we need each stage side by side. Hence, let's pivot the long data frame into a wide format where each row is one item-party combination, with separate columns for the committee, second-reading and third-reading vote (`yes_committee`, `no_committee`, `yes_second`, `no_second`, `yes_third`, `no_third`). An `NA` in these columns means the party has no *usable* recorded position at that stage — either because it appears in neither the Dafür nor the Dagegen list, or because the stage text is one of the formats the parser can't resolve into a party-level position.
+
+The pivot also drops the handful of rows labelled `second & third`, where the source reports both readings as a single combined entry. Those can't be assigned to one reading or the other, so they can't contribute to a transition. Worth flagging alongside two earlier exclusions in the same spirit: stages whose description carries no vote-outcome text at all, and committee votes recorded only as `einstimmig` ('unanimously') — the latter tells us the outcome but names no parties, so no individual position can be read from it. Each of these removes real votes from the analysis; none of them is random, and all of them narrow the post to "votes where the record actually names who stood where".
 
 ```{r}
 #| label: votes-wide
@@ -1426,24 +1439,6 @@ items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
       no = NA_integer_
     )
   )
-
-# graph caption: list only the item types that actually survive into the analysis
-# (the type filter is broader, but several variants never carry a reading vote)
-analysed_type_labels <- items_scope_pairs_regular_wide %>%
-  distinct(type_doc) %>%
-  left_join(distinct(items_20_28, type_doc, type_doc_long), by = "type_doc") %>%
-  arrange(type_doc) %>%
-  mutate(label = paste0(type_doc_long, " (", type_doc, ")")) %>%
-  pull(label) %>%
-  paste(collapse = ", ")
-
-vote_graph_caption <- paste0(
-  "Item types included ('Verhandlungsgegenstände'): ",
-  analysed_type_labels,
-  "<br>Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-  data_cutoff,
-  "<br>Graphic: Roland Schmidt, https&#58;//werk.statt.codes | Bluesky: @zoowalk.bsky.social"
-)
 ```
 
 Speaking of `NA`s — before drawing any conclusions, it's worth checking how much missingness we are actually dealing with, and whether it is concentrated in particular legislative periods. The naniar package makes this a quick exercise.
@@ -1459,6 +1454,8 @@ items_scope_pairs_regular_wide %>%
 # Results
 
 Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the flip **rate** by legislative period, direction and party role; where flips concentrate by party, first as absolute counts and then as a share of comparable bills; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
+
+One structural point to keep in mind throughout, because it shapes the central result before any data is involved: the second and third readings of a bill are normally taken in the **same sitting, minutes apart**, whereas the committee vote happens days or weeks earlier, in a different room, with time for negotiation in between. So the two transitions are not comparable windows of opportunity. If it turns out that almost nothing moves between the second and third reading, that is in large part *mechanical* — there is barely any interval in which a position could change — and not evidence that parliamentary debate never persuades anyone. Read the committee → second reading step as "what happened between committee and the floor", and the second → third step as "what happened during a single sitting".
 
 A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs. (The absolute counts behind each bar are shown as labels.)
 
@@ -1585,16 +1582,7 @@ transitions <- bind_rows(
     transition = factor(
       transition,
       levels = c("Committee → 2nd reading", "2nd → 3rd reading")
-    ),
-    # who put the item on the table: RV/RVS come from the government, A/BUA
-    # originate inside the National Council, the rest from the Bundesrat or
-    # are the federal accounts
-    origin = case_when(
-      type_doc %in% c("RV", "RVS") ~ "Government bill",
-      type_doc %in% c("A", "BUA") ~ "National Council",
-      .default = "Other"
-    ) %>%
-      factor(levels = c("Government bill", "National Council", "Other"))
+    )
   )
 
 # how many comparable pairs and how many flips at each transition?
@@ -1606,17 +1594,28 @@ transitions %>% count(transition, name = "eligible_pairs")
 vote_graph_caption_short <- paste0(
   "Data: www&#46;parlament.gv.at via ParlAT package, as of ",
   data_cutoff,
-  " · Graphic: Roland Schmidt, https&#58;//werk.statt.codes · NR, regular votes only (GP XX–XXVIII)"
+  " · Graphic: Roland Schmidt, https&#58;//werk.statt.codes · NR government bills (Regierungsvorlagen) only, regular votes only (GP XX–XXVIII)"
 )
 ```
 
 ## Flip rates by period, direction and role
 
-The most direct answer. For each legislative period, the bars compare the flip **rate** at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal) and by party role. If accommodation happens in committee, the left-hand (committee → 2nd) bars dominate; if it happens on the floor, the right-hand bars do.
+The most direct answer. For each legislative period, the bars compare the flip **rate** at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal) and by party role.
+
+It's worth being precise about what a tall bar means, because the intuitive reading is the wrong way round. A flip at committee → 2nd reading means a party voted one way *in committee* and differently *on the floor* — so the position moved in the interval **between** the two, once the committee stage was already over. A deal actually struck inside the committee produces the opposite: the party votes yes there and yes again later, and contributes **no** flip at all. So tall left-hand (committee → 2nd) bars say that positions were still moving after the committee had reported; tall right-hand (2nd → 3rd) bars would say they moved during the plenary sitting itself.
 
 ```{r}
 #| label: plot-where-flips-bars
 #| code-summary: "Per-period bars: flip rate by transition, direction and role"
+#| fig-alt: >
+#|   Grouped bar chart in a four-panel grid. Legislative periods XX to XXVIII run along
+#|   the x-axis and the flip rate, conditional on the party-bill pairs at risk of flipping,
+#|   on the y-axis. Panel rows separate the direction of change (no to yes, yes to no) and
+#|   panel columns separate opposition from government parties. Within each period, a blue
+#|   bar shows the committee-to-second-reading transition and an orange bar the
+#|   second-to-third-reading transition, with the absolute number of flips labelled above
+#|   each bar. The blue bars are consistently the taller of the two, and the government
+#|   column is close to empty throughout.
 #| fig-width: 11
 #| fig-height: 8
 #| out-width: "100%"
@@ -1673,8 +1672,8 @@ p_where_bars <- flip_dirs %>%
     subtitle = paste0(
       "Flip **rate** at each transition — committee → 2nd reading (blue) vs 2nd → 3rd reading (orange) — ",
       "by direction and party role. Bar labels show the absolute number of flips. ",
-      "A high committee → 2nd bar means positions settled already in committee; ",
-      "a high 2nd → 3rd bar means they shifted on the floor.<br>",
+      "A high committee → 2nd bar means positions were still moving between the committee ",
+      "vote and the plenary; a high 2nd → 3rd bar means they moved during the sitting itself.<br>",
       "<span style='font-size:9pt;color:grey40;'>Rate is **conditional on the pairs that could flip**: no → yes ÷ pairs voting *no* at the earlier stage; yes → no ÷ pairs voting *yes*. NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
@@ -1711,11 +1710,21 @@ p_where_bars
 
 ## Flip counts and shares by party
 
-A party × period tile grid, faceted by transition (columns) and direction (rows), so each party–period cell appears twice — once for the committee → 2nd step and once for 2nd → 3rd. Counts, not rates, so it reads as "how many flips, and at which step". Government parties carry a thick black frame.
+A party × period tile grid, faceted by transition (rows) and direction (columns), so each party–period cell appears four times — once for each combination of the two transitions (committee → 2nd, 2nd → 3rd) and the two directions (no → yes, yes → no). Counts, not rates, so it reads as "how many flips, and at which step". Government parties carry a thick black frame.
 
 ```{r}
 #| label: plot-where-flips-heatmap
 #| code-summary: "Tile heatmap of flip counts faceted by transition and direction"
+#| fig-alt: >
+#|   Tile heatmap in a four-panel grid. Legislative periods XX to XXVIII run along the
+#|   x-axis and parties down the y-axis. Panel rows separate the two transitions
+#|   (committee to second reading, second to third reading) and panel columns the two
+#|   directions of change. Colour encodes the number of flips: green for moves toward
+#|   support, red for withdrawals of support, pale grey where a party made no flips and
+#|   white where it held no seats in that period. Counts are printed in each tile. The
+#|   committee-to-second-reading row carries almost all of the shading; the
+#|   second-to-third-reading row is nearly blank. A thick black frame marks governing
+#|   parties, whose tiles are largely empty.
 #| fig-width: 12
 #| fig-height: 9
 #| out-width: "100%"
@@ -1756,6 +1765,11 @@ where_tile_grid <- expand_grid(
 
 n_max_where <- max(1, max(where_tile_grid$n_flip, na.rm = TRUE))
 
+# the diverging scale passes through near-white at its midpoint, so small counts sit on a
+# pale tile — white digits would be invisible there. Same approach as the percent heatmap.
+where_tile_grid <- where_tile_grid %>%
+  mutate(label_colour = if_else(n_flip > n_max_where / 2, "white", "grey15"))
+
 p_where_heatmap <- where_tile_grid %>%
   ggplot(aes(x = legis_period, y = party, fill = fill_val_signed)) +
   geom_tile(
@@ -1771,9 +1785,13 @@ p_where_heatmap <- where_tile_grid %>%
     inherit.aes = FALSE
   ) +
   geom_text(
-    data = where_tile_grid %>% filter(n_flip > 0),
-    mapping = aes(x = legis_period, y = party, label = label),
-    colour = "white",
+    data = where_tile_grid %>% filter(n_flip > 0, present),
+    mapping = aes(
+      x = legis_period,
+      y = party,
+      label = label,
+      colour = label_colour
+    ),
     size = 2.8,
     fontface = "bold",
     family = "Noto Sans",
@@ -1781,6 +1799,7 @@ p_where_heatmap <- where_tile_grid %>%
   ) +
   # switch = "y" moves the transition strip from the right edge to the left
   facet_grid(transition ~ change, switch = "y") +
+  scale_colour_identity() +
   scale_fill_gradient2(
     low = "#b2182b",
     mid = "grey92",
@@ -1837,25 +1856,53 @@ p_where_heatmap
 
 ## Share of comparable bills
 
-The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the total number of unique bills with usable votes at both stages of that transition in the same legislative period. The denominator is shared across parties and directions within each transition-period, so these percentages describe party-specific shares of bills and do not sum to 100%.
+The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the number of bills on which **that party** had a usable vote at both stages of the transition in the same legislative period.
+
+The party-specific denominator matters. An obvious alternative is to divide every party by the same figure — all bills where *any* party could be compared — but that punishes exactly the parties most often missing from the recorded party lists: their numerator shrinks while their denominator doesn't, so their tiles read artificially pale and can't fairly be compared against a party present in nearly every vote. Conditioning each party on its own comparable bills makes the tiles comparable across a row. The percentages still don't sum to 100%: they are independent per-party shares, not a decomposition.
 
 ```{r}
 #| label: plot-where-flips-heatmap-percent
 #| code-summary: "Tile heatmap of bill-level flip percentages faceted by transition and direction"
+#| fig-alt: >
+#|   Tile heatmap in a four-panel grid, matching the preceding counts chart but showing
+#|   shares instead of counts. Legislative periods XX to XXVIII run along the x-axis and
+#|   parties down the y-axis; panel rows separate the two transitions and panel columns the
+#|   two directions of change. Each tile gives the percentage of the bills on which that
+#|   party was comparable at both stages where it changed position, printed in the tile and
+#|   encoded by colour, green for moves toward support and red for withdrawals. Expressing
+#|   the flips as shares keeps the committee-to-second-reading row dominant, confirming the
+#|   pattern is not an artefact of some periods simply having more bills.
 #| fig-width: 12
 #| fig-height: 9
 #| out-width: "100%"
 #| fig-align: "center"
-# count each comparable bill once per legislative period and transition
+# Denominator, per party: the bills where *this* party was comparable at both stages of the
+# transition. `transitions` is already restricted to pairs observed at both stages, so a
+# distinct count over it gives exactly that.
 transition_bill_totals <- transitions %>%
-  distinct(item_url, legis_period, transition) %>%
-  count(legis_period, transition, name = "n_bills")
+  distinct(party, item_url, legis_period, transition) %>%
+  count(party, legis_period, transition, name = "n_bills")
 
-# every displayed transition-period must have a positive bill denominator
-stopifnot(
-  nrow(transition_bill_totals) == length(all_periods_vec) * 2L,
-  all(transition_bill_totals$n_bills > 0)
-)
+# Report, rather than assert, which period x transition combinations carry no comparable
+# bills at all. A hard equality check on the expected number of combinations would abort the
+# whole render over an early period that simply has no committee votes on record.
+missing_combos <- expand_grid(
+  legis_period = all_periods_vec,
+  transition = c("Committee → 2nd reading", "2nd → 3rd reading")
+) %>%
+  anti_join(
+    transition_bill_totals %>% mutate(transition = as.character(transition)),
+    by = c("legis_period", "transition")
+  )
+
+if (nrow(missing_combos) > 0) {
+  warning(
+    "No comparable bills for: ",
+    paste0(missing_combos$legis_period, " / ", missing_combos$transition, collapse = "; ")
+  )
+}
+
+stopifnot(all(transition_bill_totals$n_bills > 0))
 
 # count unique bills on which each party flips in each direction
 flip_bill_counts <- transitions %>%
@@ -1872,8 +1919,8 @@ where_tile_rate_grid <- where_tile_grid %>%
   ) %>%
   replace_na(list(n_flip_bills = 0L)) %>%
   left_join(
-    transition_bill_totals,
-    by = c("legis_period", "transition")
+    transition_bill_totals %>% mutate(transition = as.character(transition)),
+    by = c("party", "legis_period", "transition")
   ) %>%
   mutate(
     party = factor(party, levels = levels(where_tile_grid$party)),
@@ -1894,9 +1941,11 @@ where_tile_rate_grid <- where_tile_grid %>%
     fill_rate_signed = if_else(change == "yes → no", -fill_rate, fill_rate)
   )
 
-# denominators must be shared across parties/directions and bound every numerator
+# The denominator is now per party, so it varies down a column by construction. What must
+# still hold is that it is identical across the two *directions* for a given party (both
+# directions draw on the same comparable bills) and that it bounds every numerator.
 denominator_check <- where_tile_rate_grid %>%
-  group_by(legis_period, transition) %>%
+  group_by(party, legis_period, transition) %>%
   summarise(n_denominators = n_distinct(n_bills), .groups = "drop")
 
 stopifnot(
@@ -1950,7 +1999,6 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
     high = "#1a9850",
     midpoint = 0,
     limits = c(-rate_max_where, rate_max_where),
-    labels = scales::percent_format(accuracy = 0.1),
     na.value = "white",
     guide = "none"
   ) +
@@ -1962,8 +2010,9 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
     subtitle = paste0(
       "Each tile shows the share of comparable bills on which a party changes position ",
       "(red = yes → no, green = no → yes). ",
-      "The denominator is all unique bills with usable votes at both stages of that transition and period, ",
-      "shared across parties and directions; percentages do not sum to 100%. ",
+      "The denominator is per party: the bills where that party itself had a usable vote at ",
+      "both stages of the transition, which keeps the tiles comparable across a row. ",
+      "Percentages are independent per-party shares and do not sum to 100%. ",
       "White = party not represented; grey = no flips; thick black frame = governing party.<br>",
       "<span style='font-size:9pt;color:grey40;'>NR, regular votes only, GP XX–XXVIII.</span>"
     ),
@@ -2009,6 +2058,14 @@ The most compact summary of all: a single tile grid with the two transitions on 
 ```{r}
 #| label: plot-flip-stage-period
 #| code-summary: "Heatmap of relative flip rate by stage and legislative period"
+#| fig-alt: >
+#|   Tile heatmap with two columns, one per transition (committee to second reading,
+#|   second to third reading), and legislative periods XX to XXVIII down the y-axis, newest
+#|   at the top. A secondary axis on the right names the governing coalition of each period.
+#|   Colour depth encodes the share of all comparable party-bill pairs that change position,
+#|   with the percentage printed in each tile. The committee-to-second-reading column is
+#|   consistently the darker of the two across every period, summarising the post's central
+#|   finding that position changes concentrate between the committee vote and the floor.
 #| fig-width: 7
 #| fig-height: 7.5
 #| out-width: "70%"
@@ -2035,6 +2092,17 @@ gov_axis_labels <- gov_parties_lookup %>%
   ) %>%
   tibble::deframe()
 
+# every period on the axis must have a coalition label, otherwise the static vector built
+# below would silently pair periods with the wrong government
+stopifnot(all(all_periods_vec %in% names(gov_axis_labels)))
+
+# Build the secondary-axis labels as an explicit, name-matched vector in the same order as
+# the y-axis levels (which are reversed, so the newest period sits on top). Deriving them
+# inside the labeller from the values ggplot passes in is fragile: on a discrete scale it
+# receives integer positions rather than level names, so the lookup would be positional and
+# would break silently if a period were missing or the level order changed.
+gov_axis_labels_ordered <- unname(gov_axis_labels[rev(all_periods_vec)])
+
 p_flip_stage_period <- flip_stage_period %>%
   ggplot(aes(x = transition, y = legis_period, fill = rate)) +
   geom_tile(colour = "white", linewidth = 0.9) +
@@ -2054,7 +2122,7 @@ p_flip_stage_period <- flip_stage_period %>%
   scale_y_discrete(
     breaks = levels(flip_stage_period$legis_period),
     sec.axis = dup_axis(
-      labels = function(x) rev(unname(gov_axis_labels[x])),
+      labels = gov_axis_labels_ordered,
       name = NULL
     )
   ) +
@@ -2099,127 +2167,6 @@ p_flip_stage_period <- flip_stage_period %>%
   )
 
 p_flip_stage_period
-```
-
-## Who initiated the bill?
-
-The pattern above lumps every item together, but not every item arrives in parliament the same way. A **Regierungsvorlage** is the government's own proposal; a **Selbständiger Antrag** is initiated inside the National Council, usually by MPs of one or more parties. That distinction matters for the question this post started with. If an opposition party votes against a government bill in committee and for it at the second reading, the natural reading is that the government moved to win that support. The same flip on a parliamentary motion can mean something quite different — the motion's own sponsors negotiating among themselves, for instance.
-
-So the table below splits the transitions by who initiated the item, keeping every item type in scope: government bills (`RV`, `RVS`), items initiated in the National Council (`A`, `BUA`), and everything else (`GABR`, `EBR`, `BRA` — Bundesrat initiatives and the federal accounts).
-
-Two things to keep in mind when reading it. First, the rates are **conditional on the pairs at risk**, the same rule as the flip-rate chart further above: the no → yes rate divides by the pairs voting *no* at the earlier stage, the yes → no rate by those voting *yes*. They are therefore *not* comparable with the percentages in the stage × period tile immediately above, which divide by all eligible pairs. Second, `RVS` (treaties) and `BUA` ('Bericht und Antrag') contribute no committee → 2nd pairs at all: treaties are approved with a `Antrag auf Genehmigung des Abschlusses` rather than an adoption vote, and a 'Bericht und Antrag' *is* the committee's own motion, so there is no earlier committee vote to compare it against. For that transition the comparison is effectively `RV` against `A`.
-
-```{r}
-#| label: table-origin-flips
-#| code-summary: "Flip counts and at-risk rates by item origin, transition and direction"
-# at-risk denominator per origin x transition x direction, mirroring the
-# conditional rule used by the flip-rate chart above
-at_risk_origin <- transitions %>%
-  mutate(direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no")) %>%
-  count(origin, transition, direction, name = "n_at_risk")
-
-flips_origin <- transitions %>%
-  filter(change %in% c("no → yes", "yes → no")) %>%
-  count(origin, transition, change, name = "n_flip")
-
-# total comparable pairs, for context on how much each row rests on
-pairs_origin <- transitions %>%
-  count(origin, transition, name = "n_pairs")
-
-origin_flip_table_data <- at_risk_origin %>%
-  left_join(
-    flips_origin,
-    by = c("origin", "transition", "direction" = "change")
-  ) %>%
-  replace_na(list(n_flip = 0)) %>%
-  mutate(
-    rate = n_flip / n_at_risk,
-    # short, ASCII-safe suffixes so the pivoted column names stay predictable
-    dir_key = if_else(direction == "no → yes", "nty", "ytn")
-  ) %>%
-  pivot_wider(
-    id_cols = c(origin, transition),
-    names_from = dir_key,
-    values_from = c(n_at_risk, n_flip, rate),
-    names_glue = "{.value}_{dir_key}"
-  ) %>%
-  left_join(pairs_origin, by = c("origin", "transition")) %>%
-  arrange(origin, transition) %>%
-  select(
-    origin, transition, n_pairs,
-    n_at_risk_nty, n_flip_nty, rate_nty,
-    n_at_risk_ytn, n_flip_ytn, rate_ytn
-  )
-
-# a flip can never outnumber the pairs that were at risk of making it
-stopifnot(
-  all(origin_flip_table_data$n_flip_nty <= origin_flip_table_data$n_at_risk_nty, na.rm = TRUE),
-  all(origin_flip_table_data$n_flip_ytn <= origin_flip_table_data$n_at_risk_ytn, na.rm = TRUE)
-)
-
-origin_flip_table <- reactable(
-  origin_flip_table_data,
-  columns = list(
-    origin = colDef(name = "Item origin", minWidth = 150),
-    transition = colDef(name = "Transition", minWidth = 150),
-    n_pairs = colDef(
-      name = "Comparable pairs",
-      align = "right", minWidth = 120,
-      format = colFormat(separators = TRUE)
-    ),
-    n_at_risk_nty = colDef(
-      name = "At risk", align = "right", minWidth = 90,
-      format = colFormat(separators = TRUE)
-    ),
-    n_flip_nty = colDef(
-      name = "Flips", align = "right", minWidth = 80,
-      format = colFormat(separators = TRUE)
-    ),
-    rate_nty = colDef(
-      name = "Rate", align = "right", minWidth = 90,
-      format = colFormat(percent = TRUE, digits = 2)
-    ),
-    n_at_risk_ytn = colDef(
-      name = "At risk", align = "right", minWidth = 90,
-      format = colFormat(separators = TRUE)
-    ),
-    n_flip_ytn = colDef(
-      name = "Flips", align = "right", minWidth = 80,
-      format = colFormat(separators = TRUE)
-    ),
-    rate_ytn = colDef(
-      name = "Rate", align = "right", minWidth = 90,
-      format = colFormat(percent = TRUE, digits = 2)
-    )
-  ),
-  columnGroups = list(
-    colGroup(
-      name = "no → yes (move toward support)",
-      columns = c("n_at_risk_nty", "n_flip_nty", "rate_nty")
-    ),
-    colGroup(
-      name = "yes → no (withdrawal of support)",
-      columns = c("n_at_risk_ytn", "n_flip_ytn", "rate_ytn")
-    )
-  ),
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  pagination = FALSE,
-  theme = compact_table_theme
-) %>%
-  style_reactable_table(
-    "VOTE FLIPS BY WHO INITIATED THE ITEM",
-    paste0(
-      "Rates are conditional on the pairs at risk, so they are not comparable with the stage × period percentages above. ",
-      "'At risk' counts the party–item pairs holding the prior position, i.e. the only ones that could flip in that direction. Data as of ",
-      data_cutoff,
-      "."
-    )
-  )
-
-origin_flip_table
 ```
 
 ## A closer look: items decided at all three stages
@@ -2393,18 +2340,90 @@ latest_c2_item <- three_stage_wide %>%
   arrange(desc(stage_date_second)) %>%
   slice_head(n = 1)
 
+# Name only the parties that made the *same* move as the sliced row. Listing every party
+# that flipped on this bill would be wrong whenever two of them flipped in opposite
+# directions, since the positions quoted in the prose come from this one row.
 latest_c2_parties <- three_stage_wide %>%
-  semi_join(latest_c2_item, by = c("item_url")) %>%
+  semi_join(latest_c2_item, by = "item_url") %>%
   filter(replace_na(change_committee_2nd, FALSE)) %>%
+  filter(
+    pos_committee == latest_c2_item$pos_committee,
+    pos_second == latest_c2_item$pos_second
+  ) %>%
   distinct(party) %>%
   pull(party) %>%
   paste(collapse = ", ")
+
+# the third reading may have no recorded position for this party; keep the sentence honest
+latest_c2_third_clause <- if (is.na(latest_c2_item$pos_third)) {
+  " No position is recorded for the third reading."
+} else {
+  paste0(
+    " At the third reading the position was *",
+    latest_c2_item$pos_third,
+    "*."
+  )
+}
+
+# German month names would leak in on a German locale, so format the date numerically
+latest_c2_date <- format(latest_c2_item$stage_date_second, "%Y-%m-%d")
 ```
 
 ::: callout-note
 ## Most recent example
 
-The most recent item in this subset with a committee → second-reading change is **`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**, voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There, **`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but *`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`* at the third. [Open on parlament.gv.at →](`r latest_c2_item$item_url`)
+The most recent item in this subset with a committee → second-reading change is **`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**, voted on `r latest_c2_date`. There, **`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but *`r latest_c2_item$pos_second`* at the second reading.`r latest_c2_third_clause` [Open on parlament.gv.at →](`r latest_c2_item$item_url`)
 :::
 
 # Wrap-up
+
+```{r}
+#| label: wrapup-figures
+#| include: false
+# every number quoted in the wrap-up is computed here, so the text cannot drift
+# out of sync with the data on a later re-render
+wrap_tr <- transitions %>%
+  group_by(transition) %>%
+  summarise(
+    pairs = n(),
+    flips = sum(change %in% c("no → yes", "yes → no")),
+    .groups = "drop"
+  ) %>%
+  mutate(rate = flips / pairs)
+
+wrap_c2 <- wrap_tr %>% filter(transition == "Committee → 2nd reading")
+wrap_23 <- wrap_tr %>% filter(transition == "2nd → 3rd reading")
+wrap_share_c2 <- wrap_c2$flips / sum(wrap_tr$flips)
+
+wrap_dir <- transitions %>%
+  filter(transition == "Committee → 2nd reading", change %in% c("no → yes", "yes → no")) %>%
+  count(change)
+wrap_nty <- wrap_dir$n[wrap_dir$change == "no → yes"]
+wrap_ytn <- wrap_dir$n[wrap_dir$change == "yes → no"]
+
+# party and role profile, taken from the three-stage subset built above
+wrap_by_party <- three_stage_changes %>% count(party, sort = TRUE)
+wrap_by_role <- three_stage_changes %>% count(role)
+# three_stage_wide is one row per party x item, so bills need a distinct count
+wrap_n_bills <- n_distinct(three_stage_wide$item_url)
+wrap_opp <- sum(wrap_by_role$n[wrap_by_role$role == "Opposition"])
+wrap_gov <- sum(wrap_by_role$n[wrap_by_role$role == "Government"])
+wrap_top_party <- wrap_by_party$party[1]
+wrap_top_n <- wrap_by_party$n[1]
+```
+
+So, where does a party actually change its mind on a government bill? The short answer: **between the committee and the floor, and almost nowhere else**.
+
+Across `r scales::comma(nrow(items_20_28))` Regierungsvorlagen from the 20th to the 28th legislative period, `r scales::percent(wrap_c2$rate, accuracy = 0.01)` of the comparable party–bill pairs change position between the committee vote and the second reading (`r scales::comma(wrap_c2$flips)` of `r scales::comma(wrap_c2$pairs)`), against `r scales::percent(wrap_23$rate, accuracy = 0.01)` between the second and the third reading (`r scales::comma(wrap_23$flips)` of `r scales::comma(wrap_23$pairs)`). That is `r scales::percent(wrap_share_c2, accuracy = 0.1)` of all the movement in the data sitting in one of the two steps. Taking the three questions from the top in turn:
+
+**Between which stages?** Committee → second reading, overwhelmingly. But recall what that interval is and is not: the second and third readings are typically taken minutes apart in the same sitting, so the near-absence of movement there is substantially mechanical rather than a finding about plenary debate. The committee → second reading step is the one that actually contains days or weeks in which something could be negotiated — and it is the one where the changes show up.
+
+**Which parties?** In the `r scales::comma(wrap_n_bills)`-bill subset observable at all three stages, changes are almost exclusively an opposition phenomenon: `r scales::comma(wrap_opp)` of the `r scales::comma(wrap_opp + wrap_gov)` recorded changes come from opposition parties. `r wrap_top_party` accounts for the largest single share (`r wrap_top_n`), followed by the other long-serving opposition parties. That asymmetry is the expected shape if these flips are the trace of a governing majority buying support rather than of parties independently reconsidering the merits — a government party has little reason to vote against its own bill in committee in the first place.
+
+**Under which government?** Here I'd rather under-claim. The raw counts are highest in the earlier periods, but as flagged at the outset, legislative periods are not directly comparable: they differ in length, in how many bills they produced, and in how contested those bills were. A period with more `no` votes at the committee stage simply has more opportunities to flip. The per-period tiles show the pattern holding throughout, but I would not read the ranking between periods as a ranking of governmental responsiveness.
+
+One direction is worth flagging on its own. At the committee → second reading step, moves *toward* support outnumber withdrawals by roughly `r round(wrap_nty / wrap_ytn, 1)` to 1 (`r scales::comma(wrap_nty)` versus `r scales::comma(wrap_ytn)`). Positions converge on their way to the floor far more often than they fracture.
+
+A closing caveat on what this does and does not show. These numbers locate *where* positions change; they cannot say *why*. A flip from no to yes is consistent with a concession having been made — that was the motivating hunch — but it is equally consistent with an opposition party simply being persuaded, or with the committee stage having clarified something the party had misread. Establishing the difference means reading the individual bill and what changed in it between the two votes. The table above links every case, so that check is at least available for anyone who wants to make it on a specific bill.
+
+Finally, the scope: this post covers government bills only. Items initiated inside the National Council follow a different political logic, and whether the same pattern holds for them is a separate question — and a good candidate for a Part III.
