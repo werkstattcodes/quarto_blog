@@ -13,7 +13,29 @@
       "Bash('C:/Program Files/R/R-4.5.1/bin/Rscript.exe' -e 'suppressMessages\\(library\\(targets\\)\\); cs <- tar_read\\(committee_stages\\); cat\\(scales::comma\\(nrow\\(cs\\)\\), scales::percent\\(mean\\(cs$is_vote\\), accuracy=0.1\\), scales::percent\\(mean\\(cs$in_scope\\), accuracy=0.1\\), \"\\\\n\"\\)')",
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__resize_page",
-      "Bash(quarto render *)"
+      "Bash(quarto render *)",
+      "Bash(Rscript -e 'library\\(ParlAT\\); cat\\(tools:::Rd2txt\\(Rd_db\\(\"ParlAT\"\\)[[\"get_items.Rd\"]]\\)\\)')",
+      "Bash(Rscript -e ' *)",
+      "Bash(grep -c '^```{r}' index.qmd)",
+      "Bash(grep -c '^```$' index.qmd)",
+      "Bash(timeout 600 Rscript -e ' *)",
+      "Bash(python3 -)",
+      "Bash(timeout 300 Rscript -e ' *)",
+      "Bash(timeout 1800 Rscript /tmp/claude-1000/-home-roland-Documents-RProjects-quarto-blog/6864929d-70ef-498d-9cbd-24fd905cf9a4/scratchpad/fetch_items.R)",
+      "Bash(cat)",
+      "Bash(nohup timeout 5400 Rscript /tmp/claude-1000/-home-roland-Documents-RProjects-quarto-blog/6864929d-70ef-498d-9cbd-24fd905cf9a4/scratchpad/fetch_details.R)",
+      "Bash(echo \"started pid $!\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(pkill -f run3.R)",
+      "Bash(timeout 300 Rscript /tmp/claude-1000/-home-roland-Documents-RProjects-quarto-blog/6864929d-70ef-498d-9cbd-24fd905cf9a4/scratchpad/syn.R)",
+      "Bash(timeout 300 Rscript -e 'x<-readLines\\(\"index.qmd\"\\); cat\\(\"syntax ok\\\\n\"\\)')",
+      "Bash(rm -rf posts/2026-06-08-ParlAT-votingPatterns-2/index_cache)",
+      "Bash(timeout 3000 quarto render posts/2026-06-08-ParlAT-votingPatterns-2/index.qmd --to html)",
+      "Bash(python3 -c ' *)",
+      "Bash(git push *)",
+      "Bash(grep -n 'data_cutoff <- \\\\|mean\\(committee_stages$is_vote\\)' index.qmd)",
+      "Bash([ -f $S/barsB.png ])",
+      "Bash(break)"
     ]
   }
 }
