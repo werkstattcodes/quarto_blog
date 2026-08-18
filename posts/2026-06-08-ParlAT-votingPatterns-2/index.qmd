@@ -1457,7 +1457,7 @@ Where along an item's journey does a party actually change its mind — between 
 
 One structural point to keep in mind throughout, because it shapes the central result before any data is involved: the second and third readings of a bill are normally taken in the **same sitting, minutes apart**, whereas the committee vote happens days or weeks earlier, in a different room, with time for negotiation in between. So the two transitions are not comparable windows of opportunity. If it turns out that almost nothing moves between the second and third reading, that is in large part *mechanical* — there is barely any interval in which a position could change — and not evidence that parliamentary debate never persuades anyone. Read the committee → second reading step as "what happened between committee and the floor", and the second → third step as "what happened during a single sitting".
 
-A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a share *is* computed, it is computed against the population that could actually produce the numerator: the share-of-bills heatmap divides each party by the bills on which **that party** had a usable vote at both stages, not by every bill in the period. The general point is worth keeping in mind either way: a party that already voted *yes* at the earlier stage cannot flip *no → yes*, so it was never at risk of doing so, and any rate that ignores this overstates how settled positions were.
+A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a share *is* computed, the denominator is specific to the party it describes: the share-of-bills heatmap divides each party by the bills on which **that party** had a usable vote at both stages, rather than by every bill in the period, so a party that is often absent from the recorded vote lists is not penalised for it. One general point is worth keeping in mind for any of these shares: a party that already voted *yes* at the earlier stage cannot flip *no → yes* — it was never in a position to make that move. Neither of the rates below conditions on this, so both count parties in the denominator that could not have produced the numerator, and both therefore understate how much movement actually occurred. The counts in the first chart are unaffected, since they divide by nothing at all.
 
 And a note on who counts as government: coalition membership is coded once per legislative period, which is an approximation. It is a poor one for GP XXVI in particular — that period covers the ÖVP-FPÖ coalition, its collapse after the Ibiza affair in May 2019, the subsequent ÖVP-only cabinet and the Bierlein caretaker government. Votes from the second half of GP XXVI are therefore labelled against a coalition that no longer existed, so the government/opposition split shown for that period should be read with care.
 
@@ -1549,7 +1549,8 @@ stage_positions <- items_scope_pairs_regular_wide %>%
   )
 
 # one row per party × item × transition, keeping the position held BEFORE and after.
-# from_pos lets us condition flip rates on the pairs actually at risk of flipping.
+# from_pos records the position a party went in with, i.e. which changes it was in a
+# position to make: a prior 'no' is the only thing that can become a 'no → yes'.
 transitions <- bind_rows(
   stage_positions %>%
     transmute(
