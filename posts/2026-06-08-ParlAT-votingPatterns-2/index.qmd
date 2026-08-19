@@ -52,7 +52,7 @@ pre.scroll-x > code {
 
 ![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap of flip counts with legislative periods on the x-axis and parties on the y-axis, in four panels splitting the two transitions and two directions of change. Green marks moves toward support and red withdrawals; the committee-to-second-reading row carries almost all of the shading while the second-to-third-reading row is nearly blank."}
 
-![Share of comparable bills with a party vote flip, by period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap showing, for each party and legislative period, the percentage of comparable bills on which the party changed position, in four panels splitting the two transitions and two directions. Expressed as shares, the committee-to-second-reading row remains dominant."}
+![Each party's share of its legislative period's position changes, by transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap showing each party's share of all position changes recorded in a legislative period, in four panels splitting the two transitions and two directions. Shares within a column add up to 100 percent, showing how each period's movement was divided between the parties."}
 
 ![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery" fig-alt="Two-column tile heatmap comparing the committee-to-second-reading and second-to-third-reading transitions across legislative periods XX to XXVIII, with the governing coalition named on a secondary right-hand axis. The committee-to-second-reading column is darker in every period, indicating that position changes concentrate between the committee vote and the floor."}
 :::
@@ -1453,11 +1453,13 @@ items_scope_pairs_regular_wide %>%
 
 # Results
 
-Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the **number** of flips by legislative period and direction; where flips concentrate by party, first as absolute counts and then as a share of comparable bills; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
+Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the **number** of flips by legislative period and direction; where flips concentrate by party, first as absolute counts and then as each party's share of its period's movement; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
 
 One structural point to keep in mind throughout, because it shapes the central result before any data is involved: the second and third readings of a bill are normally taken in the **same sitting, minutes apart**, whereas the committee vote happens days or weeks earlier, in a different room, with time for negotiation in between. So the two transitions are not comparable windows of opportunity. If it turns out that almost nothing moves between the second and third reading, that is in large part *mechanical* — there is barely any interval in which a position could change — and not evidence that parliamentary debate never persuades anyone. Read the committee → second reading step as "what happened between committee and the floor", and the second → third step as "what happened during a single sitting".
 
-A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a share *is* computed, the denominator is specific to the party it describes: the share-of-bills heatmap divides each party by the bills on which **that party** had a usable vote at both stages, rather than by every bill in the period, so a party that is often absent from the recorded vote lists is not penalised for it. One general point is worth keeping in mind for any of these shares: a party that already voted *yes* at the earlier stage cannot flip *no → yes* — it was never in a position to make that move. Neither of the rates below conditions on this, so both count parties in the denominator that could not have produced the numerator, and both therefore understate how much movement actually occurred. The counts in the first chart are unaffected, since they divide by nothing at all.
+A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a percentage *is* shown, it is a composition rather than a rate: the party tiles divide that period's own position changes between the parties and add up to 100% within a column. That answers "who moved", not "how often a party moves" — a party with a large share may have moved once in a quiet period. The stage × period tile at the end is the one genuine rate, dividing flips by all comparable pairs.
+
+One caveat applies to that last rate: a party that already voted *yes* at the earlier stage cannot flip *no → yes* — it was never in a position to make that move. Dividing by all comparable pairs counts those parties in the denominator anyway, so the rate understates how much of the movement that was actually available did occur.
 
 And a note on who counts as government: coalition membership is coded once per legislative period, which is an approximation. It is a poor one for GP XXVI in particular — that period covers the ÖVP-FPÖ coalition, its collapse after the Ibiza affair in May 2019, the subsequent ÖVP-only cabinet and the Bierlein caretaker government. Votes from the second half of GP XXVI are therefore labelled against a coalition that no longer existed, so the government/opposition split shown for that period should be read with care.
 
@@ -1676,7 +1678,7 @@ p_where_bars <- flip_dirs %>%
       "2nd → 3rd reading (orange) — by direction, opposition parties only. ",
       "A high committee → 2nd bar means positions were still moving between the committee ",
       "vote and the plenary; a high 2nd → 3rd bar means they moved during the sitting itself.<br>",
-      "<span style='font-size:9pt;color:grey40;'>Counts are not normalised for how many comparable bills each period had; see the share-of-bills chart further below for that. NR, regular votes only, GP XX–XXVIII.</span>"
+      "<span style='font-size:9pt;color:grey40;'>Counts are not normalised for how many comparable bills each period had, so periods are not directly comparable here. NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
   ) +
@@ -1856,56 +1858,29 @@ p_where_heatmap <- where_tile_grid %>%
 p_where_heatmap
 ```
 
-## Share of comparable bills
+## Who accounts for the movement in each period?
 
-The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the number of bills on which **that party** had a usable vote at both stages of the transition in the same legislative period.
+The counts above say how much movement there was; they don't say how it was distributed between the parties. The chart below answers that by turning each legislative period into a composition: within one period, one transition and one direction, the tiles give each party's share of that period's position changes and **sum to 100%**.
 
-The party-specific denominator matters. An obvious alternative is to divide every party by the same figure — all bills where *any* party could be compared — but that punishes exactly the parties most often missing from the recorded party lists: their numerator shrinks while their denominator doesn't, so their tiles read artificially pale and can't fairly be compared against a party present in nearly every vote. Conditioning each party on its own comparable bills makes the tiles comparable across a row. The percentages still don't sum to 100%: they are independent per-party shares, not a decomposition.
+So a tile reads as "of everything that moved in this period, this party accounted for X% of it". That makes the balance between parties in a given period directly readable down a column — which the raw counts obscure whenever one period simply produced more movement than another.
+
+Two cautions. A share says nothing about volume: a party can hold 100% of a period's flips because it was the only one that moved, on a single bill. Read the tiles together with the counts chart above, which supplies the magnitudes. And because each column is normalised on its own, shares are *not* comparable across periods — only within one.
 
 ```{r}
 #| label: plot-where-flips-heatmap-percent
-#| code-summary: "Tile heatmap of bill-level flip percentages faceted by transition and direction"
+#| code-summary: "Tile heatmap: each party's share of its period's position changes"
 #| fig-alt: >
-#|   Tile heatmap in a four-panel grid, matching the preceding counts chart but showing
-#|   shares instead of counts. Legislative periods XX to XXVIII run along the x-axis and
-#|   parties down the y-axis; panel rows separate the two transitions and panel columns the
-#|   two directions of change. Each tile gives the percentage of the bills on which that
-#|   party was comparable at both stages where it changed position, printed in the tile and
-#|   encoded by colour, green for moves toward support and red for withdrawals. Expressing
-#|   the flips as shares keeps the committee-to-second-reading row dominant, confirming the
-#|   pattern is not an artefact of some periods simply having more bills.
+#|   Tile heatmap in a four-panel grid. Legislative periods XX to XXVIII run along the x-axis
+#|   and parties down the y-axis; panel rows separate the two transitions and panel columns
+#|   the two directions of change. Each tile gives that party's share of all position changes
+#|   recorded in that period, so the tiles in one column add up to 100 percent, printed in the
+#|   tile and encoded by colour, green for moves toward support and red for withdrawals. The
+#|   chart shows how each period's movement was divided between the parties rather than how
+#|   often any single party moved.
 #| fig-width: 12
 #| fig-height: 9
 #| out-width: "100%"
 #| fig-align: "center"
-# Denominator, per party: the bills where *this* party was comparable at both stages of the
-# transition. `transitions` is already restricted to pairs observed at both stages, so a
-# distinct count over it gives exactly that.
-transition_bill_totals <- transitions %>%
-  distinct(party, item_url, legis_period, transition) %>%
-  count(party, legis_period, transition, name = "n_bills")
-
-# Report, rather than assert, which period x transition combinations carry no comparable
-# bills at all. A hard equality check on the expected number of combinations would abort the
-# whole render over an early period that simply has no committee votes on record.
-missing_combos <- expand_grid(
-  legis_period = all_periods_vec,
-  transition = c("Committee → 2nd reading", "2nd → 3rd reading")
-) %>%
-  anti_join(
-    transition_bill_totals %>% mutate(transition = as.character(transition)),
-    by = c("legis_period", "transition")
-  )
-
-if (nrow(missing_combos) > 0) {
-  warning(
-    "No comparable bills for: ",
-    paste0(missing_combos$legis_period, " / ", missing_combos$transition, collapse = "; ")
-  )
-}
-
-stopifnot(all(transition_bill_totals$n_bills > 0))
-
 # count unique bills on which each party flips in each direction
 flip_bill_counts <- transitions %>%
   filter(change %in% c("no → yes", "yes → no")) %>%
@@ -1920,9 +1895,11 @@ where_tile_rate_grid <- where_tile_grid %>%
     by = c("legis_period", "party", "transition", "change")
   ) %>%
   replace_na(list(n_flip_bills = 0L)) %>%
-  left_join(
-    transition_bill_totals %>% mutate(transition = as.character(transition)),
-    by = c("party", "legis_period", "transition")
+  # the denominator is the period's own total, so each column is a composition:
+  # the party shares within one period x transition x direction add up to 100%
+  mutate(
+    n_period_flips = sum(n_flip_bills),
+    .by = c(legis_period, transition, change)
   ) %>%
   mutate(
     party = factor(party, levels = levels(where_tile_grid$party)),
@@ -1931,10 +1908,11 @@ where_tile_rate_grid <- where_tile_grid %>%
       transition,
       levels = c("Committee → 2nd reading", "2nd → 3rd reading")
     ),
-    rate = n_flip_bills / n_bills,
+    # a period with no movement at all has no composition to show, hence NA not 0/0
+    rate = if_else(n_period_flips > 0, n_flip_bills / n_period_flips, NA_real_),
     label = if_else(
       present & n_flip_bills > 0,
-      scales::percent(rate, accuracy = 0.1),
+      scales::percent(rate, accuracy = 1),
       ""
     ),
     fill_rate = if_else(present, rate, NA_real_),
@@ -1943,17 +1921,17 @@ where_tile_rate_grid <- where_tile_grid %>%
     fill_rate_signed = if_else(change == "yes → no", -fill_rate, fill_rate)
   )
 
-# The denominator is now per party, so it varies down a column by construction. What must
-# still hold is that it is identical across the two *directions* for a given party (both
-# directions draw on the same comparable bills) and that it bounds every numerator.
-denominator_check <- where_tile_rate_grid %>%
-  group_by(party, legis_period, transition) %>%
-  summarise(n_denominators = n_distinct(n_bills), .groups = "drop")
+# The defining property of a composition: within one period x transition x direction the
+# party shares must add up to exactly 1 wherever anything moved at all. Assert it rather
+# than trust it — a stray join could silently inflate a denominator without changing a colour.
+composition_check <- where_tile_rate_grid %>%
+  filter(n_period_flips > 0) %>%
+  summarise(total = sum(rate), .by = c(legis_period, transition, change))
 
 stopifnot(
-  all(denominator_check$n_denominators == 1L),
+  all(abs(composition_check$total - 1) < 1e-9),
   all(
-    where_tile_rate_grid$n_flip_bills <= where_tile_rate_grid$n_bills,
+    where_tile_rate_grid$n_flip_bills <= where_tile_rate_grid$n_period_flips,
     na.rm = TRUE
   )
 )
@@ -2008,15 +1986,16 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
   labs(
     x = NULL,
     y = NULL,
-    title = "Share of bills with a party vote flip",
+    title = "Who accounts for each period's position changes?",
     subtitle = paste0(
-      "Each tile shows the share of comparable bills on which a party changes position ",
-      "(red = yes → no, green = no → yes). ",
-      "The denominator is per party: the bills where that party itself had a usable vote at ",
-      "both stages of the transition, which keeps the tiles comparable across a row. ",
-      "Percentages are independent per-party shares and do not sum to 100%. ",
+      "Each tile shows a party's share of all position changes recorded in that legislative ",
+      "period, for that transition and direction (red = yes → no, green = no → yes). ",
+      "**Within a column the shares add up to 100%**, so the tiles show how the movement of a ",
+      "period was divided between the parties, not how often any one party moved. ",
+      "A share is not a volume: 100% can mean a single flip that no other party matched — read ",
+      "alongside the counts above. ",
       "White = party not represented; grey = no flips; thick black frame = governing party.<br>",
-      "<span style='font-size:9pt;color:grey40;'>NR, regular votes only, GP XX–XXVIII.</span>"
+      "<span style='font-size:9pt;color:grey40;'>Shares are normalised within each period, so they are comparable down a column but not across periods. NR, regular votes only, GP XX–XXVIII.</span>"
     ),
     caption = vote_graph_caption_short
   ) +
@@ -2051,6 +2030,161 @@ p_where_heatmap_percent <- where_tile_rate_grid %>%
   )
 
 p_where_heatmap_percent
+```
+
+## Both numbers at once
+
+The two charts above each hide what the other shows. The counts say how much moved but not how it
+was divided; the shares say how it was divided but not how much there was to divide — which is why
+a single flip can render as a confident 100%.
+
+The chart below prints both in the same cell: the **count on top, that party's share of the
+period underneath**, with a `Period total` row carrying the column's own total and the 100% it
+sums to. Where a share looks dramatic, the count immediately above it says how much weight to give
+it — a `100%` sitting on a `1` is one bill, not a pattern.
+
+```{r}
+#| label: plot-where-flips-heatmap-combined
+#| code-summary: "Tile heatmap combining absolute counts and within-period shares"
+#| fig-alt: >
+#|   Tile heatmap in a four-panel grid. Legislative periods XX to XXVIII run along the x-axis and
+#|   parties down the y-axis, with a separate "Period total" row at the top of each panel. Panel
+#|   rows separate the two transitions and panel columns the two directions of change. Each tile
+#|   prints two numbers: the absolute count of position changes on top and, underneath, that
+#|   party's share of all changes recorded in the period, which sums to 100 percent down the
+#|   column. Colour depth encodes the share, green for moves toward support and red for
+#|   withdrawals. Pairing the two makes the thin cells legible: a party showing 100 percent in the
+#|   second-to-third-reading panel is typically standing on a single flip.
+#| fig-width: 12
+#| fig-height: 11
+#| out-width: "100%"
+#| fig-align: "center"
+# One summary row per panel column, carrying the column's own total. fill_rate_signed is NA so
+# the row picks up the scale's neutral na.value and reads as a header rather than as the
+# darkest tile on the chart.
+period_totals <- where_tile_rate_grid %>%
+  distinct(legis_period, transition, change, n_period_flips) %>%
+  mutate(
+    party = "Period total",
+    n_flip_bills = n_period_flips,
+    rate = if_else(n_period_flips > 0, 1, NA_real_),
+    present = TRUE,
+    is_gov = FALSE,
+    fill_rate_signed = NA_real_
+  )
+
+where_tile_combined <- where_tile_rate_grid %>%
+  bind_rows(period_totals) %>%
+  mutate(
+    # "Period total" goes last so it renders at the TOP of each panel
+    party = factor(party, levels = c(rev(party_order), "Period total")),
+    is_total = party == "Period total",
+    label_n = if_else(present & n_flip_bills > 0, as.character(n_flip_bills), ""),
+    # a period with no movement has no composition, so print no percentage rather than "100%"
+    label_pct = if_else(
+      present & n_flip_bills > 0 & !is.na(rate),
+      scales::percent(rate, accuracy = 1),
+      ""
+    ),
+    # totals sit on the neutral header tile, so they always take the dark ink
+    label_colour = if_else(
+      is_total,
+      "grey15",
+      if_else(!is.na(rate) & rate > rate_max_where / 2, "white", "grey15")
+    )
+  )
+
+p_where_heatmap_combined <- where_tile_combined %>%
+  ggplot(aes(x = legis_period, y = party, fill = fill_rate_signed)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_tile(
+    data = where_tile_combined %>% filter(is_gov),
+    aes(x = legis_period, y = party),
+    fill = NA,
+    colour = "black",
+    linewidth = 0.4,
+    inherit.aes = FALSE
+  ) +
+  # separate the summary row from the party rows
+  geom_hline(
+    yintercept = length(party_order) + 0.5,
+    colour = "grey55",
+    linewidth = 0.4
+  ) +
+  geom_text(
+    data = where_tile_combined %>% filter(label_n != ""),
+    mapping = aes(x = legis_period, y = party, label = label_n, colour = label_colour),
+    nudge_y = 0.14,
+    size = 2.2,
+    fontface = "bold",
+    family = "Noto Sans",
+    inherit.aes = FALSE
+  ) +
+  geom_text(
+    data = where_tile_combined %>% filter(label_pct != ""),
+    mapping = aes(x = legis_period, y = party, label = label_pct, colour = label_colour),
+    nudge_y = -0.16,
+    size = 2.0,
+    family = "Noto Sans",
+    inherit.aes = FALSE
+  ) +
+  facet_grid(transition ~ change, switch = "y") +
+  scale_colour_identity() +
+  scale_fill_gradient2(
+    low = "#b2182b",
+    mid = "grey92",
+    high = "#1a9850",
+    midpoint = 0,
+    limits = c(-rate_max_where, rate_max_where),
+    na.value = "grey97",
+    guide = "none"
+  ) +
+  scale_x_discrete(position = "top") +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Position changes by party: how many, and what share of the period",
+    subtitle = paste0(
+      "Each cell carries both numbers: the **count** of position changes on top, and underneath ",
+      "that party's **share** of everything that moved in the period (red = yes → no, ",
+      "green = no → yes). The 'Period total' row gives the column's own total and the 100% the ",
+      "shares add up to. Reading them together is the point — a large share resting on a count ",
+      "of 1 or 2 is one bill, not a tendency, which is mostly what the 2nd → 3rd reading panels ",
+      "contain.<br>",
+      "<span style='font-size:9pt;color:grey40;'>Colour encodes the share. White = party not represented; grey = no changes; thick black frame = governing party. NR, regular votes only, GP XX–XXVIII.</span>"
+    ),
+    caption = vote_graph_caption_short
+  ) +
+  theme_minimal(base_size = 11, base_family = "Noto Sans") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 8),
+    axis.text.y = element_text(size = 8),
+    legend.position = "none",
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
+    ),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    strip.text.x = element_text(face = "bold", size = 10, hjust = 0),
+    strip.placement = "outside",
+    strip.text.y.left = element_text(face = "bold", size = 10, angle = 90)
+  )
+
+p_where_heatmap_combined
 ```
 
 ## The headline pattern: stage × period
