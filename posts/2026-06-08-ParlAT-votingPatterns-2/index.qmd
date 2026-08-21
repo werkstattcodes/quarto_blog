@@ -1606,6 +1606,164 @@ vote_graph_caption_short <- paste0(
 )
 ```
 
+## The numbers behind everything below
+
+Every chart in this section is a view onto one table, so here is the table itself. One row per
+**party × legislative period × transition × direction**, never pooled, with each quantity the rest
+of the post draws on:
+
+- **At disposal** — the bills the party went into holding the prior position *and* which then
+  reached the later stage. This is the denominator: the bills it genuinely could have changed its
+  mind on.
+- **Changed** — how many of those it actually changed.
+- **Rate** — changed ÷ at disposal.
+- **Bill did not advance** — bills the party held a position on that never reached the later stage,
+  so no change was possible. These are **excluded** from *At disposal*; the column is here so the
+  adjustment is auditable rather than implicit.
+
+That last exclusion matters more than it sounds: at the committee → 2nd reading step it removes
+about one in five of the positions a party took, because the bill died in committee. Counting
+those as missed opportunities would understate every party's responsiveness.
+
+The table is searchable and sortable, and every column filters, so any number quoted anywhere in
+this post can be traced back to its row here.
+
+```{r}
+#| label: build-opportunity-table
+#| code-summary: "Build the per-party opportunity/change table underlying every chart below"
+# item-level: did the bill produce a recorded vote at each stage at all? A bill that died in
+# committee never gave anyone the chance to change position at the second reading.
+item_stage_reached <- items_scope_pairs_regular_wide %>%
+  summarise(
+    reached_second = any(!is.na(yes_second) | !is.na(no_second)),
+    reached_third = any(!is.na(yes_third) | !is.na(no_third)),
+    .by = item_url
+  )
+
+# one row per party x bill x transition, carrying the position going in, the position coming
+# out (NA if there was none) and whether the bill reached the later stage at all
+opportunity_base <- bind_rows(
+  stage_positions %>%
+    left_join(item_stage_reached, by = "item_url") %>%
+    transmute(
+      item_url, legis_period, party,
+      transition = "Committee → 2nd reading",
+      from_pos = pos_committee, to_pos = pos_second, reached = reached_second
+    ),
+  stage_positions %>%
+    left_join(item_stage_reached, by = "item_url") %>%
+    transmute(
+      item_url, legis_period, party,
+      transition = "2nd → 3rd reading",
+      from_pos = pos_second, to_pos = pos_third, reached = reached_third
+    )
+) %>%
+  filter(!is.na(from_pos)) %>% # the party has to have held a position to be able to leave it
+  mutate(
+    # the only move the prior position makes possible
+    direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no"),
+    at_disposal = !is.na(to_pos),
+    changed = at_disposal & to_pos != from_pos
+  )
+
+opportunity_table_data <- opportunity_base %>%
+  summarise(
+    n_at_disposal = sum(at_disposal),
+    n_changed = sum(changed),
+    n_not_advanced = sum(!at_disposal & !reached),
+    .by = c(legis_period, party, transition, direction)
+  ) %>%
+  mutate(rate = if_else(n_at_disposal > 0, n_changed / n_at_disposal, NA_real_)) %>%
+  arrange(legis_period, transition, direction, desc(n_changed))
+
+# The table has to reconcile with `transitions`, which every chart is built from: same
+# denominators, same numerators. Assert it so the table and the charts cannot drift apart.
+reconcile_table <- opportunity_table_data %>%
+  summarise(n_at_disposal = sum(n_at_disposal), n_changed = sum(n_changed), .by = transition) %>%
+  inner_join(
+    transitions %>%
+      summarise(
+        pairs = n(),
+        flips = sum(change %in% c("no → yes", "yes → no")),
+        .by = transition
+      ) %>%
+      mutate(transition = as.character(transition)),
+    by = "transition"
+  )
+
+stopifnot(
+  nrow(reconcile_table) == 2,
+  all(reconcile_table$n_at_disposal == reconcile_table$pairs),
+  all(reconcile_table$n_changed == reconcile_table$flips),
+  # a party cannot change position on more bills than it had at its disposal
+  all(opportunity_table_data$n_changed <= opportunity_table_data$n_at_disposal)
+)
+```
+
+```{r}
+#| label: opportunity-table
+#| code-fold: true
+#| code-summary: "Render the reference table"
+opportunity_table <- reactable(
+  opportunity_table_data,
+  columns = list(
+    legis_period = colDef(name = "GP", minWidth = 70, filterable = TRUE),
+    party = colDef(name = "Party", minWidth = 100, filterable = TRUE),
+    transition = colDef(name = "Transition", minWidth = 150, filterable = TRUE),
+    direction = colDef(name = "Direction", minWidth = 100, filterable = TRUE),
+    n_at_disposal = colDef(
+      name = "At disposal",
+      align = "right", minWidth = 100,
+      format = colFormat(separators = TRUE)
+    ),
+    n_changed = colDef(
+      name = "Changed",
+      align = "right", minWidth = 90,
+      format = colFormat(separators = TRUE)
+    ),
+    rate = colDef(
+      name = "Rate",
+      align = "right", minWidth = 90,
+      format = colFormat(percent = TRUE, digits = 1)
+    ),
+    n_not_advanced = colDef(
+      name = "Bill did not advance",
+      align = "right", minWidth = 140,
+      format = colFormat(separators = TRUE)
+    )
+  ),
+  columnGroups = list(
+    colGroup(name = "Opportunity and outcome", columns = c("n_at_disposal", "n_changed", "rate")),
+    colGroup(name = "Excluded from the denominator", columns = c("n_not_advanced"))
+  ),
+  defaultSorted = list(legis_period = "asc", n_changed = "desc"),
+  searchable = TRUE,
+  filterable = FALSE,
+  fullWidth = TRUE,
+  compact = TRUE,
+  highlight = TRUE,
+  outlined = TRUE,
+  defaultPageSize = 15,
+  showPageSizeOptions = TRUE,
+  pageSizeOptions = c(15, 30, 60, 200),
+  theme = compact_table_theme
+) %>%
+  style_reactable_table(
+    "EVERY PARTY'S OPPORTUNITIES AND POSITION CHANGES",
+    paste0(
+      "One row per party, legislative period, transition and direction. 'At disposal' counts only ",
+      "bills the party held the prior position on which then reached the later stage; bills that ",
+      "never advanced are counted separately and excluded, since no change was possible on them. ",
+      "Data as of ",
+      data_cutoff,
+      "."
+    )
+  )
+
+opportunity_table
+```
+
+
 ## Flip counts by period and direction
 
 The most direct answer. For each legislative period, the bars compare the **number** of position changes at the two transitions, split into the two directions (no → yes, a move toward support; yes → no, a withdrawal).
