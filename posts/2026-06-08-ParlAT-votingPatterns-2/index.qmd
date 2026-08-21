@@ -54,6 +54,8 @@ pre.scroll-x > code {
 
 ![Each party's share of its legislative period's position changes, by transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap showing each party's share of all position changes recorded in a legislative period, in four panels splitting the two transitions and two directions. Shares within a column add up to 100 percent, showing how each period's movement was divided between the parties."}
 
+![Position changes by party: absolute count and share of the period in each cell](index_files/figure-html/plot-where-flips-heatmap-combined-1.png){group="voting_patterns_2_gallery" fig-alt="Tile heatmap pairing both numbers in every cell: the absolute count of position changes on top and that party's share of the period underneath, with a Period total row at the top of each of the four panels. Reading them together shows which large shares rest on only one or two changes."}
+
 ![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery" fig-alt="Two-column tile heatmap comparing the committee-to-second-reading and second-to-third-reading transitions across legislative periods XX to XXVIII, with the governing coalition named on a secondary right-hand axis. The committee-to-second-reading column is darker in every period, indicating that position changes concentrate between the committee vote and the floor."}
 :::
 
@@ -1453,13 +1455,13 @@ items_scope_pairs_regular_wide %>%
 
 # Results
 
-Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in four steps: the **number** of flips by legislative period and direction; where flips concentrate by party, first as absolute counts and then as each party's share of its period's movement; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
+Where along an item's journey does a party actually change its mind — between the committee vote and the second reading, or between the second and the third reading? This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage. Below I prepare a tidy table of every transition and then work through it in five steps: the **number** of flips by legislative period and direction; where flips concentrate by party, first as absolute counts, then as each party's share of its period's movement, and then measured against the bills each party could actually have moved on; and a compact summary of which stage carries most of the movement. A final section leaves the aggregates behind and lists the individual bills where a position actually changed.
 
 One structural point to keep in mind throughout, because it shapes the central result before any data is involved: the second and third readings of a bill are normally taken in the **same sitting, minutes apart**, whereas the committee vote happens days or weeks earlier, in a different room, with time for negotiation in between. So the two transitions are not comparable windows of opportunity. If it turns out that almost nothing moves between the second and third reading, that is in large part *mechanical* — there is barely any interval in which a position could change — and not evidence that parliamentary debate never persuades anyone. Read the committee → second reading step as "what happened between committee and the floor", and the second → third step as "what happened during a single sitting".
 
 A note on denominators, since the charts below use more than one. Counts are counts — the first chart simply reports how many changes occurred, which makes periods with more (or more contested) bills look busier for that reason alone. Where a percentage *is* shown, it is a composition rather than a rate: the party tiles divide that period's own position changes between the parties and add up to 100% within a column. That answers "who moved", not "how often a party moves" — a party with a large share may have moved once in a quiet period. The stage × period tile at the end is the one genuine rate, dividing flips by all comparable pairs.
 
-One caveat applies to that last rate: a party that already voted *yes* at the earlier stage cannot flip *no → yes* — it was never in a position to make that move. Dividing by all comparable pairs counts those parties in the denominator anyway, so the rate understates how much of the movement that was actually available did occur.
+That leaves one thing the descriptive charts cannot tell you. A party that already voted *yes* at the earlier stage cannot flip *no → yes* — it was never in a position to make that move, so its absence from the counts is not evidence of immobility. Measuring movement against opportunity needs a denominator built from the position each party actually went in with, which is what the fourth chart does: it divides each party's changes by the bills it went into holding the prior position, separately for every party and period. The stage × period tile at the end is a coarser rate that does not condition this way, and reads accordingly.
 
 And a note on who counts as government: coalition membership is coded once per legislative period, which is an approximation. It is a poor one for GP XXVI in particular — that period covers the ÖVP-FPÖ coalition, its collapse after the Ibiza affair in May 2019, the subsequent ÖVP-only cabinet and the Bierlein caretaker government. Votes from the second half of GP XXVI are therefore labelled against a coalition that no longer existed, so the government/opposition split shown for that period should be read with care.
 
@@ -1552,7 +1554,8 @@ stage_positions <- items_scope_pairs_regular_wide %>%
 
 # one row per party × item × transition, keeping the position held BEFORE and after.
 # from_pos records the position a party went in with, i.e. which changes it was in a
-# position to make: a prior 'no' is the only thing that can become a 'no → yes'.
+# position to make: a prior 'no' is the only thing that can become a 'no → yes'. The
+# conditional chart further below uses exactly this to build its denominators.
 transitions <- bind_rows(
   stage_positions %>%
     transmute(
@@ -2185,6 +2188,170 @@ p_where_heatmap_combined <- where_tile_combined %>%
   )
 
 p_where_heatmap_combined
+```
+
+## How often did a party move when it actually could?
+
+Everything so far counts changes. But a count alone can mislead in a specific way: a party can only
+flip *no → yes* on a bill it went into holding **no**. If it already voted yes in committee, that
+bill was never available to it, and its absence from the flip counts says nothing about how willing
+it was to be won over. A party that agrees with the government most of the time will look immobile
+in the counts for a reason that has nothing to do with mobility.
+
+So this section conditions on what was actually available. For each party, in each legislative
+period and at each transition, the bar height is **the number of bills the party went into holding
+the prior position** — the ones it could have moved on. The coloured segment is the subset it
+*did* move on. The proportion of the bar that is coloured is the conditional rate, and because the
+bar keeps its full height, you can see at once whether a high rate rests on forty bills or on two.
+
+Two things to keep in mind. Each row has its own y-scale, because party volumes differ by an order
+of magnitude — bar *heights* are therefore not comparable between parties, only the coloured
+proportions and each party's own trajectory. And the 2nd → 3rd reading columns are nearly empty
+throughout: only about thirty changes occur there across all nine periods, which is the same
+same-sitting artefact discussed earlier, not a finding about those parties.
+
+```{r}
+#| label: plot-conditional-flip-bars
+#| code-summary: "Segmented bars: bills available to flip, and the share actually flipped"
+#| fig-alt: >
+#|   A grid of small segmented bar charts, one row per party and one column per combination of
+#|   transition and direction of change. Within each panel, legislative periods XX to XXVIII run
+#|   along the x-axis and the bar height is the number of bills the party went into holding the
+#|   prior position, meaning the bills it could have changed its mind on. Each bar is split into a
+#|   grey segment for bills where the party held its position and a coloured segment, green for
+#|   moves toward support and red for withdrawals, for those it changed. A percentage above each
+#|   bar gives the resulting conditional rate. Showing the full base makes clear which rates rest
+#|   on a large number of bills and which on only a handful.
+#| fig-width: 13
+#| fig-height: 16
+#| out-width: "100%"
+#| fig-align: "center"
+# Condition on what was available: `direction` is the move the party's prior position made
+# possible (a prior "no" can only become a "no → yes"), and `flipped` says whether it happened.
+# `transitions` is already restricted to pairs observed at both stages, so counting it directly
+# gives the denominator -- the bills the party actually went into holding that position.
+conditional_flips <- transitions %>%
+  mutate(
+    direction = if_else(from_pos == "Dagegen", "no → yes", "yes → no"),
+    flipped = change %in% c("no → yes", "yes → no")
+  ) %>%
+  count(legis_period, party, transition, direction, flipped, name = "n") %>%
+  # keep only party x period combinations where the party actually held seats
+  semi_join(party_period_presence, by = c("legis_period", "party")) %>%
+  mutate(
+    segment = case_when(
+      !flipped ~ "held",
+      direction == "no → yes" ~ "flipped_no_yes",
+      .default = "flipped_yes_no"
+    ) %>%
+      factor(levels = c("held", "flipped_no_yes", "flipped_yes_no")),
+    party = factor(party, levels = party_order),
+    legis_period = factor(legis_period, levels = all_periods_vec),
+    transition = factor(
+      transition,
+      levels = c("Committee → 2nd reading", "2nd → 3rd reading")
+    )
+  )
+
+# per-bar totals and the conditional rate, used for the labels above each bar
+conditional_rates <- conditional_flips %>%
+  summarise(
+    n_available = sum(n),
+    n_flipped = sum(n[flipped]),
+    .by = c(legis_period, party, transition, direction)
+  ) %>%
+  mutate(rate = n_flipped / n_available)
+
+# The flipped counts here must reconcile with the counts charts above: summed across parties,
+# they are the same position changes. Assert it so the two cannot silently diverge.
+reconcile_conditional <- conditional_rates %>%
+  summarise(n_flipped = sum(n_flipped), .by = c(legis_period, transition, direction)) %>%
+  inner_join(
+    where_tile_rate_grid %>%
+      distinct(legis_period, transition, change, n_period_flips) %>%
+      mutate(legis_period = factor(legis_period, levels = all_periods_vec)),
+    by = c("legis_period", "transition", "direction" = "change")
+  )
+
+stopifnot(
+  nrow(reconcile_conditional) > 0,
+  all(reconcile_conditional$n_flipped == reconcile_conditional$n_period_flips)
+)
+
+p_conditional_bars <- conditional_flips %>%
+  ggplot(aes(x = legis_period, y = n, fill = segment)) +
+  geom_col(width = 0.75) +
+  geom_text(
+    data = conditional_rates %>% filter(n_flipped > 0),
+    mapping = aes(
+      x = legis_period,
+      y = n_available,
+      label = scales::percent(rate, accuracy = 1)
+    ),
+    vjust = -0.35,
+    size = 1.8,
+    family = "Noto Sans",
+    colour = "grey30",
+    inherit.aes = FALSE
+  ) +
+  facet_grid(party ~ transition + direction, scales = "free_y") +
+  scale_fill_manual(
+    values = c(
+      "held" = "grey85",
+      "flipped_no_yes" = "#1a9850",
+      "flipped_yes_no" = "#b2182b"
+    ),
+    labels = c(
+      "held" = "Held its position",
+      "flipped_no_yes" = "Changed to yes",
+      "flipped_yes_no" = "Changed to no"
+    ),
+    name = NULL
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(
+    x = NULL,
+    y = "Bills the party went into holding the prior position",
+    title = "Movement measured against opportunity, not against everything",
+    subtitle = paste0(
+      "Bar height = the bills a party went into holding the prior position, i.e. the ones it ",
+      "**could** have changed its mind on. The coloured segment is the subset it actually did ",
+      "change, and the percentage above each bar is that share. Keeping the full base visible ",
+      "shows whether a rate rests on many bills or on two.<br>",
+      "<span style='font-size:9pt;color:grey40;'>Each row has its own y-scale, so bar heights are not comparable between parties — only the coloured proportions and each party's own trajectory. NR, regular votes only, GP XX–XXVIII.</span>"
+    ),
+    caption = vote_graph_caption_short
+  ) +
+  theme_minimal(base_size = 11, base_family = "Noto Sans") +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text = element_text(size = 7),
+    axis.title.y = element_text(size = 9, colour = "grey30"),
+    legend.position = "top",
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
+    ),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    strip.text.x = element_text(face = "bold", size = 9),
+    strip.text.y = element_text(face = "bold", size = 9, angle = 0)
+  )
+
+p_conditional_bars
 ```
 
 ## The headline pattern: stage × period
