@@ -1443,14 +1443,185 @@ items_scope_pairs_regular_wide <- items_scope_pairs_regular_long %>%
   )
 ```
 
-Speaking of `NA`s — before drawing any conclusions, it's worth checking how much missingness we are actually dealing with, and whether it is concentrated in particular legislative periods. The naniar package makes this a quick exercise.
+```{r}
+#| label: shared-plot-constants
+#| include: false
+# Defined here because the first chart that needs them is the stage-coverage chart just below,
+# which sits ahead of the Results section where the rest of the plotting setup lives.
+all_periods_vec <- c(
+  "XX",
+  "XXI",
+  "XXII",
+  "XXIII",
+  "XXIV",
+  "XXV",
+  "XXVI",
+  "XXVII",
+  "XXVIII"
+)
+
+# concise caption for the exploratory charts below
+# (the full item-list caption is too tall for these denser, multi-facet plots)
+vote_graph_caption_short <- paste0(
+  "Data: www&#46;parlament.gv.at via ParlAT package, as of ",
+  data_cutoff,
+  " · Graphic: Roland Schmidt, https&#58;//werk.statt.codes · NR government bills (Regierungsvorlagen) only, regular votes only (GP XX–XXVIII)"
+)
+```
+
+Speaking of `NA`s — it is worth being precise about what they mean, because the obvious guess is
+wrong. A party–bill row with no second-reading position does **not** usually mean the bill died in
+committee. Of the 594 bills with no usable second-reading position, exactly **six** never had a
+second reading at all. The other 588 were read a second time; the vote simply was not minuted in a
+form that names parties.
+
+Overwhelmingly that form is `getrennte Abstimmung` (the bill voted in separate parts, 371 bills) or
+`wechselnde Mehrheit` (different majorities on different parts, 168). Both describe a bill picked
+apart and carried in pieces — which is to say, a *contested* bill, exactly the kind where positions
+are most likely to move. **This is a real limitation of the analysis, not a footnote:** the bills it
+cannot see are disproportionately the ones its question is about, so every rate below should be read
+as covering the plainly-decided bills only.
+
+The two views below answer two different questions. The first asks whether the record is internally
+consistent — does the pattern cluster oddly in particular periods, which would point to a collection
+problem. The second asks how coverage varies by stage.
 
 ```{r}
 #| label: vis-missingness
-#| code-summary: "Visualise missing values by legislative period"
-# faceting by legis_period reveals whether missingness is period-specific or systemic
-items_scope_pairs_regular_wide %>%
-  naniar::vis_miss(facet = legis_period)
+#| code-summary: "Check the missingness pattern by legislative period"
+#| fig-alt: >
+#|   Missingness map with one panel per legislative period. Three columns, one per stage
+#|   (committee, second reading, third reading), with each row a party-bill pair; shaded cells mark
+#|   pairs with no recorded position at that stage. The committee column is almost fully populated
+#|   while the reading columns carry a consistent band of gaps in every period, showing the pattern
+#|   is systemic to the legislative process rather than specific to any one period.
+#| fig-width: 10
+#| fig-height: 5.6
+#| out-width: "100%"
+# One indicator per stage is enough: `no_*` is the exact complement of `yes_*` for any party
+# present at a stage (both are 0/1, never one-sided), and `vote_report_type_*` is non-NA on
+# precisely the same rows. Feeding all nine, plus eight identifier columns that are never
+# missing, would draw each stage three times and bury the pattern.
+missingness_view <- items_scope_pairs_regular_wide %>%
+  select(
+    legis_period,
+    Committee = yes_committee,
+    `2nd reading` = yes_second,
+    `3rd reading` = yes_third
+  )
+
+missingness_view %>%
+  naniar::vis_miss(facet = legis_period) +
+  # vis_miss puts rotated column labels above the panel; without extra top margin
+  # they are clipped by the plot edge
+  ggplot2::theme(
+    plot.margin = ggplot2::margin(t = 38, r = 10, b = 6, l = 6),
+    axis.text.x = ggplot2::element_text(size = 8)
+  )
+```
+
+The gaps sit in the reading columns, in every period alike, which is what a systematic recording
+convention looks like rather than a collection failure specific to some periods. The chart below
+puts numbers on it — and note that the third-reading bar frequently rises *above* the committee bar,
+which no amount of bills dropping out could produce.
+
+```{r}
+#| label: plot-stage-coverage
+#| code-summary: "How party-level vote coverage varies by stage"
+#| fig-alt: >
+#|   Grouped bar chart with legislative periods XX to XXVIII on the x-axis and, within each period,
+#|   three bars giving the number of party-bill pairs with a party-level vote record at the
+#|   committee stage, the second reading and the third reading. Each bar is labelled with its share
+#|   of that period's committee baseline. The second-reading bar is consistently the lowest, while
+#|   the third-reading bar often exceeds the committee bar, showing that coverage differs by how a
+#|   vote was minuted rather than describing bills progressively dropping out.
+#| fig-width: 11
+#| fig-height: 5.5
+#| out-width: "100%"
+#| fig-align: "center"
+stage_coverage <- items_scope_pairs_regular_wide %>%
+  summarise(
+    Committee = sum(!is.na(yes_committee)),
+    `2nd reading` = sum(!is.na(yes_second)),
+    `3rd reading` = sum(!is.na(yes_third)),
+    .by = legis_period
+  ) %>%
+  pivot_longer(-legis_period, names_to = "stage", values_to = "n_rows") %>%
+  mutate(
+    # express each stage against the committee stage, where every bill in scope still exists
+    share_of_committee = n_rows / n_rows[stage == "Committee"],
+    .by = legis_period
+  ) %>%
+  mutate(
+    legis_period = factor(legis_period, levels = all_periods_vec),
+    stage = factor(stage, levels = c("Committee", "2nd reading", "3rd reading"))
+  )
+
+p_stage_coverage <- stage_coverage %>%
+  ggplot(aes(x = legis_period, y = n_rows, fill = stage)) +
+  geom_col(position = position_dodge2(width = 0.85), width = 0.85) +
+  geom_text(
+    aes(label = scales::percent(share_of_committee, accuracy = 1)),
+    position = position_dodge2(width = 0.85),
+    vjust = -0.35,
+    size = 2.4,
+    family = "Noto Sans",
+    colour = "grey35"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Committee" = "#4575b4",
+      "2nd reading" = "#74add1",
+      "3rd reading" = "#abd9e9"
+    ),
+    name = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_comma(),
+    expand = expansion(mult = c(0, 0.14))
+  ) +
+  labs(
+    x = NULL,
+    y = "Party–bill pairs with a recorded position",
+    title = "Coverage by stage: which votes name the parties",
+    subtitle = paste0(
+      "Party–bill pairs carrying a **party-level** vote record at each stage, each bar shown as a ",
+      "share of that period's committee stage. Coverage is not attrition: the third reading often ",
+      "exceeds the committee stage, because a bill can be minuted party-by-party at one stage and ",
+      "not at another. Second readings drop out mainly when the bill was voted in separate parts ",
+      "(*getrennte Abstimmung*) or carried by *wechselnde Mehrheiten*, which name no parties.<br>",
+      "<span style='font-size:9pt;color:grey40;'>NR government bills (Regierungsvorlagen), regular votes only, GP XX–XXVIII.</span>"
+    ),
+    caption = vote_graph_caption_short
+  ) +
+  theme_minimal(base_size = 11, base_family = "Noto Sans") +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text = element_text(size = 9),
+    axis.title.y = element_text(size = 9, colour = "grey30"),
+    legend.position = "top",
+    plot.title = element_text(
+      face = "bold",
+      size = 14,
+      margin = ggplot2::margin(b = 4)
+    ),
+    plot.subtitle = ggtext::element_textbox_simple(
+      size = 10,
+      colour = "grey30",
+      lineheight = 1.3,
+      margin = ggplot2::margin(b = 10)
+    ),
+    plot.caption = ggtext::element_textbox_simple(
+      size = 8,
+      colour = "grey45",
+      margin = ggplot2::margin(t = 10)
+    ),
+    plot.title.position = "plot",
+    plot.caption.position = "plot"
+  )
+
+p_stage_coverage
 ```
 
 # Results
@@ -1485,18 +1656,6 @@ gov_parties_lookup <- tribble(
 ) %>%
   mutate(party = normalise_party(party)) %>% # align aliases before joining
   mutate(is_gov = TRUE)
-
-all_periods_vec <- c(
-  "XX",
-  "XXI",
-  "XXII",
-  "XXIII",
-  "XXIV",
-  "XXV",
-  "XXVI",
-  "XXVII",
-  "XXVIII"
-)
 
 # tracks which party × period combinations actually appear in the data
 # used later to distinguish "not in parliament" (white) from "zero flips" (grey)
@@ -1596,14 +1755,6 @@ transitions <- bind_rows(
 # how many comparable pairs and how many flips at each transition?
 transitions %>% count(transition, change) %>% print(n = Inf)
 transitions %>% count(transition, name = "eligible_pairs")
-
-# concise caption for the exploratory charts below
-# (the full item-list caption is too tall for these denser, multi-facet plots)
-vote_graph_caption_short <- paste0(
-  "Data: www&#46;parlament.gv.at via ParlAT package, as of ",
-  data_cutoff,
-  " · Graphic: Roland Schmidt, https&#58;//werk.statt.codes · NR government bills (Regierungsvorlagen) only, regular votes only (GP XX–XXVIII)"
-)
 ```
 
 ## The numbers behind everything below
@@ -1617,13 +1768,17 @@ of the post draws on:
   mind on.
 - **Changed** — how many of those it actually changed.
 - **Rate** — changed ÷ at disposal.
-- **Bill did not advance** — bills the party held a position on that never reached the later stage,
-  so no change was possible. These are **excluded** from *At disposal*; the column is here so the
-  adjustment is auditable rather than implicit.
+- **No party-level record later** — bills the party held a position on where the later stage
+  produced no vote naming the parties, so the party's position there cannot be observed. These are
+  **excluded** from *At disposal*; the column is here so the adjustment is auditable rather than
+  implicit.
 
-That last exclusion matters more than it sounds: at the committee → 2nd reading step it removes
-about one in five of the positions a party took, because the bill died in committee. Counting
-those as missed opportunities would understate every party's responsiveness.
+That exclusion is substantial — at the committee → 2nd reading step it removes about one in five of
+the positions a party took — and it is important not to misread it. These are almost never bills
+that died: of the 594 bills with no usable second-reading position, six had no second reading at
+all. The rest were read and voted, but in a form that names no parties, usually because the bill was
+split and voted in parts. Since such bills are disproportionately the contested ones, the rates
+below describe the plainly-decided bills and understate how much movement occurs overall.
 
 The table is searchable and sortable, and every column filters, so any number quoted anywhere in
 this post can be traced back to its row here.
@@ -1631,31 +1786,33 @@ this post can be traced back to its row here.
 ```{r}
 #| label: build-opportunity-table
 #| code-summary: "Build the per-party opportunity/change table underlying every chart below"
-# item-level: did the bill produce a recorded vote at each stage at all? A bill that died in
-# committee never gave anyone the chance to change position at the second reading.
-item_stage_reached <- items_scope_pairs_regular_wide %>%
+# item-level: did the stage produce a vote that names the parties? Deliberately NOT called
+# "reached": a bill can be read and voted without any party-level record, e.g. when it is split
+# and voted in parts (getrennte Abstimmung) or carried by wechselnde Mehrheiten. Only six bills in
+# the whole dataset genuinely never had a second reading.
+item_stage_record <- items_scope_pairs_regular_wide %>%
   summarise(
-    reached_second = any(!is.na(yes_second) | !is.na(no_second)),
-    reached_third = any(!is.na(yes_third) | !is.na(no_third)),
+    record_second = any(!is.na(yes_second) | !is.na(no_second)),
+    record_third = any(!is.na(yes_third) | !is.na(no_third)),
     .by = item_url
   )
 
 # one row per party x bill x transition, carrying the position going in, the position coming
-# out (NA if there was none) and whether the bill reached the later stage at all
+# out (NA if none was recorded) and whether the later stage produced a party-level record at all
 opportunity_base <- bind_rows(
   stage_positions %>%
-    left_join(item_stage_reached, by = "item_url") %>%
+    left_join(item_stage_record, by = "item_url") %>%
     transmute(
       item_url, legis_period, party,
       transition = "Committee → 2nd reading",
-      from_pos = pos_committee, to_pos = pos_second, reached = reached_second
+      from_pos = pos_committee, to_pos = pos_second, has_record = record_second
     ),
   stage_positions %>%
-    left_join(item_stage_reached, by = "item_url") %>%
+    left_join(item_stage_record, by = "item_url") %>%
     transmute(
       item_url, legis_period, party,
       transition = "2nd → 3rd reading",
-      from_pos = pos_second, to_pos = pos_third, reached = reached_third
+      from_pos = pos_second, to_pos = pos_third, has_record = record_third
     )
 ) %>%
   filter(!is.na(from_pos)) %>% # the party has to have held a position to be able to leave it
@@ -1670,7 +1827,7 @@ opportunity_table_data <- opportunity_base %>%
   summarise(
     n_at_disposal = sum(at_disposal),
     n_changed = sum(changed),
-    n_not_advanced = sum(!at_disposal & !reached),
+    n_no_record = sum(!at_disposal & !has_record),
     .by = c(legis_period, party, transition, direction)
   ) %>%
   mutate(rate = if_else(n_at_disposal > 0, n_changed / n_at_disposal, NA_real_)) %>%
@@ -1691,12 +1848,24 @@ reconcile_table <- opportunity_table_data %>%
     by = "transition"
   )
 
+# The excluded "no party-level record" count must equal the party-bill rows that hold a committee
+# position but none at the second reading -- i.e. exactly what the coverage chart further above
+# draws as the gap between its first two bars. Tie the table to that chart so neither can move
+# without the other.
+committee_only_rows <- sum(
+  !is.na(items_scope_pairs_regular_wide$yes_committee) &
+    is.na(items_scope_pairs_regular_wide$yes_second)
+)
+
 stopifnot(
   nrow(reconcile_table) == 2,
   all(reconcile_table$n_at_disposal == reconcile_table$pairs),
   all(reconcile_table$n_changed == reconcile_table$flips),
   # a party cannot change position on more bills than it had at its disposal
-  all(opportunity_table_data$n_changed <= opportunity_table_data$n_at_disposal)
+  all(opportunity_table_data$n_changed <= opportunity_table_data$n_at_disposal),
+  sum(opportunity_table_data$n_no_record[
+    opportunity_table_data$transition == "Committee → 2nd reading"
+  ]) == committee_only_rows
 )
 ```
 
@@ -1726,15 +1895,15 @@ opportunity_table <- reactable(
       align = "right", minWidth = 90,
       format = colFormat(percent = TRUE, digits = 1)
     ),
-    n_not_advanced = colDef(
-      name = "Bill did not advance",
-      align = "right", minWidth = 140,
+    n_no_record = colDef(
+      name = "No party-level record later",
+      align = "right", minWidth = 160,
       format = colFormat(separators = TRUE)
     )
   ),
   columnGroups = list(
     colGroup(name = "Opportunity and outcome", columns = c("n_at_disposal", "n_changed", "rate")),
-    colGroup(name = "Excluded from the denominator", columns = c("n_not_advanced"))
+    colGroup(name = "Excluded from the denominator", columns = c("n_no_record"))
   ),
   defaultSorted = list(legis_period = "asc", n_changed = "desc"),
   searchable = TRUE,
@@ -1752,9 +1921,10 @@ opportunity_table <- reactable(
     "EVERY PARTY'S OPPORTUNITIES AND POSITION CHANGES",
     paste0(
       "One row per party, legislative period, transition and direction. 'At disposal' counts only ",
-      "bills the party held the prior position on which then reached the later stage; bills that ",
-      "never advanced are counted separately and excluded, since no change was possible on them. ",
-      "Data as of ",
+      "bills the party held the prior position on whose later stage produced a vote naming the ",
+      "parties; where it did not, the party's later position is unobservable and the bill is ",
+      "counted separately and excluded. Those are usually bills voted in separate parts, not bills ",
+      "that failed. Data as of ",
       data_cutoff,
       "."
     )
