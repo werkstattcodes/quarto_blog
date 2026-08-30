@@ -149,7 +149,9 @@ items_20_28 <- seq(20, 28) %>%
 
 # guard against overwriting a good cache with an empty/failed fetch
 if (nrow(items_20_28) == 0) {
-  stop("The RV fetch returned no rows; the existing items cache was not overwritten.")
+  stop(
+    "The RV fetch returned no rows; the existing items cache was not overwritten."
+  )
 }
 
 readr::write_rds(
@@ -215,9 +217,11 @@ plan(sequential) # reset to single-threaded after parallel fetch
 item_success_n <- sum(map_lgl(item_details_raw, \(x) is.null(x$error)))
 if (item_success_n == 0) {
   stop(paste0(
-    "All ", length(item_details_raw),
+    "All ",
+    length(item_details_raw),
     " item-detail requests failed; the existing cache was not overwritten. ",
-    "First error: ", conditionMessage(item_details_raw[[1]]$error)
+    "First error: ",
+    conditionMessage(item_details_raw[[1]]$error)
   ))
 }
 
@@ -237,7 +241,6 @@ readr::write_rds(
 #| label: load-item-details-cache
 #| eval: true
 #| include: false
-
 # reload from disk so the object is available in non-eval (cached) renders
 item_details_raw <- readr::read_rds(here::here(
   "posts",
@@ -310,7 +313,10 @@ To make this concrete, the *example* below follows one specific bill end to end,
 # the one bill this post follows end to end through every transformation step below
 example_item_url <- "https://www.parlament.gv.at/gegenstand/XXVII/I/2608"
 
-item_stages_example <- get_item_details(item_url = example_item_url, stages = TRUE) %>%
+item_stages_example <- get_item_details(
+  item_url = example_item_url,
+  stages = TRUE
+) %>%
   select(
     item_url,
     legis_period,
@@ -337,7 +343,6 @@ item_stages_example <- get_item_details(item_url = example_item_url, stages = TR
 #|   tibble.width: 300
 #|   pillar.print_max: 50
 item_stages_example
-
 ```
 
 As you can see in the output above, each row is identical to the rows presented on the item's detail page on the website of the Austrian Parliament. From these rows we will later keep only the rows containing relevant votes for the second and third reading; and subsequently extract from these rows the voting decisions for each individual party. 
@@ -351,8 +356,14 @@ Contrasting the obtained results between the different readings allows identifyi
 item_stages_example_table <- reactable(
   item_stages_example,
   columns = list(
-    title = colDef(minWidth = 200, style = list(whiteSpace = "normal", lineHeight = "1.35")),
-    stage_name = colDef(minWidth = 320, style = list(whiteSpace = "normal", lineHeight = "1.35"))
+    title = colDef(
+      minWidth = 200,
+      style = list(whiteSpace = "normal", lineHeight = "1.35")
+    ),
+    stage_name = colDef(
+      minWidth = 320,
+      style = list(whiteSpace = "normal", lineHeight = "1.35")
+    )
   ),
   fullWidth = TRUE,
   compact = TRUE,
@@ -676,15 +687,22 @@ plan(sequential)
 aub_success_n <- sum(map_lgl(aub_details_raw, \(x) is.null(x$error)))
 if (aub_success_n == 0) {
   stop(paste0(
-    "All ", length(aub_details_raw),
+    "All ",
+    length(aub_details_raw),
     " committee-report requests failed; the existing AUB cache was not overwritten. ",
-    "First error: ", conditionMessage(aub_details_raw[[1]]$error)
+    "First error: ",
+    conditionMessage(aub_details_raw[[1]]$error)
   ))
 }
 
 readr::write_rds(
   aub_details_raw,
-  here::here("posts", "2026-06-08-ParlAT-votingPatterns-2", "_data", "aub_details_raw.rds")
+  here::here(
+    "posts",
+    "2026-06-08-ParlAT-votingPatterns-2",
+    "_data",
+    "aub_details_raw.rds"
+  )
 )
 ```
 
@@ -692,7 +710,6 @@ readr::write_rds(
 #| label: load-aub-cache
 #| eval: true
 #| include: false
-
 aub_details_raw <- readr::read_rds(here::here(
   "posts",
   "2026-06-08-ParlAT-votingPatterns-2",
@@ -703,10 +720,12 @@ aub_details_raw <- readr::read_rds(here::here(
 aub_success_n <- sum(map_lgl(aub_details_raw, \(x) is.null(x$error)))
 if (aub_success_n == 0) {
   stop(paste0(
-    "The AUB cache contains ", length(aub_details_raw),
+    "The AUB cache contains ",
+    length(aub_details_raw),
     " failed requests and no usable committee-report data. ",
     "Re-run the 'fetch-aub-details' cell to rebuild it before rendering. ",
-    "First cached error: ", conditionMessage(aub_details_raw[[1]]$error)
+    "First cached error: ",
+    conditionMessage(aub_details_raw[[1]]$error)
   ))
 }
 ```
@@ -861,12 +880,12 @@ funnel_reports_matched_bill <- aub_committee_stages |>
   n_distinct()
 
 match_funnel <- tribble(
-  ~step, ~n_reports,
-  "Committee reports fetched", funnel_reports_total,
-  "...with a recorded adoption-vote stage", funnel_reports_with_adoption_stage,
-  "...with a resolvable HG reference to a parent bill", funnel_reports_with_hg,
-  "...whose parent bill is in our own scope (inner_join)", funnel_reports_matched_bill,
-  "Final committee_rows (after keeping the latest vote per bill)", nrow(committee_rows)
+  ~step                                                           , ~n_reports                         ,
+  "Committee reports fetched"                                     , funnel_reports_total               ,
+  "...with a recorded adoption-vote stage"                        , funnel_reports_with_adoption_stage ,
+  "...with a resolvable HG reference to a parent bill"            , funnel_reports_with_hg             ,
+  "...whose parent bill is in our own scope (inner_join)"         , funnel_reports_matched_bill        ,
+  "Final committee_rows (after keeping the latest vote per bill)" , nrow(committee_rows)
 )
 
 match_funnel_table <- reactable(
@@ -920,14 +939,20 @@ items_scope_ordinary <- item_stages |>
   # r? makes the pattern match both "zweite"/"zweiter" and "dritte"/"dritter".
   # ignore_case is required: stage names capitalise the ordinal after a colon, e.g.
   # "141. Sitzung des Nationalrates: Zweite Lesung", and those rows are real readings.
-  filter(str_detect(stage_name, regex("(dritter?|zweiter?) Lesung", ignore_case = TRUE))) %>%
+  filter(str_detect(
+    stage_name,
+    regex("(dritter?|zweiter?) Lesung", ignore_case = TRUE)
+  )) %>%
   mutate(
     reading = case_when(
       # some items combine both readings into a single stage entry.
       # these patterns must be case-insensitive for the same reason as the filter above —
       # otherwise "Zweite und dritte Lesung" would fall through to the "dritte" branch
       str_detect(stage_name, regex("zweite", ignore_case = TRUE)) &
-        str_detect(stage_name, regex("dritte", ignore_case = TRUE)) ~ "second & third",
+        str_detect(
+          stage_name,
+          regex("dritte", ignore_case = TRUE)
+        ) ~ "second & third",
       str_detect(stage_name, regex("zweite", ignore_case = TRUE)) ~ "second",
       str_detect(stage_name, regex("dritte", ignore_case = TRUE)) ~ "third",
       .default = NA_character_
@@ -1002,7 +1027,10 @@ items_scope <- items_scope_ordinary %>%
         stage_name,
         regex("getrennte Abstimmung", ignore_case = TRUE)
       ) ~ "getrennte Abstimmung",
-      str_detect(stage_name, regex("abgelehnt", ignore_case = TRUE)) ~ "abgelehnt",
+      str_detect(
+        stage_name,
+        regex("abgelehnt", ignore_case = TRUE)
+      ) ~ "abgelehnt",
       str_detect(
         stage_name,
         regex("mehrstimmig", ignore_case = TRUE)
@@ -1803,16 +1831,24 @@ opportunity_base <- bind_rows(
   stage_positions %>%
     left_join(item_stage_record, by = "item_url") %>%
     transmute(
-      item_url, legis_period, party,
+      item_url,
+      legis_period,
+      party,
       transition = "Committee → 2nd reading",
-      from_pos = pos_committee, to_pos = pos_second, has_record = record_second
+      from_pos = pos_committee,
+      to_pos = pos_second,
+      has_record = record_second
     ),
   stage_positions %>%
     left_join(item_stage_record, by = "item_url") %>%
     transmute(
-      item_url, legis_period, party,
+      item_url,
+      legis_period,
+      party,
       transition = "2nd → 3rd reading",
-      from_pos = pos_second, to_pos = pos_third, has_record = record_third
+      from_pos = pos_second,
+      to_pos = pos_third,
+      has_record = record_third
     )
 ) %>%
   filter(!is.na(from_pos)) %>% # the party has to have held a position to be able to leave it
@@ -1830,13 +1866,19 @@ opportunity_table_data <- opportunity_base %>%
     n_no_record = sum(!at_disposal & !has_record),
     .by = c(legis_period, party, transition, direction)
   ) %>%
-  mutate(rate = if_else(n_at_disposal > 0, n_changed / n_at_disposal, NA_real_)) %>%
+  mutate(
+    rate = if_else(n_at_disposal > 0, n_changed / n_at_disposal, NA_real_)
+  ) %>%
   arrange(legis_period, transition, direction, desc(n_changed))
 
 # The table has to reconcile with `transitions`, which every chart is built from: same
 # denominators, same numerators. Assert it so the table and the charts cannot drift apart.
 reconcile_table <- opportunity_table_data %>%
-  summarise(n_at_disposal = sum(n_at_disposal), n_changed = sum(n_changed), .by = transition) %>%
+  summarise(
+    n_at_disposal = sum(n_at_disposal),
+    n_changed = sum(n_changed),
+    .by = transition
+  ) %>%
   inner_join(
     transitions %>%
       summarise(
@@ -1865,7 +1907,8 @@ stopifnot(
   all(opportunity_table_data$n_changed <= opportunity_table_data$n_at_disposal),
   sum(opportunity_table_data$n_no_record[
     opportunity_table_data$transition == "Committee → 2nd reading"
-  ]) == committee_only_rows
+  ]) ==
+    committee_only_rows
 )
 ```
 
@@ -1882,27 +1925,34 @@ opportunity_table <- reactable(
     direction = colDef(name = "Direction", minWidth = 100, filterable = TRUE),
     n_at_disposal = colDef(
       name = "At disposal",
-      align = "right", minWidth = 100,
+      align = "right",
+      minWidth = 100,
       format = colFormat(separators = TRUE)
     ),
     n_changed = colDef(
       name = "Changed",
-      align = "right", minWidth = 90,
+      align = "right",
+      minWidth = 90,
       format = colFormat(separators = TRUE)
     ),
     rate = colDef(
       name = "Rate",
-      align = "right", minWidth = 90,
+      align = "right",
+      minWidth = 90,
       format = colFormat(percent = TRUE, digits = 1)
     ),
     n_no_record = colDef(
       name = "No party-level record later",
-      align = "right", minWidth = 160,
+      align = "right",
+      minWidth = 160,
       format = colFormat(separators = TRUE)
     )
   ),
   columnGroups = list(
-    colGroup(name = "Opportunity and outcome", columns = c("n_at_disposal", "n_changed", "rate")),
+    colGroup(
+      name = "Opportunity and outcome",
+      columns = c("n_at_disposal", "n_changed", "rate")
+    ),
     colGroup(name = "Excluded from the denominator", columns = c("n_no_record"))
   ),
   defaultSorted = list(legis_period = "asc", n_changed = "desc"),
@@ -2410,7 +2460,11 @@ where_tile_combined <- where_tile_rate_grid %>%
     # "Period total" goes last so it renders at the TOP of each panel
     party = factor(party, levels = c(rev(party_order), "Period total")),
     is_total = party == "Period total",
-    label_n = if_else(present & n_flip_bills > 0, as.character(n_flip_bills), ""),
+    label_n = if_else(
+      present & n_flip_bills > 0,
+      as.character(n_flip_bills),
+      ""
+    ),
     # a period with no movement has no composition, so print no percentage rather than "100%"
     label_pct = if_else(
       present & n_flip_bills > 0 & !is.na(rate),
@@ -2444,7 +2498,12 @@ p_where_heatmap_combined <- where_tile_combined %>%
   ) +
   geom_text(
     data = where_tile_combined %>% filter(label_n != ""),
-    mapping = aes(x = legis_period, y = party, label = label_n, colour = label_colour),
+    mapping = aes(
+      x = legis_period,
+      y = party,
+      label = label_n,
+      colour = label_colour
+    ),
     nudge_y = 0.14,
     size = 2.2,
     fontface = "bold",
@@ -2453,7 +2512,12 @@ p_where_heatmap_combined <- where_tile_combined %>%
   ) +
   geom_text(
     data = where_tile_combined %>% filter(label_pct != ""),
-    mapping = aes(x = legis_period, y = party, label = label_pct, colour = label_colour),
+    mapping = aes(
+      x = legis_period,
+      y = party,
+      label = label_pct,
+      colour = label_colour
+    ),
     nudge_y = -0.16,
     size = 2.0,
     family = "Noto Sans",
@@ -2593,7 +2657,10 @@ conditional_rates <- conditional_flips %>%
 # The flipped counts here must reconcile with the counts charts above: summed across parties,
 # they are the same position changes. Assert it so the two cannot silently diverge.
 reconcile_conditional <- conditional_rates %>%
-  summarise(n_flipped = sum(n_flipped), .by = c(legis_period, transition, direction)) %>%
+  summarise(
+    n_flipped = sum(n_flipped),
+    .by = c(legis_period, transition, direction)
+  ) %>%
   inner_join(
     where_tile_rate_grid %>%
       distinct(legis_period, transition, change, n_period_flips) %>%
@@ -3029,7 +3096,10 @@ wrap_23 <- wrap_tr %>% filter(transition == "2nd → 3rd reading")
 wrap_share_c2 <- wrap_c2$flips / sum(wrap_tr$flips)
 
 wrap_dir <- transitions %>%
-  filter(transition == "Committee → 2nd reading", change %in% c("no → yes", "yes → no")) %>%
+  filter(
+    transition == "Committee → 2nd reading",
+    change %in% c("no → yes", "yes → no")
+  ) %>%
   count(change)
 wrap_nty <- wrap_dir$n[wrap_dir$change == "no → yes"]
 wrap_ytn <- wrap_dir$n[wrap_dir$change == "yes → no"]
