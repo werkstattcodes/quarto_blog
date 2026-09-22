@@ -66,6 +66,10 @@ itemsConsultationAll %>%
 # Get submission text
 
 Now let's get the actual text of the submission for the legislative proposal on the Federal Prosecutor.
+The current development version of ParlAT contains the new function `get_consultation_submissions()`. The function allows you to *directly* query the submissions for a *specific* item. 
+
+I am not entirely happy with the naming since I was torn between a function name which keeps the 'participation' link, and a name which hopefully conveys in clear terms what the function is about. Critically, the function contains
+also the the argument `include_text` which includes the text of the submission into the returned tibble, *if the submission's text was was directly submitted and not as an attached document*. 
 
 ```{r}
 submissionText <- get_consultation_submissions(
@@ -73,122 +77,158 @@ submissionText <- get_consultation_submissions(
   include_text = TRUE
 )
 
+nrow(submissionText)
+
 submissionText %>%
-  slice_head(n = 5)
+  slice_head(n = 5) %>%
+  glimpse()
 ```
+
+The code above returns details on all the `r nrow(submissionText)` submissions lodged in relation to the legislative proposal on the Federal Prosecutor. Note, that this also includes those submissions for which no text is available via the website of the Parliament. In fact, those filing a submission can opt-out of the publication of their submission. This explains, as we will see later, why we have fewer available texts then actual submissions.
+
+There are three columns which are of relevance when it comes to the text of a submission: `submission_text` and `submission_html` as well as `documents`. The first two contain the submission text if it was submitted via the pertaining form on the website of the Parliament. `documents` is a list column/nested data frame with an url to the submission if it was uploaded as a separate document. Hence, when interested in the text of the submissions, inline and attached texts have to be considered.
+
+Below an example of one `documents` element.
+
+```{r}
+submissionText$documents[[1]]
+```
+
+To get an idea on how 'inline' and attached text complement each other, below a cross-table on the availability
+of both for the federal prosecutor item.
+
 
 ```{r}
 submissionText <- submissionText %>%
   mutate(documentEmpty = map_lgl(documents, \(x) nrow(x) == 0))
 
 submissionText %>%
-  count(documentEmpty, is.na(submission_text))
-
-submissionText %>%
-  count(documentEmpty, text_missing = is.na(submission_text)) %>%
-  pivot_wider(names_from = text_missing, values_from = n, values_fill = 0)
+  count(
+    attachment_missing = documentEmpty,
+    text_missing = is.na(submission_text)
+  ) %>%
+  pivot_wider(
+    names_from = text_missing,
+    values_from = n,
+    values_fill = 0,
+    names_glue = "{if_else(text_missing, 'inline_missing', 'inline_present')}"
+  )
 ```
 
+## Extract text from pdfs
 
-
-
-
-This post retrieves the published consultation submissions for the
-ministerial draft on the introduction of a federal prosecution authority
-([126/ME, XXVIII. GP](https://www.parlament.gv.at/gegenstand/XXVIII/ME/126))
-and then analyses what they criticise. It has two parts: collecting the
-submissions and their text, and analysing them.
-
-`get_consultation_submissions(include_text = TRUE)` returns text entered
-directly on Parliament's website. It also returns links to attached documents,
-but does not extract text from those attachments. The collection part therefore
-downloads the PDFs of attachment-only submissions, extracts their text, and
-saves one unified corpus.
-
-The analysis has three steps: extract negative arguments from each submission,
-group them across the entire corpus, and count submissions per group.
-
-**Extract only criticisms, concerns, and reservations about the draft.** Include
-requests to correct shortcomings and reservations within otherwise supportive
-submissions. Exclude pure approval, neutral descriptions, and statements that
-raise no objections. Within this scope, topics remain open-ended: there are no
-predefined topic categories or limits on the number of arguments per document.
-Only the later consolidation step introduces a target of seven broad groups.
-
-This is a code-review report, not an analysis result. All chunks that retrieve
-data from Parliament's website, download PDFs, or call the Gemini API have
-`eval: false`. Rendering reads the saved corpus but makes **no network or API
-calls**. The analysis uses Google Gemini; ellmer automatically reads the
-existing `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) from your R environment.
-No key or credentials argument is specified in the calls. To run the analysis
-later, run the analysis chunks in order. The collection chunks need not be
-rerun unless you want to refresh the saved data.
-
-## Setup
+In the next step, I'll extract the text from those submissions which were lodged as pdf attachment. 
+Note that I will also extract the text from those pdf-files where we have also inline text available.
+There are cases, where 'users' submitted a pdf with their actual submission and wrote an inline text along the lines "please see the attached file". Also in these cases, the pdf text has to be taken into consideration.
 
 ```{r}
-#| label: setup
+#extract pdf url
 
-library(dplyr)
-library(here)
-library(httr2)
-library(ParlAT)
+submissionText <- submissionText %>%
+  mutate(
+    document_url = map(documents, \(x) {
+      pluck(x, "link", .default = NA_character_)
+    }),
+    document_n = map_dbl(document_url, \(x) length(x))
+  )
+
+table(submissionText$document_n)
+
+pdfMultiple <- submissionText %>%
+  filter(document_n > 1)
+
+submissionPdfUrls <- submissionText %>%
+  select(submission_id, document_url) %>%
+  unnest_longer(document_url)
+
 library(pdftools)
-library(purrr)
-library(readr)
-library(stringr)
-library(tibble)
-library(tidyr)
 
-item_url <- "https://www.parlament.gv.at/gegenstand/XXVIII/ME/126"
-
-post_dir <- here("posts", "2026-09-17-Prosecutor-Submission")
-data_dir <- file.path(post_dir, "data")
-text_dir <- file.path(data_dir, "texts")
-pdf_dir <- file.path(data_dir, "pdfs")
-pdf_text_dir <- file.path(data_dir, "pdf_texts")
-results_dir <- file.path(data_dir, "arguments")
-cache_dir <- file.path(results_dir, "cache")
-
-dir.create(text_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(pdf_dir, recursive = TRUE, showWarnings = FALSE)
-dir.create(pdf_text_dir, recursive = TRUE, showWarnings = FALSE)
+extract_pdf_text <- function(url) {
+  tryCatch(
+    pdf_text(url) %>% paste(collapse = "\n\n"),
+    error = function(e) NA_character_
+  )
+}
 ```
 
-## Collect the submissions
+### Save the extracted PDF text to disk
 
-The chunks in this part write everything the analysis needs to `data/`. Except
-for the coverage summary at the end, they have `eval: false`, so rendering does
-not contact Parliament's website.
+`extract_pdf_text()` is called inside the `walk2()` below, directly against
+`document_url`, rather than first stored in a `text_pdf` column of
+`submissionPdfUrls`. This downloads, extracts, and writes each PDF's text to
+disk in one step, and no full-corpus text column is ever held in memory.
 
-### Retrieve submissions and their inline text
+A submission can have more than one PDF, so `submission_id` alone is not a
+unique file name; `document_index` (its position within the submission) is
+added to it. `submission_id` contains `/`, which is not valid in a file name,
+so each `/` is replaced with `__` (`submission_id` has no underscores, so this
+is reversible, unlike collapsing every non-alphanumeric character to the same
+`-`, which would make `/` and `-` indistinguishable on import). The result,
+e.g. `849__SN-126__ME_01.txt`, stays easy to trace back to a submission.
 
 ```{r}
-#| label: retrieve-submissions
-#| eval: false
+library(here)
 
-submissions <- get_consultation_submissions(
-  item_url = item_url,
-  include_text = TRUE
+pdf_text_dir <- here(
+  "posts",
+  "2026-09-17-Prosecutor-Submission",
+  "data",
+  "text_pdf"
 )
+dir.create(pdf_text_dir, recursive = TRUE, showWarnings = FALSE)
 
-submissions
+submissionPdfUrls <- submissionPdfUrls %>%
+  group_by(submission_id) %>%
+  mutate(document_index = row_number()) %>%
+  ungroup() %>%
+  mutate(
+    text_pdf_file = file.path(
+      pdf_text_dir,
+      paste0(
+        str_replace_all(submission_id, "/", "__"),
+        "_",
+        str_pad(document_index, 2, pad = "0"),
+        ".txt"
+      )
+    )
+  )
 
-submissions %>%
-  count(is.na(submission_url))
+walk2(
+  submissionPdfUrls$document_url,
+  submissionPdfUrls$text_pdf_file,
+  \(url, file) write_lines(extract_pdf_text(url), file)
+)
 ```
 
-### Save the complete and flat datasets
-
-The RDS file retains the nested `documents` column. The CSV stores all
-submission metadata and inline text, while document links are written to a
-second CSV.
+To read the text back and reconnect it to `submission_id`, recover the ID from
+the file name and read each file in:
 
 ```{r}
-#| label: save-datasets
-#| eval: false
+submissionPdfUrls_reloaded <- tibble(
+  text_pdf_file = list.files(pdf_text_dir, full.names = TRUE)
+) %>%
+  mutate(
+    submission_id = basename(text_pdf_file) %>%
+      str_remove("_\\d+\\.txt$") %>%
+      str_replace_all("__", "/"),
+    text_pdf = map_chr(text_pdf_file, \(f) {
+      paste(read_lines(f), collapse = "\n")
+    })
+  )
+```
 
-write_rds(submissions, file.path(data_dir, "submissions.rds"))
+
+
+
+### Flatten the submissions
+
+The nested `documents` column is replaced by a count of attachments. Nothing is
+written to disk here; the only saved dataset is the combined corpus further
+below.
+
+```{r}
+#| label: flatten-submissions
+#| eval: false
 
 submissions_flat <- submissions |>
   mutate(
@@ -197,22 +237,6 @@ submissions_flat <- submissions |>
     document_n = map_int(documents, nrow)
   ) |>
   select(-submission_html, -documents)
-
-write_excel_csv(
-  submissions_flat,
-  file.path(data_dir, "submissions.csv"),
-  na = ""
-)
-
-documents <- submissions |>
-  select(submission_id, submission_url, documents) |>
-  unnest(documents)
-
-write_excel_csv(
-  documents,
-  file.path(data_dir, "submission_documents.csv"),
-  na = ""
-)
 ```
 
 ### Save each available inline text
@@ -282,11 +306,12 @@ write_lines(
 )
 ```
 
-### Extract text from attachment-only PDFs
+### Extract text from the PDF attachments
 
-The following code selects submissions without inline text but with published
-PDF attachments. It downloads each PDF, extracts its text, and records any
-download or extraction failure instead of silently dropping a submission.
+The following code selects every submission with published PDF attachments,
+whether or not it also has inline text. It downloads each PDF, extracts its
+text, and records any download or extraction failure instead of silently
+dropping a submission.
 
 ```{r}
 #| label: extract-pdf-text
@@ -309,7 +334,7 @@ pdf_documents <- submissions |>
       str_detect(submission_text, "\\S"),
     document_n = map_int(documents, nrow)
   ) |>
-  filter(!has_inline_text, document_n > 0) |>
+  filter(document_n > 0) |>
   select(
     submission_id,
     date,
@@ -327,10 +352,6 @@ pdf_documents <- submissions |>
     pdf_file = file.path(
       pdf_dir,
       paste0(file_stem, "_", str_pad(document_index, 2, pad = "0"), ".pdf")
-    ),
-    text_file = file.path(
-      pdf_text_dir,
-      paste0(file_stem, "_", str_pad(document_index, 2, pad = "0"), ".txt")
     )
   )
 
@@ -405,44 +426,19 @@ pdf_documents <- pdf_documents |>
     extraction_ok = !is.na(pdf_text)
   )
 
-walk2(
-  pdf_documents$pdf_text[pdf_documents$extraction_ok],
-  pdf_documents$text_file[pdf_documents$extraction_ok],
-  write_lines
-)
-
-write_excel_csv(
-  pdf_documents |>
-    select(
-      submission_id,
-      date,
-      author,
-      submission_url,
-      doc_title,
-      link,
-      type,
-      pdf_file,
-      text_file,
-      extraction_ok,
-      download_error,
-      extraction_error
-    ) |>
-    # Record paths relative to the post folder, so the manifest is portable.
-    mutate(across(
-      c(pdf_file, text_file),
-      \(path) str_remove(path, fixed(paste0(post_dir, "/")))
-    )),
-  file.path(data_dir, "pdf_extraction_manifest.csv"),
-  na = ""
-)
+# Failed downloads and extractions stay visible here instead of being dropped.
+pdf_documents |>
+  filter(!extraction_ok) |>
+  select(submission_id, doc_title, link, download_error, extraction_error)
 ```
 
 ### Combine inline and PDF text
 
 If a submission has more than one PDF, their extracted contents are combined
-in document order. `submission_text_all` contains the best available text for
-each submission, and `text_source` records whether it came from the website or
-a PDF.
+in document order. `text_consolidated` contains the PDF text where one was
+extracted and falls back to the inline text otherwise. `text_source` records
+which of the two it came from, and `has_pdf_text` records whether PDF text was
+extracted at all, independent of inline text.
 
 ```{r}
 #| label: combine-inline-and-pdf-text
@@ -465,14 +461,15 @@ pdf_by_submission <- pdf_documents |>
 submissions_with_text <- submissions_flat |>
   left_join(pdf_by_submission, by = "submission_id") |>
   mutate(
-    submission_text_all = if_else(
-      has_inline_text,
-      submission_text,
-      pdf_text
+    has_pdf_text = !is.na(pdf_text),
+    text_consolidated = case_when(
+      has_pdf_text ~ pdf_text,
+      has_inline_text ~ submission_text,
+      TRUE ~ NA_character_
     ),
     text_source = case_when(
+      has_pdf_text ~ "pdf",
       has_inline_text ~ "inline",
-      !is.na(pdf_text) ~ "pdf",
       TRUE ~ "unavailable"
     )
   ) |>
@@ -485,14 +482,14 @@ write_excel_csv(
 )
 
 all_available_text <- submissions_with_text |>
-  filter(!is.na(submission_text_all)) |>
+  filter(!is.na(text_consolidated)) |>
   pmap_chr(
     function(
       submission_id,
       date,
       author,
       submission_url,
-      submission_text_all,
+      text_consolidated,
       text_source,
       ...
     ) {
@@ -502,7 +499,7 @@ all_available_text <- submissions_with_text |>
         paste0("Author: ", coalesce(author, "Not published")),
         paste0("Source: ", submission_url),
         paste0("Text source: ", text_source),
-        submission_text_all,
+        text_consolidated,
         sep = "\n\n"
       )
     }
@@ -529,13 +526,48 @@ coverage <- read_csv(
   summarise(
     submissions = n(),
     with_inline_text = sum(has_inline_text),
-    with_pdf_text = sum(text_source == "pdf"),
+    with_pdf_text = sum(has_pdf_text),
     with_any_text = sum(text_source != "unavailable"),
     with_documents = sum(document_n > 0),
     without_available_text = sum(text_source == "unavailable")
   )
 
 coverage
+```
+
+The cross-tabulation below shows how many submissions have text on the website
+(inline) and how many have text extracted from a PDF. Each cell gives the
+number of submissions and its share of all submissions.
+
+```{r}
+#| label: coverage-crosstab
+
+submissions_saved_cov <- read_csv(
+  file.path(data_dir, "submissions_with_text.csv"),
+  show_col_types = FALSE
+)
+
+submissions_saved_cov |>
+  mutate(
+    pdf_text_available = if_else(has_pdf_text, "Yes", "No"),
+    inline_text_available = if_else(has_inline_text, "Yes", "No")
+  ) |>
+  count(pdf_text_available, inline_text_available) |>
+  complete(
+    pdf_text_available = c("Yes", "No"),
+    inline_text_available = c("Yes", "No"),
+    fill = list(n = 0L)
+  ) |>
+  mutate(cell = sprintf("%d (%.1f%%)", n, 100 * n / sum(n))) |>
+  select(-n) |>
+  pivot_wider(names_from = inline_text_available, values_from = cell) |>
+  arrange(desc(pdf_text_available)) |>
+  select(
+    `PDF text available` = pdf_text_available,
+    `Inline text: Yes` = Yes,
+    `Inline text: No` = No
+  ) |>
+  knitr::kable(align = "lrr")
 ```
 
 ## Analyse the criticisms
@@ -548,10 +580,10 @@ described in the introduction.
 The analysis reads the corpus saved by the collection chunks above
 (`data/submissions_with_text.csv`).
 
-Prepare all submissions with usable text, then use `dplyr::slice(1:10)` to
-select the first 10 in their existing row order for this test. Identical texts
-can share a cached extraction, but their separate submission IDs remain in the
-frequency counts. Remove the final `slice()` statement to use the full corpus.
+Prepare all submissions with usable text. The next section describes this full
+corpus. Only afterwards does a separate chunk select the first 10 in their
+existing row order for this test. Identical texts can share a cached
+extraction, but their separate submission IDs remain in the frequency counts.
 
 ```{r}
 #| label: prepare-corpus
@@ -562,13 +594,13 @@ submissions_saved <- read_csv(
 )
 
 corpus <- submissions_saved |>
-  filter(!is.na(submission_text_all)) |>
+  filter(!is.na(text_consolidated)) |>
   transmute(
     submission_id,
     author,
     submission_url,
     text_source,
-    text = submission_text_all |>
+    text = text_consolidated |>
       str_replace_all("\u00a0", " ") |>
       str_replace_all("\r\n?", "\n") |>
       str_replace_all("[ \t]+\n", "\n") |>
@@ -599,18 +631,79 @@ tibble(
   )
 ) |>
   knitr::kable()
+```
+
+Coverage is incomplete: the current collection has one
+image-only, attachment-only submission without extracted text
+(836/SN-126/ME). Where a submission has both, the PDF text is used and the
+inline text is not. The analysis therefore covers the available saved text, not
+necessarily every word in every published submission.
+
+### Length of the submissions
+
+Before extracting anything, here is how long the submissions are. Length is the
+number of characters of the consolidated text as it will be sent to the model.
+Lengths are very uneven, so the histogram uses a logarithmic axis.
+
+```{r}
+#| label: submission-length
+#| fig-alt: "Histogram of submission length in characters on a logarithmic axis, showing most submissions are short and a few are very long."
+
+library(ggplot2)
+
+corpus_length <- corpus |>
+  mutate(characters = str_length(text))
+
+corpus_length |>
+  summarise(
+    submissions = n(),
+    min = min(characters),
+    q25 = quantile(characters, 0.25),
+    median = median(characters),
+    mean = round(mean(characters)),
+    q75 = quantile(characters, 0.75),
+    max = max(characters)
+  ) |>
+  knitr::kable(format.args = list(big.mark = ","))
+
+ggplot(corpus_length, aes(characters)) +
+  geom_histogram(bins = 40, fill = "grey35", colour = "white") +
+  scale_x_log10(labels = scales::label_comma()) +
+  labs(
+    x = "Characters per submission (log scale)",
+    y = "Number of submissions"
+  ) +
+  theme_minimal()
+```
+
+The five longest submissions:
+
+```{r}
+#| label: longest-submissions
+
+corpus_length |>
+  slice_max(characters, n = 5, with_ties = FALSE) |>
+  select(
+    Submission = submission_id,
+    Author = author,
+    `Text source` = text_source,
+    Characters = characters
+  ) |>
+  knitr::kable(format.args = list(big.mark = ","))
+```
+
+### Select the test subset
+
+```{r}
+#| label: select-test-subset
 
 # Test run only: pass the first 10 usable submissions to the ellmer steps.
 corpus <- corpus |> dplyr::slice(1:10)
 ```
 
 For this test, grouping and frequency counts apply only to these 10 submissions;
-the denominator is the selected subset, not all published records.
-Coverage is incomplete: the current collection has one
-image-only, attachment-only submission without extracted text
-(836/SN-126/ME). Attachments to submissions that already have inline text have
-not been added. The analysis therefore covers the available saved text, not
-necessarily every word in every published submission.
+the denominator is the selected subset, not all published records. Remove the
+`slice()` statement above to use the full corpus.
 
 ### 1. Extract criticisms and reservations without a number limit
 
@@ -911,15 +1004,11 @@ separate here and can be assigned to the same group later.
 #| label: argument-registry
 #| eval: false
 
-df_arguments <- readr::read_csv(here::here(results_dir, "df_arguments.csv"))
-
 argument_registry <- df_argumente |>
   distinct(argument) |>
   arrange(argument) |>
   mutate(argument_id = sprintf("a%05d", row_number())) |>
   select(argument_id, argument)
-
-write_csv(argument_registry, file.path(results_dir, "argument_registry.csv"))
 
 df_argumente <- df_argumente |>
   left_join(argument_registry, by = "argument", relationship = "many-to-one")
@@ -1015,8 +1104,6 @@ stopifnot(
 
 saveRDS(list(stempel = grouping_stempel, groups = groups), grouping_file)
 codebook <- groups |> select(-argument_ids)
-write_csv(codebook, file.path(results_dir, "argument_groups.csv"))
-write_csv(argument_groups, file.path(results_dir, "argument_group_mapping.csv"))
 
 codebook
 ```
@@ -1067,23 +1154,6 @@ frequency_table <- codebook |>
   ) |>
   arrange(desc(n_submissions), group_id)
 
-# Full submission-by-group matrix, including zero-argument submissions.
-submission_matrix <- crossing(
-  submission_id = df_documents$submission_id,
-  group_id = codebook$group_id
-) |>
-  left_join(
-    mutate(group_presence, present = TRUE),
-    by = c("submission_id", "group_id")
-  ) |>
-  mutate(present = replace_na(present, FALSE)) |>
-  pivot_wider(names_from = group_id, values_from = present)
-
-write_csv(frequency_table, file.path(results_dir, "argument_frequencies.csv"))
-write_csv(
-  submission_matrix,
-  file.path(results_dir, "submission_group_matrix.csv")
-)
 write_rds(df_final, file.path(results_dir, "arguments_with_groups.rds"))
 
 frequency_table
