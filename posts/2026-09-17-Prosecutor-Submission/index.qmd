@@ -43,14 +43,17 @@ To get an overview of submission filed during the legislative process, we can us
 library(tidyverse)
 library(ParlAT)
 library(tidytext)
+library(pdftools)
+
+# Anchor here() to the project root; errors if the R session started outside it.
+here::i_am("posts/2026-09-17-Prosecutor-Submission/index.qmd")
+
+dir_post <- here::here("posts", "2026-09-17-Prosecutor-Submission")
 ```
 
 ```{r}
 itemsConsultationAll <- get_participation(item = c("ME", "RGES")) %>%
   arrange(desc(submissions_n))
-
-library(tidytext)
-library(tidyverse)
 
 itemsConsultationAll %>%
   filter(legis_period == "XXVIII") %>%
@@ -99,6 +102,8 @@ of both for the federal prosecutor item.
 
 
 ```{r}
+#| code-summary: "Check submission type (pdf/inline)"
+
 submissionText <- submissionText %>%
   mutate(documentEmpty = map_lgl(documents, \(x) nrow(x) == 0))
 
@@ -113,6 +118,9 @@ submissionText %>%
     values_fill = 0,
     names_glue = "{if_else(text_missing, 'inline_missing', 'inline_present')}"
   )
+
+submissionText %>%
+  readr::write_rds(., here::here(dir_post, "data", "submissionText.rds"))
 ```
 
 ## Extract text from pdfs
@@ -122,8 +130,9 @@ Note that I will also extract the text from those pdf-files where we have also i
 There are cases, where 'users' submitted a pdf with their actual submission and wrote an inline text along the lines "please see the attached file". Also in these cases, the pdf text has to be taken into consideration.
 
 ```{r}
-#extract pdf url
+#| code-summary: "Extract urls to submissions with pdf attachment"
 
+#extract pdf url
 submissionText <- submissionText %>%
   mutate(
     document_url = map(documents, \(x) {
@@ -141,11 +150,10 @@ submissionPdfUrls <- submissionText %>%
   select(submission_id, document_url) %>%
   unnest_longer(document_url)
 
-library(pdftools)
-
+#define function to extract text
 extract_pdf_text <- function(url) {
   tryCatch(
-    pdf_text(url) %>% paste(collapse = "\n\n"),
+    pdf_text(url) %>% paste(collapse = "\n\n") %>% str_squish() %>% str_trim(),
     error = function(e) NA_character_
   )
 }
@@ -167,15 +175,14 @@ is reversible, unlike collapsing every non-alphanumeric character to the same
 e.g. `849__SN-126__ME_01.txt`, stays easy to trace back to a submission.
 
 ```{r}
-library(here)
+#| code-summary: "Extract text from pdfs and save them"
+#| eval: false
 
-pdf_text_dir <- here(
-  "posts",
-  "2026-09-17-Prosecutor-Submission",
-  "data",
-  "text_pdf"
+dir.create(
+  here::here(dir_post, "data", "text_pdf"),
+  recursive = TRUE,
+  showWarnings = FALSE
 )
-dir.create(pdf_text_dir, recursive = TRUE, showWarnings = FALSE)
 
 submissionPdfUrls <- submissionPdfUrls %>%
   group_by(submission_id) %>%
@@ -183,7 +190,7 @@ submissionPdfUrls <- submissionPdfUrls %>%
   ungroup() %>%
   mutate(
     text_pdf_file = file.path(
-      pdf_text_dir,
+      here::here(dir_post, "data", "text_pdf"),
       paste0(
         str_replace_all(submission_id, "/", "__"),
         "_",
@@ -200,12 +207,19 @@ walk2(
 )
 ```
 
+#TODO check there should be at least one instance where one submission contains 2 documents
+
 To read the text back and reconnect it to `submission_id`, recover the ID from
 the file name and read each file in:
 
 ```{r}
-submissionPdfUrls_reloaded <- tibble(
-  text_pdf_file = list.files(pdf_text_dir, full.names = TRUE)
+#| code-summary: "Import saved pdf text"
+
+submissionPdfText <- tibble(
+  text_pdf_file = list.files(
+    here::here(dir_post, "data", "text_pdf"),
+    full.names = TRUE
+  )
 ) %>%
   mutate(
     submission_id = basename(text_pdf_file) %>%
@@ -218,6 +232,18 @@ submissionPdfUrls_reloaded <- tibble(
 ```
 
 
+#TODO When a submission comprises more than one pdf document, let's combine them into one single text.
+
+#TODO combine inline and pdftext
+
+### Add pdf text to main data frame and combine
+
+
+
+
+
+
+# LEGACY CODE BELOW (IGNORE)
 
 
 ### Flatten the submissions
