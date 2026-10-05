@@ -9,8 +9,20 @@
 <link>https://werk.statt.codes/</link>
 <atom:link href="https://werk.statt.codes/index.xml" rel="self" type="application/rss+xml"/>
 <description>RSS feed to relevant posts</description>
-<generator>quarto-1.9.38</generator>
-<lastBuildDate>Sun, 07 Jun 2026 22:00:00 GMT</lastBuildDate>
+<generator>quarto-1.10.18</generator>
+<lastBuildDate>Wed, 16 Sep 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Reservations about the proposed federal prosecutor’s office</title>
+  <dc:creator>Roland Schmidt</dc:creator>
+  <link>https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/</link>
+  <description><![CDATA[ Collect the published consultation submissions on Austria’s proposed federal prosecution authority (Bundesstaatsanwaltschaft), extract criticisms and reservations from each, group them across the corpus, and count how many submissions raise each group. ]]></description>
+  <category>Austria</category>
+  <category>parliament</category>
+  <category>ParlAT</category>
+  <category>LLM</category>
+  <guid>https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/</guid>
+  <pubDate>Wed, 16 Sep 2026 22:00:00 GMT</pubDate>
+</item>
 <item>
   <title>How do Parties vote in the Austrian National Council? Part II</title>
   <dc:creator>Roland Schmidt</dc:creator>
@@ -22,17 +34,6 @@
   <guid>https://werk.statt.codes/posts/2026-06-08-ParlAT-votingPatterns-2/</guid>
   <pubDate>Sun, 07 Jun 2026 22:00:00 GMT</pubDate>
   <media:content url="https://werk.statt.codes/posts/2026-06-08-ParlAT-votingPatterns-2/index_files/figure-html/plot-flip-stage-period-1.png" medium="image" type="image/png" height="154" width="144"/>
-</item>
-<item>
-  <title>How do Parties vote in the Austrian National Council?</title>
-  <dc:creator>Roland Schmidt</dc:creator>
-  <link>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</link>
-  <description><![CDATA[ The latest release of the {ParlAT} package introduces the ability to extract parties’ votes on items discussed in the third reading of the Austrian National Council. This post introduces the new feature by presenting some exemplary queries on the voting from the 20th to the current 28th legislative period. ]]></description>
-  <category>Austria</category>
-  <category>parliament</category>
-  <category>ParlAT</category>
-  <guid>https://werk.statt.codes/posts/2026-05-21-ParlAT-votingPatterns/</guid>
-  <pubDate>Wed, 03 Jun 2026 22:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
