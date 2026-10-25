@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Roland Schmidt">
-<meta name="dcterms.date" content="2026-09-17">
-<meta name="description" content="The upcoming version of {ParlAT} allows you to quickly retrieve the conten to submissions to the public consultation process of Austria’s Parlament (‘Stellungnahmen im Begutachtungsverfahren’). Here, we look into the submissions on the initially proposed Federal Prosecutor’s Office and analyze the extracted content with LLM to identify the main contra-arguments put forward.">
+<meta name="dcterms.date" content="2026-10-25">
+<meta name="description" content="The upcoming version of {ParlAT} allows you to quickly retrieve the content of submissions to the public consultation process of Austria’s Parliament (‘Stellungnahmen im Begutachtungsverfahren’). Here, we look into the submissions on the initially proposed Federal Prosecutor’s Office and analyse the extracted content with an LLM to identify the main contra-arguments put forward.">
 
-<title>Analyzing the content of submission to Parliament’s consultation process with {ParlAT} – werk.statt.codes</title>
+<title>Analysing the content of submissions to Parliament’s consultation process with {ParlAT} – werk.statt.codes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -400,7 +400,7 @@ cookieconsent.run({
   </ul></li>
   </ul></li>
   <li><a href="#excursion-descriptives" id="toc-excursion-descriptives" class="nav-link" data-scroll-target="#excursion-descriptives"><span class="header-section-number">5</span> Excursion: Descriptives</a></li>
-  <li><a href="#content-analysis---analyze-the-criticisms" id="toc-content-analysis---analyze-the-criticisms" class="nav-link" data-scroll-target="#content-analysis---analyze-the-criticisms"><span class="header-section-number">6</span> Content analysis - Analyze the criticisms</a>
+  <li><a href="#content-analysis-analyse-the-criticisms" id="toc-content-analysis-analyse-the-criticisms" class="nav-link" data-scroll-target="#content-analysis-analyse-the-criticisms"><span class="header-section-number">6</span> Content analysis – Analyse the criticisms</a>
   <ul>
   <li><a href="#prepare-the-corpus" id="toc-prepare-the-corpus" class="nav-link" data-scroll-target="#prepare-the-corpus"><span class="header-section-number">6.1</span> Prepare the corpus</a></li>
   <li><a href="#extract-criticisms-and-reservations-without-a-number-limit" id="toc-extract-criticisms-and-reservations-without-a-number-limit" class="nav-link" data-scroll-target="#extract-criticisms-and-reservations-without-a-number-limit"><span class="header-section-number">6.2</span> Extract criticisms and reservations without a number limit</a></li>
@@ -422,7 +422,7 @@ cookieconsent.run({
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Analyzing the content of submission to Parliament’s consultation process with {ParlAT}</h1>
+<h1 class="title">Analysing the content of submissions to Parliament’s consultation process with {ParlAT}</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Austria</div>
     <div class="quarto-category">ParlAT</div>
@@ -432,7 +432,7 @@ cookieconsent.run({
 
 <div>
   <div class="description">
-    <p>The upcoming version of {ParlAT} allows you to quickly retrieve the conten to submissions to the public consultation process of Austria’s Parlament (‘Stellungnahmen im Begutachtungsverfahren’). Here, we look into the submissions on the initially proposed Federal Prosecutor’s Office and analyze the extracted content with LLM to identify the main contra-arguments put forward.</p>
+    <p>The upcoming version of {ParlAT} allows you to quickly retrieve the content of submissions to the public consultation process of Austria’s Parliament (‘Stellungnahmen im Begutachtungsverfahren’). Here, we look into the submissions on the initially proposed Federal Prosecutor’s Office and analyse the extracted content with an LLM to identify the main contra-arguments put forward.</p>
   </div>
 </div>
 
@@ -449,7 +449,7 @@ cookieconsent.run({
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">17 Sep 2026</p>
+      <p class="date">25 Oct 2026</p>
     </div>
   </div>
   
@@ -528,17 +528,17 @@ cookieconsent.run({
 </section>
 <section id="context" class="level1 page-columns page-full" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Context</h1>
-<p>In this post I want to demonstrate how the {ParlAT} package can be used to obtain submissions filed as part of a bill’s public consultation process (Begutachtungsverfahren), extract their text, and use it for LLM assisted content analysis.</p>
-<p>Austria’s legislative procedure provides for the public (individuals as well as legal entities) to submit their opinions on an upcoming bill. The purpose, at least that’s the original intent, is to solicit input from the wider public which may inform the further formulation of the legislative item. I have written already in the past about this procedure (see <a href="https://werk.statt.codes/posts/2020-12-22-submissionsepidemiclaw/" target="_blank">here</a> and <a href="https://werk.statt.codes/posts/2021-03-10-covidsubmissionsnoauthor/" target="_blank">here</a> ), but the recent ministerial proposal on a new Federal Prosecutor, the ensuing discussion (e.g.&nbsp;see <a href="https://orf.at/stories/3440370/" target="_blank">here</a>) incl.&nbsp;a considerable number of submissions made me think it might be a good idea to take up this issue again and demonstrate {ParlAT}’s pertaining features.</p>
-<p>As with other posts, the case in point is partly technical, partly substantive, i.e.&nbsp;how can we tackle an interesting issue with R in general, and {ParlAT} more specifically.</p>
-<p>More specifically, here’s what I want to demonstrate in this post.</p>
+<p>In this post I want to demonstrate how the {ParlAT} package can be used to obtain submissions filed as part of a bill’s public consultation process (Begutachtungsverfahren), extract their text, and use it for LLM-assisted content analysis.</p>
+<p>Austria’s legislative procedure provides for the public (individuals as well as legal entities) to submit their opinions on an upcoming bill. The purpose, at least that’s the original intent, is to solicit input from the wider public which may inform the further formulation of the legislative item. I have already written about this procedure in the past (see <a href="https://werk.statt.codes/posts/2020-12-22-submissionsepidemiclaw/" target="_blank">here</a> and <a href="https://werk.statt.codes/posts/2021-03-10-covidsubmissionsnoauthor/" target="_blank">here</a>), but the recent ministerial proposal on a new Federal Prosecutor, the ensuing discussion (e.g.&nbsp;see <a href="https://orf.at/stories/3440370/" target="_blank">here</a>) and the considerable number of submissions made me think it might be a good idea to take up this issue again and demonstrate {ParlAT}’s pertaining features.</p>
+<p>As with other posts, the case in point is partly technical, partly substantive, i.e.&nbsp;how we can tackle an interesting issue with R in general, and {ParlAT} more specifically.</p>
+<p>In detail, here’s what I want to demonstrate in this post:</p>
 <ol type="1">
 <li>First, I want to get the total number of submissions filed during the recent consultative process and put this number in relation to the number of submissions on other legislative issues;</li>
-<li>Second, I want to get the individual submissions on the specific proposal and extract the text. This already will allow some general descriptive analysis, e.g.&nbsp;on the length of the submissions;</li>
+<li>Second, I want to get the individual submissions on the specific proposal and extract the text. This will already allow some general descriptive analysis, e.g.&nbsp;on the length of the submissions;</li>
 <li>Third, I want to use an LLM to identify and extract the main contra-arguments contained in each individual submission and aggregate them into groups across all filed submissions. This will provide us with an “argument map”, i.e.&nbsp;which arguments were put forward how often and in combination with which other arguments.</li>
 </ol>
 <p>To implement all this, I introduce a new function of the {ParlAT} package, <code>get_consultation_submissions()</code>, which makes it easy to get the individual submissions.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> For the identification and extraction of the contra arguments I will use the mighty <a href="https://ellmer.tidyverse.org/" target="_blank">{ellmer}</a> package, which is truly a joy to work with and another gem which Hadley has contributed to the R ecosystem.</p>
-<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The function is currently only available in the development branch of {ParlAT} and is scheduled to be rolled out with the next release.</p></div></div><p>As always, if you spot any errors, have a question or feedback don’t hesitate to contact <a href="https://bsky.app/profile/zoowalk.bsky.social" target="_blank">me</a>. If you ever use the {ParlAT} package, I would appreciate it if you cite it.</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The function is currently only available in the development branch of {ParlAT} and is scheduled to be rolled out with the next release.</p></div></div><p>As always, if you spot any errors, have a question or feedback, don’t hesitate to contact <a href="https://bsky.app/profile/zoowalk.bsky.social" target="_blank">me</a>. If you ever use the {ParlAT} package, I would appreciate it if you cite it.</p>
 </section>
 <section id="how-the-data-flows" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> How the data flows</h1>
@@ -729,7 +729,7 @@ flowchart TD
 <span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>To start with, I am interested in the number of submissions filed in relation to the public prosecutor’s bill and want to put this number into perspective with other items. The <code>get_participation()</code> function which can call on all ministerial drafts and bills returns the column <code>submissions_n</code>, i.e.&nbsp;the number of submissions filed during the consultation process.</p>
+<p>To start with, I am interested in the number of submissions filed in relation to the federal prosecutor’s bill and want to put this number into perspective with other items. The <code>get_participation()</code> function, which can call on all ministerial drafts and bills, returns the column <code>submissions_n</code>, i.e.&nbsp;the number of submissions filed during the consultation process.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Get number of submissions for all items</summary>
@@ -757,7 +757,7 @@ flowchart TD
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="do">## 10 XXVIII       Ministerialentwurf Glücksspielgesetz, Telekommuni…           109</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>The plot below shows all relevant items <strong>in the current 28th legislative period</strong> ranked by their number of received submissions. As highlighted, the proposal on the federal prosecutor received most submissions, 846.</p>
+<p>The plot below shows all relevant items <strong>in the current 28th legislative period</strong> ranked by their number of received submissions. As highlighted, the proposal on the federal prosecutor received the most submissions, 846.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Plot: Number of submissions per item</summary>
@@ -850,7 +850,7 @@ Figure&nbsp;2: Number of submissions per item in the 28th legislative period
 </div>
 </div>
 </div>
-<p>To complement the graph above, below the distribution of the number of submissions. The x axis indicates the number of submissions (bin width of 25). The y axis the number of items which fall into the relevant category/bin. The clear majority of items receives something between 1 an 25 submissions. Everything over 100 submissions is already an oddity, i.e.&nbsp;the numbers observed for the Propsecutor’s bill is very rare for the 28th legislative period.</p>
+<p>To complement the graph above, below is the distribution of the number of submissions. The x axis indicates the number of submissions (bin width of 25). The y axis shows the number of items which fall into the relevant category/bin. The clear majority of items receives something between 1 and 25 submissions. Everything over 100 submissions is already an oddity, i.e.&nbsp;the number observed for the prosecutor’s bill is very rare for the 28th legislative period.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Histogram</summary>
@@ -946,7 +946,7 @@ Figure&nbsp;3: Distribution of the number of submissions per item in the 28th le
 </div>
 </div>
 </div>
-<p>If we put the context a bit wider, the picture however changes. Below I list the 100 items with the most submissions not only for the 28th legislative period, but <strong>for the time period since 1996 (20th legislative period)</strong>. As you can quickly see, the number of submissions filed by the public for COVID related legislation dwarfs what we currently see for the public prosecutor bill. In a sense, the number of submission seems to reflect the contentiousness of the items at stake.</p>
+<p>If we widen the context, however, the picture changes. Below I list the 100 items with the most submissions not only for the 28th legislative period, but <strong>for the time period since 1996 (20th legislative period)</strong>. As you can quickly see, the number of submissions filed by the public for COVID-related legislation dwarfs what we currently see for the federal prosecutor bill. In a sense, the number of submissions seems to reflect the contentiousness of the items at stake.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Bar plot of the 100 items with most submissions since the 20th legislative period</summary>
@@ -1064,7 +1064,7 @@ Figure&nbsp;4: The 100 items with the most submissions since the 20th legislativ
 </section>
 <section id="get-submissions-text" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Get submissions’ text</h1>
-<p>Now let’s get the actual text of the submission for the legislative proposal on the Federal Prosecutor. As already mentioned in the beginning, the current development version of {ParlAT} contains the new function <code>get_consultation_submissions()</code>. What the function does: it allows you to <em>directly</em> query the submissions for a <em>specific</em> legislative item. Critically, the function contains also the argument <code>include_text</code> which - surprise, surprise - includes the text of the submission into the returned tibble, <em>if the submission’s text was directly submitted and not as an attached document</em>. As for submissions which were submitted as uploaded pdf-files, we still have to specifically extract their text.</p>
+<p>Now let’s get the actual text of the submissions for the legislative proposal on the Federal Prosecutor. As already mentioned in the beginning, the current development version of {ParlAT} contains the new function <code>get_consultation_submissions()</code>. What the function does: it allows you to <em>directly</em> query the submissions for a <em>specific</em> legislative item. Critically, the function contains also the argument <code>include_text</code> which - surprise, surprise - includes the text of the submission in the returned tibble, <em>if the submission’s text was directly submitted and not as an attached document</em>. As for submissions which were submitted as uploaded pdf files, we still have to specifically extract their text.</p>
 <p>Let’s call the function on the federal prosecutor proposal.</p>
 <div class="cell">
 <details open="" class="code-fold">
@@ -1103,14 +1103,14 @@ Figure&nbsp;4: The 100 items with the most submissions since the 20th legislativ
 <span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="do">## $ documents       &lt;list&gt; [&lt;tbl_df[1 x 3]&gt;], [&lt;tbl_df[1 x 3]&gt;], [&lt;tbl_df[1 x 3]&gt;…</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>The code above returns details on all the 846 submissions lodged in relation to the legislative proposal on the Federal Prosecutor. Note, that this also includes those submissions for which no text is available via the website of the Parliament. In fact, those individuals or legal entities filing a submission can opt-out of the publication of their submission. This explains, as we will see later, why we have fewer available texts than actual submissions.</p>
+<p>The code above returns details on all the 846 submissions lodged in relation to the legislative proposal on the Federal Prosecutor. Note that this also includes those submissions for which no text is available via the website of the Parliament. In fact, those individuals or legal entities filing a submission can opt out of the publication of their submission. This explains, as we will see later, why we have fewer available texts than actual submissions.</p>
 <p><em>There are three columns which are of relevance</em> when it comes to the text of a submission:</p>
 <ul>
 <li><code>submission_text</code> and <code>submission_html</code></li>
 <li><code>documents</code></li>
 </ul>
-<p>The first two contain the submission text if it was submitted via the pertaining <em>online form</em> on the website of the Parliament. <code>documents</code> is a list column/nested data frame with an url to the submission if it was <em>uploaded as a separate (pdf) document</em>. Hence, when interested in the text of the submissions, both inline and attached texts have to be considered.</p>
-<p>Below an example of one <code>documents</code> element (open it <a href="https://www.parlament.gv.at/dokument/XXVIII/SNME/6069/imfname_1776712.pdf" target="_blank">here</a>).</p>
+<p>The first two contain the submission text if it was submitted via the pertaining <em>online form</em> on the website of the Parliament. <code>documents</code> is a list column/nested data frame with a URL to the submission if it was <em>uploaded as a separate (pdf) document</em>. Hence, when interested in the text of the submissions, both inline and attached texts have to be considered.</p>
+<p>Below is an example of one <code>documents</code> element (open it <a href="https://www.parlament.gv.at/dokument/XXVIII/SNME/6069/imfname_1776712.pdf" target="_blank">here</a>).</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_submissions<span class="sc">$</span>documents[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> <span class="fu">glimpse</span>()</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Rows: 1</span></span>
@@ -1119,7 +1119,7 @@ Figure&nbsp;4: The 100 items with the most submissions since the 20th legislativ
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $ link      &lt;chr&gt; "https://www.parlament.gv.at/dokument/XXVIII/SNME/6069/imfna…</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="do">## $ type      &lt;chr&gt; "PDF"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>To get an idea on how ‘inline’ and attached text complement each other, below a cross-table on the availability of both for the federal prosecutor item.</p>
+<p>To get an idea of how ‘inline’ and attached text complement each other, below is a cross-table on the availability of both for the federal prosecutor item.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Check submission type (pdf/inline)</summary>
@@ -1190,7 +1190,7 @@ Table&nbsp;1: Submissions by PDF attachment and inline text
 </figure>
 </div>
 </div>
-<p>As the table reveals, the overwhelming part of the submissions were made only via the online form (548), and only a few were pdf only (43).</p>
+<p>As the table reveals, the vast majority of submissions were made only via the online form (548), and only a few were pdf only (43).</p>
 <p>But the table also shows that there are submissions which have an inline text <em>and</em> an attached pdf:</p>
 <div class="cell">
 <details class="code-fold">
@@ -1214,10 +1214,10 @@ Table&nbsp;1: Submissions by PDF attachment and inline text
 </details>
 </div>
 <p>In these cases I opted to consider only the text of the attached pdf. The inline text is merely an accompanying text, kind of a cover letter, which refers to the attached pdf or a pure repetition of the pdf.</p>
-<p>With this background, the overall text extraction strategy is, hence, to consider always the text of the attached pdf and only if no pdf is available we will consider the inline text.</p>
+<p>With this background, the overall text extraction strategy is, hence, to always use the text of the attached pdf and to fall back on the inline text only if there is no pdf.</p>
 <section id="extract-text-from-pdfs" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="extract-text-from-pdfs"><span class="header-section-number">4.1</span> Extract text from pdfs</h2>
-<p>In the next step, I’ll extract the text from those submissions which were lodged as pdf attachment. There is one submission with two pdfs. To avoid conflating both, I introduce a <code>submission_pdf_id</code> key which uniquely identifies each document (comprising the <code>submission_id</code> and a counter). Since this key will be also used to store the extracted text on disc, I replace the slashes, which are not allowed in file names, with underscores.</p>
+<p>In the next step, I’ll extract the text from those submissions which were lodged as a pdf attachment. There is one submission with two pdfs. To avoid conflating both, I introduce a <code>submission_pdf_id</code> key which uniquely identifies each document (comprising the <code>submission_id</code> and a counter). Since this key will also be used to store the extracted text on disk, I replace the slashes, which are not allowed in file names, with underscores.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Extract urls to submissions with pdf attachment</summary>
@@ -1268,7 +1268,7 @@ Table&nbsp;1: Submissions by PDF attachment and inline text
 <span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 846/SN-126/ME https://www.parlament.gv.at/PtWeb/api/s3serv/… 846_SN-126_ME-1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Now, let’s define a function which 1) extracts the text of each pdf, and 2) stores it on disc with the <code>submission_pdf_id</code> as the file name.</p>
+<p>Now, let’s define a function which 1) extracts the text of each pdf, and 2) stores it on disk with the <code>submission_pdf_id</code> as the file name.</p>
 <div class="cell" data-cache.extra="[&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/6069/imfname_1776712.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/a33eda35-7071-45e6-8f6e-2409e7921957&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/3413af35-de0c-4e1c-bb64-1afbeb0f703f&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/f94cb743-224d-4e54-be7f-9467695a2d40&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/2cd3183c-3567-4817-9448-bd295ec7e558&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/2ec6c183-332f-47a8-b944-e47e14d3933c&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/6053/imfname_1776539.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/104aa081-6384-4154-a923-9c14664f82ff&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/690e71cf-80f8-4384-bfac-1bea043eaa61&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/e857a0c7-63ac-4914-ba68-8d74f4fe91bb&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/a26a3f1a-f738-4cd1-b922-df19fc7d9030&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/6037/imfname_1776482.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/58bbe924-00d1-4a63-9b6b-f288037563e9&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/2489628a-0fc7-478d-a684-250f3a1d484f&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/c3431014-dc36-47a0-870c-4c8358fe80e2&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/b88f364f-3630-4a31-8e24-21599bc53c43&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/99e98d6a-4197-4ada-8908-a55674613274&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/7e61654c-e8e8-40d2-acc0-e8bdbec2577f&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/52855e8a-83f9-4849-b74a-df89269c1b0c&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/dac83f08-cdcc-4a80-8d0a-1c140e8d147f&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/5997/imfname_1776375.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/2be9d59f-49bd-4538-a860-8723d77e26ca&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/5974/imfname_1776303.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/31307742-347c-4de1-9b82-a15b96f7a252&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/a3bd9d5e-bfda-42b3-8301-b70522fb6561&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/072d95df-ab89-4a9c-a3b4-deae687be58f&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/6c5baec9-be0d-4f37-8c22-bc9bef32db48&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/baab35aa-de5c-44b5-b8b5-c134dc778119&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/ca768531-ae30-4ac8-8649-91099685fb3d&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/0bf6e1b2-4c50-41f4-923a-b8808b53eeca&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/48623823-386f-416f-a465-70035b3213cf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/c48c83c5-32f1-45b8-8bbd-726a9c33f8b7&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/78c290de-abd6-4d4d-be79-0cb771731022&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/83153e3c-8d49-4dba-a4ed-6d58d95dce42&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/952cc6e9-f9e2-4a58-b3e6-fb70c13ef88e&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/27d69fe4-977c-4f22-be4a-ffe39ec93d2f&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/82964341-be97-46d1-a235-875794adc0e2&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/eaf40625-39be-4d77-b329-e2a28d2e10f6&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/998b5915-a3d4-4f53-919b-e263d4ec0aff&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/5611/imfname_1775616.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/c5c5697a-1447-49af-8718-0c406a3413d3&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/e7132977-e227-4a87-8f88-8b1c26b04149&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/35ea1c84-5fe9-42da-ae2e-5b579852eb33&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/915cba9b-aefe-46a5-8591-458c2c3da2b0&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/2016ca28-3a99-4d06-86b8-85bb09056d68&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/d3229255-5f51-4c4a-ba7b-7110bc43da4b&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/fce5a3d7-449a-443c-b417-3cd37d9ee7f8&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/06cabf28-9d33-41ec-b856-9bf0bcf14402&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/252e4874-be5f-4a21-8ed7-131a27ca4208&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/4efaecbc-62ef-4373-9d42-23fdd981ab42&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/51022186-9d08-4361-9f71-9a1704bd107c&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/f99b5397-5542-488c-872e-276618095ff7&quot;,&quot;https://www.parlament.gv.at/dokument/XXVIII/SNME/5563/imfname_1775376.pdf&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/f237068b-2bc2-48b1-9391-9fa4f3de94fa&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/e6241b00-7539-4497-bad4-ab564c5c7d70&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/6222be21-4413-4e48-bc77-91783bade016&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/b2fe6c4d-7515-4307-bbb9-4e3f45a85b94&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/c18a26ef-db41-4168-98cb-24edf21e71e7&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/9e393bba-d256-4952-b73d-52f1312c3669&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/513e723e-40e7-4f16-821b-073533082b70&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/6dcb5ab3-5e35-405d-8929-74fcb810ec1c&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/0ccb4e0a-1b65-403f-b920-5cb728592a38&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/c651b1f8-ad20-4a0f-a74c-7c60b94760bc&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/f1a958eb-3305-460e-8c8c-b72b6ed13f16&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/51579ca7-a94a-49db-9c77-4d8dc8a62ff1&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/41d02263-1ea4-4067-877c-ae30be7a17de&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/e17469f3-980c-46b5-8194-73b49a630a54&quot;,&quot;https://www.parlament.gv.at/PtWeb/api/s3serv/file/13bc0adc-d8b4-4c54-9810-a94d3b7fb35a&quot;]">
 <details class="code-fold">
 <summary>Extract text from pdfs and save them</summary>
@@ -1531,9 +1531,9 @@ Table&nbsp;2: The five longest submissions
 </div>
 </div>
 </section>
-<section id="content-analysis---analyze-the-criticisms" class="level1 page-columns page-full" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Content analysis - Analyze the criticisms</h1>
-<p>Now with the assembly of the corpus finalized, let’s get into what this post is actually about: Identifying contra-arguments aka criticisms put forward in the lodged submissions. To do so, I implement three steps below:</p>
+<section id="content-analysis-analyse-the-criticisms" class="level1 page-columns page-full" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Content analysis – Analyse the criticisms</h1>
+<p>Now with the assembly of the corpus finalized, let’s get into what this post is actually about: identifying contra-arguments aka criticisms put forward in the lodged submissions. To do so, I implement three steps below:</p>
 <ol type="1">
 <li>extract the criticisms from each individual submission,</li>
 <li>group them across the corpus, and</li>
@@ -1542,7 +1542,7 @@ Table&nbsp;2: The five longest submissions
 <section id="prepare-the-corpus" class="level2" data-number="6.1">
 <h2 data-number="6.1" class="anchored" data-anchor-id="prepare-the-corpus"><span class="header-section-number">6.1</span> Prepare the corpus</h2>
 <p>The analysis reads the corpus saved by the collection chunks above (<code>data/submissions_text.rds</code>).</p>
-<p>Prepare all submissions with usable text. The section on the length of the submissions above describes this full corpus.</p>
+<p>I keep all submissions with usable text. The section on the length of the submissions above describes this full corpus.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Prepare corpus of submissions with text</summary>
@@ -1623,9 +1623,9 @@ Table&nbsp;3: Submissions with and without usable text
 <h2 data-number="6.2" class="anchored" data-anchor-id="extract-criticisms-and-reservations-without-a-number-limit"><span class="header-section-number">6.2</span> Extract criticisms and reservations without a number limit</h2>
 <p>To identify the contra-arguments put forward, I use the mighty {ellmer} package. In short, we</p>
 <ul>
-<li>stipulate the LLM model which {ellmer} should call on,</li>
+<li>stipulate the model which {ellmer} should call on,</li>
 <li>provide it with a prompt<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> which essentially tells what we want the LLM to do,</li>
-<li>and then trigger the call which puts the prompt plus each individual submission text to the LLM.</li>
+<li>and then trigger the call which sends the prompt plus each individual submission text to the LLM.</li>
 </ul>
 <div class="no-row-height column-margin column-container"><div id="fn2"><p><sup>2</sup>&nbsp;The prompt is written in English for the sake of this post. The LLM nevertheless reads the German submission texts and identifies the arguments in them accordingly.</p></div></div><p>In terms of output, I want</p>
 <ul>
@@ -1839,8 +1839,8 @@ Table&nbsp;4: The first ten extracted arguments
 </section>
 <section id="consolidate-arguments-across-the-whole-corpus" class="level2" data-number="6.3">
 <h2 data-number="6.3" class="anchored" data-anchor-id="consolidate-arguments-across-the-whole-corpus"><span class="header-section-number">6.3</span> Consolidate arguments across the whole corpus</h2>
-<p>Now, we want to put the extracted arguments into groups. Here I set an uppe rlimit of five. Five is a reviewable maximum, not a target, an extraction constraint, or a predefined taxonomy: the model forms fewer groups if the arguments support fewer.</p>
-<p>Create an ID for each distinct argument description. The model then only has to return these short IDs instead of repeating the descriptions exactly. The IDs are created anew on each run. Similar but differently worded arguments remain separate here and can be assigned to the same group later.</p>
+<p>Now, we want to put the extracted arguments into groups. Here I set an upper limit of five. Five is a reviewable maximum, not a target, an extraction constraint, or a predefined taxonomy: the model forms fewer groups if the arguments support fewer.</p>
+<p>I create an ID for each distinct argument description. The model then only has to return these short IDs instead of repeating the descriptions exactly. The IDs are created anew on each run. Similar but differently worded arguments remain separate here and can be assigned to the same group later.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One row per argument of one model, with its number within the submission and an ID per distinct description.</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The grouping model only returns argument IDs, so this ID is the link back to submission_id later.</span></span>
@@ -2122,7 +2122,7 @@ Table&nbsp;5: Checks of the group assignments
 </figure>
 </div>
 </div>
-<p>Review the group definitions and their assigned arguments before interpreting frequencies. The number of groups is a result and can change between runs. If the maximum forces unrelated positions together, raise it here without changing the open-ended extraction. If the complete argument list exceeds the model’s context, stop and revisit consolidation; do not silently omit arguments or documents.</p>
+<p>The group definitions and their assigned arguments should be reviewed before interpreting any frequencies. The number of groups is a result of the model and can change between runs. If the maximum of five forced unrelated positions together, it could be raised without changing the extraction step. And if the complete list of arguments exceeded the model’s context window, the grouping would have to be split up rather than silently dropping arguments.</p>
 </section>
 <section id="result-argument-groups-and-submission-counts" class="level2" data-number="6.4">
 <h2 data-number="6.4" class="anchored" data-anchor-id="result-argument-groups-and-submission-counts"><span class="header-section-number">6.4</span> Result: Argument groups and submission counts</h2>
@@ -2232,7 +2232,7 @@ Table&nbsp;6: Argument groups by number of submissions
 </div>
 </div>
 <p>The final table contains each group’s keyword, the number of submissions raising it, and the percentage of all analysed submissions; the full name and definition of a group open on click. Percentages may sum to more than 100% because submissions can raise several groups. Identical submissions with different IDs each count separately.</p>
-<p>These are frequencies of the extracted <strong>criticisms and reservations</strong>, not of all positions. General support does not count as an objection, but specific criticisms within supportive submissions do. Submissions with no extracted negative arguments still remain in the denominator. Before reporting results, check a varied sample against the source text, including long submissions, PDF-derived text, and documents with empty extraction results.</p>
+<p>These are frequencies of the extracted <strong>criticisms and reservations</strong>, not of all positions. General support does not count as an objection, but specific criticisms within supportive submissions do. Submissions with no extracted negative arguments still remain in the denominator. Before drawing conclusions, it is worth checking a varied sample against the source text, e.g.&nbsp;long submissions, text extracted from pdfs, and submissions without any extracted arguments.</p>
 </section>
 <section id="argument-combinations-within-submissions" class="level2" data-number="6.5">
 <h2 data-number="6.5" class="anchored" data-anchor-id="argument-combinations-within-submissions"><span class="header-section-number">6.5</span> Argument combinations within submissions</h2>
@@ -2362,11 +2362,11 @@ Figure&nbsp;6: Combinations of argument groups raised in the submissions
 </section>
 <section id="wrap-up" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> Wrap up</h1>
-<p>So, that’s it. The draft on the federal prosecutor’s office drew 846 submissions, more than any other item of the current legislative period, though still far off the records set by the COVID-19 legislation. Content-wise, the criticism boils down to a few main lines. The most prominent one is parliamentary oversight, raised by 63.7% of the analysed submissions, followed by the appointment procedure (41.9%) and the term of office (32.9%). Many submissions raise several of them together.</p>
+<p>So, that’s it. The draft on the federal prosecutor’s office drew 846 submissions, more than any other item of the current legislative period, though still far from the records set by the COVID-19 legislation. Content-wise, the criticism boils down to a few main lines. The most prominent one is parliamentary oversight, raised by 63.7% of the analysed submissions, followed by the appointment procedure (41.9%) and the term of office (32.9%). Many submissions raise several of them together.</p>
 <p>On the technical side, I hope the post showed that {ParlAT}’s new <code>get_consultation_submissions()</code> turns getting the submissions, including their text, into a single call, and that {ellmer} makes passing these texts on to an LLM fairly painless.</p>
 <p>A few caveats are in order, though:</p>
 <ul>
-<li>The analysis only covers submissions which were published and have extractable text. Authors can opt out of publication, and scanned PDFs yield no text.</li>
+<li>The analysis only covers submissions which were published and have extractable text. Authors can opt out of publication, and scanned pdfs yield no text.</li>
 <li>Arguments were extracted and grouped by one model (Gemini-3.7-flash). In a follow-up post, I intend to conduct the same analysis with other LLMs and contrast the results.</li>
 <li>The upper limit of five groups is my choice. A higher limit would split some groups further.</li>
 <li>Only criticisms and reservations are counted, not support for the draft. Identical submissions, e.g.&nbsp;based on a template, each count separately.</li>
@@ -2380,15 +2380,15 @@ Figure&nbsp;6: Combinations of argument groups raised in the submissions
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-reuse"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></div></div></section><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{schmidt2026,
   author = {Schmidt, Roland},
-  title = {Analyzing the Content of Submission to {Parliament’s}
+  title = {Analysing the Content of Submissions to {Parliament’s}
     Consultation Process with {\{ParlAT\}}},
-  date = {2026-09-17},
+  date = {2026-10-25},
   url = {https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/},
   langid = {en}
 }
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-schmidt2026" class="csl-entry quarto-appendix-citeas" role="listitem">
-Schmidt, Roland. 2026. <span>“Analyzing the Content of Submission to
-Parliament’s Consultation Process with {ParlAT} .”</span> September 17,
+Schmidt, Roland. 2026. <span>“Analysing the Content of Submissions to
+Parliament’s Consultation Process with {ParlAT}.”</span> October 25,
 2026. <a href="https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/">https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/</a>.
 </div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
