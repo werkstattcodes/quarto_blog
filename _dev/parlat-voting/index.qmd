@@ -1,0 +1,645 @@
+---
+title: "How do Parties vote in the Austrian National Council? Part II"
+subtitle: "Pipeline version — computation lives in a targets pipeline"
+date-modified: last-modified
+description: |
+  A follow-up that traces how parties shift their position on a bill as it moves
+  through committee, the second reading and the third reading in the Austrian
+  National Council — and asks where, if anywhere, those changes actually happen.
+reference-location: margin
+knitr:
+    opts_chunk:
+      code-fold: show
+      collapse: true
+      dev: "ragg_png"
+---
+
+# Just the results, please {.unnumbered}
+
+::: {layout-ncol="2"}
+![Where position changes happen: relative flip rate by stage and legislative period](index_files/figure-html/plot-flip-stage-period-1.png){group="voting_patterns_2_gallery"}
+
+![Flip rate by transition, direction and party role, per legislative period](index_files/figure-html/plot-where-flips-bars-1.png){group="voting_patterns_2_gallery"}
+
+![How positions flow from committee to the third reading](index_files/figure-html/plot-where-flips-alluvial-1.png){group="voting_patterns_2_gallery"}
+
+![Flip counts by party, period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-1.png){group="voting_patterns_2_gallery"}
+
+![Share of comparable bills with a party vote flip, by period, transition and direction](index_files/figure-html/plot-where-flips-heatmap-percent-1.png){group="voting_patterns_2_gallery"}
+
+![No-to-yes vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-no-to-yes-1.png){group="voting_patterns_2_gallery"}
+
+![Yes-to-no vote flips between Ausschuss and zweite Lesung](index_files/figure-html/plot-flip-committee-yes-to-no-1.png){group="voting_patterns_2_gallery"}
+
+![No-to-yes vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-no-to-yes-1.png){group="voting_patterns_2_gallery"}
+
+![Yes-to-no vote flips between zweite and dritte Lesung](index_files/figure-html/plot-flip-yes-to-no-1.png){group="voting_patterns_2_gallery"}
+:::
+
+# The workflow at a glance
+
+Before any of the prose below, here is the whole argument in one picture — what question each step answers, in plain language. Three separate downloads come in at the top. Two of them have to be brought together, because the committee's vote and the plenary's votes live in different documents. From there a single chain whittles the material down to votes that can actually be compared, and reads each party's position out of the sentence that records it. At the bottom the work splits three ways, into the three families of figures in this post.
+
+The small grey name under each step is the file that implements it, in case you want to go and read it.
+
+```{mermaid}
+%%| label: fig-workflow
+%%| column: page
+%%| fig-cap: "What the analysis does, step by step — from three raw downloads to the figures in this post."
+%%| fig-alt: "Workflow flowchart with five phases. Phase one, where the numbers come from: three separate downloads from the parliament's open-data API — the list of everything the National Council dealt with, the full procedural history of each item, and the committee reports fetched separately because the committee's vote is recorded nowhere else. Phase two, turning documents into rows: narrowing to item types that can be voted on, unpacking each history into one row per procedural step, and finding the adoption motion in each committee report. Phase three, building one comparable record per vote: lining up the three decision points, dropping self-contradictory records, keeping only votes in the standard Dafuer-dagegen form, reading each party's position and folding historical party labels onto one name per party, yielding one row per bill and party. Phase four, context the graphs need: who governed in each period and the party display order. Phase five, what comes out: three parallel streams producing four tile plots of side-changes, five views of where changes cluster, and a table of every individual change."
+flowchart TB
+
+  REFRESH["Downloaded once from parliament's open-data API<br/>and kept on disk, because fetching it takes hours.<br/>Re-running the analysis never re-downloads.<br/><span style='font-size:0.72em;color:#5b5b5b'>refresh_data.R</span>"]
+
+  subgraph P1["① Where the numbers come from"]
+    S1["Everything the National Council formally<br/>dealt with across nine legislative periods:<br/>government bills, private members' motions,<br/>budget items."]
+    S2["For each of those, its full procedural<br/>history — every step it went through,<br/>including the sentence that records<br/>how each party voted."]
+    S3["The committee reports, fetched separately.<br/>For most bills the committee's own vote<br/>is recorded nowhere else."]
+  end
+
+  subgraph P2["② Turning documents into rows"]
+    R1["Narrow the pile down to the item types<br/>that can actually come to a vote<br/>in a reading.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+    R2["Unpack each item's history into one row<br/>per procedural step, and read its date.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+    R3["In each committee report, find the formal<br/>motion to adopt the bill and trace it back<br/>to the bill it belongs to.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+  end
+
+  subgraph P3["③ Building one comparable record per vote"]
+    C1["Line the three decision points up in one<br/>table: the committee vote, the second<br/>reading and the third reading.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+    C2["Drop bills whose records contradict<br/>themselves — the same stage logged twice,<br/>or approved and rejected in one reading.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+    C3["Keep only votes written in the standard<br/>“Dafür … dagegen …” form. The other<br/>formats never name the parties.<br/><span style='font-size:0.72em;color:#5b5b5b'>stages.R</span>"]
+    C4["Read each party's position out of that<br/>sentence, and fold historical labels onto<br/>one name per party — “G” and “GRÜNE” are<br/>the same party, as are JETZT and PILZ.<br/><span style='font-size:0.72em;color:#5b5b5b'>votes.R</span>"]
+    C5["<b>The analysis table:</b> one row per bill and<br/>party, holding that party's position<br/>at each of the three stages.<br/><span style='font-size:0.72em;color:#5b5b5b'>votes.R</span>"]
+    QA["Side products: tables documenting<br/>what was excluded, and why.<br/><span style='font-size:0.72em;color:#5b5b5b'>tables.R</span>"]
+  end
+
+  subgraph P4["④ Context the graphs need"]
+    K1["Who governed in each period, which parties<br/>sat in parliament at all, and the order<br/>they should appear in.<br/><span style='font-size:0.72em;color:#5b5b5b'>parties.R</span>"]
+    K2["Which item types survived the filters, and<br/>how current the data is — for the captions.<br/><span style='font-size:0.72em;color:#5b5b5b'>votes.R</span>"]
+  end
+
+  subgraph P5["⑤ What comes out"]
+    A0["Count, per party and legislative period,<br/>how often a party changed sides<br/>between two consecutive stages.<br/><span style='font-size:0.72em;color:#5b5b5b'>plots.R</span>"]
+    A1["Committee → 2nd reading<br/>no → yes"]
+    A2["Committee → 2nd reading<br/>yes → no"]
+    A3["2nd → 3rd reading<br/>no → yes"]
+    A4["2nd → 3rd reading<br/>yes → no"]
+
+    B1["Recast every position as a transition<br/>between two consecutive stages, then ask<br/>where the changes cluster.<br/><span style='font-size:0.72em;color:#5b5b5b'>transitions.R</span>"]
+    B2["Five views: change rates by period,<br/>the flow across all three stages,<br/>and heatmaps by party."]
+
+    T1["Zoom in on the bills that were voted<br/>on at all three stages.<br/><span style='font-size:0.72em;color:#5b5b5b'>transitions.R</span>"]
+    T2["Every individual change, party by party<br/>and bill by bill, linked to the source record."]
+  end
+
+  REFRESH -.-> S1
+  REFRESH -.-> S2
+  REFRESH -.-> S3
+
+  S1 --> R1
+  S2 --> R2
+  S3 --> R3
+
+  R2 --> C1
+  R3 --> C1
+  R2 --> QA
+
+  C1 --> C2
+  C1 --> C3
+  C2 --> C3
+  C2 --> QA
+  C3 --> C4
+  C4 --> C5
+
+  R1 --> K2
+  R2 --> K2
+  C5 --> K1
+
+  C5 --> A0
+  A0 --> A1
+  A0 --> A2
+  A0 --> A3
+  A0 --> A4
+
+  C5 --> B1
+  B1 --> B2
+
+  C5 --> T1
+  T1 --> T2
+
+  K1 --> A0
+  K1 --> B2
+  K1 --> T1
+  K2 --> A0
+  K2 --> B2
+
+  classDef src fill:#e8e8e8,stroke:#8a8a8a,color:#222
+  classDef ext fill:#ffffff,stroke:#9a9a9a,stroke-dasharray:4 3,color:#555
+  classDef xf fill:#dce9f5,stroke:#4575b4,color:#14314f
+  classDef const fill:#fdeccd,stroke:#d9932a,color:#5a3c07
+  classDef out fill:#dcefdc,stroke:#1a9641,color:#124d24
+  classDef tbl fill:#e9e0f1,stroke:#7b52a8,color:#33204a
+
+  class S1,S2,S3 src
+  class REFRESH ext
+  class R1,R2,R3,C1,C2,C3,C4,C5,A0,B1,T1 xf
+  class K1,K2 const
+  class A1,A2,A3,A4,B2 out
+  class QA,T2 tbl
+```
+
+Reading the colours: grey is raw downloaded material; blue is a step that reshapes or filters it; amber is background knowledge the graphs need but the data does not contain; green is a finished figure; violet is a table. The dashed box sits deliberately outside the analysis — the download runs only when the data is deliberately refreshed, so re-running everything else is fast and never touches the network.
+
+```{r}
+#| label: workflow-diagram-drift-guard
+#| include: false
+# The flowchart above is hand-written prose, so it can go stale. The one thing that
+# can be checked mechanically is the small grey file reference under each step:
+# assert each of those files still exists, so a rename becomes a render-time
+# failure rather than a diagram that quietly points nowhere.
+diagram_scripts <- c(
+  "refresh_data.R",
+  file.path("R", c("stages.R", "votes.R", "parties.R", "transitions.R", "tables.R"))
+)
+
+missing_scripts <- diagram_scripts[!file.exists(diagram_scripts)]
+if (length(missing_scripts) > 0) {
+  stop(
+    "fig-workflow points at files that no longer exist: ",
+    paste(missing_scripts, collapse = ", "),
+    call. = FALSE
+  )
+}
+```
+
+# How this document is built
+
+This is the same analysis as the published post, but all of the computation has moved out of the document and into a [`targets`](https://docs.ropensci.org/targets/) pipeline next to it. The document became a reader: every figure and table below is pulled from the pipeline's store with `tar_read()`, and nothing here recomputes anything.
+
+The motivation was structural rather than cosmetic. In the single-file version the object `items_scope` was assigned twice from two unrelated lineages, with the second silently shadowing the first; the chunk that drew the first tile plot also happened to be the definition site for five constants that eight later chunks depended on; and four of the plots were ~90% identical copies differing only in a flip condition and a colour. None of that is visible when you read a script top to bottom — but all of it shows up immediately as edges in a dependency graph.
+
+The layout:
+
+```
+_dev/parlat-voting/
+├── _targets.R          pipeline definition
+├── refresh_data.R      opt-in API re-fetch (not part of the pipeline)
+├── index.qmd           this document
+└── R/
+    ├── constants.R     paths, palette, period/party vectors, vote keywords
+    ├── parties.R       party normalisation, government lookup, display order
+    ├── stages.R        raw readers, committee votes, scope + duplicate handling
+    ├── votes.R         the Dafür/Dagegen parser, long/wide reshaping, captions
+    ├── transitions.R   stage positions, transitions, three-stage subset
+    ├── plots.R         shared theme + all plot builders
+    └── tables.R        reactable theme + table builders
+```
+
+```{r}
+#| label: setup
+#| code-summary: "Load packages and pull pipeline results into the session"
+library(targets)
+library(tidyverse)
+library(reactable)
+library(reactablefmtr)
+library(ggtext)
+library(ggalluvial)
+
+# the table builders and the shared palette live in the pipeline's R/ modules
+tar_source("R")
+
+# objects the prose and tables below refer to directly
+tar_load(c(
+  data_cutoff,
+  committee_stages,
+  committee_category_summary,
+  committee_vote_rows,
+  stages_scope,
+  dup_rows,
+  non_pairs_details,
+  three_stage_item_n,
+  three_stage_changes,
+  latest_c2_item,
+  latest_c2_parties
+))
+```
+
+@fig-workflow above is a reader's map: hand-curated, grouped into phases, deliberately leaving edges out where they would only add clutter. Below is the other kind of graph — the exact dependency network `targets` itself builds, all 54 nodes of it, labelled with how long each took. It is generated from the pipeline rather than drawn by hand, so it cannot drift; use it when you want the truth rather than the overview. The five shared constants that used to be defined inside a plot chunk are visible here sitting upstream of everything that needs them.
+
+```{r}
+#| label: pipeline-dag
+#| code-summary: "Render the pipeline's dependency graph"
+#| fig-align: "center"
+tar_visnetwork(targets_only = TRUE, label = "time")
+```
+
+# Get items
+
+## Query data
+
+As in the previous post, the analysis starts from all items ('Verhandlungsgegenstände') of the National Council for the legislative periods 20 to 28.
+
+The three raw fetches are expensive — `get_item_details()` is one HTTP request per item, and this covers every NR item plus every committee report across nine legislative periods. They are therefore *not* pipeline steps. The pipeline tracks the three cached `.rds` files as `format = "file"` targets, which means it hashes them and rebuilds downstream whenever they change, but an ordinary `tar_make()` never touches the network. Re-fetching is a deliberate, separate act: run the relevant function in `refresh_data.R`.
+
+Tracking the files rather than storing their contents also keeps the store small — the raw caches are ~218 MB, the entire `_targets/` store is ~16 MB.
+
+```{r}
+#| label: fetch-items
+#| code-summary: "How the raw caches are declared and refreshed"
+#| eval: false
+# in _targets.R — the file is hashed, never copied into the store
+tar_target(path_items_raw, data_path("items_20_28.rds"), format = "file")
+tar_target(items_meta, read_items_meta(path_items_raw))
+
+# in refresh_data.R — run by hand when fresh data is actually wanted
+refresh_items <- function() {
+  items_20_28 <- seq(20, 28) %>%
+    map(\(x) get_items(legis_period = x, institution = "NR")) %>%
+    list_rbind()
+  readr::write_rds(items_20_28, data_path("items_20_28.rds"))
+}
+```
+
+## Keep items of interest
+
+Not every item type is subject to a vote in a reading. The pipeline filters for the types that are: motions (Anträge), government bills (Regierungsvorlagen), budget-related items, and a few others.
+
+Note that the unanchored `RV`/`GABR` patterns also match variants (RVEU, RVS, GABR13, …); these pass the type filter but rarely carry a standard reading vote, so they drop out downstream. The graph captions are therefore built later, from the item types that actually survive into the analysis.
+
+```{r}
+#| label: define-item-scope
+#| code-summary: "Item types that survive the type filter"
+tar_read(items_in_scope_types) %>%
+  distinct(type_doc_long, type_doc) %>%
+  arrange(type_doc)
+```
+
+# Get item details
+
+## Prepare stages data
+
+`item_stages` holds one row per procedural step per item, with the stage date parsed. At this point it still contains *all* stage rows — also those without any vote. Any item whose API call failed is collected separately in `failed_items` rather than aborting the run.
+
+```{r}
+#| label: prepare-stages-data
+#| code-summary: "Stage-level data and the data cutoff"
+item_stages <- tar_read(item_stages)
+
+nrow(item_stages)
+nrow(tar_read(failed_items)) # failed API calls in the cache
+data_cutoff # latest stage date in the data
+```
+
+## Build committee votes from the reports
+
+There is a catch that only becomes visible once you look closely at the source: for most bills the committee's vote is **not** recorded on the bill's own page at all. It lives on a separate object — the committee report (`Ausschussbericht`, type `AUB`) — which carries the formal `Antrag auf Annahme des Gesetzesvorschlags` division with each party's position, plus a reference back to the parent bill.
+
+`build_committee_rows()` (in `R/stages.R`) therefore reads each report's stages, keeps the adoption-vote line, follows its `references` entry flagged `HG` ("Hauptgegenstand") back to the parent bill, and emits one committee-vote row per bill carrying the parent's identifiers — so it slots in alongside the second- and third-reading rows further down.
+
+```{r}
+#| label: prepare-committee-votes
+#| code-summary: "Committee votes recovered from the reports"
+nrow(tar_read(committee_rows)) # committee votes available to merge with the readings
+```
+
+# Get items in scope
+
+## How much committee activity is actually a vote?
+
+It is worth pausing on what the **bill's own page** records about its committee phase — because, as it turns out, surprisingly little of it is the actual vote. A committee does far more than decide on a bill: it requests written opinions (Stellungnahmen), sets deadlines (Fristsetzungen), refers items back, and so on. The table below breaks all of a bill's National Council committee stages down by type. The punchline: the formal **adoption vote** — the committee's decision on the bill, the part we actually want — appears on the bill's own page only rarely. That is exactly why the committee reports are fetched separately and the committee vote taken from *there* instead.
+
+```{r}
+#| label: committee-context-summary
+#| code-summary: "Categorise National Council committee stages and show the vote share"
+build_committee_category_table(committee_category_summary, data_cutoff)
+```
+
+Across all `r scales::comma(nrow(committee_stages))` committee stages recorded on the bills' own pages, only `r scales::percent(mean(committee_stages$is_vote), accuracy = 0.1)` record a vote at all, and just `r scales::percent(mean(committee_stages$in_scope), accuracy = 0.1)` are the bill-adoption vote — which is why the committee position has to come from the report instead. For reference, the table below lists the vote-bearing committee stages that *do* appear on the bills' own pages, each linked to its source.
+
+```{r}
+#| label: committee-vote-rows-table
+#| code-summary: "List committee stages that record a vote, with links to the source"
+build_committee_vote_rows_table(committee_vote_rows, data_cutoff)
+```
+
+## Applying the scope filter
+
+`build_stages_scope()` takes the second- and third-reading rows from the bills' own National Council stages and **binds on the committee votes built from the reports**, so the three stages sit in one table. Then it keeps only the rows where a vote was actually cast. The committee step is the bill's first formal vote, taken before it reaches the plenary floor; including it lets us follow an item across three stages instead of two.
+
+Two columns are added along the way: `reading` records the stage — committee, second, or third reading (or, in some cases, second and third at once) — and `vote_report_type` captures *how* the vote result is reported in the stage description. The latter matters more than one might think: only stages with an explicit 'Dafür:.../Dagegen:...' pattern (labelled 'regular') state each party's position; other formats such as 'wechselnde Mehrheit' or 'namentliche Abstimmung' don't allow extracting party positions from the stage text alone.
+
+::: {.callout-note}
+## A name collision worth fixing
+In the single-file version this table and the item-type filter above were **both** called `items_scope`, assigned in different chunks from unrelated inputs — the second silently overwrote the first, and the inline text further down happened to refer to the second. They are now two separate targets, `items_in_scope_types` and `stages_scope`, which makes the ambiguity impossible.
+:::
+
+```{r}
+#| label: scope-items
+#| code-summary: "Distribution of vote reporting types"
+nrow(stages_scope)
+nrow(item_stages)
+
+stages_scope %>%
+  count(vote_report_type, sort = TRUE) %>%
+  mutate(rel = n / sum(n) * 100)
+```
+
+## Check for duplicate stage rows
+
+Time for a *data sanity check*. Now that the analysis spans up to three stages — committee, second reading and third reading — an item no longer needs to have a fixed number of rows. What it *should* have, however, is at most one row per stage: a single committee vote, a single second-reading vote, a single third-reading vote. Any item with more than one row for the same stage points to a data inconsistency (duplicates in the source, or an item that was approved/rejected twice within one stage).
+
+```{r}
+#| label: check-pairs
+#| code-summary: "Items with duplicate vote rows within a stage"
+n_distinct(dup_rows$item_url)
+```
+
+There are `r n_distinct(dup_rows$item_url)` items out of `r n_distinct(stages_scope$item_url)` which feature more than one row for the same stage.
+
+To facilitate a closer look at these cases, the table below lists the deviating items with their individual vote-stage rows. Each item is linked to its page on the parliament's website, so you can check the underlying records yourself.
+
+```{r}
+#| label: non-pairs-table
+#| code-summary: "Table of items with duplicate vote rows in a stage"
+build_non_pairs_table(non_pairs_details, data_cutoff)
+```
+
+As it turns out, some are duplicates in the data source, e.g. here: <https://www.parlament.gv.at/gegenstand/XX/I/1530?selectedStage=105>. The votes in the second and third reading are reported twice. Others are reported multiple times because an item was within one single reading partly approved/not approved and hence got two rows in the data source, i.e. <https://www.parlament.gv.at/gegenstand/XXVIII/I/403>.
+
+Rather than trying to repair these inconsistencies one by one, `build_votes_regular()` simply removes the affected items, narrows the data down to items with a 'regular' vote report, and — since that filter can itself re-introduce a duplicate-free-but-now-inconsistent state — checks for and removes duplicate stage rows once more.
+
+```{r}
+#| label: filter-pairs
+#| code-summary: "Coverage after removing duplicates and non-regular reports"
+votes_regular <- tar_read(votes_regular)
+
+nrow(votes_regular)
+table(votes_regular$reading)
+nrow(votes_regular) / nrow(stages_scope) # share of all vote stages covered
+```
+
+# Extract votes
+
+Now to the heart of the matter: getting each party's position out of the stage description. The text follows (mostly) the pattern 'Dafür: party A, party B, dagegen: party C', so `fn_get_votes()` splits the string at the 'dagegen' boundary and cleans up both sides.
+
+Two details are worth mentioning. First, only tokens appearing in a predefined list of valid party labels are kept — this guards against vote counts, footnotes and other non-party fragments sneaking into the results. Second, since party labels changed over the legislative periods, `normalise_party()` maps the historical variants onto one canonical name per party. That mapping is load-bearing: the single-letter forms (`S`, `V`, `N`, `G`) appear in the earlier periods, and without collapsing them onto `SPÖ`/`ÖVP`/`NEOS`/`GRÜNE` the tile plots below grow phantom rows in which `G` sits next to `GRÜNE` as though they were different parties. `JETZT` and `PILZ` are likewise merged into a single `JETZT/PILZ` category.
+
+```{r}
+#| label: define-vote-extractor
+#| code-summary: "The party normalisation map (R/parties.R)"
+#| eval: false
+normalise_party <- function(party) {
+  dplyr::case_when(
+    party %in% c("NEOS-LIF", "NEOS/NEOS-LIF") ~ "NEOS",
+    party %in% c("JETZT", "PILZ", "JETZT/PILZ") ~ "JETZT/PILZ",
+    party == "F" ~ "FPÖ",
+    party == "F-BZÖ" ~ "BZÖ",
+    party == "S" ~ "SPÖ",
+    party == "V" ~ "ÖVP",
+    party == "N" ~ "NEOS",
+    party == "G" ~ "GRÜNE",
+    TRUE ~ party
+  )
+}
+```
+
+The long form gives one row per item, reading and party, with two indicator columns recording whether the party voted in favor and/or against.
+
+```{r}
+#| label: votes-long
+#| code-summary: "Long format: one row per item, reading and party"
+votes_long <- tar_read(votes_long)
+
+nrow(votes_long)
+sort(unique(votes_long$party)) # canonical parties only — no stray single letters
+```
+
+To detect flips between stages we need each stage side by side. The wide form has one row per item-party combination, with separate columns for the committee, second-reading and third-reading vote (`yes_committee`, `no_committee`, `yes_second`, …). An `NA` in these columns means the party has no recorded vote at that particular stage.
+
+```{r}
+#| label: votes-wide
+#| code-summary: "Wide format with separate committee/second/third columns"
+votes_wide <- tar_read(votes_wide)
+
+nrow(votes_wide)
+```
+
+Speaking of `NA`s — before drawing any conclusions, it's worth checking how much missingness we are actually dealing with, and whether it is concentrated in particular legislative periods.
+
+```{r}
+#| label: vis-missingness
+#| code-summary: "Missing values by legislative period"
+tar_read(p_vis_missingness)
+```
+
+# Flips between two stages
+
+The four tile plots below were four near-identical chunks in the single-file version. They are now one builder, `build_flip_tile_plot()`, driven by a four-row spec table and expanded with `tarchetypes::tar_map()`:
+
+```{r}
+#| label: flip-spec
+#| code-summary: "The spec table that generates the four flip plots"
+#| eval: false
+flip_specs <- tibble::tibble(
+  suffix   = c("no_to_yes", "yes_to_no", "comm_no_to_yes", "comm_yes_to_no"),
+  from_col = c("no_second", "yes_second", "no_committee", "yes_committee"),
+  to_col   = c("yes_third", "no_third",   "yes_second",   "no_second"),
+  fill_hex = c(PAL$green,   PAL$red,      PAL$green,      PAL$red),
+  # ... plus the title and subtitle wording per variant
+)
+
+tar_map(
+  values = flip_specs,
+  names = "suffix",
+  tar_target(flip_counts, build_flip_counts(votes_wide, from_col, to_col)),
+  tar_target(flip_grid, build_flip_grid(flip_counts, all_parties, gov_parties_lookup,
+                                        party_period_presence, party_order)),
+  tar_target(p_flip, build_flip_tile_plot(flip_grid, fill_hex, title, ..., vote_graph_caption))
+)
+# -> p_flip_no_to_yes, p_flip_yes_to_no, p_flip_comm_no_to_yes, p_flip_comm_yes_to_no
+```
+
+How often did a party reject an item in the second reading, only to support it in the third? Such no-to-yes flips are rare by design — the third reading usually follows immediately after the second — but where they occur, they may hint at successful last-minute amendments or changed political circumstances. Since a flip carries a different weight depending on whether a party sits in government or in opposition, governing parties are marked with a black frame.
+
+```{r}
+#| label: plot-flip-no-to-yes
+#| code-summary: "Tile plot of no-to-yes vote flips by party and legislative period"
+#| fig-width: 11
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_flip_no_to_yes)
+```
+
+And now the mirror image: items which a party supported in the second reading but rejected in the third, i.e. a withdrawal of previously expressed support.
+
+```{r}
+#| label: plot-flip-yes-to-no
+#| code-summary: "Tile plot of yes-to-no vote flips by party and legislative period"
+#| fig-width: 11
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_flip_yes_to_no)
+```
+
+The same two views, but for the earlier step — from the committee vote to the second reading. This is where the interesting movement turns out to be.
+
+```{r}
+#| label: plot-flip-committee-no-to-yes
+#| code-summary: "Tile plot of committee-to-second-reading no-to-yes flips"
+#| fig-width: 11
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_flip_comm_no_to_yes)
+```
+
+```{r}
+#| label: plot-flip-committee-yes-to-no
+#| code-summary: "Tile plot of committee-to-second-reading yes-to-no flips"
+#| fig-width: 11
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_flip_comm_yes_to_no)
+```
+
+# Where do position changes happen?
+
+The graphs so far each looked at a single transition. The bigger question is *where along an item's journey* a party actually changes its mind — between the committee vote and the second reading, or between the second and the third reading. This is where the accommodation of opposition parties should become visible: if a governing majority makes concessions to win broader support, the resulting position changes should cluster at a particular stage.
+
+A note on the denominator: a flip rate should be **conditional on the pairs that could actually flip**. A party that already voted *yes* at the earlier stage simply cannot flip *no → yes* — it was never at risk. So the directional rates below divide by the at-risk population only: the *no → yes* rate by the pairs voting *no* at the earlier stage, and the *yes → no* rate by those voting *yes* — not by all comparable pairs.
+
+```{r}
+#| label: prep-transitions
+#| code-summary: "Comparable pairs and flips at each transition"
+transitions <- tar_read(transitions)
+
+transitions %>% count(transition, change) %>% print(n = Inf)
+transitions %>% count(transition, name = "eligible_pairs")
+```
+
+## Angle 1 — Where, by legislative period (rate)
+
+The most direct answer. For each legislative period, the bars compare the flip **rate** at the two transitions, split into the two directions and by party role. If accommodation happens in committee, the left-hand (committee → 2nd) bars dominate; if it happens on the floor, the right-hand bars do.
+
+```{r}
+#| label: plot-where-flips-bars
+#| code-summary: "Per-period bars: flip rate by transition, direction and role"
+#| fig-width: 11
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_where_bars)
+```
+
+## Angle 2 — The flow across all three stages (alluvial)
+
+A more exploratory view: each band follows party–item pairs from their committee position through the second to the third reading, with band width proportional to how many pairs take that path. Wherever a band switches sides (Dafür ↔ Dagegen) between two axes, that is a position change. Restricted to pairs with a recorded vote at all three stages, split by government vs opposition.
+
+```{r}
+#| label: plot-where-flips-alluvial
+#| code-summary: "Alluvial of positions across committee → 2nd → 3rd, by role"
+#| fig-width: 11
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_where_alluvial)
+```
+
+## Angle 3 — Split-tile heatmap (party × period × transition)
+
+The same party × period tile idiom as the earlier flip graphs, but now faceted by transition (columns) and direction (rows), so each party–period cell appears twice — once for the committee → 2nd step and once for 2nd → 3rd. Counts, not rates, so it reads as "how many flips, and at which step". The two direction rows are coloured differently — green for no → yes, red for yes → no — which is done with a single diverging scale by negating the yes → no counts.
+
+```{r}
+#| label: plot-where-flips-heatmap
+#| code-summary: "Tile heatmap of flip counts faceted by transition and direction"
+#| fig-width: 12
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_where_heatmap)
+```
+
+### Percentage of comparable bills
+
+The absolute counts above need the context of how many bills could be compared at each transition. The percentage version below therefore divides, for each party and direction, the number of bills with a flip by the total number of unique bills with usable votes at both stages of that transition in the same legislative period. The denominator is shared across parties and directions within each transition-period, so these percentages describe party-specific shares of bills and do not sum to 100%.
+
+The two `stopifnot()` blocks guarding that denominator now live in `build_where_tile_rate_grid()`, so a broken denominator fails the pipeline rather than quietly producing a plausible-looking plot.
+
+```{r}
+#| label: plot-where-flips-heatmap-percent
+#| code-summary: "Tile heatmap of bill-level flip percentages"
+#| fig-width: 12
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-align: "center"
+tar_read(p_where_heatmap_percent)
+```
+
+## Angle 4 — The most compact summary
+
+A single tile grid with the two transitions on the x-axis and the legislative periods down the y-axis. Each tile's colour is the **relative** number of flips — the share of comparable party–item pairs that change position at that transition — with the absolute count combining both directions. It makes the headline pattern unmissable: the committee → 2nd reading column is consistently darker than the 2nd → 3rd column.
+
+```{r}
+#| label: plot-flip-stage-period
+#| code-summary: "Heatmap of relative flip rate by stage and legislative period"
+#| fig-width: 7
+#| fig-height: 7.5
+#| out-width: "70%"
+#| fig-align: "center"
+tar_read(p_flip_stage_period)
+```
+
+# A closer look: items decided at all three stages
+
+Now that committee votes come from the reports, the full committee → 2nd → 3rd path is observable for most bills, not just a contested few. This section narrows to exactly those items — the ones with a recorded **regular** vote at the committee, the second reading **and** the third reading — so we can trace each party's position across all three stages and see where, if anywhere, it changes.
+
+```{r}
+#| label: three-stage-subset
+#| code-summary: "Items with a recorded vote at committee, 2nd and 3rd reading"
+three_stage_wide <- tar_read(three_stage_wide)
+
+cat("Items with a recorded vote at all three stages:", three_stage_item_n, "\n")
+cat("Party–item rows in this subset:", nrow(three_stage_wide), "\n")
+
+three_stage_wide %>%
+  summarise(
+    `committee → 2nd` = sum(change_committee_2nd, na.rm = TRUE),
+    `2nd → 3rd` = sum(change_2nd_3rd, na.rm = TRUE)
+  )
+```
+
+Within this subset, virtually every recorded position change happens at the **committee → second reading** step; the second → third reading step almost never moves anyone. The table below lists every party–item change in the subset, most recent first, each linked to its source page so the individual case can be checked.
+
+```{r}
+#| label: three-stage-changes-table
+#| code-summary: "Every committee → 2nd → 3rd position change, most recent first"
+build_three_stage_changes_table(three_stage_changes, data_cutoff)
+```
+
+::: {.callout-note}
+## Most recent example
+The most recent item in this subset with a committee → second-reading change is
+**`r latest_c2_item$title` (`r str_remove(str_remove(latest_c2_item$item_url, "^.*/gegenstand/"), "\\?.*$")`)**,
+voted on `r format(latest_c2_item$stage_date_second, "%d %B %Y")`. There,
+**`r latest_c2_parties`** voted *`r latest_c2_item$pos_committee`* in committee but
+*`r latest_c2_item$pos_second`* at the second reading — and then *`r latest_c2_item$pos_third`*
+at the third. [Open on parlament.gv.at &rarr;](`r latest_c2_item$item_url`)
+:::
+
+# Reproducing this
+
+```{r}
+#| label: reproduce
+#| eval: false
+setwd("_dev/parlat-voting")
+
+targets::tar_manifest(fields = c("name", "command")) # inspect before running
+targets::tar_visnetwork(targets_only = TRUE)         # inspect the graph
+targets::tar_make()                                  # build (no network access)
+
+quarto::quarto_render("index.qmd")                   # render this document
+```
+
+To pick the analysis up mid-stream, load any target by name — `tar_load(votes_wide)`, `tar_read(transitions)`, `tar_read(p_where_heatmap)`. To refresh the underlying data, run the relevant function in `refresh_data.R`; the next `tar_make()` will then rebuild exactly the targets that depend on what changed.

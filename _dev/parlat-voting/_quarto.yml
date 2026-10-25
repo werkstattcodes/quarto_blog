@@ -1,0 +1,25 @@
+# Nested, standalone Quarto project.
+#
+# The blog's own _quarto.yml never sees this folder: Quarto's default render scan
+# skips any directory starting with "_", so `_dev/` is invisible to the site build.
+# Declaring a project here keeps `quarto render` self-contained, so rendering the
+# ported post never writes into the blog's _site/ or _freeze/.
+project:
+  type: default
+
+format:
+  html:
+    theme: litera
+    toc: true
+    toc-location: left
+    code-fold: true
+    number-sections: true
+    fig-cap-location: top
+    html-table-processing: none
+    embed-resources: false
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  freeze: false

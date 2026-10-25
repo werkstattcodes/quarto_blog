@@ -1,0 +1,10 @@
+# targets store. The repo-root .gitignore only catches *.rds, which would leave
+# _targets/meta/{meta,progress,process} tracked and churning on every run.
+_targets/
+
+# local Quarto render output
+/index.html
+/index_files/
+/.quarto/
+
+**/*.quarto_ipynb

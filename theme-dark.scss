@@ -35,7 +35,7 @@ body {
 
 .navbar-title {
   color: var(--nord0);
-  background-color: orange;
+  background-color: var(--nord14);
 }
 
 .navbar-brand-container {
@@ -132,11 +132,11 @@ div.listing-category {
 }
 
 #TOC ul>li>a {
-  color: var(--nord3);
+  color: var(--nord4);
 }
 
 #TOC a {
-  color: var(--nord3) !important;
+  color: var(--nord4) !important;
 }
 
 #TOC a:hover {
