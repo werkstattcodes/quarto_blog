@@ -1744,9 +1744,6 @@ plot_argument_combinations(df_arguments_grouped_gemini)
 
 Of the `r n_analysed` analysed submissions, `r sum(get_submission_sets(df_arguments_grouped_gemini)$is_combination)` raise arguments from two or more groups.
 
-All of this rests on one model. Whether other models find the same arguments and form the same groups is the subject of a [follow-up post](../2026-10-10-Prosecutor-Submission-LLM-Comparison/index.qmd). In short: the three large groups hold up, while the small ones look different from model to model.
-
-
 # Wrap up
 
 So, that's it. The draft on the federal prosecutor's office drew `r df_top_items$submissions_n[1]` submissions, more than any other item of the current legislative period, though still far off the records set by the COVID-19 legislation. Content-wise, the criticism boils down to a few main lines. The most prominent one is `r str_to_lower(df_group_frequencies$group_keyword[1])`, raised by `r df_group_frequencies$percent[1]`% of the analysed submissions, followed by the `r str_to_lower(df_group_frequencies$group_keyword[2])` (`r df_group_frequencies$percent[2]`%) and the `r str_to_lower(df_group_frequencies$group_keyword[3])` (`r df_group_frequencies$percent[3]`%). Many submissions raise several of them together.
@@ -1756,7 +1753,7 @@ On the technical side, I hope the post showed that {ParlAT}'s new `get_consultat
 A few caveats are in order, though:
 
 - The analysis only covers submissions which were published and have extractable text. Authors can opt out of publication, and scanned PDFs yield no text.
-- Arguments were extracted and grouped by one model. The [follow-up post](../2026-10-10-Prosecutor-Submission-LLM-Comparison/index.qmd) shows that the large groups hold up across models, while the smaller ones do not.
+- Arguments were extracted and grouped by one model (Gemini-3.7-flash). In a follow-up post, I intend to conduct the same analysis with other LLMs and contrast the results.
 - The upper limit of five groups is my choice. A higher limit would split some groups further.
 - Only criticisms and reservations are counted, not support for the draft. Identical submissions, e.g. based on a template, each count separately.
 - An LLM can miss or misread an argument. This is why every extracted argument comes with its verbatim quotes, which allow checking it against the source text.
