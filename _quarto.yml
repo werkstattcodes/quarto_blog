@@ -1,5 +1,9 @@
 project:
   type: website
+  # Render all pages, but not the instructions for Claude Code.
+  render:
+    - "**/*.qmd"
+    - "!CLAUDE.md"
 
 website:
   title: "werk.statt.codes"

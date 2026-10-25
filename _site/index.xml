@@ -12,12 +12,11 @@
 <generator>quarto-1.8.25</generator>
 <lastBuildDate>Wed, 16 Sep 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Reservations about the proposed federal prosecutor’s office</title>
+  <title>Analyzing the content of submission to Parliament’s consultation process with {ParlAT}</title>
   <dc:creator>Roland Schmidt</dc:creator>
   <link>https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/</link>
-  <description><![CDATA[ Collect the published consultation submissions on Austria’s proposed federal prosecution authority (Bundesstaatsanwaltschaft), extract criticisms and reservations from each, group them across the corpus, and count how many submissions raise each group. ]]></description>
+  <description><![CDATA[ The upcoming version of {ParlAT} allows you to quickly retrieve the conten to submissions to the public consultation process of Austria’s Parlament (‘Stellungnahmen im Begutachtungsverfahren’). Here, we look into the submissions on the initially proposed Federal Prosecutor’s Office and analyze the extracted content with LLM to identify the main contra-arguments put forward. ]]></description>
   <category>Austria</category>
-  <category>parliament</category>
   <category>ParlAT</category>
   <category>LLM</category>
   <guid>https://werk.statt.codes/posts/2026-09-17-Prosecutor-Submission/</guid>

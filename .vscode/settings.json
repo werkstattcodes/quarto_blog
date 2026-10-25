@@ -1,8 +1,8 @@
 {
-    "r.session.useWebServer": false,
-    "r.plot.useHttpgd": true,
-    "r.session.emulateRStudioAPI": true,
-    "r.lsp.enabled": true,
+    "[r]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "Posit.air-vscode"
+    },
     "cSpell.enableFiletypes": [
         "quarto",
         "r"
@@ -26,5 +26,5 @@
         "Unterzeichners",
         "Wortmeldung"
     ],
-    "positron.quarto.inlineOutput.enabled": false
+    "quarto.inlineOutput.enabled": false
 }

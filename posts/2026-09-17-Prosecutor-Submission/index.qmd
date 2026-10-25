@@ -1,15 +1,12 @@
 ---
-title: "Reservations about the proposed federal prosecutor's office"
+title: "Analyzing the content of submission to Parliament's consultation process with {ParlAT} "
 date: 2026-09-17
 date-modified: last-modified
 description: |
-  Collect the published consultation submissions on Austria's proposed federal
-  prosecution authority (Bundesstaatsanwaltschaft), extract criticisms and
-  reservations from each, group them across the corpus, and count how many
-  submissions raise each group.
+  The upcoming version of {ParlAT} allows you to quickly retrieve the conten to submissions to the public consultation process of Austria's Parlament ('Stellungnahmen im Begutachtungsverfahren'). Here, we look into the
+  submissions on the initially proposed Federal Prosecutor's Office and analyze the extracted content with LLM to identify the main contra-arguments put forward.
 categories:
   - Austria
-  - parliament
   - ParlAT
   - LLM
 draft: false
@@ -22,25 +19,72 @@ knitr:
 ---
 
 
-# Just the results, please!
+# Just the results, please! {.unnumbered}
+
+::: {layout-ncol="2"}
+![Number of submissions per item in the current legislative period](index_files/figure-html/fig-submissions-per-item-1.png){group="prosecutor_submissions_gallery"}
+
+![Distribution of the number of submissions per item](index_files/figure-html/fig-submissions-histogram-1.png){group="prosecutor_submissions_gallery"}
+
+![Items with the most submissions since the 20th legislative period](index_files/figure-html/fig-top-items-since-gp20-1.png){group="prosecutor_submissions_gallery"}
+
+![Length of the submissions](index_files/figure-html/fig-submission-length-1.png){group="prosecutor_submissions_gallery"}
+
+![Argument groups by number of submissions](data/table-group-frequencies.png){group="prosecutor_submissions_gallery"}
+
+![Argument groups raised together in the submissions](index_files/figure-html/fig-argument-combinations-1.png){group="prosecutor_submissions_gallery"}
+:::
 
 # Context
 
-In this post I want to demonstrate how {ParlAT} can be used to obtain submissions filed as part of  a bill's public consultation process (Begutachtungsverfahren),  extract their text, and use it for LLM assisted content analysis.
+In this post I want to demonstrate how the {ParlAT} package can be used to obtain submissions filed as part of  a bill's public consultation process (Begutachtungsverfahren),  extract their text, and use it for LLM assisted content analysis.
 
-Austria's legislative procedure provides for the public (individuals as well as legal entities) to submit their opinions on an upcoming bill. The purpose, at least that's the original intent, is to solicit input from the wider public which may inform the further formulation of the legislative item. I have written already in the past about this procedure (see [here](https://werk.statt.codes/posts/2020-12-22-submissionsepidemiclaw/){target="_blank"} and [here](https://werk.statt.codes/posts/2021-03-10-covidsubmissionsnoauthor/){target="_blank"} ), but the recent ministerial proposal on a new Federal Prosecutor, the ensuing discussion (e.g. see [here](https://werk.statt.codes/posts/2021-03-10-covidsubmissionsnoauthor/){target="_blank"} or [here](https://orf.at/stories/3440370/?utm_source=chatgpt.com){target="_blank"}) incl. a considerable number of submissions made me think it might be a good idea to take up this issue again and demonstrate {ParlAT}'s pertaining features.
+Austria's legislative procedure provides for the public (individuals as well as legal entities) to submit their opinions on an upcoming bill. The purpose, at least that's the original intent, is to solicit input from the wider public which may inform the further formulation of the legislative item. I have written already in the past about this procedure (see [here](https://werk.statt.codes/posts/2020-12-22-submissionsepidemiclaw/){target="_blank"} and [here](https://werk.statt.codes/posts/2021-03-10-covidsubmissionsnoauthor/){target="_blank"} ), but the recent ministerial proposal on a new Federal Prosecutor, the ensuing discussion (e.g. see [here](https://orf.at/stories/3440370/){target="_blank"}) incl. a considerable number of submissions made me think it might be a good idea to take up this issue again and demonstrate {ParlAT}'s pertaining features.
 
 As with other posts, the case in point is partly technical, partly substantive, i.e. how can we tackle an interesting issue with R in general, and {ParlAT} more specifically.
 
 More specifically, here's what I want to demonstrate in this post.
 
 1) First, I want to get the total number of submissions filed during the recent consultative process and put this number in relation to the number of submissions on other legislative issues;
-2) Second, I want to get the individual submissions on the specific proposal and extract the text. This already will allow some general descriptive analysis, e.g. submission length, text duplicates, gender of authors etc;
+2) Second, I want to get the individual submissions on the specific proposal and extract the text. This already will allow some general descriptive analysis, e.g. on the length of the submissions;
 3) Third, I want to use an LLM to identify and extract the main contra-arguments contained in each individual submission and aggregate them into groups across all filed submissions. This will provide us with an "argument map", i.e. which arguments were put forward how often and in combination with which other arguments. 
 
-To implement all this, I introduce a new function of the {ParlAT} function, `get_consultation_submissions()`, which makes it easy to get the individual submissions.^[The function is currently only available in the development branch of {ParlAT} and is scheduled to be rolled out with the next release.] For the identification and extraction of the contra arguments I will use the mighty [{ellmer}](https://ellmer.tidyverse.org/){target="_blank"} package, which is truly a joy to work with and another gem which Hadley has contributed to the R ecosystem.
+To implement all this, I introduce a new function of the {ParlAT} package, `get_consultation_submissions()`, which makes it easy to get the individual submissions.^[The function is currently only available in the development branch of {ParlAT} and is scheduled to be rolled out with the next release.] For the identification and extraction of the contra arguments I will use the mighty [{ellmer}](https://ellmer.tidyverse.org/){target="_blank"} package, which is truly a joy to work with and another gem which Hadley has contributed to the R ecosystem.
 
 As always, if you spot any errors, have a question or feedback don't hesitate to contact [me](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}. If you ever use the {ParlAT} package, I would appreciate it if you cite it.
+
+# How the data flows
+
+The diagram shows the main steps of this post, from the data on the Parliament's website to the final results. Grey boxes are the data at each step, red boxes are the questions answered by the graphs and tables in the post, and dashed boxes mark data which drops out along the way.
+
+```{mermaid}
+%%| label: fig-data-flow
+%%| fig-cap: "From the Parliament's website to the argument groups"
+%%{init: {"theme": "neutral", "themeVariables": {"fontSize": "14px"}, "flowchart": {"nodeSpacing": 20, "rankSpacing": 30}}}%%
+flowchart TD
+  accDescr { Flowchart of the post's steps. From the Parliament's website, ParlAT::get_participation() returns the number of submissions per item, used to compare the bill with other items. ParlAT::get_consultation_submissions() returns the submissions on the bill. PDF text from pdftools::pdf_text(), or else the online-form text, gives one text per submission, while submissions without text drop out. An LLM, via ellmer::parallel_chat_structured(), extracts the criticisms from each text and then sorts them into up to five groups. The results are tables of example criticisms and of the submissions per group, and a plot of which groups are raised together. Submissions without criticisms stay in the total. }
+  web[("Parliament website")] -->|"ParlAT::get_participation()"| items["Submissions per item"]
+  items --> o1(["How does the bill compare<br/>to other items?"])
+  web -->|"ParlAT::get_consultation_submissions()"| subs["Submissions on the bill<br/>(online form and/or PDF)"]
+  subs --> o4(["How were they submitted?"])
+  subs -->|"PDFs: pdftools::pdf_text()"| text["One text per submission<br/>(PDF text, else online form)"]
+  subs -->|online form| text
+  text --> o5(["How long are they?"])
+  text --> d1["No text available<br/>(not published, scanned PDF)"]
+  text -->|"LLM reads each text<br/>ellmer::parallel_chat_structured()"| args["Criticisms per submission,<br/>with German quotes"]
+  args --> o6(["Examples of criticisms"])
+  args -->|"LLM sorts them into<br/>up to five groups"| grouped["Criticisms grouped<br/>across all submissions"]
+  grouped --> o7(["How many submissions<br/>raise each group?"])
+  grouped --> o8(["Which groups are<br/>raised together?"])
+  grouped --> d2["No criticism found<br/>(still counted in the total)"]
+
+  classDef data fill:#ffffff,stroke:#8c8c8c,color:#333333
+  classDef out fill:#ffffff,stroke:#b22222,stroke-width:2px,color:#b22222
+  classDef drop fill:#ffffff,stroke:#bdbdbd,stroke-dasharray:4 3,color:#8c8c8c
+  class items,subs,text,args,grouped data
+  class o1,o4,o5,o6,o7,o8 out
+  class d1,d2 drop
+```
 
 # Get submissions details
 
@@ -64,6 +108,9 @@ dir_post <- here::here("posts", "2026-09-17-Prosecutor-Submission")
 # Credit line for all graphs and tables in this post, defined once here.
 attribution_author <- "Roland Schmidt, https://werk.statt.codes | "
 
+# Date the data was retrieved from the Parliament's website (cached API calls).
+date_retrieved <- as.Date("2026-10-05")
+
 # Font Awesome brand font from the blog's Quarto extension, registered for the
 # Bluesky icon in graph captions (requires the ragg device set in the front matter).
 systemfonts::register_font(
@@ -73,14 +120,14 @@ systemfonts::register_font(
 
 # Caption for graphs: labs(caption = attribution_graph()). It is rendered as
 # markdown (ggtext), so the URLs are escaped to keep them from becoming links.
-attribution_graph <- function(data_cutoff = Sys.Date(), note = NULL) {
+attribution_graph <- function(data_cutoff = date_retrieved, note = NULL) {
   data_line <- paste0(
-    "Data: www&#46;parlament.gv.at via {ParlAT} package, as of ",
-    format(data_cutoff, "%d %b %Y")
+    "Daten: www&#46;parlament.gv.at via {ParlAT}-Paket, Stand: ",
+    format(data_cutoff, "%d.%m.%Y")
   )
   # The solid icon looks darker than the thin text strokes, so it is set lighter than grey45.
   author_line <- paste0(
-    "Graphic: Roland Schmidt, https&#58;//werk.statt.codes | ",
+    "Grafik: Roland Schmidt, https&#58;//werk.statt.codes | ",
     "<span style='font-family:FABrands;color:#9a9a9a'>&#xe671;</span> @zoowalk.bsky.social"
   )
   paste(c(note, data_line, author_line), collapse = "<br>")
@@ -94,6 +141,7 @@ theme_post <- function(base_size = 11, base_family = "Noto Sans") {
       panel.grid.minor = element_blank(),
       panel.grid.major.x = element_blank(),
       axis.text = element_text(size = 9),
+      axis.title.x = element_text(size = 9, colour = "grey30"),
       axis.title.y = element_text(size = 9, colour = "grey30"),
       legend.position = "top",
       plot.title = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 4)),
@@ -181,10 +229,11 @@ df_top_items %>%
 The plot below shows all relevant items **in the current 28th legislative period** ranked by their number of received submissions. As highlighted, the proposal on the federal prosecutor received most submissions, 846.
 
 ```{r}
-#| label: plot-submissions-per-item
+#| label: fig-submissions-per-item
+#| fig-cap: "Number of submissions per item in the 28th legislative period"
 #| code-summary: "Plot: Number of submissions per item"
 #| code-fold: true
-#| fig-alt: "Bar chart of the number of consultation submissions for every item of the 28th legislative period that received at least one, ordered from most to fewest on a logarithmic axis. The bar for the federal prosecutor's office bill, with 846 submissions, is highlighted and is the highest; most items have only a handful of submissions."
+#| fig-alt: "Bar chart of the number of consultation submissions for every item of the 28th legislative period that received at least one, ordered from most to fewest on a logarithmic axis. The bar for the federal prosecutor's office bill, with 846 submissions, is highlighted and is the highest; most items have only a handful of submissions. The 193 items without any submission take up an empty, bracketed stretch on the right."
 
 # One bar per item of the 28th legislative period, ordered by submissions_n;
 # the federal prosecutor bill is highlighted. Items are not labelled.
@@ -194,6 +243,12 @@ nrow(df_period)
 
 # Items without submissions cannot be shown on a log scale.
 n_zero <- sum(df_period$submissions_n == 0)
+n_items <- sum(df_period$submissions_n > 0)
+n_total <- nrow(df_period)
+
+# Empty stretch for the items without submissions, right of the last bar.
+zero_start <- n_items + 0.5
+zero_end <- n_total + 0.5
 
 df_period %>%
   filter(submissions_n > 0) %>%
@@ -214,7 +269,27 @@ df_period %>%
     hjust = -0.05, vjust = 0.5, size = 3.2, colour = "firebrick", family = "Noto Sans",
     inherit.aes = FALSE
   ) +
+  # Bracket and label for the items without submissions (no bars on the log axis).
+  annotate("segment", x = zero_start, xend = zero_end, y = 0.6, yend = 0.6, colour = "grey45") +
+  annotate(
+    "segment",
+    x = c(zero_start, zero_end), xend = c(zero_start, zero_end),
+    y = 0.55, yend = 0.68, colour = "grey45"
+  ) +
+  annotate(
+    "text",
+    x = (zero_start + zero_end) / 2, y = 0.8,
+    label = str_c(n_zero, " Vorlagen\nohne Stellungnahme"),
+    vjust = 0, size = 3.2, lineheight = 0.95, colour = "grey30", family = "Noto Sans"
+  ) +
   scale_fill_manual(values = c(`TRUE` = "firebrick", `FALSE` = "grey65")) +
+  # No padding: the first bar starts at the y-axis. Ticks mark the last item with submissions and the last item overall.
+  scale_x_continuous(
+    limits = c(0.5, zero_end),
+    breaks = c(n_items, n_total),
+    labels = c(n_items, str_c(n_total, " Vorlagen")),
+    expand = expansion(0)
+  ) +
   scale_y_log10(
     limits = c(0.5, 1500),
     breaks = c(1, 10, 100, 1000),
@@ -226,19 +301,21 @@ df_period %>%
       "Anzahl an Stellungnahmen eingereicht im Rahmen des öffentlichen Begutachtungsverfahrens in der 28. Legislaturperiode",
       width = 70
     ),
-    subtitle = str_glue("Eine Säule pro Vorlage, logarithmische Skala; {n_zero} Vorlagen ohne Stellungnahme nicht dargestellt"),
+    subtitle = "Eine Säule pro Vorlage, logarithmische Skala; Vorlagen ohne Stellungnahme rechts ohne Säule",
     x = NULL,
     y = "Anzahl der Stellungnahmen (log)",
     caption = attribution_graph()
   ) +
   theme_post() +
-  theme(axis.text.x = element_blank())
+  # The label of the last item ends at the right edge of the panel.
+  theme(axis.text.x = element_text(hjust = c(0.5, 1)))
 ```
 
 To complement the graph above, below the distribution of the number of submissions. The x axis indicates the number of submissions (bin width of 25). The y axis the number of items which fall into the relevant category/bin. The clear majority of items receives something between 1 an 25 submissions. Everything over 100 submissions is already an oddity, i.e. the numbers observed for the Propsecutor's bill is very rare for the 28th legislative period.
 
 ```{r}
-#| label: histogram-submissions-per-item
+#| label: fig-submissions-histogram
+#| fig-cap: "Distribution of the number of submissions per item in the 28th legislative period"
 #| code-summary: "Histogram"
 #| fig-alt: "Histogram of the number of items of the 28th legislative period by number of consultation submissions, in bins of width 25, with items without any submission shown as a separate bar. Almost all items fall into the zero bar or the first bin (1 to 25 submissions). Three bins are highlighted with arrows: the climate act with about 170 submissions, the weapons act with 466 and the federal prosecutor's office bill with 846."
 
@@ -322,7 +399,7 @@ ggplot() +
   theme_post()
 ```
 
-If we put the context a bit wider, the picture however changes. Below I list the 35 items with the most submissions not only for the 28th legislative period, but **for the time period since 1996 (20th legislative period)**. As you can quickly see, the number of submissions filed by the public for COVID related legislation dwarfs what have currently seen for the public prosecutor bill. In a sense, the number of submission seems to reflect the contentiousness of the items at stake.
+If we put the context a bit wider, the picture however changes. Below I list the 100 items with the most submissions not only for the 28th legislative period, but **for the time period since 1996 (20th legislative period)**. As you can quickly see, the number of submissions filed by the public for COVID related legislation dwarfs what we currently see for the public prosecutor bill. In a sense, the number of submission seems to reflect the contentiousness of the items at stake.
 
 ```{r}
 #| label: table-top-items-since-gp20
@@ -392,9 +469,10 @@ reactable(
 ```
 
 ```{r}
-#| label: plot-top-items-since-gp20
+#| label: fig-top-items-since-gp20
+#| fig-cap: "The 100 items with the most submissions since the 20th legislative period"
 #| code-summary: "Bar plot of the 100 items with most submissions since the 20th legislative period"
-#| fig-alt: "Bar chart of the number of consultation submissions for the 100 items with the most submissions since the 20th legislative period, ordered from most to fewest on a linear axis. The federal prosecutor's office bill is highlighted in red and all items with COVID in their title in green. The two most-commented items, both labelled in the chart (the COVID-19 vaccination mandate act as ministerial draft and as parliamentary initiative), have around 100,000 submissions each; from about the 20th rank the bars are barely visible, including the prosecutor bill with 846."
+#| fig-alt: "Bar chart of the number of consultation submissions for the 100 items with the most submissions since the 20th legislative period, ordered from most to fewest on a linear axis. The federal prosecutor's office bill is highlighted in red and all items with COVID in their title in dark grey, the other items in light grey. The two most-commented items, both labelled in the chart (the COVID-19 vaccination mandate act as ministerial draft and as parliamentary initiative), have around 100,000 submissions each; from about the 20th rank the bars are barely visible, including the prosecutor bill with 846."
 
 df_since_gp20 <- df_consultation_items %>%
   filter(as.numeric(as.roman(legis_period)) >= 20) %>%
@@ -415,7 +493,7 @@ df_bars <- df_since_gp20 %>%
 
 n_covid <- sum(df_bars$is_covid & !df_bars$is_prosecutor)
 
-highlight_colors <- c(prosecutor = "firebrick", covid = "#1b9e77", other = "grey65")
+highlight_colors <- c(prosecutor = "firebrick", covid = "grey25", other = "grey80")
 
 # Y-axis numbers as text inside the plot: far right, just above the grid lines.
 df_y_labels <- tibble(y = seq(30000, 90000, 30000)) %>%
@@ -479,13 +557,13 @@ ggplot(df_bars, aes(fill = highlight)) +
   ) +
   labs(
     title = str_wrap(
-      "Stellungnahmen pro Vorlage seit der 20. Gesetzgebungsperiode",
+      "Anzahl an Stellungnahmen pro Vorlage seit der 20. Gesetzgebungsperiode",
       width = 70
     ),
     subtitle = str_glue(
-      "Die 100 Vorlagen mit den meisten Stellungnahmen; eine Säule pro Vorlage, lineare Skala. ",
+      "Die 100 Vorlagen mit den meisten Stellungnahmen; eine Säule pro Vorlage. ",
       "<span style='color:firebrick'>**Bundesstaatsanwaltschaft**</span> in Rot, ",
-      "<span style='color:#1b9e77'>**{n_covid} Vorlagen mit „COVID“ im Titel**</span> in Grün"
+      "<span style='color:grey25'>**{n_covid} Vorlagen mit „COVID“ im Titel**</span> in Dunkelgrau."
     ),
     x = NULL,
     y = "Anzahl der Stellungnahmen",
@@ -500,7 +578,7 @@ ggplot(df_bars, aes(fill = highlight)) +
 
 
 Now let's get the actual text of the submission for the legislative proposal on the Federal Prosecutor.
-As already mentioned in the beginning, the current development version of {ParlAT} contains the new function `get_consultation_submissions()`. What the function does - it  allows you to *directly* query the submissions for a *specific* legislative item.  Critically, the function contains
+As already mentioned in the beginning, the current development version of {ParlAT} contains the new function `get_consultation_submissions()`. What the function does:  it  allows you to *directly* query the submissions for a *specific* legislative item.  Critically, the function contains
 also the argument `include_text` which - surprise, surprise -  includes the text of the submission into the returned tibble, *if the submission's text was directly submitted and not as an attached document*. As for submissions which were submitted as uploaded pdf-files, we still have to specifically extract their text. 
 
 Let's call the function on the federal prosecutor proposal.
@@ -529,7 +607,7 @@ df_submissions %>%
   glimpse()
 ```
 
-The code above returns details on all the `r nrow(df_submissions)` submissions lodged in relation to the legislative proposal on the Federal Prosecutor. Note, that this also includes those submissions for which no text is available via the website of the Parliament. In fact, those indiviudals or legal entities filing a submission can opt-out of the publication of their submission. This explains, as we will see later, why we have fewer available texts than actual submissions.
+The code above returns details on all the `r nrow(df_submissions)` submissions lodged in relation to the legislative proposal on the Federal Prosecutor. Note, that this also includes those submissions for which no text is available via the website of the Parliament. In fact, those individuals or legal entities filing a submission can opt-out of the publication of their submission. This explains, as we will see later, why we have fewer available texts than actual submissions.
 
 *There are three columns which are of relevance* when it comes to the text of a submission: 
 
@@ -552,7 +630,8 @@ of both for the federal prosecutor item.
 
 
 ```{r}
-#| label: submission-type-crosstable
+#| label: tbl-submission-type
+#| tbl-cap: "Submissions by PDF attachment and inline text"
 #| code-summary: "Check submission type (pdf/inline)"
 
 df_submissions <- df_submissions %>%
@@ -589,7 +668,7 @@ df_submissions %>%
 
 As the table reveals, the overwhelming part of the submissions were made only via the online form (`r df_counts %>% filter(!has_pdf & has_inline) %>% pull(n)`), and only a few were pdf only (`r df_counts %>% filter(has_pdf & !has_inline) %>% pull(n)`).
 
-But the table also shows that there are submissions which have an intline text *and* an attached pdf:
+But the table also shows that there are submissions which have an inline text *and* an attached pdf:
 
 ```{r}
 #| label: submissions-pdf-and-inline
@@ -599,13 +678,13 @@ df_submissions %>% filter(has_pdf & has_inline) %>%
   select(submission_id, has_pdf, has_inline, submission_url) 
 ```
 
-In these cases I opted to consider only the text of the attached pdf. The inline text is merely an accopanying text, kind of a cover letter, which refers to to the attached pdf or a pure repitition of the pdf.
+In these cases I opted to consider only the text of the attached pdf. The inline text is merely an accompanying text, kind of a cover letter, which refers to the attached pdf or a pure repetition of the pdf.
 
-With this background, the overall text extraction strategy is, hence, to conisder always the text of the attached pdf and only if no pdf is available we will consider the inline text. 
+With this background, the overall text extraction strategy is, hence, to consider always the text of the attached pdf and only if no pdf is available we will consider the inline text. 
 
 ## Extract text from pdfs
 
-In the next step, I'll extract the text from those submissions which were lodged as pdf attachment. There is one submission with two pdfs. To avoid conflating both, I introduce a `submission_pdf_id` key which uniquely identifies each document (comprising the `submission_id` and a counter). Since this key will be also used to store hte extracted text on disc, I will replace all non-permissible hyphens with underscores.
+In the next step, I'll extract the text from those submissions which were lodged as pdf attachment. There is one submission with two pdfs. To avoid conflating both, I introduce a `submission_pdf_id` key which uniquely identifies each document (comprising the `submission_id` and a counter). Since this key will be also used to store the extracted text on disc, I replace the slashes, which are not allowed in file names, with underscores.
 
 ```{r}
 #| label: extract-pdf-urls
@@ -643,7 +722,7 @@ df_document_urls %>%
   slice_head(.,n=5)
 ```
 
-Now, let's define a function which 1) extract the text of each pdf, and 2) stores it on disc with the sumbission_pdf_id as the file name.
+Now, let's define a function which 1) extracts the text of each pdf, and 2) stores it on disc with the `submission_pdf_id` as the file name.
 
 ```{r}
 #| label: extract-pdf-text
@@ -781,7 +860,8 @@ Of the `r nrow(df_submissions_text)` submissions, `r df_text_source %>% filter(t
 Before analysing the content, here is how long the submissions are. Length is the number of characters of the consolidated text (`n_chars`). Lengths are very uneven, so the histogram uses a logarithmic axis. Submissions without text are not shown.
 
 ```{r}
-#| label: submission-length
+#| label: fig-submission-length
+#| fig-cap: "Length of the submissions"
 #| code-summary: "Histogram of submission length"
 #| fig-alt: "Histogram of submission length in characters on a logarithmic axis, showing most submissions are short and a few are very long."
 
@@ -793,10 +873,10 @@ ggplot(df_text_length, aes(n_chars)) +
   geom_histogram(bins = 40, fill = "grey35", colour = "white") +
   scale_x_log10(labels = scales::label_comma()) +
   labs(
-    title = "Length of the consultation submissions",
-    subtitle = "Characters per submission on a log scale; 40 bins",
-    x = "Characters per submission (log scale)",
-    y = "Number of submissions",
+    title = "Länge der Stellungnahmen",
+    subtitle = "Zeichen pro Stellungnahme, logarithmische Skala; 40 Klassen",
+    x = "Zeichen pro Stellungnahme (log)",
+    y = "Anzahl der Stellungnahmen",
     caption = attribution_graph()
   ) +
   theme_post()
@@ -805,7 +885,8 @@ ggplot(df_text_length, aes(n_chars)) +
 The five longest submissions:
 
 ```{r}
-#| label: longest-submissions
+#| label: tbl-longest-submissions
+#| tbl-cap: "The five longest submissions"
 #| code-summary: "Table of the five longest submissions"
 
 df_text_length %>%
@@ -823,9 +904,9 @@ df_text_length %>%
 
 # Content analysis - Analyze the criticisms
 
-Now with the assembly of the corpus finalized, let's get into what this post is acutally about: Identifying contra-arguments aka critcism put forward in the lodged submissions. To do so, I implement three steps below:
+Now with the assembly of the corpus finalized, let's get into what this post is actually about: Identifying contra-arguments aka criticisms put forward in the lodged submissions. To do so, I implement three steps below:
 
-(1) extract the criticisms from each indivudal submission, 
+(1) extract the criticisms from each individual submission, 
 (2) group them across the corpus, and 
 (3) calculate some descriptives on the obtained numbers.
 
@@ -835,8 +916,6 @@ Now with the assembly of the corpus finalized, let's get into what this post is 
 
 # TRUE: analyse only the first 10 submissions; FALSE: the entire corpus.
 test_run <- FALSE
-# Models whose extraction is repeated, e.g. c("openai", "anthropic"); one request per submission and model.
-rerun_extraction <- character()
 ```
 
 ## Prepare the corpus
@@ -848,7 +927,8 @@ Prepare all submissions with usable text. The section on the length of the
 submissions above describes this full corpus.
 
 ```{r}
-#| label: prepare-corpus
+#| label: tbl-corpus-coverage
+#| tbl-cap: "Submissions with and without usable text"
 #| code-summary: "Prepare corpus of submissions with text"
 
 df_submissions_text <- read_rds(here::here(dir_post, "data", "submissions_text.rds"))
@@ -899,29 +979,28 @@ if (test_run) {
 
 ## Extract criticisms and reservations without a number limit
 
-To identify the contra-arguments put forward, I use the mighty {ellmer} package. In short, we a) stipulate the LLM model which ellmer should call on b) provide it with a prompt^[The prompt is written in English for the sake of this post. The LLM nevertheless reads the German submission texts and identifies the arguments in them accordingly.] which essentially tells what we want the LLM to do, c) and then trigger the call which puts the prompt plus each indiviudal submission text to the LLM.
+To identify the contra-arguments put forward, I use the mighty {ellmer} package. In short, we
 
-In terms of output, I want a) a short summary of each argument put forward, and b) evidence for the the identified argument, i.e. the exact(s) quote from the text.
+- stipulate the LLM model which {ellmer} should call on,
+- provide it with a prompt^[The prompt is written in English for the sake of this post. The LLM nevertheless reads the German submission texts and identifies the arguments in them accordingly.] which essentially tells what we want the LLM to do,
+- and then trigger the call which puts the prompt plus each individual submission text to the LLM.
 
-A first version of the prompt did not say what counts as one argument, and the models read this differently: on the same 614 submissions, Gemini returned 1,394 arguments, Claude 2,079 and GPT 2,445. I therefore added two instructions: one argument is one objection to one provision, for one reason, and each quote is limited to three sentences.
+In terms of output, I want
+
+- a short summary of each argument put forward, and
+- evidence for the identified argument, i.e. the exact quote(s) from the text.
+
+The prompt also says what counts as one argument, namely one objection to one provision, for one reason, and it limits each quote to three sentences. Without this, a model is free to pack several objections into one argument or to split one objection into several.
 
 ```{r}
 #| label: extraction-definition
 #| code-summary: "Define function to identify and extract arguments"
+#| code-fold: false
 
 library(ellmer)
 
-# Models for the extraction, pinned for reproducible runs, in ellmer's "provider/model" format.
-ellmer::models_anthropic()
-ellmer::models_openai()
-ellmer::models_google_gemini()
-
-
-extraction_models <- c(
-  gemini = "google_gemini/gemini-3.7-flash",
-  openai = "openai/gpt-5.4-mini",
-  anthropic = "anthropic/claude-haiku-5-5"
-)
+# Model for the extraction and the grouping, pinned for reproducible runs, in ellmer's "provider/model" format.
+extraction_model <- "google_gemini/gemini-3.7-flash"
 
 extraction_prompt <- "
 You are analysing submissions on the Austrian ministerial draft bill
@@ -997,19 +1076,8 @@ as_arguments_tibble <- function(reply) {
 }
 
 # A fresh chat with the given model and system prompt, and no console echo; used for the extraction and the grouping.
-# Anthropic gets a higher output limit; ellmer's default of 4096 tokens cuts off long replies.
-# OpenAI gets reasoning switched on (medium); it is off by default, while Gemini and Claude reason by default.
 chat_for_model <- function(model, system_prompt) {
-  chat(
-    model,
-    system_prompt = system_prompt,
-    params = if (str_starts(model, "anthropic/")) {
-      params(max_tokens = 32000)
-    } else if (str_starts(model, "openai/")) {
-      params(reasoning_effort = "medium")
-    },
-    echo = "none"
-  )
+  chat(model, system_prompt = system_prompt, echo = "none")
 }
 
 # Extract the arguments against the draft from each text with the given model; one tibble per text.
@@ -1038,339 +1106,50 @@ progress bar. Each document comes back as a tibble with one row per argument.
 A failed request comes back empty (`NULL`), so it is not counted as a submission
 without arguments.
 
-The extraction can be run with each of the three models defined above. The
-results are saved in one file per model; the sections below use Gemini's results.
-
+The next chunk sends the requests and saves the result. It is not run when the post is rendered.
 
 ```{r}
 #| label: extract-all-arguments
+#| code-fold: false
 #| code-summary: "Extract arguments from all submissions"
 #| eval: false
 
-# Each model named in rerun_extraction reads all submissions; one result file per model.
-walk(rerun_extraction, \(llm) {
-  # Submissions with zero arguments stay in this data frame; they count in the denominator.
-  df_extractions <- df_corpus %>%
-    mutate(
-      extract = get_arguments_against(text_consolidated, extraction_models[[llm]]),
-      # NA marks a failed request; zero means the model found no arguments.
-      n_arguments = map_int(extract, \(x) if (is.null(x)) NA_integer_ else nrow(x))
-    )
+# Submissions with zero arguments stay in this data frame; they count in the denominator.
+df_submission_extractions_gemini <- df_corpus %>%
+  mutate(
+    extract = get_arguments_against(text_consolidated, extraction_model),
+    # NA marks a failed request; zero means the model found no arguments.
+    n_arguments = map_int(extract, \(x) if (is.null(x)) NA_integer_ else nrow(x))
+  )
 
-  write_rds(df_extractions, here::here(dir_post, "data", str_c("submission_extractions_", llm, ".rds")))
-  message(str_glue("{llm}: {sum(is.na(df_extractions$n_arguments))} of {nrow(df_extractions)} requests failed"))
-})
+write_rds(df_submission_extractions_gemini, here::here(dir_post, "data", "submission_extractions_gemini.rds"))
 ```
 
 ```{r}
-# One data frame per model.
+#| label: load-extractions
+#| code-fold: false
+#| code-summary: "Load the extracted arguments"
+
 df_submission_extractions_gemini <- read_rds(here::here(dir_post, "data", "submission_extractions_gemini.rds"))
-df_submission_extractions_openai <- read_rds(here::here(dir_post, "data", "submission_extractions_openai.rds"))
-df_submission_extractions_anthropic <- read_rds(here::here(dir_post, "data", "submission_extractions_anthropic.rds"))
 
 # unnest() expands the nested tibbles into one row per argument.
-df_arguments_anthropic <- df_submission_extractions_anthropic %>%
+df_arguments_gemini <- df_submission_extractions_gemini %>%
   select(submission_id, extract) %>%
   unnest(extract) %>%
   glimpse()
 
-nrow(df_arguments_anthropic)
+nrow(df_arguments_gemini)
 ```
-
-```{r}
-#| label: arguments-per-model
-#| code-summary: "Number of arguments found by each model"
-
-# One row per argument for every model; the number of rows is the number of arguments.
-df_arguments_per_model <- list(
-  "Gemini" = df_submission_extractions_gemini,
-  "OpenAI" = df_submission_extractions_openai,
-  "Anthropic" = df_submission_extractions_anthropic
-) %>%
-  map(\(x) x %>% select(submission_id, extract) %>% unnest(extract)) %>%
-  map_int(nrow) %>%
-  enframe(name = "Model", value = "Arguments") %>%
-  mutate(`Model ID` = str_remove(extraction_models, "^.*/"), .after = Model)
-
-df_arguments_per_model %>%
-  kable_attributed(align = "llr", format.args = list(big.mark = ","))
-```
-
-To compare the models, I need to know where in a submission each quote sits. Every quote is therefore searched in its submission text, which gives a start and an end position. Not every quote is a perfect copy, so the search is done in four steps, from strict to lenient.
-
-```{r}
-#| label: locate-quotes
-#| code-summary: "Find the position of each quote in the submission text"
-
-# Positions and lower-case form of the letters and digits of a string; everything else is dropped.
-normalise_text <- function(x) {
-  chars <- str_split_1(x, "")
-  position <- which(str_detect(chars, "[\\p{L}\\p{N}]"))
-  list(position = position, text = str_c(str_sub(str_to_lower(chars[position]), 1, 1), collapse = ""))
-}
-
-# Find one quote in one text; returns start, end and the kind of match.
-locate_quote <- function(text, quote) {
-  # 1. Exact: the quote as written.
-  loc <- str_locate(text, fixed(quote))
-  if (!is.na(loc[1])) {
-    return(tibble(quote_start = loc[1], quote_end = loc[2], match_type = "exact"))
-  }
-
-  # Search a string in the normalised text and translate the hit back to positions in the original text.
-  text_norm <- normalise_text(text)
-  find_normalised <- function(x) {
-    if (x == "") {
-      return(c(NA_integer_, NA_integer_))
-    }
-    loc <- str_locate(text_norm$text, fixed(x))
-    c(text_norm$position[loc[1]], text_norm$position[loc[2]])
-  }
-
-  # 2. Normalised: only letters and digits count, upper and lower case are ignored.
-  quote_norm <- normalise_text(quote)$text
-  loc <- find_normalised(quote_norm)
-  if (!is.na(loc[1])) {
-    return(tibble(quote_start = loc[1], quote_end = loc[2], match_type = "normalised"))
-  }
-
-  # 3. Parts: a quote with an omission ("...") is cut there; each part gets its own position.
-  if (str_detect(quote, "\\.{3}|\u2026")) {
-    parts <- str_split_1(quote, "\\s*\\[?\\s*(\\.{3}|\u2026)\\s*\\]?\\s*") %>%
-      map_chr(\(x) normalise_text(x)$text) %>%
-      keep(\(x) str_length(x) >= 15)
-    df_parts <- map(parts, find_normalised) %>%
-      map(\(x) tibble(quote_start = x[1], quote_end = x[2], match_type = "parts")) %>%
-      list_rbind() %>%
-      drop_na(quote_start)
-    if (nrow(df_parts) > 0) {
-      return(df_parts)
-    }
-  }
-
-  # 4. Anchors: the first and the last 40 letters of a quote which was altered somewhere in between.
-  n_quote <- str_length(quote)
-  if (str_length(quote_norm) >= 80) {
-    head <- find_normalised(str_sub(quote_norm, 1, 40))
-    tail <- find_normalised(str_sub(quote_norm, -40, -1))
-    # Both ends found, in the right order and not further apart than the quote is long.
-    if (!is.na(head[1]) && !is.na(tail[1]) && tail[2] > head[1] && tail[2] - head[1] <= 1.5 * n_quote) {
-      return(tibble(quote_start = head[1], quote_end = tail[2], match_type = "two anchors"))
-    }
-    # One end found: the position gets the length of the quote.
-    if (!is.na(head[1])) {
-      return(tibble(quote_start = head[1], quote_end = min(head[1] + n_quote - 1L, str_length(text)), match_type = "one anchor"))
-    }
-    if (!is.na(tail[1])) {
-      return(tibble(quote_start = max(tail[2] - n_quote + 1L, 1L), quote_end = tail[2], match_type = "one anchor"))
-    }
-  }
-
-  tibble(quote_start = NA_integer_, quote_end = NA_integer_, match_type = "not found")
-}
-
-# All quotes of one model: one row per quote (or per part of a quote) with its position.
-locate_quotes <- function(df_extractions) {
-  df_extractions %>%
-    select(submission_id, extract) %>%
-    unnest(extract) %>%
-    mutate(argument_nr = row_number(), .by = submission_id) %>%
-    # Arguments without any quote drop out here.
-    unnest_longer(argument_quote, values_to = "quote", indices_to = "quote_nr") %>%
-    mutate(quote = str_squish(quote)) %>%
-    filter(quote != "") %>%
-    left_join(select(df_corpus, submission_id, text_consolidated), by = join_by(submission_id)) %>%
-    mutate(position = map2(text_consolidated, quote, locate_quote)) %>%
-    select(submission_id, argument_nr, quote_nr, quote, position) %>%
-    unnest(position)
-}
-
-df_quote_positions <- list(
-  gemini = df_submission_extractions_gemini,
-  openai = df_submission_extractions_openai,
-  anthropic = df_submission_extractions_anthropic
-) %>%
-  map(locate_quotes) %>%
-  list_rbind(names_to = "llm")
-
-# Arguments with at least one located quote; only these can be compared across models.
-df_arguments_located <- df_quote_positions %>%
-  drop_na(quote_start) %>%
-  distinct(llm, submission_id, argument_nr)
-
-# Number of arguments per model without a position.
-n_not_located <- c(
-  gemini = sum(df_submission_extractions_gemini$n_arguments),
-  openai = sum(df_submission_extractions_openai$n_arguments),
-  anthropic = sum(df_submission_extractions_anthropic$n_arguments)
-) - table(df_arguments_located$llm)[c("gemini", "openai", "anthropic")]
-```
-
-An argument can only be compared across models if at least one of its quotes has a position in the text. This is the case for almost all of them: `r n_not_located[["gemini"]]` of Gemini's and `r n_not_located[["openai"]]` of GPT's arguments are without a position. Claude is the exception with `r n_not_located[["anthropic"]]` arguments. For some short submissions it returned the argument, but no quote at all, even though the prompt asks for at least one. Sending these submissions again, up to four times, brought quotes for most of them, but not for all. I leave the remaining arguments out of the comparison between the models. Counting them as arguments which only Claude found would be wrong, since without a quote there is simply no way to check whether the other models found them too.
-
-## Match arguments across models
-
-The models word the same argument differently, so their descriptions cannot be compared directly. The quotes can: two arguments from different models count as the same argument if any of their quotes overlap in the text of the same submission. If, for example, Gemini supports an argument with the characters 5,019 to 5,324 of a submission and Claude supports one with the characters 5,150 to 5,240, both refer to the same passage, and the two arguments are linked.
-
-```{r}
-#| label: match-arguments
-#| code-summary: "Link arguments of different models whose quotes overlap"
-
-# One row per located quote.
-df_quotes_located <- df_quote_positions %>%
-  drop_na(quote_start) %>%
-  select(llm, submission_id, argument_nr, quote_start, quote_end)
-
-# Links: pairs of arguments from different models whose quotes overlap in the same submission.
-# Every pair appears twice, once from the view of each model.
-df_argument_links <- df_quotes_located %>%
-  inner_join(
-    df_quotes_located,
-    by = join_by(submission_id, overlaps(x$quote_start, x$quote_end, y$quote_start, y$quote_end)),
-    suffix = c("_a", "_b")
-  ) %>%
-  filter(llm_a != llm_b) %>%
-  distinct(submission_id, llm_a, argument_nr_a, llm_b, argument_nr_b)
-
-# For each argument: was it also found by Gemini, GPT, Claude? Its own model is always TRUE.
-df_arguments_matched <- df_arguments_located %>%
-  left_join(
-    df_argument_links %>%
-      distinct(llm = llm_a, submission_id, argument_nr = argument_nr_a, llm_b) %>%
-      mutate(found = TRUE) %>%
-      pivot_wider(names_from = llm_b, values_from = found, names_prefix = "found_by_", values_fill = FALSE),
-    by = join_by(llm, submission_id, argument_nr)
-  ) %>%
-  mutate(
-    across(starts_with("found_by_"), \(x) replace_na(x, FALSE) | cur_column() == str_c("found_by_", llm)),
-    n_other_models = found_by_gemini + found_by_openai + found_by_anthropic - 1L
-  )
-
-# Groups of connected arguments: linked directly or through a chain of links, they get the same match_id.
-argument_key <- function(llm, submission_id, argument_nr) str_c(llm, submission_id, argument_nr, sep = "|")
-graph_links <- igraph::graph_from_data_frame(
-  df_argument_links %>%
-    transmute(from = argument_key(llm_a, submission_id, argument_nr_a), to = argument_key(llm_b, submission_id, argument_nr_b)),
-  directed = FALSE,
-  vertices = df_arguments_matched %>% transmute(name = argument_key(llm, submission_id, argument_nr))
-)
-df_arguments_matched <- df_arguments_matched %>%
-  mutate(match_id = as.integer(igraph::components(graph_links)$membership))
-```
-
-The table shows, for each model, how many of its arguments were also found by the other two models, by one of them, or by none.
-
-```{r}
-#| label: arguments-found-by-others
-#| code-summary: "Share of each model's arguments also found by the other models"
-
-df_arguments_matched %>%
-  mutate(llm = factor(llm, levels = c("gemini", "openai", "anthropic"), labels = c("Gemini", "GPT", "Claude"))) %>%
-  summarise(
-    Arguments = n(),
-    `Both others` = mean(n_other_models == 2),
-    `One other` = mean(n_other_models == 1),
-    `No other` = mean(n_other_models == 0),
-    .by = llm
-  ) %>%
-  arrange(llm) %>%
-  mutate(across(c(`Both others`, `One other`, `No other`), \(x) str_c(format(round(100 * x, 1), nsmall = 1), "%"))) %>%
-  rename(Model = llm) %>%
-  kable_attributed(align = "lrrrr", format.args = list(big.mark = ","))
-```
-
-The Venn diagram below counts groups of linked arguments. Arguments which are linked, directly or through a chain of links, form one group, and each group is counted once in the area of the models which contributed to it. A group can contain more than one argument of the same model, since one model often splits what another states as a single argument.
-
-```{r}
-#| label: plot-venn-models
-#| code-summary: "Venn diagram of the argument groups found by the three models"
-#| fig-alt: "Venn diagram with three overlapping circles for Gemini, GPT and Claude. Each of the seven areas shows the number and share of argument groups found by that combination of models. The central area, found by all three models, is by far the largest and is highlighted in red."
-
-# Each group of linked arguments with the combination of models it contains.
-df_venn_counts <- df_arguments_matched %>%
-  summarise(models = str_c(sort(unique(llm)), collapse = "+"), .by = match_id) %>%
-  count(models, name = "n_groups") %>%
-  mutate(share = n_groups / sum(n_groups))
-
-# Position of the label of each area.
-df_venn_labels <- tribble(
-  ~models,                   ~x,    ~y,
-  "gemini",                  -1.15,  0.75,
-  "openai",                   1.15,  0.75,
-  "anthropic",                0,    -1.25,
-  "gemini+openai",            0,     0.85,
-  "anthropic+gemini",        -0.72, -0.4,
-  "anthropic+openai",         0.72, -0.4,
-  "anthropic+gemini+openai",  0,     0.1
-) %>%
-  left_join(df_venn_counts, by = join_by(models)) %>%
-  mutate(
-    n_groups = replace_na(n_groups, 0L),
-    share = replace_na(share, 0),
-    label = str_c(format(n_groups, big.mark = ",", trim = TRUE), "\n", round(100 * share), "%"),
-    is_all = models == "anthropic+gemini+openai"
-  )
-
-# Three circles of radius 1 and the position of their names.
-df_venn_circles <- tribble(
-  ~model,   ~x0,   ~y0,   ~x_name, ~y_name,
-  "Gemini", -0.6,   0.35, -1.5,     1.45,
-  "GPT",     0.6,   0.35,  1.5,     1.45,
-  "Claude",  0,    -0.7,   0,      -1.85
-)
-df_venn_outlines <- df_venn_circles %>%
-  expand_grid(angle = seq(0, 2 * pi, length.out = 200)) %>%
-  mutate(x = x0 + cos(angle), y = y0 + sin(angle))
-
-n_venn_groups <- sum(df_venn_counts$n_groups)
-
-ggplot() +
-  geom_polygon(
-    data = df_venn_outlines,
-    aes(x = x, y = y, group = model),
-    fill = "grey65", alpha = 0.25, colour = "grey45", linewidth = 0.4
-  ) +
-  geom_text(
-    data = df_venn_circles,
-    aes(x = x_name, y = y_name, label = model),
-    family = "Noto Sans", fontface = "bold", size = 3.8, colour = "grey20"
-  ) +
-  geom_text(
-    data = df_venn_labels,
-    aes(x = x, y = y, label = label, colour = is_all, fontface = if_else(is_all, "bold", "plain")),
-    family = "Noto Sans", size = 3.3, lineheight = 0.95
-  ) +
-  scale_colour_manual(values = c(`FALSE` = "grey20", `TRUE` = "firebrick"), guide = "none") +
-  # Wide x limits let the panel use the full width of the figure.
-  coord_equal(xlim = c(-4.3, 4.3), ylim = c(-2.05, 1.65), clip = "off") +
-  labs(
-    title = str_wrap("Do the three models find the same arguments?", 70),
-    subtitle = str_glue(
-      "Number and share of the {format(n_venn_groups, big.mark = ',')} groups of linked arguments, by the models which contributed to them. ",
-      "Arguments are linked if their quotes overlap in the text of the same submission. ",
-      "Arguments without a located quote are not included."
-    ),
-    x = NULL,
-    y = NULL,
-    caption = attribution_graph()
-  ) +
-  theme_post() +
-  theme(
-    axis.text = element_blank(),
-    panel.grid.major.y = element_blank()
-  )
-```
-
-These numbers come with a qualification. Arguments are matched by the position of their quotes only; what the models wrote about them is not compared. To see how far this carries, I read a sample by hand. Of 50 linked pairs, 46 were the same argument or overlapped in substance; the other four were different points made in the same passage. The rule is weaker in the other direction: of 20 arguments which no other model seemed to share, six to eight had in fact been found by another model, which had merely quoted a different sentence as evidence. The share of arguments found by one model alone is therefore an upper bound, and the agreement between the models is, if anything, higher than the diagram shows.
-
 
 The first ten extracted arguments are shown below. Click a row to see the verbatim German quotes that support it.
+I think the results are quite compelling. The summary of each argument is supported by the quotes.
 
 ```{r}
-#| label: table-arguments-preview
+#| label: tbl-arguments-preview
+#| tbl-cap: "The first ten extracted arguments"
 #| code-summary: "Preview of the extracted arguments"
 
-df_arguments_preview <- df_arguments_anthropic %>%
+df_arguments_preview <- df_arguments_gemini %>%
   slice_head(n = 10) %>%
   left_join(
     distinct(df_corpus, submission_id, submission_url),
@@ -1422,9 +1201,8 @@ reactable(
 
 ## Consolidate arguments across the whole corpus
 
-Each model groups the arguments which it extracted itself: Gemini groups Gemini's arguments, GPT those of GPT, and Claude those of Claude.
-
-Only now set an upper limit for the number of broad groups. Five is a
+Now, we want to put the extracted arguments into groups. 
+Here I set an uppe rlimit of five. Five is a
 reviewable maximum, not a target, an extraction constraint, or a predefined
 taxonomy: the model forms fewer groups if the arguments support fewer.
 
@@ -1436,6 +1214,7 @@ separate here and can be assigned to the same group later.
 ```{r}
 #| label: argument-registry
 #| code-summary: "Create IDs for distinct arguments"
+#| code-fold: false
 
 # One row per argument of one model, with its number within the submission and an ID per distinct description.
 # The grouping model only returns argument IDs, so this ID is the link back to submission_id later.
@@ -1455,23 +1234,17 @@ add_argument_ids <- function(df_extractions) {
 }
 ```
 
-The grouping takes two steps. In the first, a single call sees all argument
-descriptions of a model and returns only the groups, each with a short keyword,
-a name and a definition. The keyword is used in the tables and plots below
-instead of the technical group ID. In the second step, the model receives its
-own groups together with 50 arguments at a time and returns one group for each
-of them.
+The grouping takes two steps:
 
-A first version asked for groups and assignments in one call, which means
-returning a list of all argument IDs without a single slip. Gemini managed
-this; GPT placed most arguments in several groups, and Claude left 40% of them
-out. Small batches avoid the long list. There is no additional
-document-classification pass: submission membership follows from the extracted
-arguments and their group assignments.
+- In the first step, a single call sees all argument descriptions and returns only the groups, each with a short keyword, a name and a definition. The keyword is used in the table and the plot below instead of the technical group ID.
+- In the second step, the model receives its own groups together with 50 arguments at a time and returns one group for each of them. Small batches avoid having to return one long list of all argument IDs without a single slip.
+
+There is no additional document-classification pass: submission membership follows from the extracted arguments and their group assignments.
 
 ```{r}
 #| label: grouping-definition
 #| code-summary: "Define functions to group arguments"
+#| code-fold: false
 
 # Upper limit for the number of groups; the model may form fewer.
 n_groups <- 5L
@@ -1661,47 +1434,35 @@ check_groups <- function(df_arguments, df_groups) {
 }
 ```
 
-The next chunk sends the requests, one per model, and saves the results. It is not run when the post is rendered.
-
+The next chunk sends the requests and saves the results. 
 ```{r}
 #| label: group-all-arguments
-#| code-summary: "Group the arguments of each model"
+#| code-fold: false
+#| code-summary: "Group the arguments"
 #| eval: false
 
-# One request holds all arguments of a model and can take several minutes.
+# The first request holds all arguments and can take several minutes.
 options(ellmer_timeout_s = 15 * 60)
 
-walk(names(extraction_models), \(llm) {
-  df_arguments <- read_rds(here::here(dir_post, "data", str_c("submission_extractions_", llm, ".rds"))) %>%
-    add_argument_ids()
-  df_groups <- group_arguments(df_arguments, extraction_models[[llm]])
+df_arguments_gemini <- add_argument_ids(df_submission_extractions_gemini)
+df_groups_gemini <- group_arguments(df_arguments_gemini, extraction_model)
 
-  write_rds(df_groups, here::here(dir_post, "data", str_c("groups_", llm, ".rds")))
-  write_rds(assign_groups(df_arguments, df_groups), here::here(dir_post, "data", str_c("arguments_grouped_", llm, ".rds")))
-})
+write_rds(df_groups_gemini, here::here(dir_post, "data", "groups_gemini.rds"))
+write_rds(assign_groups(df_arguments_gemini, df_groups_gemini), here::here(dir_post, "data", "arguments_grouped_gemini.rds"))
 ```
 
-The saved results are loaded into one data frame per model. Arguments which a model left without a group are added to the residual group "Other arguments", and an argument assigned to several groups keeps its first group. The table shows how often this happened.
+The saved results are loaded. Arguments which the model left without a group are added to the residual group "Other arguments", and an argument assigned to several groups keeps its first group. The table shows how often this happened.
 
 ```{r}
-#| label: load-groups
+#| label: tbl-group-checks
+#| tbl-cap: "Checks of the group assignments"
 #| code-summary: "Load groups and run checks"
 
 df_groups_gemini <- read_rds(here::here(dir_post, "data", "groups_gemini.rds"))
-df_groups_openai <- read_rds(here::here(dir_post, "data", "groups_openai.rds"))
-df_groups_anthropic <- read_rds(here::here(dir_post, "data", "groups_anthropic.rds"))
-
 df_arguments_grouped_gemini <- read_rds(here::here(dir_post, "data", "arguments_grouped_gemini.rds"))
-df_arguments_grouped_openai <- read_rds(here::here(dir_post, "data", "arguments_grouped_openai.rds"))
-df_arguments_grouped_anthropic <- read_rds(here::here(dir_post, "data", "arguments_grouped_anthropic.rds"))
 
-# Per model: arguments to assign, groups formed, and IDs left out, used twice or invented.
-bind_rows(
-  Gemini = check_groups(df_arguments_grouped_gemini, df_groups_gemini),
-  GPT = check_groups(df_arguments_grouped_openai, df_groups_openai),
-  Claude = check_groups(df_arguments_grouped_anthropic, df_groups_anthropic),
-  .id = "Model"
-) %>%
+# Arguments to assign, groups formed, and IDs left out, used twice or invented.
+check_groups(df_arguments_grouped_gemini, df_groups_gemini) %>%
   rename(
     `Distinct arguments` = n_arguments,
     Groups = n_groups,
@@ -1709,7 +1470,7 @@ bind_rows(
     `Assigned twice` = n_duplicated,
     `Invented IDs` = n_invented
   ) %>%
-  kable_attributed(align = "lrrrrr", format.args = list(big.mark = ","))
+  kable_attributed(align = "rrrrr", format.args = list(big.mark = ","))
 ```
 
 Review the group definitions and their assigned arguments before interpreting
@@ -1719,7 +1480,7 @@ changing the open-ended extraction. If the complete
 argument list exceeds the model's context, stop and revisit consolidation;
 do not silently omit arguments or documents.
 
-## Join the groups and count submissions
+## Result: Argument groups and submission counts
 
 A submission counts once per group, even if several of its arguments belong
 to that group. It may count in several groups. Submissions with zero extracted
@@ -1729,6 +1490,7 @@ The next chunk counts the submissions per group for Gemini's grouping.
 
 ```{r}
 #| label: group-frequencies
+#| code-fold: false
 #| code-summary: "Count submissions per group"
 
 # Codebook of the groups which occur in the results, including the residual group.
@@ -1752,10 +1514,11 @@ df_group_frequencies <- df_codebook %>%
   arrange(desc(n_submissions), group_id)
 ```
 
-The table below shows how many of the analysed submissions raise at least one argument of each group; the largest group is highlighted. The denominator is the number of submissions passed to the extraction, not all published records. Click on a row to read the full name and definition of the group.
+The table below shows how many of the analysed submissions raise at least one argument of each group; the largest group is highlighted. The denominator is the number of submissions passed to the extraction, not all published records. Click on a row to read the full name and definition of the group. 
 
 ```{r}
-#| label: group-frequency-table
+#| label: tbl-group-frequencies
+#| tbl-cap: "Argument groups by number of submissions"
 #| code-summary: "Table of argument groups by number of submissions"
 
 df_table_groups <- df_group_frequencies %>%
@@ -1765,7 +1528,7 @@ df_table_groups <- df_group_frequencies %>%
   ) %>%
   select(group_keyword, group_name, group_definition, n_submissions, percent, bar_colour, is_top)
 
-reactable(
+tbl_group_frequencies <- reactable(
   df_table_groups,
   theme = compact_table_theme,
   fullWidth = TRUE,
@@ -1794,7 +1557,7 @@ reactable(
   # The full name and definition of a group open when its row is expanded.
   details = function(index) {
     htmltools::div(
-      style = "padding: 4px 8px; font-size: 11px;",
+      style = "padding: 4px 8px; font-size: 11px; line-height: 1.25;",
       htmltools::tags$b(df_table_groups$group_name[index]),
       htmltools::tags$br(),
       df_table_groups$group_definition[index]
@@ -1802,14 +1565,51 @@ reactable(
   },
   rowStyle = function(index) {
     if (df_table_groups$is_top[index]) list(background = "#fde0dd", fontWeight = "bold")
-  }
+  },
+  elementId = "group-frequencies-widget"
 ) %>%
+  # The largest group opens with its name and definition shown (reactable 0.4.5's
+  # defaultExpanded only takes TRUE/FALSE, so one row is expanded via its JS API; row IDs start at 0).
+  htmlwidgets::onRender(str_glue(
+    "function(el) {{ Reactable.getInstance('group-frequencies-widget').toggleRowExpanded('{which(df_table_groups$is_top) - 1}', true); }}"
+  )) %>%
   style_reactable_table(
     title = "ARGUMENT GROUPS BY NUMBER OF SUBMISSIONS",
     subtitle = str_glue(
       "Share of the {nrow(df_submission_extractions_gemini)} analysed submissions raising at least one argument of the group"
     )
   )
+
+tbl_group_frequencies
+```
+
+```{r}
+#| label: save-group-frequency-image
+#| fig-keep: none
+#| include: false
+
+# Image of the table above for the "Just the results" gallery. The standalone page
+# gets the blog's font and Font Awesome (for the Bluesky icon in the source line).
+file_widget <- tempfile(fileext = ".html")
+tbl_group_frequencies %>%
+  htmlwidgets::prependContent(
+    htmltools::tags$link(
+      rel = "stylesheet",
+      href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    ),
+    htmltools::tags$style(
+      "body { font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }"
+    )
+  ) %>%
+  htmlwidgets::saveWidget(file_widget, selfcontained = FALSE)
+# invisible(): webshot() returns the image, which knitr would otherwise save as a figure.
+invisible(webshot2::webshot(
+  file_widget,
+  file = here::here(dir_post, "data", "table-group-frequencies.png"),
+  vwidth = 700,
+  zoom = 2,
+  selector = "body"
+))
 ```
 
 The final table contains each group's keyword, the number of submissions
@@ -1829,7 +1629,7 @@ PDF-derived text, and documents with empty extraction results.
 
 The table above counts how many submissions raise each group, but it does not show which groups are raised *together*. To see how arguments combine within a submission, I use an UpSet plot, made with the {ComplexUpset} package. How to read it? The lower pane shows combinations of argument groups; each group is identified by a dot, and dots connected by a line belong to the same combination. The bars above show the number of submissions which raise exactly this combination of groups, and no others. Combinations of two or more groups are highlighted in red. The horizontal bars on the left give the total number of submissions raising a group, alone or together with others.
 
-Note that, unlike in the table above, each submission appears in exactly one bar. A submission which raises groups A and B is counted in the A-B bar, not in the bars for A alone and B alone. The groups are identified by their keywords. There is one plot per model, since each model formed its own groups.
+Note that, unlike in the table above, each submission appears in exactly one bar. A submission which raises groups A and B is counted in the A-B bar, not in the bars for A alone and B alone. The groups are identified by their keywords; their full names and definitions are in the table above.
 
 ```{r}
 #| label: argument-combinations-definition
@@ -1849,7 +1649,7 @@ get_submission_sets <- function(df_arguments_grouped) {
 }
 
 # UpSet plot for one model's grouping: bars per combination on top, totals per group on the left.
-plot_argument_combinations <- function(df_arguments_grouped, model_label) {
+plot_argument_combinations <- function(df_arguments_grouped) {
   # Keywords in the order of the group IDs.
   group_levels <- df_arguments_grouped %>%
     drop_na(group_id) %>%
@@ -1883,7 +1683,7 @@ plot_argument_combinations <- function(df_arguments_grouped, model_label) {
     height_ratio = 0.55,
     # Bars on top: submissions raising exactly this combination; combinations of two or more groups in red.
     base_annotations = list(
-      "Number of submissions" = ComplexUpset::intersection_size(
+      "Anzahl der Stellungnahmen" = ComplexUpset::intersection_size(
         mapping = aes(fill = is_combination),
         text = list(size = 2.6, family = "Noto Sans"),
         text_colors = c(on_background = "grey20", on_bar = "grey20"),
@@ -1901,7 +1701,7 @@ plot_argument_combinations <- function(df_arguments_grouped, model_label) {
         stat = "count", hjust = 1.15, size = 2.6, family = "Noto Sans", colour = "grey20"
       ) +
       scale_y_reverse(expand = expansion(mult = c(0.3, 0))) +
-      labs(y = "Submissions\nper group") +
+      labs(y = "Stellungnahmen\npro Gruppe") +
       theme_post() +
       theme(
         axis.text = element_blank(),
@@ -1918,12 +1718,12 @@ plot_argument_combinations <- function(df_arguments_grouped, model_label) {
     ))
   ) +
     patchwork::plot_annotation(
-      title = str_wrap(str_glue("Which argument groups do submissions raise together? ({model_label})"), 70),
+      title = str_wrap("Welche Argumentgruppen werden gemeinsam vorgebracht?", 70),
       subtitle = str_glue(
-        "Top: submissions raising exactly this combination of {model_label}'s argument groups; red: two or more groups. ",
-        "Left: all submissions raising the group. {n_analysed} submissions analysed; ",
-        "{n_without_group} raise no grouped argument and are not shown. ",
-        "{n_single_combinations} combinations raised by one submission only are left out on top."
+        "Oben: Stellungnahmen mit genau dieser Kombination von Argumentgruppen; rot: zwei oder mehr Gruppen. ",
+        "Links: alle Stellungnahmen mit Argumenten der Gruppe. {n_analysed} Stellungnahmen analysiert; ",
+        "{n_without_group} ohne gruppiertes Argument sind nicht dargestellt. ",
+        "{n_single_combinations} Kombinationen, die nur eine Stellungnahme vorbringt, sind oben nicht dargestellt."
       ),
       caption = attribution_graph(),
       # The combined plot needs more room between title and subtitle than a single plot.
@@ -1933,220 +1733,32 @@ plot_argument_combinations <- function(df_arguments_grouped, model_label) {
 }
 ```
 
-::: {.panel-tabset}
-
-## Gemini
-
 ```{r}
-#| label: plot-argument-combinations-gemini
+#| label: fig-argument-combinations
+#| fig-cap: "Combinations of argument groups raised in the submissions"
 #| code-summary: "UpSet plot of Gemini's argument group combinations"
 #| fig-alt: "UpSet plot of the argument group combinations in Gemini's grouping. Bars show the number of submissions raising exactly that combination of argument groups, sorted from most to fewest; the dots below indicate which groups belong to the combination. Single groups are grey, combinations of two or more groups are red."
 
-plot_argument_combinations(df_arguments_grouped_gemini, "Gemini")
+plot_argument_combinations(df_arguments_grouped_gemini)
 ```
 
-## GPT
+Of the `r n_analysed` analysed submissions, `r sum(get_submission_sets(df_arguments_grouped_gemini)$is_combination)` raise arguments from two or more groups.
 
-```{r}
-#| label: plot-argument-combinations-openai
-#| code-summary: "UpSet plot of GPT's argument group combinations"
-#| fig-alt: "UpSet plot of the argument group combinations in GPT's grouping. Bars show the number of submissions raising exactly that combination of argument groups, sorted from most to fewest; the dots below indicate which groups belong to the combination. Single groups are grey, combinations of two or more groups are red."
+All of this rests on one model. Whether other models find the same arguments and form the same groups is the subject of a [follow-up post](../2026-10-10-Prosecutor-Submission-LLM-Comparison/index.qmd). In short: the three large groups hold up, while the small ones look different from model to model.
 
-plot_argument_combinations(df_arguments_grouped_openai, "GPT")
-```
 
-## Claude
+# Wrap up
 
-```{r}
-#| label: plot-argument-combinations-anthropic
-#| code-summary: "UpSet plot of Claude's argument group combinations"
-#| fig-alt: "UpSet plot of the argument group combinations in Claude's grouping. Bars show the number of submissions raising exactly that combination of argument groups, sorted from most to fewest; the dots below indicate which groups belong to the combination. Single groups are grey, combinations of two or more groups are red."
+So, that's it. The draft on the federal prosecutor's office drew `r df_top_items$submissions_n[1]` submissions, more than any other item of the current legislative period, though still far off the records set by the COVID-19 legislation. Content-wise, the criticism boils down to a few main lines. The most prominent one is `r str_to_lower(df_group_frequencies$group_keyword[1])`, raised by `r df_group_frequencies$percent[1]`% of the analysed submissions, followed by the `r str_to_lower(df_group_frequencies$group_keyword[2])` (`r df_group_frequencies$percent[2]`%) and the `r str_to_lower(df_group_frequencies$group_keyword[3])` (`r df_group_frequencies$percent[3]`%). Many submissions raise several of them together.
 
-plot_argument_combinations(df_arguments_grouped_anthropic, "Claude")
-```
+On the technical side, I hope the post showed that {ParlAT}'s new `get_consultation_submissions()` turns getting the submissions, including their text, into a single call, and that {ellmer} makes passing these texts on to an LLM fairly painless.
 
-:::
+A few caveats are in order, though:
 
-Of the `r n_analysed` analysed submissions, `r sum(get_submission_sets(df_arguments_grouped_gemini)$is_combination)` raise arguments from two or more groups in Gemini's grouping, `r sum(get_submission_sets(df_arguments_grouped_openai)$is_combination)` in GPT's and `r sum(get_submission_sets(df_arguments_grouped_anthropic)$is_combination)` in Claude's.
+- The analysis only covers submissions which were published and have extractable text. Authors can opt out of publication, and scanned PDFs yield no text.
+- Arguments were extracted and grouped by one model. The [follow-up post](../2026-10-10-Prosecutor-Submission-LLM-Comparison/index.qmd) shows that the large groups hold up across models, while the smaller ones do not.
+- The upper limit of five groups is my choice. A higher limit would split some groups further.
+- Only criticisms and reservations are counted, not support for the draft. Identical submissions, e.g. based on a template, each count separately.
+- An LLM can miss or misread an argument. This is why every extracted argument comes with its verbatim quotes, which allow checking it against the source text.
 
-## Do the models form the same groups?
-
-Each model grouped its own arguments, so each came up with its own groups and its own names for them. The table shows the three sets side by side. Click on a row to read the full name and definition of a group.
-
-```{r}
-#| label: table-groups-all-models
-#| code-summary: "Table of the argument groups of all three models"
-
-model_labels <- c(gemini = "Gemini", openai = "GPT", anthropic = "Claude")
-
-# All arguments with their groups, one row per argument and model.
-df_arguments_grouped_all <- bind_rows(
-  gemini = df_arguments_grouped_gemini,
-  openai = df_arguments_grouped_openai,
-  anthropic = df_arguments_grouped_anthropic,
-  .id = "llm"
-)
-
-# Per model and group: number of submissions raising at least one argument of the group.
-df_table_groups_all <- df_arguments_grouped_all %>%
-  distinct(llm, submission_id, group_id, group_keyword, group_name, group_definition) %>%
-  count(llm, group_id, group_keyword, group_name, group_definition, name = "n_submissions") %>%
-  mutate(
-    model = factor(model_labels[llm], levels = model_labels),
-    percent = round(100 * n_submissions / nrow(df_corpus), 1)
-  ) %>%
-  mutate(is_top = n_submissions == max(n_submissions), .by = llm) %>%
-  mutate(bar_colour = if_else(is_top, "firebrick", "grey65")) %>%
-  arrange(model, group_id) %>%
-  select(model, group_keyword, n_submissions, percent, group_name, group_definition, bar_colour, is_top)
-
-reactable(
-  df_table_groups_all,
-  theme = compact_table_theme,
-  fullWidth = TRUE,
-  compact = TRUE,
-  highlight = TRUE,
-  outlined = TRUE,
-  pagination = FALSE,
-  columns = list(
-    model = colDef(name = "Model", width = 80),
-    group_keyword = colDef(name = "Group", minWidth = 180),
-    n_submissions = colDef(name = "Submissions", width = 110, align = "right"),
-    percent = colDef(
-      name = "Share",
-      minWidth = 120,
-      cell = reactablefmtr::data_bars(
-        df_table_groups_all,
-        fill_color_ref = "bar_colour",
-        text_position = "outside-end",
-        number_fmt = \(x) str_c(x, "%"),
-        max_value = 100
-      )
-    ),
-    group_name = colDef(show = FALSE),
-    group_definition = colDef(show = FALSE),
-    bar_colour = colDef(show = FALSE),
-    is_top = colDef(show = FALSE)
-  ),
-  # The full name and definition of a group open when its row is expanded.
-  details = function(index) {
-    htmltools::div(
-      style = "padding: 4px 8px; font-size: 11px;",
-      htmltools::tags$b(df_table_groups_all$group_name[index]),
-      htmltools::tags$br(),
-      df_table_groups_all$group_definition[index]
-    )
-  },
-  rowStyle = function(index) {
-    if (df_table_groups_all$is_top[index]) list(background = "#fde0dd", fontWeight = "bold")
-  }
-) %>%
-  style_reactable_table(
-    title = "ARGUMENT GROUPS OF THE THREE MODELS",
-    subtitle = str_glue(
-      "Share of the {nrow(df_corpus)} analysed submissions raising at least one argument of the group; largest group of each model highlighted"
-    )
-  )
-```
-
-Names alone do not show whether two groups hold the same arguments. The links between arguments do: for every pair of linked arguments, I look up the group which each of the two models chose. If two models group alike, the arguments of one group of the first model end up in one and the same group of the second. Each graph below compares two models. A row is a group of the first model, a column a group of the second, and each cell gives the number of linked pairs.
-
-```{r}
-#| label: group-crosstab-definition
-#| code-summary: "Compare the groups of two models through linked arguments"
-
-# Linked pairs of arguments with the group which each model chose.
-df_argument_groups <- df_arguments_grouped_all %>%
-  select(llm, submission_id, argument_nr, group_id, group_keyword)
-
-df_links_grouped <- df_argument_links %>%
-  left_join(df_argument_groups, by = join_by(llm_a == llm, submission_id, argument_nr_a == argument_nr)) %>%
-  left_join(df_argument_groups, by = join_by(llm_b == llm, submission_id, argument_nr_b == argument_nr), suffix = c("_a", "_b"))
-
-# Heatmap of the groups of one model (rows) against those of another (columns).
-plot_group_crosstab <- function(llm_row, llm_col) {
-  df_crosstab <- df_links_grouped %>%
-    filter(llm_a == llm_row, llm_b == llm_col) %>%
-    count(group_id_a, group_keyword_a, group_id_b, group_keyword_b, name = "n_pairs") %>%
-    mutate(share_of_row = n_pairs / sum(n_pairs), .by = group_id_a) %>%
-    mutate(
-      group_keyword_a = fct_rev(fct_reorder(group_keyword_a, as.integer(factor(group_id_a)))),
-      group_keyword_b = fct_reorder(group_keyword_b, as.integer(factor(group_id_b)))
-    )
-
-  ggplot(df_crosstab, aes(x = group_keyword_b, y = group_keyword_a, fill = share_of_row)) +
-    geom_tile(colour = "white", linewidth = 1) +
-    geom_text(
-      aes(label = format(n_pairs, big.mark = ",", trim = TRUE), colour = share_of_row > 0.6),
-      family = "Noto Sans", size = 3
-    ) +
-    scale_fill_gradient(low = "grey95", high = "firebrick", limits = c(0, 1), guide = "none") +
-    scale_colour_manual(values = c(`FALSE` = "grey20", `TRUE` = "white"), guide = "none") +
-    scale_x_discrete(position = "top", labels = \(x) str_wrap(x, 12)) +
-    labs(
-      title = str_wrap(str_glue("Do {model_labels[[llm_row]]} and {model_labels[[llm_col]]} form the same groups?"), 70),
-      subtitle = str_glue(
-        "Linked pairs of arguments by the group of {model_labels[[llm_row]]} (rows) and of {model_labels[[llm_col]]} (columns). ",
-        "Colour: share of the row, from 0% (grey) to 100% (red)."
-      ),
-      x = NULL,
-      y = NULL,
-      caption = attribution_graph()
-    ) +
-    theme_post() +
-    theme(panel.grid.major.y = element_blank())
-}
-```
-
-::: {.panel-tabset}
-
-## Gemini and GPT
-
-```{r}
-#| label: plot-crosstab-gemini-openai
-#| code-summary: "Groups of Gemini against groups of GPT"
-#| fig-alt: "Heatmap comparing the argument groups of Gemini (rows) with those of GPT (columns). Each cell shows the number of linked argument pairs; the redder a cell, the larger its share of the row."
-
-plot_group_crosstab("gemini", "openai")
-```
-
-## Gemini and Claude
-
-```{r}
-#| label: plot-crosstab-gemini-anthropic
-#| code-summary: "Groups of Gemini against groups of Claude"
-#| fig-alt: "Heatmap comparing the argument groups of Gemini (rows) with those of Claude (columns). Each cell shows the number of linked argument pairs; the redder a cell, the larger its share of the row."
-
-plot_group_crosstab("gemini", "anthropic")
-```
-
-## GPT and Claude
-
-```{r}
-#| label: plot-crosstab-openai-anthropic
-#| code-summary: "Groups of GPT against groups of Claude"
-#| fig-alt: "Heatmap comparing the argument groups of GPT (rows) with those of Claude (columns). Each cell shows the number of linked argument pairs; the redder a cell, the larger its share of the row."
-
-plot_group_crosstab("openai", "anthropic")
-```
-
-:::
-
-One number sums up each comparison: the share of linked pairs which fall into the best-matching group of the other model. If the groups of one model were simply renamed groups of the other, it would be 100%.
-
-```{r}
-#| label: group-agreement-table
-#| code-summary: "Share of linked pairs in the best-matching group of the other model"
-
-df_links_grouped %>%
-  count(llm_a, llm_b, group_id_a, group_id_b, name = "n_pairs") %>%
-  summarise(n_best = max(n_pairs), n_pairs = sum(n_pairs), .by = c(llm_a, llm_b, group_id_a)) %>%
-  summarise(n_pairs = sum(n_pairs), share = sum(n_best) / sum(n_pairs), .by = c(llm_a, llm_b)) %>%
-  transmute(
-    `Groups of` = model_labels[llm_a],
-    `Compared with` = model_labels[llm_b],
-    `Linked pairs` = n_pairs,
-    `In best-matching group` = str_c(format(round(100 * share, 1), nsmall = 1), "%")
-  ) %>%
-  kable_attributed(align = "llrr", format.args = list(big.mark = ","))
-```
+Thanks for reading. If you spot any errors or have any feedback, don't hesitate to contact [me](https://bsky.app/profile/zoowalk.bsky.social){target="_blank"}.

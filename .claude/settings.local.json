@@ -37,5 +37,6 @@
       "Bash([ -f $S/barsB.png ])",
       "Bash(break)"
     ]
-  }
+  },
+  "outputStyle": "Concise"
 }
